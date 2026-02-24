@@ -255,28 +255,28 @@ function Welcome() {
 
   const PLANS = {
     starter: {
-      name: 'Starter',
-      price: '$49',
-      color: '#10b981',
-      emoji: '🌱',
-      headline: 'You're in. Let's import your buyers.',
-      subline: 'Your Streamlive account is active. Connect Whatnot and your buyers will be waiting for you.',
+      name: "Starter",
+      price: "$49",
+      color: "#10b981",
+      emoji: "🌱",
+      headline: "You're in. Let's import your buyers.",
+      subline: "Your Streamlive account is active. Connect Whatnot and your buyers will be waiting for you.",
       features: [
         'Import buyers from Whatnot, TikTok Shop & Amazon Live',
         'Send email campaigns to up to 500 subscribers/month',
         'Show performance reports after every live',
         'Your personal opt-in page at strmlive.com/s/yourshop',
       ],
-      nextLabel: 'Connect your first platform →',
-      nextHint: 'Takes 2 minutes. We'll import your buyers immediately.',
+      nextLabel: "Connect your first platform →",
+      nextHint: "Takes 2 minutes. We'll import your buyers immediately.",
     },
     growth: {
-      name: 'Growth',
-      price: '$149',
-      color: '#7c3aed',
-      emoji: '🚀',
-      headline: 'Growth unlocked. Time to go live.',
-      subline: 'You now have real-time Live Companion, AI weekly briefings, and SMS campaigns.',
+      name: "Growth",
+      price: "$149",
+      color: "#7c3aed",
+      emoji: "🚀",
+      headline: "Growth unlocked. Time to go live.",
+      subline: "You now have real-time Live Companion, AI weekly briefings, and SMS campaigns.",
       features: [
         'Real-time Live Companion during every show',
         'AI-powered weekly briefing every Monday',
@@ -284,16 +284,16 @@ function Welcome() {
         'Instagram audience sync',
         'Churn scanner — catch at-risk buyers before they leave',
       ],
-      nextLabel: 'Set up Live Companion →',
-      nextHint: 'Connect Whatnot and it activates automatically when you go live.',
+      nextLabel: "Set up Live Companion →",
+      nextHint: "Connect Whatnot and it activates automatically when you go live.",
     },
     pro: {
-      name: 'Pro',
-      price: '$349',
-      color: '#f59e0b',
-      emoji: '⚡',
-      headline: 'Pro activated. You're operating at full power.',
-      subline: 'Every feature unlocked — DM automation, multi-platform attribution, AI churn narratives.',
+      name: "Pro",
+      price: "$349",
+      color: "#f59e0b",
+      emoji: "⚡",
+      headline: "Pro activated. You're operating at full power.",
+      subline: "Every feature unlocked — DM automation, multi-platform attribution, AI churn narratives.",
       features: [
         'Instagram DM automation for show announcements',
         'TikTok multi-shop support (up to 5 shops)',
@@ -301,8 +301,8 @@ function Welcome() {
         'AI churn narratives — personalized win-back copy',
         'Cross-platform buyer identity matching',
       ],
-      nextLabel: 'Set up your platforms →',
-      nextHint: 'Connect all 4 platforms and let Streamlive do the rest.',
+      nextLabel: "Set up your platforms →",
+      nextHint: "Connect all 4 platforms and let Streamlive do the rest.",
     },
   }
 
@@ -313,7 +313,7 @@ function Welcome() {
       <style>{FONT}</style>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { background: #06060e; color: #e2e8f0; font-family: 'DM Sans', sans-serif; overflow: auto; }
+        html, body { background: #06060e; color: #e2e8f0; font-family: "DM Sans", sans-serif; overflow: auto; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
         @keyframes pop { 0% { transform:scale(.8); opacity:0 } 60% { transform:scale(1.1) } 100% { transform:scale(1); opacity:1 } }
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
