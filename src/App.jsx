@@ -43,6 +43,12 @@ function Landing() {
     setSubmitted(true)
   }
 
+  const STRIPE_LINKS = {
+    Starter: 'https://buy.stripe.com/5kQ00l1OZciz9ot3m52kw00',
+    Growth:  'https://buy.stripe.com/9B6aEZgJTgyPdEJf4N2kw01',
+    Pro:     'https://buy.stripe.com/6oU5kF1OZgyPeIN2i12kw02',
+  }
+
   const features = [
     { icon: '◉', label: 'Buyer CRM',         desc: 'Every buyer across every platform in one place. VIP tags, spend history, churn risk scores.' },
     { icon: '◈', label: 'Live Companion',     desc: 'Real-time buyer intelligence during your shows. Instant lookup, notes, VIP alerts on every order.' },
@@ -213,6 +219,9 @@ function Landing() {
                     <span style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>{f}</span>
                   </div>
                 ))}
+                <a href={STRIPE_LINKS[p.plan]} target="_blank" rel="noopener noreferrer" className="cta-btn" style={{ display: 'block', textAlign: 'center', marginTop: 18, background: p.popular ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : `${p.color}22`, border: `1px solid ${p.color}44`, color: p.popular ? '#fff' : p.color, fontSize: 12, fontWeight: 700, padding: '10px', borderRadius: 9, cursor: 'pointer', textDecoration: 'none' }}>
+                  Get Started — {p.price}/mo
+                </a>
               </div>
             ))}
           </div>

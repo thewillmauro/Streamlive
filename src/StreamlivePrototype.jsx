@@ -148,6 +148,14 @@ const CAMPAIGNS = [
   { id:"c4", name:"New Inventory Drop Alert", type:"sms",   status:"draft",   sentAt:null,            recipients:0,   opened:0,  clicked:0,  converted:0,  gmv:0    },
 ];
 
+
+// ─── STRIPE PAYMENT LINKS ─────────────────────────────────────────────────────
+const STRIPE_LINKS = {
+  starter: 'https://buy.stripe.com/5kQ00l1OZciz9ot3m52kw00',
+  growth:  'https://buy.stripe.com/9B6aEZgJTgyPdEJf4N2kw01',
+  pro:     'https://buy.stripe.com/6oU5kF1OZgyPeIN2i12kw02',
+};
+
 // ─── NAV ITEMS ────────────────────────────────────────────────────────────────
 const NAV = [
   { id:"dashboard",   label:"Dashboard",  icon:"⬡",  route:"/dashboard" },
@@ -1061,7 +1069,7 @@ function ScreenSettings({ persona }) {
                 <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, textTransform:"capitalize" }}>{persona.plan}</div>
                 <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>${persona.plan==="starter"?49:persona.plan==="growth"?149:349}/month · Renews March 1</div>
               </div>
-              <button style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"8px 16px", borderRadius:8, cursor:"pointer" }}>Manage Plan</button>
+              <a href={STRIPE_LINKS[persona.plan]} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"8px 16px", borderRadius:8, cursor:"pointer", textDecoration:"none" }}>Manage Plan</a>
             </div>
           </div>
           {persona.plan !== "pro" && (
@@ -1072,9 +1080,9 @@ function ScreenSettings({ persona }) {
                   ? "Unlock real-time Live Companion, AI weekly briefings, and SMS campaigns."
                   : "Unlock Instagram DM automation, AI churn narratives, and multi-platform attribution."}
               </div>
-              <button style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
+              <a href={persona.plan==="starter" ? STRIPE_LINKS.growth : STRIPE_LINKS.pro} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer", textDecoration:"none" }}>
                 Upgrade — ${persona.plan==="starter"?149:349}/mo
-              </button>
+              </a>
             </div>
           )}
         </div>
@@ -1127,7 +1135,7 @@ export default function StreamlivePrototype() {
   return (
     <>
       <style>{GLOBAL_CSS}</style>
-      <div style={{ display:"flex", flexDirection:"column", height:"100vh", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
+      <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
 
         {/* ── DEMO BANNER ── */}
         <div style={{ background:"linear-gradient(90deg,#1a0f2e,#2d1f5e,#1a0f2e)", borderBottom:"1px solid #7c3aed33", padding:"5px 20px", display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
@@ -1223,9 +1231,9 @@ export default function StreamlivePrototype() {
                 <div style={{ fontSize:11, color:C.muted, marginBottom:8, lineHeight:1.5 }}>
                   {persona.plan === "starter" ? "Upgrade for real-time shows + AI insights" : "Upgrade for DM automation + attribution"}
                 </div>
-                <button onClick={()=>navigate("settings",{})} style={{ width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px", borderRadius:7, cursor:"pointer" }}>
+                <a href={persona.plan==="starter" ? STRIPE_LINKS.growth : STRIPE_LINKS.pro} target="_blank" rel="noopener noreferrer" style={{ display:"block", textAlign:"center", width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px", borderRadius:7, cursor:"pointer", textDecoration:"none" }}>
                   Upgrade Plan
-                </button>
+                </a>
               </div>
             )}
 
