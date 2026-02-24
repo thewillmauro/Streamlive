@@ -44,9 +44,9 @@ function Landing() {
   }
 
   const STRIPE_LINKS = {
-    Starter: 'https://buy.stripe.com/5kQ00l1OZciz9ot3m52kw00',
-    Growth:  'https://buy.stripe.com/9B6aEZgJTgyPdEJf4N2kw01',
-    Pro:     'https://buy.stripe.com/6oU5kF1OZgyPeIN2i12kw02',
+    Starter: 'https://buy.stripe.com/test_cNibJ377j60W9TS1rX0kE00',
+    Growth:  'https://buy.stripe.com/test_7sYbJ363fblgfec9Yt0kE01',
+    Pro:     'https://buy.stripe.com/test_00w5kF77j7504zyc6B0kE02',
   }
 
   const features = [

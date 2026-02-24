@@ -151,9 +151,9 @@ const CAMPAIGNS = [
 
 // ─── STRIPE PAYMENT LINKS ─────────────────────────────────────────────────────
 const STRIPE_LINKS = {
-  starter: 'https://buy.stripe.com/5kQ00l1OZciz9ot3m52kw00',
-  growth:  'https://buy.stripe.com/9B6aEZgJTgyPdEJf4N2kw01',
-  pro:     'https://buy.stripe.com/6oU5kF1OZgyPeIN2i12kw02',
+  starter: 'https://buy.stripe.com/test_cNibJ377j60W9TS1rX0kE00',
+  growth:  'https://buy.stripe.com/test_7sYbJ363fblgfec9Yt0kE01',
+  pro:     'https://buy.stripe.com/test_00w5kF77j7504zyc6B0kE02',
 };
 
 // ─── NAV ITEMS ────────────────────────────────────────────────────────────────
