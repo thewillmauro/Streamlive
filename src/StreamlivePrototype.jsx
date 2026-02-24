@@ -155,6 +155,10 @@ const STRIPE_LINKS = {
   growth:  'https://buy.stripe.com/test_7sYbJ363fblgfec9Yt0kE01',
   pro:     'https://buy.stripe.com/test_00w5kF77j7504zyc6B0kE02',
 };
+// Redirect URLs to set in Stripe Dashboard → Payment Links → After Payment:
+// Starter: https://strmlive.com/welcome?plan=starter
+// Growth:  https://strmlive.com/welcome?plan=growth
+// Pro:     https://strmlive.com/welcome?plan=pro
 
 // ─── NAV ITEMS ────────────────────────────────────────────────────────────────
 const NAV = [

@@ -48,6 +48,8 @@ function Landing() {
     Growth:  'https://buy.stripe.com/test_7sYbJ363fblgfec9Yt0kE01',
     Pro:     'https://buy.stripe.com/test_00w5kF77j7504zyc6B0kE02',
   }
+  // Stripe Dashboard → each Payment Link → After Payment → set redirect to:
+  // https://strmlive.com/welcome?plan=starter (or growth / pro)
 
   const features = [
     { icon: '◉', label: 'Buyer CRM',         desc: 'Every buyer across every platform in one place. VIP tags, spend history, churn risk scores.' },
@@ -245,10 +247,165 @@ function Landing() {
   )
 }
 
+
+// ─── WELCOME / POST-PAYMENT PAGE ─────────────────────────────────────────────
+function Welcome() {
+  const params = new URLSearchParams(window.location.search)
+  const plan = params.get('plan') || 'starter'
+
+  const PLANS = {
+    starter: {
+      name: 'Starter',
+      price: '$49',
+      color: '#10b981',
+      emoji: '🌱',
+      headline: 'You're in. Let's import your buyers.',
+      subline: 'Your Streamlive account is active. Connect Whatnot and your buyers will be waiting for you.',
+      features: [
+        'Import buyers from Whatnot, TikTok Shop & Amazon Live',
+        'Send email campaigns to up to 500 subscribers/month',
+        'Show performance reports after every live',
+        'Your personal opt-in page at strmlive.com/s/yourshop',
+      ],
+      nextLabel: 'Connect your first platform →',
+      nextHint: 'Takes 2 minutes. We'll import your buyers immediately.',
+    },
+    growth: {
+      name: 'Growth',
+      price: '$149',
+      color: '#7c3aed',
+      emoji: '🚀',
+      headline: 'Growth unlocked. Time to go live.',
+      subline: 'You now have real-time Live Companion, AI weekly briefings, and SMS campaigns.',
+      features: [
+        'Real-time Live Companion during every show',
+        'AI-powered weekly briefing every Monday',
+        'SMS campaigns up to 5,000 messages/month',
+        'Instagram audience sync',
+        'Churn scanner — catch at-risk buyers before they leave',
+      ],
+      nextLabel: 'Set up Live Companion →',
+      nextHint: 'Connect Whatnot and it activates automatically when you go live.',
+    },
+    pro: {
+      name: 'Pro',
+      price: '$349',
+      color: '#f59e0b',
+      emoji: '⚡',
+      headline: 'Pro activated. You're operating at full power.',
+      subline: 'Every feature unlocked — DM automation, multi-platform attribution, AI churn narratives.',
+      features: [
+        'Instagram DM automation for show announcements',
+        'TikTok multi-shop support (up to 5 shops)',
+        'Amazon multi-marketplace sync',
+        'AI churn narratives — personalized win-back copy',
+        'Cross-platform buyer identity matching',
+      ],
+      nextLabel: 'Set up your platforms →',
+      nextHint: 'Connect all 4 platforms and let Streamlive do the rest.',
+    },
+  }
+
+  const p = PLANS[plan] || PLANS.starter
+
+  return (
+    <>
+      <style>{FONT}</style>
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { background: #06060e; color: #e2e8f0; font-family: 'DM Sans', sans-serif; overflow: auto; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes pop { 0% { transform:scale(.8); opacity:0 } 60% { transform:scale(1.1) } 100% { transform:scale(1); opacity:1 } }
+        @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+        .fade-a0 { animation: fadeUp .5s ease both; }
+        .fade-a1 { animation: fadeUp .5s .15s ease both; }
+        .fade-a2 { animation: fadeUp .5s .3s ease both; }
+        .fade-a3 { animation: fadeUp .5s .45s ease both; }
+        .pop { animation: pop .4s ease both; }
+        .cta-btn:hover { opacity:.9; transform:translateY(-1px); }
+        .cta-btn { transition: all .15s ease; }
+      `}</style>
+
+      <div style={{ minHeight: '100vh', background: '#06060e', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+
+        {/* LOGO */}
+        <div className="fade-a0" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 48 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, color: '#fff' }}>S</div>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 800, color: '#fff' }}>Streamlive</span>
+        </div>
+
+        {/* SUCCESS CARD */}
+        <div style={{ width: '100%', maxWidth: 560 }}>
+
+          {/* CHECK + EMOJI */}
+          <div className="pop" style={{ textAlign: 'center', marginBottom: 28 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 72, height: 72, borderRadius: '50%', background: `${p.color}18`, border: `2px solid ${p.color}44`, fontSize: 32, marginBottom: 16 }}>
+              {p.emoji}
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0a1e16', border: '1px solid #10b98144', borderRadius: 99, padding: '4px 14px', marginLeft: 12 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'pulse 2s infinite' }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Payment confirmed</span>
+            </div>
+          </div>
+
+          {/* HEADLINE */}
+          <div className="fade-a1" style={{ textAlign: 'center', marginBottom: 32 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 10 }}>
+              {p.headline}
+            </div>
+            <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.6 }}>{p.subline}</p>
+          </div>
+
+          {/* PLAN BADGE */}
+          <div className="fade-a1" style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+            <div style={{ background: `${p.color}12`, border: `1px solid ${p.color}33`, borderRadius: 10, padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: p.color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{p.name} Plan</span>
+              <div style={{ width: 1, height: 12, background: `${p.color}44` }} />
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: '#fff' }}>{p.price}/mo</span>
+            </div>
+          </div>
+
+          {/* WHAT YOU UNLOCKED */}
+          <div className="fade-a2" style={{ background: '#0a0a15', border: '1px solid #14142a', borderRadius: 16, padding: '22px 24px', marginBottom: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>What you unlocked</div>
+            {p.features.map((f, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
+                <span style={{ color: p.color, fontSize: 12, flexShrink: 0, marginTop: 2 }}>✓</span>
+                <span style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.5 }}>{f}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* NEXT STEP CTA */}
+          <div className="fade-a3">
+            <button
+              onClick={() => { window.location.href = '/app' }}
+              className="cta-btn"
+              style={{ width: '100%', background: `linear-gradient(135deg,#7c3aed,#4f46e5)`, border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, padding: '14px', borderRadius: 12, cursor: 'pointer', marginBottom: 10 }}
+            >
+              {p.nextLabel}
+            </button>
+            <p style={{ textAlign: 'center', fontSize: 12, color: '#3d3d6e' }}>{p.nextHint}</p>
+          </div>
+
+          {/* SUPPORT NOTE */}
+          <div className="fade-a3" style={{ textAlign: 'center', marginTop: 28, paddingTop: 24, borderTop: '1px solid #14142a' }}>
+            <p style={{ fontSize: 12, color: '#4b5563' }}>
+              Questions? Email us at{' '}
+              <a href="mailto:hello@strmlive.com" style={{ color: '#a78bfa', textDecoration: 'none' }}>hello@strmlive.com</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // ─── ROOT ROUTER ─────────────────────────────────────────────────────────────
 export default function App() {
   const route = useRoute()
 
   if (route === '/app') return <StreamlivePrototype />
+  if (route === '/welcome') return <Welcome />
   return <Landing />
 }
