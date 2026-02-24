@@ -23,7 +23,25 @@ const FONT = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@70
 function Landing() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [hovering, setHovering] = useState(null)
+
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
+
+  const handleSubmit = async () => {
+    if (!email.includes('@')) return
+    setLoading(true)
+    try {
+      await fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+    } catch (e) {}
+    setLoading(false)
+    setSubmitted(true)
+  }
 
   const features = [
     { icon: '◉', label: 'Buyer CRM',         desc: 'Every buyer across every platform in one place. VIP tags, spend history, churn risk scores.' },
@@ -105,12 +123,12 @@ function Landing() {
                 <input
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && email.includes('@') && setSubmitted(true)}
+                  onKeyDown={e => e.key === 'Enter' && handleSubmit()}
                   placeholder="your@email.com"
                   style={{ width: 280, background: '#0d0d1e', border: '1px solid #1e1e3a', borderRadius: 10, padding: '11px 16px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: "'DM Sans', sans-serif" }}
                 />
                 <button
-                  onClick={() => email.includes('@') && setSubmitted(true)}
+                  onClick={handleSubmit}
                   className="cta-btn"
                   style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, padding: '11px 24px', borderRadius: 10, cursor: 'pointer', whiteSpace: 'nowrap' }}
                 >
