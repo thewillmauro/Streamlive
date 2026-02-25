@@ -1726,6 +1726,244 @@ function ScreenSubscribers({ persona }) {
 }
 
 // ─── SCREEN: SETTINGS ────────────────────────────────────────────────────────
+// ─── TEAM TAB COMPONENT ──────────────────────────────────────────────────────
+function TeamTab({ persona }) {
+  const ROLES = ["Admin", "Show Manager", "Campaign Manager", "Viewer"];
+  const ROLE_META = {
+    Owner:             { color: C.accent,  desc: "Full access to everything" },
+    Admin:             { color: "#f59e0b", desc: "Manage shows, buyers, campaigns, settings" },
+    "Show Manager":    { color: "#10b981", desc: "Run live shows and manage orders" },
+    "Campaign Manager":{ color: "#3b82f6", desc: "Create and send campaigns" },
+    Viewer:            { color: "#9ca3af", desc: "Read-only access" },
+  };
+
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteName,  setInviteName]  = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole,  setInviteRole]  = useState("Show Manager");
+  const [saving, setSaving]           = useState(false);
+  const [saved, setSaved]             = useState(false);
+  const [removeTarget, setRemoveTarget] = useState(null);
+
+  // Load persisted team members
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await window.storage.get("strmlive:team");
+        if (result?.value) setTeamMembers(JSON.parse(result.value));
+      } catch(e) {}
+    })();
+  }, []);
+
+  const persistTeam = async (members) => {
+    setTeamMembers(members);
+    try { await window.storage.set("strmlive:team", JSON.stringify(members)); } catch(e) {}
+  };
+
+  const sendInvite = async () => {
+    if (!inviteEmail.trim() || !inviteName.trim()) return;
+    setSaving(true);
+    await new Promise(r => setTimeout(r, 1000));
+    const newMember = {
+      id:        Date.now(),
+      name:      inviteName.trim(),
+      email:     inviteEmail.trim().toLowerCase(),
+      role:      inviteRole,
+      avatar:    inviteName.trim().split(" ").map(n=>n[0]).slice(0,2).join("").toUpperCase(),
+      status:    "invited",
+      invitedAt: new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }),
+    };
+    await persistTeam([...teamMembers, newMember]);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => {
+      setSaved(false);
+      setShowInviteModal(false);
+      setInviteName(""); setInviteEmail(""); setInviteRole("Show Manager");
+    }, 1200);
+  };
+
+  const removeMember = async (id) => {
+    await persistTeam(teamMembers.filter(m => m.id !== id));
+    setRemoveTarget(null);
+  };
+
+  const updateRole = async (id, role) => {
+    const updated = teamMembers.map(m => m.id === id ? { ...m, role } : m);
+    await persistTeam(updated);
+  };
+
+  const owner = { name: persona.name, email: persona.email, role: "Owner",
+    avatar: persona.name.split(" ").map(n=>n[0]).join("").toUpperCase() };
+
+  const allMembers = [owner, ...teamMembers];
+  const isValidEmail = inviteEmail.includes("@") && inviteEmail.includes(".");
+
+  return (
+    <div className="fade-up" style={{ maxWidth:580 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+        <div>
+          <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{allMembers.length} team member{allMembers.length!==1?"s":""}</div>
+          <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>Invite team members to help manage your shows, campaigns, and buyers.</div>
+        </div>
+        <button onClick={()=>setShowInviteModal(true)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 16px", borderRadius:9, cursor:"pointer", whiteSpace:"nowrap" }}>
+          + Invite Member
+        </button>
+      </div>
+
+      {/* MEMBER LIST */}
+      {allMembers.map((m, i) => {
+        const rm = ROLE_META[m.role] || ROLE_META.Viewer;
+        const isOwner = m.role === "Owner";
+        return (
+          <div key={m.email} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+            <div style={{ position:"relative", flexShrink:0 }}>
+              <Avatar initials={m.avatar} color={rm.color} size={38} />
+              {m.status==="invited" && (
+                <div style={{ position:"absolute", bottom:-2, right:-2, width:10, height:10, borderRadius:"50%", background:C.amber, border:"2px solid #0a0a12" }} title="Invite pending" />
+              )}
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{m.name}</div>
+              <div style={{ fontSize:11, color:C.muted }}>{m.email}</div>
+              {m.status==="invited" && (
+                <div style={{ fontSize:9, color:C.amber, marginTop:2 }}>⏳ Invite sent {m.invitedAt} · pending acceptance</div>
+              )}
+            </div>
+            {isOwner ? (
+              <span style={{ fontSize:10, fontWeight:700, color:rm.color, background:`${rm.color}22`, border:`1px solid ${rm.color}44`, padding:"4px 12px", borderRadius:6, flexShrink:0 }}>
+                {m.role}
+              </span>
+            ) : (
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <select
+                  value={m.role}
+                  onChange={e=>updateRole(m.id, e.target.value)}
+                  style={{ fontSize:10, fontWeight:700, color:rm.color, background:C.surface2, border:`1px solid ${rm.color}44`, padding:"4px 8px", borderRadius:6, cursor:"pointer", outline:"none", appearance:"none" }}
+                >
+                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <button
+                  onClick={()=>setRemoveTarget(m.id)}
+                  title="Remove member"
+                  style={{ background:"none", border:"none", color:C.muted, fontSize:14, cursor:"pointer", padding:"0 4px", lineHeight:1 }}
+                >×</button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* ROLE LEGEND */}
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginTop:8 }}>
+        <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Role Permissions</div>
+        {Object.entries(ROLE_META).map(([role, meta]) => (
+          <div key={role} style={{ display:"flex", alignItems:"center", gap:10, padding:"5px 0" }}>
+            <span style={{ fontSize:10, fontWeight:700, color:meta.color, minWidth:120 }}>{role}</span>
+            <span style={{ fontSize:10, color:C.muted }}>{meta.desc}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── INVITE MODAL ── */}
+      {showInviteModal && (
+        <div style={{ position:"fixed", inset:0, background:"#000000cc", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}
+          onClick={e=>e.target===e.currentTarget&&setShowInviteModal(false)}>
+          <div style={{ background:"#0e0e1a", border:`1px solid ${C.accent}44`, borderRadius:18, padding:"28px 32px", width:460, maxWidth:"90vw" }}>
+
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:22 }}>
+              <div style={{ fontSize:16, fontWeight:700, color:C.text }}>Invite Team Member</div>
+              <button onClick={()=>setShowInviteModal(false)} style={{ background:"none", border:"none", color:C.muted, fontSize:18, cursor:"pointer" }}>✕</button>
+            </div>
+
+            {/* NAME */}
+            <div style={{ marginBottom:14 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Full Name</div>
+              <input
+                value={inviteName} onChange={e=>setInviteName(e.target.value)}
+                placeholder="Jane Smith"
+                style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none" }}
+              />
+            </div>
+
+            {/* EMAIL */}
+            <div style={{ marginBottom:14 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Email Address</div>
+              <input
+                value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)}
+                placeholder="jane@example.com"
+                type="email"
+                style={{ width:"100%", background:C.surface2, border:`1px solid ${!inviteEmail||isValidEmail?C.border2:"#ef444466"}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none" }}
+              />
+              {inviteEmail && !isValidEmail && (
+                <div style={{ fontSize:10, color:"#f87171", marginTop:4 }}>Enter a valid email address</div>
+              )}
+            </div>
+
+            {/* ROLE */}
+            <div style={{ marginBottom:22 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Role</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                {ROLES.map(r => {
+                  const rm = ROLE_META[r];
+                  const sel = inviteRole === r;
+                  return (
+                    <div key={r} onClick={()=>setInviteRole(r)} style={{ padding:"10px 12px", borderRadius:10, border:`1px solid ${sel?rm.color+"66":C.border}`, background:sel?`${rm.color}10`:"transparent", cursor:"pointer" }}>
+                      <div style={{ fontSize:12, fontWeight:700, color:sel?rm.color:C.text }}>{r}</div>
+                      <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{rm.desc}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ACTIONS */}
+            <div style={{ display:"flex", gap:10 }}>
+              <button onClick={()=>setShowInviteModal(false)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>
+                Cancel
+              </button>
+              <button
+                disabled={!inviteName.trim() || !isValidEmail || saving || saved}
+                onClick={sendInvite}
+                style={{ flex:1, background:saved?"#0a1e16":inviteName.trim()&&isValidEmail?`linear-gradient(135deg,${C.accent},${C.accent2})`:"#1a1a2e", border:`1px solid ${saved?C.green+"66":inviteName.trim()&&isValidEmail?C.accent+"44":C.border}`, color:saved?C.green:inviteName.trim()&&isValidEmail?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:inviteName.trim()&&isValidEmail&&!saving&&!saved?"pointer":"default", transition:"all .2s" }}
+              >
+                {saved ? "✓ Invite Sent!" : saving ? (
+                  <span style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center" }}>
+                    <div style={{ width:12, height:12, border:"2px solid #ffffff44", borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+                    Sending invite…
+                  </span>
+                ) : `Send Invite to ${inviteRole}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── REMOVE CONFIRM MODAL ── */}
+      {removeTarget && (() => {
+        const m = teamMembers.find(m=>m.id===removeTarget);
+        if (!m) return null;
+        return (
+          <div style={{ position:"fixed", inset:0, background:"#000000cc", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}
+            onClick={e=>e.target===e.currentTarget&&setRemoveTarget(null)}>
+            <div style={{ background:"#0e0e1a", border:"1px solid #ef444444", borderRadius:16, padding:"24px 28px", width:380, maxWidth:"90vw" }}>
+              <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:8 }}>Remove team member?</div>
+              <div style={{ fontSize:12, color:C.muted, marginBottom:20, lineHeight:1.6 }}>
+                <strong style={{ color:C.text }}>{m.name}</strong> ({m.email}) will lose access to your Streamlive workspace immediately.
+              </div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={()=>setRemoveTarget(null)} style={{ flex:1, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px", borderRadius:9, cursor:"pointer" }}>Cancel</button>
+                <button onClick={()=>removeMember(removeTarget)} style={{ flex:1, background:"#1c0f0f", border:"1px solid #ef444444", color:"#f87171", fontSize:12, fontWeight:700, padding:"9px", borderRadius:9, cursor:"pointer" }}>Remove</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
 function ScreenSettings({ persona }) {
   const [tab, setTab]           = useState("platforms");
   const [connections, setConnections] = useState({});
@@ -2431,24 +2669,7 @@ function ScreenSettings({ persona }) {
 
       {/* ── TEAM TAB ── */}
       {tab==="team" && (
-        <div className="fade-up" style={{ maxWidth:560 }}>
-          <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Invite team members to help manage your shows, campaigns, and buyers.</div>
-          {[
-            { name:persona.name, email:persona.email, role:"Owner", avatar:persona.name.split(" ").map(n=>n[0]).join("") },
-          ].map(m=>(
-            <div key={m.email} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
-              <Avatar initials={m.avatar} color={C.accent} size={36} />
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{m.name}</div>
-                <div style={{ fontSize:11, color:C.muted }}>{m.email}</div>
-              </div>
-              <span style={{ fontSize:10, fontWeight:700, color:C.accent, background:`${C.accent}22`, border:`1px solid ${C.accent}44`, padding:"3px 10px", borderRadius:5 }}>{m.role}</span>
-            </div>
-          ))}
-          <button style={{ marginTop:8, background:C.surface, border:`2px dashed ${C.border2}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px", borderRadius:10, cursor:"pointer", width:"100%" }}>
-            + Invite Team Member
-          </button>
-        </div>
+        <TeamTab persona={persona} />
       )}
     </div>
   );
