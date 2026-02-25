@@ -6693,19 +6693,156 @@ function ScreenNetworkAnalytics({ persona }) {
 
 // ─── ENTERPRISE: TEAM MANAGEMENT ─────────────────────────────────────────────
 function ScreenTeam({ persona }) {
-  const [activeTab, setActiveTab] = useState("members");
+  const [activeTab,      setActiveTab]      = useState("members");
+  const [showInvite,     setShowInvite]      = useState(false);
+  const [inviteName,     setInviteName]      = useState("");
+  const [inviteEmail,    setInviteEmail]     = useState("");
+  const [inviteRole,     setInviteRole]      = useState("Manager");
+  const [inviteLink,     setInviteLink]      = useState("");
+  const [inviteSent,     setInviteSent]      = useState(false);
+  const [inviteLoading,  setInviteLoading]   = useState(false);
+
   const sellers = persona.managedSellers;
   const roleColors={Owner:"#a78bfa", Manager:"#7c3aed", Analyst:"#f59e0b", Support:"#10b981"};
   const permLabels={all:"All Access", view:"View", edit:"Edit", campaigns:"Campaigns", buyers:"Buyers", shows:"Shows", analytics:"Analytics"};
 
+  const rolePerms = {
+    Owner:   ["all"],
+    Manager: ["view","edit","campaigns","buyers","shows"],
+    Analyst: ["view","analytics"],
+    Support: ["view","buyers"],
+  };
+
+  const handleInvite = async () => {
+    if (!inviteEmail.trim() || !inviteName.trim()) return;
+    setInviteLoading(true);
+    const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const link  = `${window.location.origin}${window.location.pathname}?invite=${token}`;
+    try {
+      await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
+        token, workspace: persona.shop, invitedBy: persona.name,
+        name: inviteName.trim(), email: inviteEmail.trim().toLowerCase(),
+        role: inviteRole, invitedAt: new Date().toISOString(),
+      }));
+    } catch(e) { /* storage may not be available in all envs */ }
+    setInviteLink(link);
+    setInviteSent(true);
+    setInviteLoading(false);
+  };
+
+  const resetInvite = () => {
+    setShowInvite(false); setInviteSent(false); setInviteLoading(false);
+    setInviteName(""); setInviteEmail(""); setInviteRole("Manager"); setInviteLink("");
+  };
+
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", position:"relative" }}>
+
+      {/* ── INVITE MODAL ── */}
+      {showInvite && (
+        <div onClick={resetInvite}
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div onClick={e=>e.stopPropagation()} className="pop-in"
+            style={{ background:"#0a0a15", border:"1px solid #a78bfa44", borderRadius:18, padding:"28px 32px", width:460, maxWidth:"90vw" }}>
+
+            {!inviteSent ? (<>
+              {/* Header */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:22 }}>
+                <div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text }}>Invite Team Member</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:3 }}>{persona.shop} · Enterprise</div>
+                </div>
+                <button onClick={resetInvite} style={{ background:"none", border:"none", color:C.muted, fontSize:18, cursor:"pointer", lineHeight:1 }}>✕</button>
+              </div>
+
+              {/* Name */}
+              <div style={{ marginBottom:14 }}>
+                <label style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:6 }}>Full Name</label>
+                <input value={inviteName} onChange={e=>setInviteName(e.target.value)}
+                  placeholder="e.g. Jordan Lee"
+                  style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none" }}/>
+              </div>
+
+              {/* Email */}
+              <div style={{ marginBottom:14 }}>
+                <label style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:6 }}>Work Email</label>
+                <input value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)}
+                  placeholder="jordan@yourcompany.com" type="email"
+                  style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none" }}/>
+              </div>
+
+              {/* Role picker */}
+              <div style={{ marginBottom:22 }}>
+                <label style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:8 }}>Role</label>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                  {["Manager","Analyst","Support","Owner"].map(r=>{
+                    const col=roleColors[r];
+                    const isSelected=inviteRole===r;
+                    return (
+                      <button key={r} onClick={()=>setInviteRole(r)}
+                        style={{ padding:"10px 12px", borderRadius:9, border:`1px solid ${isSelected?col+"66":C.border2}`, background:isSelected?`${col}14`:"transparent", cursor:"pointer", textAlign:"left" }}>
+                        <div style={{ fontSize:11, fontWeight:700, color:isSelected?col:C.muted, marginBottom:3 }}>{r}</div>
+                        <div style={{ fontSize:9, color:C.subtle }}>
+                          {rolePerms[r].map(p=>permLabels[p]||p).join(", ")}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Send button */}
+              <button onClick={handleInvite} disabled={!inviteName.trim()||!inviteEmail.trim()||inviteLoading}
+                style={{ width:"100%", background:inviteName&&inviteEmail?"linear-gradient(135deg,#a78bfa,#7c3aed)":"#1a1a2e",
+                  border:"none", color:inviteName&&inviteEmail?"#fff":"#374151", fontSize:13, fontWeight:700,
+                  padding:"12px", borderRadius:10, cursor:inviteName&&inviteEmail?"pointer":"not-allowed" }}>
+                {inviteLoading ? "Generating link…" : "Generate Invite Link →"}
+              </button>
+            </>) : (<>
+              {/* Success state */}
+              <div style={{ textAlign:"center", marginBottom:20 }}>
+                <div style={{ fontSize:32, marginBottom:10 }}>✉️</div>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text, marginBottom:6 }}>Invite Ready</div>
+                <div style={{ fontSize:12, color:C.muted }}>Send this link to <strong style={{ color:C.text }}>{inviteName}</strong></div>
+              </div>
+
+              {/* Role summary */}
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 12px", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, marginBottom:16 }}>
+                <div style={{ width:28, height:28, borderRadius:7, background:`${roleColors[inviteRole]}18`, border:`1px solid ${roleColors[inviteRole]}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:800, color:roleColors[inviteRole] }}>
+                  {inviteName.split(" ").map(n=>n[0]).slice(0,2).join("").toUpperCase()}
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{inviteName}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>{inviteEmail} · <span style={{ color:roleColors[inviteRole] }}>{inviteRole}</span></div>
+                </div>
+              </div>
+
+              {/* Link copy box */}
+              <div style={{ background:C.surface2, border:`1px solid #a78bfa33`, borderRadius:9, padding:"10px 12px", marginBottom:16 }}>
+                <div style={{ fontSize:9, fontWeight:700, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>Invite Link</div>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.muted, wordBreak:"break-all", marginBottom:10 }}>{inviteLink}</div>
+                <button onClick={()=>navigator.clipboard?.writeText(inviteLink)}
+                  style={{ width:"100%", background:"#a78bfa18", border:"1px solid #a78bfa33", color:"#a78bfa", fontSize:11, fontWeight:700, padding:"8px", borderRadius:7, cursor:"pointer" }}>
+                  Copy Link
+                </button>
+              </div>
+
+              <button onClick={resetInvite}
+                style={{ width:"100%", background:"none", border:`1px solid ${C.border2}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px", borderRadius:9, cursor:"pointer" }}>
+                Done
+              </button>
+            </>)}
+          </div>
+        </div>
+      )}
+
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
         <div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Team Management</div>
           <div style={{ fontSize:12, color:C.muted }}>{ENTERPRISE_TEAM.length} members · {Object.keys(roleColors).map(r=>ENTERPRISE_TEAM.filter(t=>t.role===r).length+" "+r+"s").filter(s=>!s.startsWith("0")).join(" · ")}</div>
         </div>
-        <button style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
+        <button onClick={()=>setShowInvite(true)}
+          style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
           + Invite Member
         </button>
       </div>
