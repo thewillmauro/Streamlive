@@ -3007,50 +3007,55 @@ function TeamTab({ persona }) {
             </div>
 
             {/* ROLE */}
-            <div style={{ marginBottom:22 }}>
+            <div style={{ marginBottom:16 }}>
               <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Role</div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
                 {ROLES.map(r => {
                   const rm = ROLE_META[r];
                   const sel = inviteRole === r;
                   const producerLocked = r === "Producer" && PLAN_LEVEL[persona.plan] < 2;
                   return (
                     <div key={r}
-                      onClick={()=>{ if (!producerLocked) setInviteRole(r); }}
-                      style={{ padding:"10px 12px", borderRadius:10,
-                        border:`1px solid ${producerLocked?"#2a2a3a":sel?rm.color+"66":C.border}`,
-                        background:producerLocked?"#0b0b18":sel?`${rm.color}10`:"transparent",
-                        cursor:producerLocked?"default":"pointer",
-                        opacity:producerLocked?0.6:1, position:"relative" }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
-                        <div style={{ fontSize:12, fontWeight:700, color:producerLocked?"#374151":sel?rm.color:C.text }}>{r}</div>
+                      onClick={()=>{ setInviteRole(r); }}
+                      style={{ padding:"10px 12px", borderRadius:9, height:60,
+                        border:`1px solid ${producerLocked?"#222230":sel?rm.color+"55":C.border}`,
+                        background:producerLocked?"transparent":sel?`${rm.color}12`:"transparent",
+                        cursor:"pointer", display:"flex", flexDirection:"column", justifyContent:"center",
+                        opacity:producerLocked?0.45:1, transition:"border .12s, background .12s" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:3 }}>
+                        <span style={{ fontSize:12, fontWeight:700, color:producerLocked?"#374151":sel?rm.color:C.text }}>{r}</span>
                         {producerLocked
-                          ? <span style={{ fontSize:7, fontWeight:800, color:"#f59e0b", background:"#f59e0b14", border:"1px solid #f59e0b33", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>🔒 Pro+</span>
-                          : rm.badge && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>{rm.badge}</span>
+                          ? <span style={{ fontSize:7, fontWeight:800, color:"#f59e0b", background:"#f59e0b14", border:"1px solid #f59e0b28", padding:"1px 5px", borderRadius:3, textTransform:"uppercase", letterSpacing:"0.05em" }}>Pro+</span>
+                          : sel && rm.badge && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>{rm.badge}</span>
                         }
                       </div>
-                      <div style={{ fontSize:10, color:producerLocked?"#374151":C.muted, marginTop:2 }}>{rm.desc}</div>
-                      {producerLocked && (
-                        <div style={{ marginTop:8, background:"#f59e0b0a", border:"1px solid #f59e0b22", borderRadius:7, padding:"7px 10px" }}>
-                          <div style={{ fontSize:9, color:"#f59e0b", fontWeight:700, marginBottom:3 }}>Upgrade to Pro to add a Producer</div>
-                          <div style={{ fontSize:9, color:C.muted, lineHeight:1.5 }}>Production Suite — camera control, OBS scenes, device automation & more.</div>
-                          <button onClick={e=>{ e.stopPropagation(); setShowInviteModal(false); }}
-                            style={{ marginTop:8, fontSize:9, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b44", padding:"4px 10px", borderRadius:6, cursor:"pointer", width:"100%" }}>
-                            View Pro upgrade →
-                          </button>
-                        </div>
-                      )}
-                      {!producerLocked && sel && rm.access && (
-                        <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
-                          {rm.access.map(a=>(
-                            <span key={a} style={{ fontSize:8, fontWeight:700, color:"#06b6d4", background:"#06b6d412", border:"1px solid #06b6d433", padding:"1px 6px", borderRadius:3 }}>{a}</span>
-                          ))}
-                        </div>
-                      )}
+                      <div style={{ fontSize:10, color:producerLocked?"#2e2e45":C.muted, lineHeight:1.3 }}>{rm.desc.split(" — ")[0]}</div>
                     </div>
                   );
                 })}
               </div>
+
+              {/* Below-grid contextual panel: upsell OR access chips */}
+              {inviteRole === "Producer" && PLAN_LEVEL[persona.plan] < 2 ? (
+                <div style={{ marginTop:8, background:"#130f08", border:"1px solid #f59e0b33", borderRadius:9, padding:"12px 14px", display:"flex", alignItems:"flex-start", gap:12 }}>
+                  <span style={{ fontSize:18, flexShrink:0 }}>🎬</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:"#f59e0b", marginBottom:3 }}>Producer requires Pro</div>
+                    <div style={{ fontSize:10, color:"#7a6040", lineHeight:1.5 }}>Unlock camera control, OBS scene switching, device automation & the full Production Suite.</div>
+                    <button onClick={e=>{ e.stopPropagation(); setShowInviteModal(false); }}
+                      style={{ marginTop:8, fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b44", padding:"5px 14px", borderRadius:6, cursor:"pointer" }}>
+                      Upgrade to Pro →
+                    </button>
+                  </div>
+                </div>
+              ) : inviteRole && ROLE_META[inviteRole]?.access ? (
+                <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:9, color:C.subtle }}>Access:</span>
+                  {ROLE_META[inviteRole].access.map(a=>(
+                    <span key={a} style={{ fontSize:9, fontWeight:700, color:"#06b6d4", background:"#06b6d412", border:"1px solid #06b6d433", padding:"2px 7px", borderRadius:4 }}>{a}</span>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {/* EMAIL DELIVERY STATUS — shown after sending */}
