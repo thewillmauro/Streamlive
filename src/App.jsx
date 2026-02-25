@@ -42,7 +42,7 @@ const PLANS = {
     headline: "Growth unlocked. Time to go live.",
     subline: "You now have real-time Live Companion, AI weekly briefings, and SMS campaigns.",
     features: ['Everything in Starter','Real-time Live Companion','AI-powered weekly briefing every Monday','SMS campaigns (5,000/month)','Instagram audience sync','Churn scanner — catch at-risk buyers early'],
-    nextLabel: "Set up Live Companion →", nextHint: "Connect Whatnot and it activates automatically when you go live.",
+    nextLabel: "Set up your platforms →", nextHint: "Connect Whatnot and it activates automatically when you go live.",
     billing: 'Billed monthly. Cancel anytime.',
   },
   pro: {

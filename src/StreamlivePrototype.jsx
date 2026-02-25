@@ -3098,6 +3098,442 @@ function ScreenSettings({ persona, initialTab }) {
 
 
 
+
+// ─── SCREEN: CATALOG ──────────────────────────────────────────────────────────
+function ScreenCatalog({ persona, navigate }) {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [products, setProducts] = useState(PRODUCTS);
+  const [syncPulse, setSyncPulse] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState("all");
+
+  const toggleShowReady = (id) => {
+    setProducts(ps => ps.map(p => p.id===id ? {...p, showReady:!p.showReady} : p));
+  };
+
+  const filtered = products.filter(p => {
+    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+    const matchFilter = filter==="all" || (filter==="show-ready" && p.showReady) || (filter==="not-ready" && !p.showReady);
+    const matchPlatform = selectedPlatform==="all" || p.platforms.includes(selectedPlatform);
+    return matchSearch && matchFilter && matchPlatform;
+  });
+
+  const showReadyCount = products.filter(p=>p.showReady).length;
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+      <div style={{ padding:"16px 28px 12px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, letterSpacing:"-0.3px" }}>Shopify Catalog</div>
+            <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{products.length} products synced · {showReadyCount} show-ready · Last sync 4 min ago</div>
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            <button onClick={()=>navigate("show-planner")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
+              + Plan a Show
+            </button>
+            <button onClick={()=>{ setSyncPulse(true); setTimeout(()=>setSyncPulse(false),2000); }} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:syncPulse?C.green:C.muted, fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:9, cursor:"pointer" }}>
+              {syncPulse ? "✓ Synced!" : "↻ Sync Shopify"}
+            </button>
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:16, marginBottom:12 }}>
+          {[
+            { label:"Total Products",  value:products.length,       color:C.accent },
+            { label:"Show-Ready",       value:showReadyCount,         color:C.green  },
+            { label:"Low Stock (<5)",   value:products.filter(p=>p.inventory<5).length, color:C.amber },
+            { label:"Avg AI Score",     value:(products.reduce((a,p)=>a+p.aiScore,0)/products.length).toFixed(1), color:"#a78bfa" },
+          ].map(s=>(
+            <div key={s.label} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"8px 14px", display:"flex", gap:10, alignItems:"center" }}>
+              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:s.color }}>{s.value}</span>
+              <span style={{ fontSize:10, color:C.muted }}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 12px" }}>
+            <span style={{ color:C.subtle }}>🔍</span>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search products or SKU..." style={{ flex:1, background:"none", border:"none", color:C.text, fontSize:12, outline:"none" }} />
+          </div>
+          {["all","show-ready","not-ready"].map(f=>(
+            <button key={f} onClick={()=>setFilter(f)} style={{ background:"none", border:"none", borderBottom:`2px solid ${filter===f?C.accent:"transparent"}`, color:filter===f?"#a78bfa":C.muted, fontSize:12, fontWeight:filter===f?700:400, padding:"4px 12px 8px", cursor:"pointer" }}>
+              {f==="all"?"All":f==="show-ready"?"Show-Ready":"Not Ready"}
+            </button>
+          ))}
+          <div style={{ width:1, height:20, background:C.border }} />
+          {["all","WN","TT","AM","IG"].map(pl=>{
+            const color = pl==="all"?C.muted:PLATFORMS[pl]?.color;
+            return (
+              <button key={pl} onClick={()=>setSelectedPlatform(pl)} style={{ fontSize:10, fontWeight:700, color:selectedPlatform===pl?color:"#4b5563", background:selectedPlatform===pl?`${color}18`:"transparent", border:`1px solid ${selectedPlatform===pl?color+"44":C.border}`, padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>
+                {pl==="all"?"All Platforms":pl}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
+          {filtered.map(p=>(
+            <div key={p.id} style={{ background:C.surface, border:`1px solid ${p.showReady?C.accent+"44":C.border}`, borderRadius:14, padding:"16px", transition:"border-color .15s" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+                <div style={{ width:42, height:42, borderRadius:10, background:`${C.accent}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>{p.image}</div>
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:4 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    <span style={{ fontSize:9, color:"#a78bfa" }}>AI Score</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:p.aiScore>=9?"#10b981":p.aiScore>=7.5?"#a78bfa":C.amber }}>{p.aiScore}</span>
+                  </div>
+                  <span style={{ fontSize:8, fontWeight:700, color:C.muted, background:C.surface2, padding:"2px 6px", borderRadius:4, textTransform:"uppercase" }}>{p.category}</span>
+                </div>
+              </div>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:3, lineHeight:1.3 }}>{p.name}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.subtle, marginBottom:10 }}>{p.sku}</div>
+              <div style={{ display:"flex", gap:12, marginBottom:10 }}>
+                <div>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:C.text }}>${p.price}</div>
+                  <div style={{ fontSize:9, color:C.muted }}>price</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:p.inventory<5?C.amber:C.text }}>{p.inventory}</div>
+                  <div style={{ fontSize:9, color:C.muted }}>in stock</div>
+                </div>
+                <div>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:C.green }}>{p.soldLast30}</div>
+                  <div style={{ fontSize:9, color:C.muted }}>sold/30d</div>
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:4, marginBottom:12, flexWrap:"wrap" }}>
+                {p.platforms.map(pl=><PlatformPill key={pl} code={pl} />)}
+              </div>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:10, borderTop:`1px solid ${C.border}` }}>
+                <span style={{ fontSize:11, color:p.showReady?C.green:C.muted, fontWeight:600 }}>
+                  {p.showReady ? "✓ Show-Ready" : "Not in rotation"}
+                </span>
+                <div onClick={()=>toggleShowReady(p.id)} style={{ width:40, height:22, borderRadius:11, background:p.showReady?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}>
+                  <div style={{ position:"absolute", top:3, left:p.showReady?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: SHOW PLANNER ──────────────────────────────────────────────────────
+function ScreenShowPlanner({ navigate }) {
+  const [step, setStep] = useState(1);
+  const [selectedProducts, setSelectedProducts] = useState(
+    UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
+  );
+  const [runOrder, setRunOrder] = useState(
+    UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
+  );
+  const [perks, setPerks] = useState({
+    earlyAccess: true, earlyMinutes: 15,
+    newBuyerDiscount: true, newBuyerPct: 10,
+    vipFirstPick: true, doublePoints: false,
+    mysteryBonus: true, mysteryThreshold: 3,
+  });
+
+  const moveUp   = (i) => { if(i===0) return; const a=[...runOrder]; [a[i-1],a[i]]=[a[i],a[i-1]]; setRunOrder(a); };
+  const moveDown = (i) => { if(i===runOrder.length-1) return; const a=[...runOrder]; [a[i],a[i+1]]=[a[i+1],a[i]]; setRunOrder(a); };
+  const remove   = (i) => setRunOrder(r=>r.filter((_,idx)=>idx!==i));
+  const showReadyProducts = PRODUCTS.filter(p=>p.showReady);
+  const steps = ["Select Products","Set Run Order","Show Perks","Ready to Go Live"];
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+      <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+          <button onClick={()=>navigate("shows")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text }}>Show Planner</div>
+          <div style={{ marginLeft:"auto" }}><PlatformPill code={UPCOMING_SHOW.platform} /></div>
+        </div>
+        <div style={{ fontSize:12, color:C.muted, marginBottom:14 }}>{UPCOMING_SHOW.title} · {UPCOMING_SHOW.date} at {UPCOMING_SHOW.time}</div>
+        <div style={{ display:"flex", gap:0 }}>
+          {steps.map((s,i)=>(
+            <div key={s} style={{ display:"flex", alignItems:"center" }}>
+              <button onClick={()=>setStep(i+1)} style={{ display:"flex", alignItems:"center", gap:7, background:"none", border:"none", cursor:"pointer", padding:"0 4px" }}>
+                <div style={{ width:22, height:22, borderRadius:"50%", background:step>i+1?C.green:step===i+1?C.accent:C.surface2, border:`2px solid ${step>i+1?C.green:step===i+1?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:step>=i+1?"#fff":C.subtle, flexShrink:0 }}>
+                  {step>i+1?"✓":i+1}
+                </div>
+                <span style={{ fontSize:11, fontWeight:step===i+1?700:400, color:step===i+1?C.text:C.muted, whiteSpace:"nowrap" }}>{s}</span>
+              </button>
+              {i<steps.length-1 && <div style={{ width:32, height:1, background:step>i+1?C.green:C.border, margin:"0 4px" }} />}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
+        {step===1 && (
+          <div>
+            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Choose products for this show</div>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:16 }}>{selectedProducts.length} selected · AI recommends your show-ready items ranked by performance</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              {showReadyProducts.map(p=>{
+                const sel = selectedProducts.find(s=>s.id===p.id);
+                return (
+                  <div key={p.id} onClick={()=>{ setSelectedProducts(prev=>sel?prev.filter(s=>s.id!==p.id):[...prev,p]); setRunOrder(prev=>sel?prev.filter(s=>s.id!==p.id):[...prev,p]); }} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:sel?`${C.accent}12`:C.surface, border:`1px solid ${sel?C.accent+"55":C.border}`, borderRadius:12, cursor:"pointer", transition:"all .15s" }}>
+                    <div style={{ fontSize:20 }}>{p.image}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:2 }}>{p.name}</div>
+                      <div style={{ display:"flex", gap:8 }}>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green }}>${p.price}</span>
+                        <span style={{ fontSize:10, color:C.muted }}>{p.inventory} in stock</span>
+                        <span style={{ fontSize:10, color:"#a78bfa" }}>AI: {p.aiScore}</span>
+                      </div>
+                    </div>
+                    <div style={{ width:20, height:20, borderRadius:"50%", background:sel?C.accent:C.surface2, border:`2px solid ${sel?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:"#fff", flexShrink:0 }}>{sel?"✓":""}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop:20, display:"flex", justifyContent:"flex-end" }}>
+              <button onClick={()=>setStep(2)} disabled={selectedProducts.length===0} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer", opacity:selectedProducts.length===0?0.4:1 }}>
+                Set Run Order ({selectedProducts.length} products) →
+              </button>
+            </div>
+          </div>
+        )}
+        {step===2 && (
+          <div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Set your run order</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>AI sorted by predicted sales performance. Reorder as you like.</div>
+                {runOrder.map((p,i)=>(
+                  <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, marginBottom:8 }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.accent, width:24, textAlign:"center", flexShrink:0 }}>{i+1}</div>
+                    <div style={{ fontSize:18, flexShrink:0 }}>{p.image}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{p.name}</div>
+                      <div style={{ fontSize:10, color:C.muted }}>${p.price} · {p.inventory} in stock · AI: {p.aiScore}</div>
+                    </div>
+                    <div style={{ display:"flex", gap:4 }}>
+                      <button onClick={()=>moveUp(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↑</button>
+                      <button onClick={()=>moveDown(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↓</button>
+                      <button onClick={()=>remove(i)} style={{ background:"#1c0f0f", border:"1px solid #ef444433", color:"#f87171", fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>✕</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}33`, borderRadius:14, padding:"16px 18px", marginBottom:14 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>✦ AI Show Strategy</div>
+                  <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65 }}>Opening with the Mystery Box is your highest-converting cold opener — it drives 7.2 units/show on average. Following with Luka RC creates urgency early while buyers are most engaged.</div>
+                </div>
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>Projected Performance</div>
+                  {[
+                    { label:"Est. GMV",      value:`$${UPCOMING_SHOW.estimatedGMV.toLocaleString()}`, color:C.green },
+                    { label:"Est. Buyers",   value:UPCOMING_SHOW.estimatedBuyers,                     color:C.text },
+                    { label:"Products",      value:runOrder.length,                                   color:"#a78bfa" },
+                    { label:"Est. Duration", value:`${Math.round(runOrder.length*12)} min`,           color:C.muted },
+                  ].map(m=>(
+                    <div key={m.label} style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                      <span style={{ fontSize:12, color:C.muted }}>{m.label}</span>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:m.color }}>{m.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
+              <button onClick={()=>setStep(1)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
+              <button onClick={()=>setStep(3)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Set Show Perks →</button>
+            </div>
+          </div>
+        )}
+        {step===3 && (
+          <div style={{ maxWidth:680 }}>
+            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Configure perks for this show</div>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>These apply only to this show. Your default loyalty tiers always apply.</div>
+            {[
+              { key:"earlyAccess",     icon:"⏰", title:"VIP Early Access",           desc:"Let VIP buyers into the show early" },
+              { key:"newBuyerDiscount",icon:"🎁", title:"New Buyer Welcome Discount",  desc:"First-time buyers get an instant discount" },
+              { key:"vipFirstPick",    icon:"👑", title:"VIP First Pick",              desc:"VIP tier buyers get first pick on limited items" },
+              { key:"doublePoints",    icon:"⚡", title:"Double Points Show",          desc:"All buyers earn 2× loyalty points tonight" },
+              { key:"mysteryBonus",    icon:"🎲", title:"Mystery Bonus at Threshold",  desc:"Buyers who purchase X+ items get a mystery bonus" },
+            ].map(perk=>(
+              <div key={perk.key} style={{ background:perks[perk.key]?`${C.accent}08`:C.surface, border:`1px solid ${perks[perk.key]?C.accent+"44":C.border}`, borderRadius:13, padding:"14px 16px", marginBottom:10 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                  <div style={{ width:36, height:36, borderRadius:9, background:perks[perk.key]?`${C.accent}22`:C.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{perk.icon}</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{perk.title}</div>
+                    <div style={{ fontSize:11, color:C.muted }}>{perk.desc}</div>
+                  </div>
+                  <div onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))} style={{ width:40, height:22, borderRadius:11, background:perks[perk.key]?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}>
+                    <div style={{ position:"absolute", top:3, left:perks[perk.key]?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
+              <button onClick={()=>setStep(2)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
+              <button onClick={()=>setStep(4)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Review & Confirm →</button>
+            </div>
+          </div>
+        )}
+        {step===4 && (
+          <div style={{ maxWidth:620 }}>
+            <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}44`, borderRadius:16, padding:"22px 24px", marginBottom:16 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Show Summary</div>
+              <div style={{ display:"flex", gap:20, marginBottom:14 }}>
+                {[
+                  { label:"Products",   value:runOrder.length,   color:C.accent },
+                  { label:"Est. GMV",   value:`$${UPCOMING_SHOW.estimatedGMV.toLocaleString()}`, color:C.green },
+                  { label:"Perks Active", value:Object.values(perks).filter(v=>v===true).length, color:"#a78bfa" },
+                ].map(m=>(
+                  <div key={m.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 16px" }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:700, color:m.color }}>{m.value}</div>
+                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{m.label}</div>
+                  </div>
+                ))}
+              </div>
+              {runOrder.map((p,i)=>(
+                <div key={p.id} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:6 }}>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.accent, width:18 }}>{i+1}.</span>
+                  <span style={{ fontSize:11 }}>{p.image}</span>
+                  <span style={{ fontSize:12, color:C.text }}>{p.name}</span>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green, marginLeft:"auto" }}>${p.price}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display:"flex", gap:10 }}>
+              <button onClick={()=>setStep(3)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
+              <button onClick={()=>navigate("live")} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+                🔴 Go Live Now
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: ORDER REVIEW ──────────────────────────────────────────────────────
+function ScreenOrderReview({ params, navigate }) {
+  const { liveBuyers=[], buyerNotes={}, buyerDiscounts={}, buyerPerks={}, buyerItems={}, gmv=0, elapsed=0 } = params || {};
+  const [processed, setProcessed] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
+
+  const fmt = (s) => `${String(Math.floor(s/3600)).padStart(2,"0")}:${String(Math.floor((s%3600)/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+
+  const orders = liveBuyers.map(b=>{
+    const discount  = buyerDiscounts[b.id] || 0;
+    const perks     = buyerPerks[b.id]     || {};
+    const itemIds   = buyerItems[b.id]     || [];
+    const items     = PRODUCTS.filter(p=>itemIds.includes(p.id));
+    const note      = buyerNotes[b.id]     || "";
+    const loyalty   = LOYALTY_BUYERS[b.id] || { points:0, tier:"bronze" };
+    const tier      = LOYALTY_TIERS.find(t=>t.id===loyalty.tier);
+    const hasChanges= discount>0 || Object.values(perks).some(Boolean) || items.length>0 || note.length>0;
+    const addedGMV  = items.reduce((a,p)=>a+p.price,0);
+    return { buyer:b, discount, perks, items, note, loyalty, tier, hasChanges, addedGMV };
+  });
+
+  const totalChanges  = orders.filter(o=>o.hasChanges).length;
+  const totalAddedGMV = orders.reduce((a,o)=>a+o.addedGMV,0);
+  const processAll = () => { setProcessing(true); setTimeout(()=>{ setProcessing(false); setProcessed(true); }, 2200); };
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+      <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.4px" }}>Order Review</div>
+            <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>Review all changes before processing.</div>
+          </div>
+          {!processed && (
+            <button onClick={processAll} disabled={processing||totalChanges===0}
+              style={{ background:totalChanges>0?`linear-gradient(135deg,${C.green},#059669)`:"#1a1a2e", border:`1px solid ${totalChanges>0?C.green+"44":C.border}`, color:totalChanges>0?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:totalChanges>0?"pointer":"default", minWidth:180 }}>
+              {processing ? "Processing…" : `Process All Changes (${totalChanges})`}
+            </button>
+          )}
+          {processed && <div style={{ display:"flex", alignItems:"center", gap:8, background:"#0a1e16", border:"1px solid #10b98144", borderRadius:10, padding:"10px 18px" }}><span style={{ fontSize:14, color:C.green }}>✓</span><span style={{ fontSize:13, fontWeight:700, color:C.green }}>All changes processed!</span></div>}
+        </div>
+        <div style={{ display:"flex", gap:12 }}>
+          {[
+            { label:"Total Buyers",  value:liveBuyers.length,          color:C.accent  },
+            { label:"Show GMV",      value:`$${gmv.toLocaleString()}`, color:C.green   },
+            { label:"Added GMV",     value:`+$${totalAddedGMV}`,       color:C.green   },
+            { label:"With Changes",  value:totalChanges,               color:"#a78bfa" },
+          ].map(s=>(
+            <div key={s.label} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"8px 14px" }}>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:s.color }}>{s.value}</div>
+              <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
+        {[...orders.filter(o=>o.hasChanges), ...orders.filter(o=>!o.hasChanges)].map((order,i)=>{
+          const { buyer:b, discount, items, note, tier, hasChanges } = order;
+          const pl = PLATFORMS[b.platform];
+          const isExpanded = expandedId===b.id;
+          return (
+            <div key={b.id} style={{ background:hasChanges?C.surface:"#070710", border:`1px solid ${hasChanges?C.border2:C.border}`, borderRadius:14, marginBottom:8, overflow:"hidden", opacity:!hasChanges?0.5:1 }}>
+              <div onClick={()=>hasChanges&&setExpandedId(isExpanded?null:b.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 18px", cursor:hasChanges?"pointer":"default" }}>
+                <Avatar initials={b.avatar} color={pl?.color} size={32} />
+                <div style={{ flex:1 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                    <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{b.name}</span>
+                    {tier && <span style={{ fontSize:10 }}>{tier.icon}</span>}
+                    <PlatformPill code={b.platform} />
+                    {!hasChanges && <span style={{ fontSize:10, color:C.muted }}>— no changes</span>}
+                  </div>
+                  <div style={{ display:"flex", gap:6 }}>
+                    {discount>0 && <span style={{ fontSize:9, fontWeight:700, color:C.green, background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 7px", borderRadius:5 }}>{discount}% OFF</span>}
+                    {items.length>0 && <span style={{ fontSize:9, fontWeight:700, color:C.amber, background:"#1e1206", border:"1px solid #d9770633", padding:"1px 7px", borderRadius:5 }}>+{items.length} items</span>}
+                    {note && <span style={{ fontSize:9, fontWeight:700, color:"#60a5fa", background:"#0f1e2e", border:"1px solid #3b82f633", padding:"1px 7px", borderRadius:5 }}>📝 Note</span>}
+                  </div>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  {items.length>0 && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.green }}>+${items.reduce((a,p)=>a+p.price,0)}</span>}
+                  {processed && hasChanges && <span style={{ fontSize:11, fontWeight:700, color:C.green }}>✓ Processed</span>}
+                  {hasChanges && <span style={{ fontSize:11, color:C.muted }}>{isExpanded?"▲":"▼"}</span>}
+                </div>
+              </div>
+              {isExpanded && hasChanges && (
+                <div style={{ borderTop:`1px solid ${C.border}`, padding:"14px 18px", background:"#080812" }}>
+                  {discount>0 && <div style={{ marginBottom:10, fontSize:12, color:"#9ca3af" }}>Discount: {discount}% off applied</div>}
+                  {items.length>0 && items.map(p=>(
+                    <div key={p.id} style={{ display:"flex", justifyContent:"space-between", padding:"6px 10px", background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, marginBottom:5 }}>
+                      <span style={{ fontSize:11, color:C.text }}>{p.image} {p.name}</span>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.green }}>${p.price}</span>
+                    </div>
+                  ))}
+                  {note && <div style={{ fontSize:12, color:"#9ca3af", fontStyle:"italic", marginTop:8 }}>Note: "{note}"</div>}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {processed && (
+          <div style={{ background:"#0a1e16", border:"1px solid #10b98144", borderRadius:14, padding:"24px", textAlign:"center", marginTop:8 }}>
+            <div style={{ fontSize:20, marginBottom:8 }}>🎉</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text, marginBottom:6 }}>All done!</div>
+            <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:16 }}>
+              <button onClick={()=>navigate("shows")} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 22px", borderRadius:9, cursor:"pointer" }}>← Back to Shows</button>
+              <button onClick={()=>navigate("dashboard")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 22px", borderRadius:9, cursor:"pointer" }}>View Dashboard →</button>
+            </div>
+          </div>
+        )}
+        {liveBuyers.length===0 && (
+          <div style={{ textAlign:"center", padding:"60px 0", color:C.muted }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>📋</div>
+            <div style={{ fontSize:14, fontWeight:600, color:C.text, marginBottom:6 }}>No orders from this show</div>
+            <button onClick={()=>navigate("shows")} style={{ marginTop:16, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"8px 20px", borderRadius:9, cursor:"pointer" }}>← Back to Shows</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── SCREEN: LOYALTY HUB ─────────────────────────────────────────────────────
 function ScreenLoyalty({ buyers, navigate, persona }) {
   const [tab, setTab]     = useState("overview");
