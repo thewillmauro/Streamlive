@@ -4132,6 +4132,119 @@ function ScreenOrderReview({ params, navigate }) {
   );
 }
 
+
+// ─── ANALYTICS CHART HELPERS (top-level for React fast-refresh) ─────────────
+// ── SVG CHART HELPERS ────────────────────────────────────────────────────────
+const BarChart = ({ data, color="#7c3aed", height=80, showLabels=true }) => {
+  const max = Math.max(...data.map(d=>d.value));
+  const w = 100/data.length;
+  return (
+    <svg width="100%" height={height+24} style={{ overflow:"visible" }}>
+      {data.map((d,i)=>{
+        const barH = max>0 ? (d.value/max)*(height-4) : 0;
+        const x = i*w + w*0.15;
+        const barW = w*0.7;
+        return (
+          <g key={i}>
+            <rect x={`${x}%`} y={height-barH} width={`${barW}%`} height={barH}
+              fill={d.color||color} rx="3" opacity="0.9" />
+            {showLabels && (
+              <text x={`${x+barW/2}%`} y={height+16} textAnchor="middle"
+                fontSize="8" fill="#6b7280">{d.label}</text>
+            )}
+            {d.value>0 && (
+              <text x={`${x+barW/2}%`} y={height-barH-4} textAnchor="middle"
+                fontSize="8" fill="#9ca3af" fontWeight="600">
+                {d.prefix||""}{d.value>=1000?`${(d.value/1000).toFixed(1)}k`:d.value}
+              </text>
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+const LineChart = ({ data, color="#10b981", height=80 }) => {
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max-min||1;
+  const pts = data.map((v,i)=>{
+    const x = (i/(data.length-1))*100;
+    const y = height-((v-min)/range)*(height-10)-5;
+    return `${x},${y}`;
+  }).join(" ");
+  const area = `0,${height} ${pts} 100,${height}`;
+  return (
+    <svg width="100%" height={height} style={{ overflow:"visible" }}>
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <polygon points={area} fill="url(#lineGrad)" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {data.map((v,i)=>{
+        const x = (i/(data.length-1))*100;
+        const y = height-((v-min)/range)*(height-10)-5;
+        return <circle key={i} cx={`${x}%`} cy={y} r="3" fill={color} />;
+      })}
+    </svg>
+  );
+};
+
+const DonutChart = ({ segments, size=120 }) => {
+  const total = segments.reduce((a,s)=>a+s.value,0);
+  const r = 44; const cx = size/2; const cy = size/2;
+  let cumAngle = -90;
+  const slices = segments.map(s=>{
+    const angle = (s.value/total)*360;
+    const startRad = (cumAngle*Math.PI)/180;
+    const endRad   = ((cumAngle+angle)*Math.PI)/180;
+    const x1 = cx + r*Math.cos(startRad);
+    const y1 = cy + r*Math.sin(startRad);
+    const x2 = cx + r*Math.cos(endRad);
+    const y2 = cy + r*Math.sin(endRad);
+    const large = angle>180?1:0;
+    const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`;
+    cumAngle += angle;
+    return { ...s, path };
+  });
+  return (
+    <svg width={size} height={size}>
+      <circle cx={cx} cy={cy} r={r} fill="transparent" />
+      {slices.map((s,i)=>(
+        <path key={i} d={s.path} fill={s.color} opacity="0.9" />
+      ))}
+      <circle cx={cx} cy={cy} r={28} fill="#0a0a15" />
+    </svg>
+  );
+};
+
+const HBar = ({ value, max, color, label, suffix="" }) => (
+  <div style={{ marginBottom:10 }}>
+    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+      <span style={{ fontSize:11, color:C.muted }}>{label}</span>
+      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color }}>{value}{suffix}</span>
+    </div>
+    <div style={{ height:6, background:C.surface2, borderRadius:3, overflow:"hidden" }}>
+      <div style={{ width:`${(value/max)*100}%`, height:"100%", background:color, borderRadius:3, transition:"width .6s ease" }} />
+    </div>
+  </div>
+);
+
+const KPI = ({ label, value, sub, color="#7c3aed", trend }) => (
+  <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+    <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>{label}</div>
+    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:800, color, marginBottom:4 }}>{value}</div>
+    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+      {trend && <span style={{ fontSize:10, fontWeight:700, color:trend>0?C.green:"#ef4444" }}>{trend>0?`↑ +${trend}%`:`↓ ${trend}%`}</span>}
+      {sub && <span style={{ fontSize:10, color:C.subtle }}>{sub}</span>}
+    </div>
+  </div>
+);
+
 // ─── SCREEN: ANALYTICS ────────────────────────────────────────────────────────
 function ScreenAnalytics({ buyers, persona }) {
   const [tab, setTab]           = useState("overview");
@@ -4174,116 +4287,6 @@ function ScreenAnalytics({ buyers, persona }) {
   const PC = { WN:"#7c3aed", TT:"#f43f5e", IG:"#ec4899", AM:"#f59e0b" };
   const PN = { WN:"Whatnot", TT:"TikTok", IG:"Instagram", AM:"Amazon" };
 
-  // ── SVG CHART HELPERS ────────────────────────────────────────────────────────
-  const BarChart = ({ data, color="#7c3aed", height=80, showLabels=true }) => {
-    const max = Math.max(...data.map(d=>d.value));
-    const w = 100/data.length;
-    return (
-      <svg width="100%" height={height+24} style={{ overflow:"visible" }}>
-        {data.map((d,i)=>{
-          const barH = max>0 ? (d.value/max)*(height-4) : 0;
-          const x = i*w + w*0.15;
-          const barW = w*0.7;
-          return (
-            <g key={i}>
-              <rect x={`${x}%`} y={height-barH} width={`${barW}%`} height={barH}
-                fill={d.color||color} rx="3" opacity="0.9" />
-              {showLabels && (
-                <text x={`${x+barW/2}%`} y={height+16} textAnchor="middle"
-                  fontSize="8" fill="#6b7280">{d.label}</text>
-              )}
-              {d.value>0 && (
-                <text x={`${x+barW/2}%`} y={height-barH-4} textAnchor="middle"
-                  fontSize="8" fill="#9ca3af" fontWeight="600">
-                  {d.prefix||""}{d.value>=1000?`${(d.value/1000).toFixed(1)}k`:d.value}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-    );
-  };
-
-  const LineChart = ({ data, color="#10b981", height=80 }) => {
-    const max = Math.max(...data);
-    const min = Math.min(...data);
-    const range = max-min||1;
-    const pts = data.map((v,i)=>{
-      const x = (i/(data.length-1))*100;
-      const y = height-((v-min)/range)*(height-10)-5;
-      return `${x},${y}`;
-    }).join(" ");
-    const area = `0,${height} ${pts} 100,${height}`;
-    return (
-      <svg width="100%" height={height} style={{ overflow:"visible" }}>
-        <defs>
-          <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
-            <stop offset="100%" stopColor={color} stopOpacity="0"/>
-          </linearGradient>
-        </defs>
-        <polygon points={area} fill="url(#lineGrad)" />
-        <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        {data.map((v,i)=>{
-          const x = (i/(data.length-1))*100;
-          const y = height-((v-min)/range)*(height-10)-5;
-          return <circle key={i} cx={`${x}%`} cy={y} r="3" fill={color} />;
-        })}
-      </svg>
-    );
-  };
-
-  const DonutChart = ({ segments, size=120 }) => {
-    const total = segments.reduce((a,s)=>a+s.value,0);
-    const r = 44; const cx = size/2; const cy = size/2;
-    let cumAngle = -90;
-    const slices = segments.map(s=>{
-      const angle = (s.value/total)*360;
-      const startRad = (cumAngle*Math.PI)/180;
-      const endRad   = ((cumAngle+angle)*Math.PI)/180;
-      const x1 = cx + r*Math.cos(startRad);
-      const y1 = cy + r*Math.sin(startRad);
-      const x2 = cx + r*Math.cos(endRad);
-      const y2 = cy + r*Math.sin(endRad);
-      const large = angle>180?1:0;
-      const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`;
-      cumAngle += angle;
-      return { ...s, path };
-    });
-    return (
-      <svg width={size} height={size}>
-        <circle cx={cx} cy={cy} r={r} fill="transparent" />
-        {slices.map((s,i)=>(
-          <path key={i} d={s.path} fill={s.color} opacity="0.9" />
-        ))}
-        <circle cx={cx} cy={cy} r={28} fill="#0a0a15" />
-      </svg>
-    );
-  };
-
-  const HBar = ({ value, max, color, label, suffix="" }) => (
-    <div style={{ marginBottom:10 }}>
-      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-        <span style={{ fontSize:11, color:C.muted }}>{label}</span>
-        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color }}>{value}{suffix}</span>
-      </div>
-      <div style={{ height:6, background:C.surface2, borderRadius:3, overflow:"hidden" }}>
-        <div style={{ width:`${(value/max)*100}%`, height:"100%", background:color, borderRadius:3, transition:"width .6s ease" }} />
-      </div>
-    </div>
-  );
-
-  const KPI = ({ label, value, sub, color="#7c3aed", trend }) => (
-    <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-      <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>{label}</div>
-      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:800, color, marginBottom:4 }}>{value}</div>
-      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-        {trend && <span style={{ fontSize:10, fontWeight:700, color:trend>0?C.green:"#ef4444" }}>{trend>0?`↑ +${trend}%`:`↓ ${trend}%`}</span>}
-        {sub && <span style={{ fontSize:10, color:C.subtle }}>{sub}</span>}
-      </div>
-    </div>
-  );
 
   // ── TABS ─────────────────────────────────────────────────────────────────────
   const TABS = [
@@ -4809,6 +4812,11 @@ function ScreenAnalytics({ buyers, persona }) {
         )}
 
       </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
     </div>
   );
 }
