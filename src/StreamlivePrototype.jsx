@@ -4813,11 +4813,6 @@ function ScreenAnalytics({ buyers, persona }) {
 
       </div>
     </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
   );
 }
 
