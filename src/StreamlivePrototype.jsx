@@ -4024,7 +4024,29 @@ function ScreenOrderReview({ params, navigate }) {
   const processAll = () => { setProcessing(true); setTimeout(()=>{ setProcessing(false); setProcessed(true); }, 2200); };
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden", position:"relative" }}>
+
+      {/* ── SUCCESS OVERLAY ── */}
+      {processed && (
+        <div style={{ position:"absolute", inset:0, zIndex:50, background:"rgba(6,6,14,0.85)", backdropFilter:"blur(6px)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div className="pop-in" style={{ background:C.surface, border:"1px solid #10b98155", borderRadius:20, padding:"48px 56px", textAlign:"center", maxWidth:440, width:"90%" }}>
+            <div style={{ fontSize:52, marginBottom:16 }}>🎉</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:26, fontWeight:800, color:C.text, letterSpacing:"-0.5px", marginBottom:8 }}>All done!</div>
+            <div style={{ fontSize:14, color:C.muted, lineHeight:1.6, marginBottom:8 }}>
+              {totalChanges} order{totalChanges!==1?"s":""} processed · <span style={{ color:C.green, fontWeight:700 }}>+${totalAddedGMV}</span> added GMV
+            </div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, marginBottom:32 }}>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:C.green }} />
+              <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>All changes synced to Shopify</span>
+            </div>
+            <div style={{ display:"flex", gap:12, justifyContent:"center" }}>
+              <button onClick={()=>navigate("shows")} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:13, fontWeight:600, padding:"11px 24px", borderRadius:10, cursor:"pointer" }}>← Back to Shows</button>
+              <button onClick={()=>navigate("dashboard")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer" }}>View Dashboard →</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
           <div>
@@ -4096,16 +4118,7 @@ function ScreenOrderReview({ params, navigate }) {
             </div>
           );
         })}
-        {processed && (
-          <div style={{ background:"#0a1e16", border:"1px solid #10b98144", borderRadius:14, padding:"24px", textAlign:"center", marginTop:8 }}>
-            <div style={{ fontSize:20, marginBottom:8 }}>🎉</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text, marginBottom:6 }}>All done!</div>
-            <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:16 }}>
-              <button onClick={()=>navigate("shows")} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 22px", borderRadius:9, cursor:"pointer" }}>← Back to Shows</button>
-              <button onClick={()=>navigate("dashboard")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 22px", borderRadius:9, cursor:"pointer" }}>View Dashboard →</button>
-            </div>
-          </div>
-        )}
+
         {liveBuyers.length===0 && (
           <div style={{ textAlign:"center", padding:"60px 0", color:C.muted }}>
             <div style={{ fontSize:32, marginBottom:12 }}>📋</div>
