@@ -3429,17 +3429,18 @@ function ScreenAcceptInvite({ token }) {
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 export default function StreamlivePrototype() {
-  // Check for invite token in URL — show accept screen before anything else
-  const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
-  if (urlInviteToken) {
-    return <ScreenAcceptInvite token={urlInviteToken} />;
-  }
-
+  // All hooks must come before any conditional returns (Rules of Hooks)
   const [personaId, setPersonaId]   = useState("sarah");
   const [view, setView]             = useState("dashboard");
   const [params, setParams]         = useState({});
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [notifications, setNotifications] = useState(3);
+
+  // Check for invite token in URL — render accept screen instead of app
+  const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
+  if (urlInviteToken) {
+    return <ScreenAcceptInvite token={urlInviteToken} />;
+  }
 
   const persona  = PERSONAS.find(p=>p.id===personaId);
   const buyers   = BUYERS_BY_PERSONA[personaId] || [];
