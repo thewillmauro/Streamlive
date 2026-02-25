@@ -153,6 +153,7 @@ const CAMPAIGNS = [
   { id:"c9", name:"IG: Mystery Box Drop",          type:"ig_dm",  status:"draft", sentAt:null,           recipients:0,   opened:0,  clicked:0,  converted:0,  gmv:0    },
 ];
 
+
 const CHANNEL_META = {
   email:  { label:"Email",               color:"#3b82f6", bg:"#0f1e2e", icon:"✉",  via:"Direct",  note:"",                                                    canBroadcast:true  },
   sms:    { label:"SMS",                 color:"#a78bfa", bg:"#2d1f5e", icon:"💬", via:"Direct",  note:"",                                                    canBroadcast:true  },
@@ -1271,46 +1272,54 @@ function ScreenCampaigns({ navigate, persona }) {
 
 // ─── SCREEN: CAMPAIGN COMPOSER ────────────────────────────────────────────────
 function ScreenComposer({ navigate, persona }) {
-  const [step, setStep]       = useState(1);
-  const [type, setType]       = useState("email");
-  const [segment, setSegment] = useState("all");
-  const [subject, setSubject] = useState("Thursday Night Break starts in 1 hour 🎉");
-  const [body, setBody]       = useState("Hey {{first_name}},\n\nJust a reminder — my Thursday Night Break kicks off at 8PM EST tonight on Whatnot.\n\nLast week's show had some insane pulls. Tonight I'm opening a fresh hobby box live. Don't miss it!\n\n👉 Tap to set a reminder: {{show_link}}\n\nSee you there,\n{{seller_name}}");
-  const [keyword, setKeyword] = useState("BREAK");
-  const [flowType, setFlowType] = useState("broadcast");
-  const [amMsgType, setAmMsgType] = useState("confirmOrderDetails");
+  const [step, setStep]             = useState(1);
+  const [type, setType]             = useState("email");
+  const [segmentId, setSegmentId]   = useState("all");
+  const [subject, setSubject]       = useState("Thursday Night Break starts in 1 hour 🎉");
+  const [body, setBody]             = useState("Hey {{first_name}},\n\nJust a reminder — my Thursday Night Break kicks off at 8PM EST tonight on Whatnot.\n\nLast week's show had some insane pulls. Tonight I'm opening a fresh hobby box live. Don't miss it!\n\n👉 Tap to set a reminder: {{show_link}}\n\nSee you there,\n{{seller_name}}");
+  const [keyword, setKeyword]       = useState("BREAK");
+  const [flowType, setFlowType]     = useState("broadcast");
+  const [amMsgType, setAmMsgType]   = useState("confirmOrderDetails");
+  const [catFilter, setCatFilter]   = useState("All");
+  const [audienceSearch, setAudienceSearch] = useState("");
+  const [showBuyerList, setShowBuyerList]   = useState(false);
 
-  const ch = CHANNEL_META[type] || CHANNEL_META.email;
+  const ch       = CHANNEL_META[type] || CHANNEL_META.email;
+  const segment  = AUDIENCE_SEGMENTS.find(s=>s.id===segmentId) || AUDIENCE_SEGMENTS[0];
 
-  const segmentSizes = { all:847, vip:124, risk:68, new:89, dormant:203 };
-  const igFollowers  = 2840;
-  const ttFollowers  = 5210;
+  const igFollowers = 2840;
+  const ttFollowers = 5210;
+
+  const recipientCount = ()=>{
+    if (type==="ig_dm")  return flowType==="broadcast" ? igFollowers : "—";
+    if (type==="tt_dm")  return flowType==="broadcast" ? ttFollowers : "—";
+    if (type==="wn_dm")  return 1240;
+    if (type==="am_msg") return "order-based";
+    return segment.scaledCount;
+  };
 
   const audienceLabel = ()=>{
     if (type==="ig_dm")  return flowType==="broadcast" ? `${igFollowers.toLocaleString()} opted-in IG followers` : `Anyone who DMs keyword: ${keyword}`;
     if (type==="tt_dm")  return flowType==="broadcast" ? `${ttFollowers.toLocaleString()} TikTok DM subscribers` : `Anyone who DMs keyword: ${keyword}`;
     if (type==="wn_dm")  return "All Whatnot followers (show notification)";
     if (type==="am_msg") return "Buyers with eligible orders";
-    return `${segment==="all"?"Everyone":segment==="vip"?"VIP Buyers":segment==="risk"?"At-Risk Buyers":"New Buyers"} · ${segmentSizes[segment]} recipients`;
+    return `${segment.label} · ${segment.scaledCount.toLocaleString()} recipients`;
   };
 
+  const segCategories = ["All", ...new Set(AUDIENCE_SEGMENTS.map(s=>s.category))];
+  const filteredSegs  = AUDIENCE_SEGMENTS.filter(s=>
+    (catFilter==="All" || s.category===catFilter) &&
+    (audienceSearch==="" || s.label.toLowerCase().includes(audienceSearch.toLowerCase()) || s.description.toLowerCase().includes(audienceSearch.toLowerCase()))
+  );
+
   const channelGroups = [
-    {
-      label: "Direct Outreach",
-      channels: ["email","sms"],
-    },
-    {
-      label: "Social DM via ManyChat",
-      channels: ["ig_dm","tt_dm"],
-    },
-    {
-      label: "Platform Native",
-      channels: ["wn_dm","am_msg"],
-    },
+    { label: "Direct Outreach",       channels: ["email","sms"]    },
+    { label: "Social DM via ManyChat", channels: ["ig_dm","tt_dm"] },
+    { label: "Platform Native",        channels: ["wn_dm","am_msg"]},
   ];
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", maxWidth:900 }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", maxWidth:1000 }}>
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
         <button onClick={()=>navigate("campaigns")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>New Campaign</div>
@@ -1320,7 +1329,7 @@ function ScreenComposer({ navigate, persona }) {
       <div style={{ display:"flex", gap:0, marginBottom:28 }}>
         {[{n:1,l:"Channel & Audience"},{n:2,l:"Message"},{n:3,l:"Review & Send"}].map((s,i)=>(
           <div key={s.n} style={{ display:"flex", alignItems:"center" }}>
-            <button onClick={()=>setStep(s.n)} style={{ display:"flex", alignItems:"center", gap:8, background:"none", border:"none", cursor:"pointer", padding:"0 4px" }}>
+            <button onClick={()=>step>s.n&&setStep(s.n)} style={{ display:"flex", alignItems:"center", gap:8, background:"none", border:"none", cursor:step>s.n?"pointer":"default", padding:"0 4px" }}>
               <div style={{ width:24, height:24, borderRadius:"50%", background:step>=s.n?C.accent:C.surface2, border:`2px solid ${step>=s.n?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:step>=s.n?"#fff":C.subtle }}>
                 {step>s.n?"✓":s.n}
               </div>
@@ -1333,9 +1342,9 @@ function ScreenComposer({ navigate, persona }) {
 
       {/* ── STEP 1: CHANNEL + AUDIENCE ── */}
       {step===1 && (
-        <div className="fade-up" style={{ display:"grid", gridTemplateColumns:"1.1fr 0.9fr", gap:20 }}>
+        <div className="fade-up" style={{ display:"grid", gridTemplateColumns:"340px 1fr", gap:20, alignItems:"start" }}>
 
-          {/* CHANNEL PICKER */}
+          {/* LEFT: CHANNEL PICKER */}
           <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px" }}>
             <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Channel</div>
             {channelGroups.map(group=>(
@@ -1346,26 +1355,68 @@ function ScreenComposer({ navigate, persona }) {
                   const connected = ["email","sms","ig_dm","tt_dm"].includes(t);
                   const isSelected = type===t;
                   return (
-                    <div key={t} onClick={()=>connected&&setType(t)} style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 14px", borderRadius:10, border:`1px solid ${isSelected?c.color+"66":C.border}`, background:isSelected?c.bg:"transparent", cursor:connected?"pointer":"not-allowed", marginBottom:7, opacity:connected?1:0.5 }}>
-                      <div style={{ width:34, height:34, borderRadius:9, background:`${c.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{c.icon}</div>
+                    <div key={t} onClick={()=>connected&&setType(t)} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:10, border:`1px solid ${isSelected?c.color+"66":C.border}`, background:isSelected?c.bg:"transparent", cursor:connected?"pointer":"not-allowed", marginBottom:6, opacity:connected?1:0.5 }}>
+                      <div style={{ width:30, height:30, borderRadius:8, background:`${c.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, flexShrink:0 }}>{c.icon}</div>
                       <div style={{ flex:1 }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                           <span style={{ fontSize:12, fontWeight:700, color:C.text }}>{c.label}</span>
-                          <span style={{ fontSize:9, fontWeight:700, color:c.color, background:c.bg, border:`1px solid ${c.color}33`, padding:"1px 6px", borderRadius:4 }}>{c.via}</span>
+                          <span style={{ fontSize:8, fontWeight:700, color:c.color, background:c.bg, border:`1px solid ${c.color}33`, padding:"1px 5px", borderRadius:4 }}>{c.via}</span>
                         </div>
-                        <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{connected?c.note||"Ready to send":"Not connected · set up in Settings"}</div>
+                        <div style={{ fontSize:10, color:C.muted, marginTop:1, lineHeight:1.4 }}>{connected?c.note||"Ready to send":"Not connected"}</div>
                       </div>
-                      {!connected && <span style={{ fontSize:10, color:C.muted }}>⚙</span>}
-                      {connected && <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${isSelected?c.color:C.border2}`, background:isSelected?c.color:"transparent", flexShrink:0 }} />}
+                      {connected && <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${isSelected?c.color:C.border2}`, background:isSelected?c.color:"transparent", flexShrink:0 }} />}
                     </div>
                   );
                 })}
               </div>
             ))}
+
+            {/* IG/TT flow type */}
+            {(type==="ig_dm"||type==="tt_dm") && (
+              <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:14, marginTop:4 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:10 }}>Flow Type</div>
+                {[
+                  { v:"broadcast", l:"Broadcast",        icon:"📢", d:"Send to all opted-in followers" },
+                  { v:"keyword",   l:"Keyword Trigger",   icon:"🔑", d:"Auto-reply when someone DMs your keyword" },
+                ].map(f=>(
+                  <div key={f.v} onClick={()=>setFlowType(f.v)} style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 10px", borderRadius:9, border:`1px solid ${flowType===f.v?ch.color+"66":C.border}`, background:flowType===f.v?ch.bg:"transparent", cursor:"pointer", marginBottom:6 }}>
+                    <span style={{ fontSize:14 }}>{f.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:11, fontWeight:600, color:C.text }}>{f.l}</div>
+                      <div style={{ fontSize:9, color:C.muted }}>{f.d}</div>
+                    </div>
+                    <div style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${flowType===f.v?ch.color:C.border2}`, background:flowType===f.v?ch.color:"transparent", flexShrink:0 }} />
+                  </div>
+                ))}
+                {flowType==="keyword" && (
+                  <div style={{ marginTop:8 }}>
+                    <div style={{ fontSize:10, color:C.muted, marginBottom:5 }}>Trigger keyword</div>
+                    <input value={keyword} onChange={e=>setKeyword(e.target.value.toUpperCase())} placeholder="e.g. BREAK" style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"8px 12px", color:C.text, fontSize:13, fontWeight:700, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Amazon message type */}
+            {type==="am_msg" && (
+              <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:14, marginTop:4 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:10 }}>Message Type</div>
+                <div style={{ fontSize:9, color:C.muted, marginBottom:8, lineHeight:1.5 }}>Order-related only — no marketing</div>
+                {[
+                  { v:"confirmOrderDetails",  l:"Confirm Order Details"      },
+                  { v:"confirmCustomization", l:"Confirm Customization"      },
+                  { v:"negativeFeedback",     l:"Feedback Removal Request"   },
+                ].map(m=>(
+                  <div key={m.v} onClick={()=>setAmMsgType(m.v)} style={{ padding:"8px 10px", borderRadius:8, border:`1px solid ${amMsgType===m.v?CHANNEL_META.am_msg.color+"66":C.border}`, background:amMsgType===m.v?CHANNEL_META.am_msg.bg:"transparent", cursor:"pointer", marginBottom:6 }}>
+                    <div style={{ fontSize:11, fontWeight:600, color:C.text }}>{m.l}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* AUDIENCE + FLOW TYPE */}
-          <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          {/* RIGHT: AUDIENCE SEGMENT PICKER */}
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
 
             {/* Platform constraint note */}
             {ch.note && (
@@ -1375,70 +1426,141 @@ function ScreenComposer({ navigate, persona }) {
               </div>
             )}
 
-            {/* IG / TT: flow type picker */}
-            {(type==="ig_dm"||type==="tt_dm") && (
+            {/* Whatnot: static audience */}
+            {type==="wn_dm" && (
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Flow Type</div>
-                {[
-                  { v:"broadcast", l:"Broadcast", d:`Send to all opted-in ${type==="ig_dm"?"IG":"TikTok"} followers`, icon:"📢" },
-                  { v:"keyword",   l:"Keyword Trigger", d:`Auto-reply when someone DMs your keyword`, icon:"🔑" },
-                ].map(f=>(
-                  <div key={f.v} onClick={()=>setFlowType(f.v)} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:9, border:`1px solid ${flowType===f.v?ch.color+"66":C.border}`, background:flowType===f.v?ch.bg:"transparent", cursor:"pointer", marginBottom:7 }}>
-                    <span style={{ fontSize:16 }}>{f.icon}</span>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{f.l}</div>
-                      <div style={{ fontSize:10, color:C.muted }}>{f.d}</div>
-                    </div>
-                    <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${flowType===f.v?ch.color:C.border2}`, background:flowType===f.v?ch.color:"transparent" }} />
-                  </div>
-                ))}
-                {flowType==="keyword" && (
-                  <div style={{ marginTop:10 }}>
-                    <div style={{ fontSize:10, color:C.muted, marginBottom:5 }}>Keyword</div>
-                    <input value={keyword} onChange={e=>setKeyword(e.target.value.toUpperCase())} placeholder="e.g. BREAK, SALE, VIP" style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"8px 12px", color:C.text, fontSize:13, fontWeight:700, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
-                    <div style={{ fontSize:10, color:C.muted, marginTop:5 }}>Tell your viewers: "DM me {keyword} to get the link"</div>
-                  </div>
-                )}
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:10 }}>Audience</div>
+                <div style={{ background:CHANNEL_META.wn_dm.bg, border:`1px solid ${CHANNEL_META.wn_dm.color}33`, borderRadius:9, padding:"12px 14px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:CHANNEL_META.wn_dm.color }}>🟡 All Whatnot Followers</div>
+                  <div style={{ fontSize:10, color:C.muted, marginTop:3 }}>Show notification sent to 1,240 followers · platform-controlled, no segmentation</div>
+                </div>
               </div>
             )}
 
-            {/* Amazon message type */}
+            {/* Amazon: order-based */}
             {type==="am_msg" && (
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Message Type</div>
-                <div style={{ fontSize:10, color:C.muted, marginBottom:10, lineHeight:1.6 }}>Amazon restricts messages to order-related types only. No marketing or promotional content allowed.</div>
-                {[
-                  { v:"confirmOrderDetails", l:"Confirm Order Details", d:"Ask buyer to confirm order specifics before shipping" },
-                  { v:"confirmCustomization", l:"Confirm Customization", d:"Confirm custom product details with the buyer" },
-                  { v:"negativeFeedback", l:"Feedback Removal Request", d:"After resolving an issue, ask buyer to update feedback" },
-                ].map(m=>(
-                  <div key={m.v} onClick={()=>setAmMsgType(m.v)} style={{ padding:"9px 12px", borderRadius:9, border:`1px solid ${amMsgType===m.v?CHANNEL_META.am_msg.color+"66":C.border}`, background:amMsgType===m.v?CHANNEL_META.am_msg.bg:"transparent", cursor:"pointer", marginBottom:7 }}>
-                    <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{m.l}</div>
-                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{m.d}</div>
-                  </div>
-                ))}
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:10 }}>Audience</div>
+                <div style={{ background:CHANNEL_META.am_msg.bg, border:`1px solid ${CHANNEL_META.am_msg.color}33`, borderRadius:9, padding:"12px 14px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:CHANNEL_META.am_msg.color }}>📦 Order-Based Recipients</div>
+                  <div style={{ fontSize:10, color:C.muted, marginTop:3 }}>Select a specific order from your Amazon Seller account. Recipients are tied to individual orders, not your CRM.</div>
+                </div>
               </div>
             )}
 
-            {/* Standard Email/SMS/WN audience picker */}
-            {!["ig_dm","tt_dm","am_msg"].includes(type) && (
+            {/* IG/TT broadcast audience */}
+            {(type==="ig_dm"||type==="tt_dm") && flowType==="broadcast" && (
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Audience</div>
-                {type==="wn_dm" ? (
-                  <div style={{ background:CHANNEL_META.wn_dm.bg, border:`1px solid ${CHANNEL_META.wn_dm.color}33`, borderRadius:9, padding:"11px 14px" }}>
-                    <div style={{ fontSize:12, fontWeight:600, color:CHANNEL_META.wn_dm.color }}>All Whatnot Followers</div>
-                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>Show notification sent to 1,240 followers</div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:10 }}>Audience</div>
+                <div style={{ background:ch.bg, border:`1px solid ${ch.color}33`, borderRadius:9, padding:"12px 14px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:ch.color }}>{ch.icon} All Opted-In {type==="ig_dm"?"Instagram":"TikTok"} Followers</div>
+                  <div style={{ fontSize:10, color:C.muted, marginTop:3 }}>{type==="ig_dm"?igFollowers.toLocaleString():ttFollowers.toLocaleString()} subscribers · segmentation available via ManyChat tags</div>
+                </div>
+              </div>
+            )}
+
+            {/* EMAIL + SMS: Full CRM segment picker */}
+            {(type==="email"||type==="sms"||(type==="ig_dm"&&flowType==="keyword")||(type==="tt_dm"&&flowType==="keyword")) && (
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
+                <div style={{ padding:"16px 18px 12px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.text }}>Audience Segment</div>
+                    {segment.count > 0 && (
+                      <button onClick={()=>setShowBuyerList(v=>!v)} style={{ fontSize:10, color:C.accent, background:"none", border:"none", cursor:"pointer" }}>
+                        {showBuyerList?"Hide":"Preview"} buyers →
+                      </button>
+                    )}
                   </div>
-                ) : (
-                  [[" all","Everyone",`${segmentSizes.all} subscribers`],["vip","VIP Buyers",`${segmentSizes.vip} subscribers`],["risk","At-Risk Buyers",`${segmentSizes.risk} subscribers`],["new","New Buyers",`${segmentSizes.new} subscribers`]].map(([v,l,d])=>(
-                    <div key={v} onClick={()=>setSegment(v.trim())} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:9, border:`1px solid ${segment===v.trim()?C.accent+"55":C.border}`, background:segment===v.trim()?"#2d1f5e1a":"transparent", cursor:"pointer", marginBottom:6 }}>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{l}</div>
-                        <div style={{ fontSize:10, color:C.muted }}>{d}</div>
+
+                  {/* Search */}
+                  <input value={audienceSearch} onChange={e=>setAudienceSearch(e.target.value)} placeholder="Search segments…"
+                    style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 12px", color:C.text, fontSize:11, outline:"none", marginBottom:10 }} />
+
+                  {/* Category filter pills */}
+                  <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:12 }}>
+                    {segCategories.map(cat=>(
+                      <button key={cat} onClick={()=>setCatFilter(cat)} style={{ fontSize:9, fontWeight:catFilter===cat?700:400, color:catFilter===cat?"#fff":C.muted, background:catFilter===cat?C.accent:C.surface2, border:`1px solid ${catFilter===cat?C.accent:C.border}`, padding:"3px 10px", borderRadius:5, cursor:"pointer" }}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* SEGMENT LIST */}
+                <div style={{ maxHeight:340, overflowY:"auto" }}>
+                  {filteredSegs.map(seg=>{
+                    const isSelected = segmentId===seg.id;
+                    return (
+                      <div
+                        key={seg.id}
+                        onClick={()=>setSegmentId(seg.id)}
+                        style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 18px", borderLeft:`3px solid ${isSelected?seg.color:"transparent"}`, background:isSelected?`${seg.color}0d`:"transparent", cursor:"pointer", transition:"all .1s" }}
+                      >
+                        <div style={{ width:34, height:34, borderRadius:9, background:isSelected?seg.bg:C.surface2, border:`1px solid ${isSelected?seg.color+"44":C.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
+                          {seg.icon}
+                        </div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:12, fontWeight:isSelected?700:600, color:isSelected?C.text:"#d1d5db" }}>{seg.label}</div>
+                          <div style={{ fontSize:10, color:C.muted, marginTop:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{seg.description}</div>
+                        </div>
+                        <div style={{ textAlign:"right", flexShrink:0 }}>
+                          <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:isSelected?seg.color:C.muted }}>{seg.scaledCount.toLocaleString()}</div>
+                          <div style={{ fontSize:8, color:C.subtle }}>recipients</div>
+                        </div>
                       </div>
-                      <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${segment===v.trim()?C.accent:C.border2}`, background:segment===v.trim()?C.accent:"transparent" }} />
+                    );
+                  })}
+                  {filteredSegs.length===0 && (
+                    <div style={{ padding:"20px 18px", fontSize:11, color:C.muted, textAlign:"center" }}>No segments match "{audienceSearch}"</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* SELECTED SEGMENT SUMMARY + BUYER PREVIEW */}
+            {(type==="email"||type==="sms") && segmentId && (
+              <div style={{ background:segment.bg, border:`1px solid ${segment.color}44`, borderRadius:14, padding:"14px 18px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+                  <div>
+                    <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:3 }}>
+                      <span style={{ fontSize:16 }}>{segment.icon}</span>
+                      <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{segment.label}</span>
                     </div>
-                  ))
+                    <div style={{ fontSize:11, color:C.muted }}>{segment.description}</div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color:segment.color }}>{segment.scaledCount.toLocaleString()}</div>
+                    <div style={{ fontSize:10, color:C.muted }}>recipients</div>
+                  </div>
+                </div>
+
+                {/* Buyer preview strip */}
+                {showBuyerList && segment.buyers.length > 0 && (
+                  <div style={{ borderTop:`1px solid ${segment.color}22`, paddingTop:10, marginTop:4 }}>
+                    <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:7 }}>CRM Sample — {segment.buyers.length} buyer{segment.buyers.length>1?"s":""} in this segment</div>
+                    {segment.buyers.slice(0,5).map(b=>{
+                      const pl = PLATFORMS[b.platform];
+                      const tier = LOYALTY_TIERS.find(t=>t.id===b.loyalty.tier);
+                      return (
+                        <div key={b.id} style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 0", borderBottom:`1px solid ${segment.color}15` }}>
+                          <Avatar initials={b.avatar} color={pl?.color} size={24} />
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:11, fontWeight:600, color:C.text }}>{b.name}</div>
+                            <div style={{ fontSize:9, color:C.muted }}>{b.handle} · {b.orders} orders · ${b.spend.toLocaleString()}</div>
+                          </div>
+                          <div style={{ display:"flex", gap:4, alignItems:"center", flexShrink:0 }}>
+                            {tier && <span style={{ fontSize:9 }}>{tier.icon}</span>}
+                            <PlatformPill code={b.platform} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {segment.buyers.length > 5 && (
+                      <div style={{ fontSize:10, color:C.muted, paddingTop:7, textAlign:"center" }}>
+                        +{(segment.scaledCount - 5).toLocaleString()} more in the full segment
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -1453,55 +1575,42 @@ function ScreenComposer({ navigate, persona }) {
       {/* ── STEP 2: MESSAGE ── */}
       {step===2 && (
         <div className="fade-up">
-
-          {/* IG / TT DM message */}
           {(type==="ig_dm"||type==="tt_dm") && (
-            <div style={{ background:ch.bg, border:`1px solid ${ch.color}33`, borderRadius:12, padding:"12px 16px", marginBottom:16, fontSize:11, color:ch.color, lineHeight:1.6 }}>
-              <strong>ManyChat message rules:</strong> Links aren't clickable inside {type==="ig_dm"?"Instagram":"TikTok"} DMs — send URLs as plain text so recipients can copy them. Max 1000 chars. No images in TT DMs.
+            <div style={{ background:ch.bg, border:`1px solid ${ch.color}33`, borderRadius:12, padding:"11px 16px", marginBottom:14, fontSize:11, color:ch.color, lineHeight:1.6 }}>
+              <strong>ManyChat rules:</strong> Links not clickable in DMs — send as plain text. Max 1000 chars. No images in TT DMs.
             </div>
           )}
-
-          {/* Amazon notice */}
           {type==="am_msg" && (
-            <div style={{ background:CHANNEL_META.am_msg.bg, border:`1px solid ${CHANNEL_META.am_msg.color}33`, borderRadius:12, padding:"12px 16px", marginBottom:16, fontSize:11, color:CHANNEL_META.am_msg.color, lineHeight:1.6 }}>
-              <strong>Amazon policy:</strong> Only factual order-related info allowed. No promotional language, no "please review", no links to external sites, no seller contact details outside Amazon.
+            <div style={{ background:CHANNEL_META.am_msg.bg, border:`1px solid ${CHANNEL_META.am_msg.color}33`, borderRadius:12, padding:"11px 16px", marginBottom:14, fontSize:11, color:CHANNEL_META.am_msg.color, lineHeight:1.6 }}>
+              <strong>Amazon policy:</strong> Factual order-related info only. No promotional language, no external links, no review requests.
             </div>
           )}
-
-          {/* Subject line (email only) */}
           {type==="email" && (
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px", marginBottom:16 }}>
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px", marginBottom:14 }}>
               <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Subject Line</div>
               <input value={subject} onChange={e=>setSubject(e.target.value)} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13, outline:"none" }} />
             </div>
           )}
-
-          {/* Keyword reminder for IG/TT */}
           {(type==="ig_dm"||type==="tt_dm") && flowType==="keyword" && (
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:16, display:"flex", gap:14, alignItems:"center" }}>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Trigger keyword: <span style={{ fontFamily:"'JetBrains Mono',monospace", color:ch.color }}>{keyword}</span></div>
-                <div style={{ fontSize:10, color:C.muted, marginTop:3 }}>Message below auto-sends when someone DMs "{keyword}" to your account</div>
-              </div>
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"12px 18px", marginBottom:14, display:"flex", gap:14, alignItems:"center" }}>
+              <div><span style={{ fontSize:11, fontWeight:700, color:C.text }}>Keyword: </span><span style={{ fontFamily:"'JetBrains Mono',monospace", color:ch.color }}>{keyword}</span></div>
+              <div style={{ fontSize:10, color:C.muted }}>Auto-sends when someone DMs "{keyword}"</div>
             </div>
           )}
-
-          {/* Message body */}
-          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px", marginBottom:16 }}>
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px", marginBottom:14 }}>
             <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>
               {type==="wn_dm"?"Show Notification Text":type==="am_msg"?"Message to Buyer":"Message Body"}
             </div>
             <textarea value={body} onChange={e=>setBody(e.target.value)} rows={9} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13, outline:"none", resize:"vertical", fontFamily:"'DM Sans',sans-serif", lineHeight:1.65 }} />
-            <div style={{ marginTop:8, display:"flex", gap:7, flexWrap:"wrap" }}>
-              {type==="email"   && ["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=><button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:"#a78bfa", background:"#2d1f5e44", border:"1px solid #7c3aed33", padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>)}
-              {type==="sms"     && ["{{first_name}}","{{show_link}}"].map(t=><button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:"#a78bfa", background:"#2d1f5e44", border:"1px solid #7c3aed33", padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>)}
-              {(type==="ig_dm"||type==="tt_dm") && ["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=><button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:ch.color, background:ch.bg, border:`1px solid ${ch.color}33`, padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>)}
-              <div style={{ marginLeft:"auto", fontSize:10, color:body.length>800?"#ef4444":C.muted }}>{body.length}{type==="sms"?"/160":type==="ig_dm"||type==="tt_dm"?"/1000":""}</div>
+            <div style={{ marginTop:8, display:"flex", gap:7, flexWrap:"wrap", alignItems:"center" }}>
+              {["email","sms","ig_dm","tt_dm"].includes(type) && ["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=>(
+                <button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:ch.color, background:ch.bg, border:`1px solid ${ch.color}33`, padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>
+              ))}
+              <div style={{ marginLeft:"auto", fontSize:10, color:body.length>800?"#ef4444":C.muted }}>{body.length}{type==="sms"?"/160":["ig_dm","tt_dm"].includes(type)?"/1000":""}</div>
             </div>
           </div>
-
           <div style={{ display:"flex", gap:10 }}>
-            <button onClick={()=>setStep(1)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
+            <button onClick={()=>setStep(1)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
             <button onClick={()=>setStep(3)} style={{ flex:1, background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>Review Campaign →</button>
           </div>
         </div>
@@ -1513,27 +1622,38 @@ function ScreenComposer({ navigate, persona }) {
           <div style={{ background:ch.bg, border:`1px solid ${ch.color}44`, borderRadius:14, padding:"20px 24px", marginBottom:16 }}>
             <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Campaign Summary</div>
             {[
-              ["Channel", `${ch.icon} ${ch.label}`],
-              ["Via",     ch.via],
+              ["Channel",  `${ch.icon} ${ch.label}`],
+              ["Via",       ch.via],
               ...(type==="ig_dm"||type==="tt_dm" ? [["Flow Type", flowType==="keyword"?`Keyword: ${keyword}`:"Broadcast"]] : []),
               ...(type==="am_msg" ? [["Message Type", amMsgType]] : []),
-              ["Audience", audienceLabel()],
+              ["Audience",  audienceLabel()],
               ...(type==="email" ? [["Subject", subject]] : []),
             ].map(([k,v])=>(
               <div key={k} style={{ display:"flex", gap:14, marginBottom:10, alignItems:"flex-start" }}>
                 <span style={{ fontSize:11, color:C.muted, minWidth:90, flexShrink:0 }}>{k}</span>
-                <span style={{ fontSize:12, color:C.text, lineHeight:1.5 }}>{v}</span>
+                <span style={{ fontSize:12, color:C.text }}>{v}</span>
               </div>
             ))}
             <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:12, marginTop:4 }}>
               <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Message Preview</div>
-              <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65, whiteSpace:"pre-line", maxHeight:100, overflow:"hidden" }}>{body.slice(0,180)}{body.length>180?"…":""}</div>
+              <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65, whiteSpace:"pre-line", maxHeight:80, overflow:"hidden" }}>{body.slice(0,180)}{body.length>180?"…":""}</div>
             </div>
           </div>
+
+          {/* Recipient count badge */}
+          <div style={{ display:"flex", alignItems:"center", gap:12, background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"12px 18px", marginBottom:16 }}>
+            <div style={{ width:36, height:36, borderRadius:9, background:`${segment.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>{segment.icon}</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.text }}>{audienceLabel()}</div>
+              {["email","sms"].includes(type) && <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{segment.description}</div>}
+            </div>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:700, color:segment.color }}>{typeof recipientCount()==="number"?recipientCount().toLocaleString():recipientCount()}</div>
+          </div>
+
           <div style={{ display:"flex", gap:10 }}>
-            <button onClick={()=>setStep(2)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-            <button onClick={()=>{ navigate("campaigns"); }} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
-              {type==="ig_dm"||type==="tt_dm" ? "Send via ManyChat 🚀" : type==="wn_dm" ? "Send Whatnot Notification 🔔" : type==="am_msg" ? "Send Amazon Message 📦" : "Send Campaign 🚀"}
+            <button onClick={()=>setStep(2)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
+            <button onClick={()=>navigate("campaigns")} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
+              {type==="ig_dm"||type==="tt_dm"?"Send via ManyChat 🚀":type==="wn_dm"?"Send Whatnot Notification 🔔":type==="am_msg"?"Send Amazon Message 📦":"Send Campaign 🚀"}
             </button>
           </div>
         </div>
@@ -2816,3 +2936,224 @@ export default function StreamlivePrototype() {
     </>
   );
 }
+// ─── AUDIENCE SEGMENTS (computed from CRM) ────────────────────────────────────
+// Helper: flatten all buyers from all personas, deduplicate by id + enrich
+const ALL_CRM_BUYERS = (() => {
+  const seen = new Set();
+  const all = [];
+  Object.values(BUYERS_BY_PERSONA).forEach(list => {
+    list.forEach(b => {
+      const key = b.email;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const loyalty = LOYALTY_BUYERS[b.id] || { points: 0, tier: "bronze" };
+        const daysAgo = parseInt(b.lastOrder) || (b.lastOrder.includes("d") ? parseInt(b.lastOrder) : 999);
+        all.push({ ...b, loyalty, daysAgo });
+      }
+    });
+  });
+  return all;
+})();
+
+// Segment definitions — each has id, label, icon, color, description, filter fn
+const AUDIENCE_SEGMENTS = [
+  {
+    id: "all",
+    label: "Everyone",
+    icon: "👥",
+    color: "#a78bfa",
+    bg: "#2d1f5e",
+    description: "Your full CRM — all buyers across every platform",
+    filter: () => true,
+    category: "All",
+  },
+  {
+    id: "vip",
+    label: "VIP Buyers",
+    icon: "👑",
+    color: "#f59e0b",
+    bg: "#2e1f0a",
+    description: "Highest-value loyal buyers — top loyalty tier",
+    filter: b => b.status === "vip",
+    category: "Loyalty",
+  },
+  {
+    id: "gold_tier",
+    label: "Gold Tier",
+    icon: "🥇",
+    color: "#d97706",
+    bg: "#261a06",
+    description: "Gold loyalty members — 2,000–4,999 pts",
+    filter: b => b.loyalty.tier === "gold",
+    category: "Loyalty",
+  },
+  {
+    id: "silver_tier",
+    label: "Silver Tier",
+    icon: "🥈",
+    color: "#9ca3af",
+    bg: "#1c2028",
+    description: "Silver loyalty members — 500–1,999 pts",
+    filter: b => b.loyalty.tier === "silver",
+    category: "Loyalty",
+  },
+  {
+    id: "at_risk",
+    label: "At-Risk Buyers",
+    icon: "⚠️",
+    color: "#f59e0b",
+    bg: "#2e1f0a",
+    description: "Buyers who haven't ordered in 28–60 days",
+    filter: b => b.status === "risk",
+    category: "Engagement",
+  },
+  {
+    id: "dormant",
+    label: "Dormant",
+    icon: "💤",
+    color: "#6b7280",
+    bg: "#111118",
+    description: "60+ days since last order — win-back candidates",
+    filter: b => b.status === "dormant",
+    category: "Engagement",
+  },
+  {
+    id: "new_buyers",
+    label: "New Buyers",
+    icon: "✨",
+    color: "#3b82f6",
+    bg: "#0f1e2e",
+    description: "Joined in the last 30 days or first 1–2 orders",
+    filter: b => b.status === "new" || b.orders <= 2,
+    category: "Engagement",
+  },
+  {
+    id: "active",
+    label: "Active Regulars",
+    icon: "🔥",
+    color: "#10b981",
+    bg: "#0a1e16",
+    description: "Bought in the last 14 days — warm and engaged",
+    filter: b => b.status === "active",
+    category: "Engagement",
+  },
+  {
+    id: "high_spend",
+    label: "High Spenders",
+    icon: "💰",
+    color: "#10b981",
+    bg: "#0a1e16",
+    description: "Lifetime spend $1,000 or more",
+    filter: b => b.spend >= 1000,
+    category: "Spend",
+  },
+  {
+    id: "mid_spend",
+    label: "Mid-Tier Spenders",
+    icon: "💵",
+    color: "#6ee7b7",
+    bg: "#0a2016",
+    description: "Lifetime spend $250–$999",
+    filter: b => b.spend >= 250 && b.spend < 1000,
+    category: "Spend",
+  },
+  {
+    id: "platform_wn",
+    label: "Whatnot Buyers",
+    icon: "🟡",
+    color: "#f59e0b",
+    bg: "#2e1f0a",
+    description: "All buyers originating from Whatnot",
+    filter: b => b.platform === "WN",
+    category: "Platform",
+  },
+  {
+    id: "platform_tt",
+    label: "TikTok Buyers",
+    icon: "🎵",
+    color: "#69c9d0",
+    bg: "#0d2828",
+    description: "All buyers originating from TikTok Shop",
+    filter: b => b.platform === "TT",
+    category: "Platform",
+  },
+  {
+    id: "platform_ig",
+    label: "Instagram Buyers",
+    icon: "📸",
+    color: "#e1306c",
+    bg: "#2d1020",
+    description: "All buyers originating from Instagram Live",
+    filter: b => b.platform === "IG",
+    category: "Platform",
+  },
+  {
+    id: "platform_am",
+    label: "Amazon Buyers",
+    icon: "📦",
+    color: "#f97316",
+    bg: "#2e1608",
+    description: "All buyers originating from Amazon Live",
+    filter: b => b.platform === "AM",
+    category: "Platform",
+  },
+  {
+    id: "multi_platform",
+    label: "Multi-Platform",
+    icon: "🌐",
+    color: "#a78bfa",
+    bg: "#2d1f5e",
+    description: "Buyers who have purchased on 2+ platforms",
+    filter: b => b.orders >= 8 && b.spend >= 500,
+    category: "Platform",
+  },
+  {
+    id: "repeat_buyer",
+    label: "Repeat Buyers",
+    icon: "🔁",
+    color: "#34d399",
+    bg: "#0a2016",
+    description: "3 or more orders placed — proven repeat purchasers",
+    filter: b => b.orders >= 3,
+    category: "Behavior",
+  },
+  {
+    id: "big_order",
+    label: "High Order Count",
+    icon: "📈",
+    color: "#60a5fa",
+    bg: "#0f1e2e",
+    description: "Buyers with 10+ orders — your most frequent customers",
+    filter: b => b.orders >= 10,
+    category: "Behavior",
+  },
+  {
+    id: "no_email",
+    label: "Email Only",
+    icon: "✉️",
+    color: "#3b82f6",
+    bg: "#0f1e2e",
+    description: "Buyers with email but no SMS opt-in",
+    filter: b => !!b.email,
+    category: "Contact",
+  },
+  {
+    id: "sms_opted",
+    label: "SMS Opted-In",
+    icon: "💬",
+    color: "#a78bfa",
+    bg: "#2d1f5e",
+    description: "Buyers who have provided a phone number",
+    filter: b => !!b.phone,
+    category: "Contact",
+  },
+];
+
+// Enrich each segment with live count from CRM
+AUDIENCE_SEGMENTS.forEach(seg => {
+  seg.count = ALL_CRM_BUYERS.filter(seg.filter).length;
+  seg.buyers = ALL_CRM_BUYERS.filter(seg.filter);
+  // Scale to full list size (demo data is small; multiply for realistic numbers)
+  seg.scaledCount = Math.round(seg.count * 105 + Math.floor(Math.random() * 20));
+});
+
