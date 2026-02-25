@@ -124,18 +124,18 @@ const PERSONAS = [
     whiteLabel: true,
     whiteLabelDomain: "app.livescale.io",
     managedSellers: [
-      { name:"CardVaultSC",    gmv:48200, plan:"pro",     status:"active" },
-      { name:"SneakerDropTR",  gmv:31400, plan:"growth",  status:"active" },
-      { name:"VintageFindsLV", gmv:22800, plan:"pro",     status:"active" },
-      { name:"KingComics",     gmv:8400,  plan:"starter", status:"active" },
-      { name:"ToyBreaksPDX",   gmv:19200, plan:"growth",  status:"active" },
-      { name:"CoinVaultNYC",   gmv:41000, plan:"pro",     status:"active" },
-      { name:"SportsMemoATL",  gmv:27600, plan:"growth",  status:"active" },
-      { name:"LuxWatchMIA",    gmv:89400, plan:"pro",     status:"active" },
-      { name:"ArtDropLA",      gmv:15800, plan:"growth",  status:"paused" },
-      { name:"TechFlipSEA",    gmv:12400, plan:"starter", status:"active" },
-      { name:"JewelryLiveDFW", gmv:33600, plan:"growth",  status:"active" },
-      { name:"OutdoorDropDEN", gmv:9800,  plan:"starter", status:"active" },
+      { id:"s1",  name:"CardVaultSC",    owner:"Sarah Chen",    avatar:"SC", category:"Trading Cards", plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","TT","AM","IG"], gmv:48200, gmvPrev:41800, buyerCount:847,  showCount:8,  lastShow:"Feb 20", subscriberCount:1204, manager:"tm2", monthlyFee:399, alerts:[{type:"opportunity",text:"VIP segment due for re-engagement campaign"}] },
+      { id:"s2",  name:"SneakerDropTR",  owner:"Tyler Rhodes",  avatar:"TR", category:"Sneakers",      plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","AM"],           gmv:31400, gmvPrev:28900, buyerCount:501,  showCount:6,  lastShow:"Feb 18", subscriberCount:612,  manager:"tm3", monthlyFee:199, alerts:[] },
+      { id:"s3",  name:"VintageFindsLV", owner:"Lisa Park",     avatar:"LP", category:"Vintage",       plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","IG"],           gmv:22800, gmvPrev:24100, buyerCount:388,  showCount:5,  lastShow:"Feb 17", subscriberCount:890,  manager:"tm5", monthlyFee:399, alerts:[{type:"warning",text:"GMV down 5.4% vs last month — review show cadence"}] },
+      { id:"s4",  name:"KingComics",     owner:"Devon King",    avatar:"DK", category:"Comics",        plan:"starter", planColor:"#10b981", status:"active", platforms:["WN"],                 gmv:8400,  gmvPrev:7200,  buyerCount:44,   showCount:2,  lastShow:"Feb 14", subscriberCount:31,   manager:"tm2", monthlyFee:79,  alerts:[{type:"opportunity",text:"Ready to upgrade to Growth — show frequency increasing"}] },
+      { id:"s5",  name:"ToyBreaksPDX",   owner:"Ray Nguyen",    avatar:"RN", category:"Toys",          plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["WN","TT"],           gmv:19200, gmvPrev:17400, buyerCount:312,  showCount:7,  lastShow:"Feb 21", subscriberCount:544,  manager:"tm3", monthlyFee:199, alerts:[] },
+      { id:"s6",  name:"CoinVaultNYC",   owner:"Marco Reyes",   avatar:"MR", category:"Coins",         plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","AM"],           gmv:41000, gmvPrev:38200, buyerCount:620,  showCount:9,  lastShow:"Feb 22", subscriberCount:981,  manager:"tm2", monthlyFee:399, alerts:[] },
+      { id:"s7",  name:"SportsMemoATL",  owner:"Keisha Brown",  avatar:"KB", category:"Sports Mem.",   plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","IG"],           gmv:27600, gmvPrev:29100, buyerCount:445,  showCount:6,  lastShow:"Feb 19", subscriberCount:728,  manager:"tm5", monthlyFee:199, alerts:[{type:"warning",text:"GMV down 5.2% — two cancellations last month"}] },
+      { id:"s8",  name:"LuxWatchMIA",    owner:"Clara Voss",    avatar:"CV", category:"Luxury Watches",plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","IG","AM"],      gmv:89400, gmvPrev:82100, buyerCount:1140, showCount:11, lastShow:"Feb 23", subscriberCount:2104, manager:"tm5", monthlyFee:399, alerts:[{type:"opportunity",text:"Top GMV account — candidate for dedicated account review"}] },
+      { id:"s9",  name:"ArtDropLA",      owner:"Finn Cole",     avatar:"FC", category:"Art Prints",    plan:"growth",  planColor:"#7c3aed", status:"paused", platforms:["IG","TT"],           gmv:15800, gmvPrev:18200, buyerCount:221,  showCount:0,  lastShow:"Jan 28", subscriberCount:390,  manager:"tm3", monthlyFee:199, alerts:[{type:"alert",text:"Account paused 26 days — check in with owner re: reactivation"}] },
+      { id:"s10", name:"TechFlipSEA",    owner:"Aisha Okafor",  avatar:"AO", category:"Electronics",   plan:"starter", planColor:"#10b981", status:"active", platforms:["WN","AM"],           gmv:12400, gmvPrev:10800, buyerCount:178,  showCount:4,  lastShow:"Feb 16", subscriberCount:203,  manager:"tm3", monthlyFee:79,  alerts:[{type:"opportunity",text:"Growing fast — consider Growth plan upgrade"}] },
+      { id:"s11", name:"JewelryLiveDFW", owner:"Sofia Cruz",    avatar:"SC", category:"Jewelry",       plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["WN","TT","IG"],      gmv:33600, gmvPrev:31000, buyerCount:512,  showCount:7,  lastShow:"Feb 20", subscriberCount:844,  manager:"tm2", monthlyFee:199, alerts:[] },
+      { id:"s12", name:"OutdoorDropDEN", owner:"Ben Trujillo",  avatar:"BT", category:"Outdoors",      plan:"starter", planColor:"#10b981", status:"active", platforms:["WN"],                 gmv:9800,  gmvPrev:9200,  buyerCount:134,  showCount:3,  lastShow:"Feb 13", subscriberCount:167,  manager:"tm6", monthlyFee:79,  alerts:[] },
     ],
   },
 ];
@@ -362,6 +362,29 @@ const PLAN_FEATURES = {
   pro:        ["dashboard","analytics","buyers","shows","production","catalog","campaigns","subscribers","loyalty","settings"],
   enterprise: ["dashboard","analytics","buyers","shows","production","catalog","campaigns","subscribers","loyalty","settings"],
 };
+
+// ─── ENTERPRISE TEAM ──────────────────────────────────────────────────────────
+const ENTERPRISE_TEAM = [
+  { id:"tm1", name:"Mia Torres",   role:"Owner",   email:"mia@livescale.io",    avatar:"MT", color:"#a78bfa", lastActive:"Online now",  assignedSellers:["all"],                                          permissions:["all"] },
+  { id:"tm2", name:"Jake Chen",    role:"Manager", email:"jake@livescale.io",   avatar:"JC", color:"#7c3aed", lastActive:"2h ago",       assignedSellers:["s1","s4","s6","s11"],                           permissions:["view","edit","campaigns","buyers","shows"] },
+  { id:"tm3", name:"Priya Singh",  role:"Manager", email:"priya@livescale.io",  avatar:"PS", color:"#10b981", lastActive:"1h ago",       assignedSellers:["s2","s5","s9","s10"],                           permissions:["view","edit","campaigns","buyers","shows"] },
+  { id:"tm4", name:"Marcus Lee",   role:"Analyst", email:"marcus@livescale.io", avatar:"ML", color:"#f59e0b", lastActive:"4h ago",       assignedSellers:["all"],                                          permissions:["view","analytics"] },
+  { id:"tm5", name:"Devon Walsh",  role:"Manager", email:"devon@livescale.io",  avatar:"DW", color:"#ec4899", lastActive:"30m ago",      assignedSellers:["s3","s7","s8"],                                 permissions:["view","edit","campaigns","buyers","shows"] },
+  { id:"tm6", name:"Amy Torres",   role:"Support", email:"amy@livescale.io",    avatar:"AT", color:"#3b82f6", lastActive:"Yesterday",    assignedSellers:["s1","s2","s3","s4","s5","s6"],                  permissions:["view","buyers"] },
+  { id:"tm7", name:"Chris Park",   role:"Support", email:"chris@livescale.io",  avatar:"CP", color:"#f43f5e", lastActive:"3h ago",       assignedSellers:["s7","s8","s9","s10","s11","s12"],               permissions:["view","buyers"] },
+  { id:"tm8", name:"Sam Rivera",   role:"Analyst", email:"sam@livescale.io",    avatar:"SR", color:"#a78bfa", lastActive:"1d ago",       assignedSellers:["all"],                                          permissions:["view","analytics"] },
+];
+
+// ─── ENTERPRISE NAV ───────────────────────────────────────────────────────────
+const ENTERPRISE_NAV = [
+  { id:"network",     label:"Network",     icon:"⬡",  desc:"Agency overview" },
+  { id:"sellers",     label:"Sellers",     icon:"◉",  desc:"Manage accounts" },
+  { id:"net-analytics",label:"Analytics",  icon:"◑",  desc:"Cross-network" },
+  { id:"team",        label:"Team",        icon:"◈",  desc:"Members & roles" },
+  { id:"billing",     label:"Billing",     icon:"◆",  desc:"Plans & invoices" },
+  { id:"white-label", label:"White Label", icon:"✦",  desc:"Branding & domain" },
+  { id:"settings",    label:"Settings",    icon:"◎",  desc:"Account settings" },
+];
 
 // Upgrade info shown on the locked screen
 const UPGRADE_WALLS = {
@@ -5939,6 +5962,1111 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
 }
 
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENTERPRISE SCREENS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── ENTERPRISE: NETWORK OVERVIEW ─────────────────────────────────────────────
+function ScreenNetwork({ persona, navigate }) {
+  const sellers   = persona.managedSellers;
+  const networkGMV   = sellers.reduce((a,s)=>a+s.gmv, 0);
+  const prevGMV      = sellers.reduce((a,s)=>a+s.gmvPrev, 0);
+  const gmvDelta     = Math.round((networkGMV-prevGMV)/prevGMV*100);
+  const activeSellers = sellers.filter(s=>s.status==="active").length;
+  const totalBuyers  = sellers.reduce((a,s)=>a+s.buyerCount, 0);
+  const totalSubs    = sellers.reduce((a,s)=>a+s.subscriberCount, 0);
+  const allAlerts    = sellers.flatMap(s=>s.alerts.map(a=>({...a, seller:s.name, sellerId:s.id})));
+  const topSellers   = [...sellers].filter(s=>s.status==="active").sort((a,b)=>b.gmv-a.gmv).slice(0,5);
+
+  const planBreakdown = sellers.reduce((acc,s)=>{ acc[s.plan]=(acc[s.plan]||0)+1; return acc; },{});
+  const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b" };
+
+  // Mini bar chart data — simulate 8-week trend
+  const weeklyData = [28400,31200,29800,34100,37200,35800,39400,networkGMV/4];
+
+  return (
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
+        <div>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>
+              Good evening, {persona.name.split(" ")[0]} 👋
+            </div>
+            <span style={{ fontSize:9, fontWeight:800, color:"#a78bfa", background:"#a78bfa18", border:"1px solid #a78bfa44", padding:"3px 10px", borderRadius:99, textTransform:"uppercase", letterSpacing:"0.08em" }}>Enterprise</span>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:12, color:C.muted }}>
+            <span>{persona.shop}</span>
+            <span style={{ color:C.subtle }}>·</span>
+            <span style={{ color:"#10b981", fontWeight:600 }}>🌐 {persona.whiteLabelDomain}</span>
+            <span style={{ color:C.subtle }}>·</span>
+            <span>{persona.teamSize} team members</span>
+          </div>
+        </div>
+        <button onClick={()=>navigate("sellers")} className="cta-btn"
+          style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
+          Manage Sellers →
+        </button>
+      </div>
+
+      {/* Network KPIs */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+        {[
+          { label:"Network GMV (30d)",  value:`$${(networkGMV/1000).toFixed(0)}k`, sub:`${gmvDelta>=0?"+":""}${gmvDelta}% vs prev month`, color:"#a78bfa", up:gmvDelta>=0 },
+          { label:"Active Sellers",     value:activeSellers,                         sub:`${sellers.length-activeSellers} paused`,            color:"#10b981", up:true },
+          { label:"Network Buyers",     value:totalBuyers.toLocaleString(),           sub:"across all accounts",                               color:"#7c3aed", up:true },
+          { label:"Opt-in Subscribers", value:totalSubs.toLocaleString(),             sub:"across all opt-in pages",                           color:"#f59e0b", up:true },
+        ].map(k=>(
+          <div key={k.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderTop:`2px solid ${k.color}`, borderRadius:12, padding:"16px 18px" }}>
+            <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700, marginBottom:8 }}>{k.label}</div>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:26, fontWeight:700, color:C.text, lineHeight:1, marginBottom:5 }}>{k.value}</div>
+            <div style={{ fontSize:10, color:k.up?"#10b981":C.amber }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Main grid */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16, marginBottom:16 }}>
+        {/* Left: GMV trend + top sellers */}
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          {/* Trend chart */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+              <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Network GMV — 8 Week Trend</span>
+              <span style={{ fontSize:10, color:"#10b981", fontWeight:600 }}>+{gmvDelta}% MTD</span>
+            </div>
+            <svg width="100%" height="80" viewBox="0 0 400 80" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="ngmv" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.3"/>
+                  <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.02"/>
+                </linearGradient>
+              </defs>
+              {(() => {
+                const mx=Math.max(...weeklyData), mn=Math.min(...weeklyData)*0.9;
+                const pts=weeklyData.map((v,i)=>[i*(400/7), 80-((v-mn)/(mx-mn))*70]);
+                const pathD="M"+pts.map(p=>p.join(",")).join(" L");
+                const areaD=pathD+` L${pts[pts.length-1][0]},80 L0,80 Z`;
+                return (<>
+                  <path d={areaD} fill="url(#ngmv)"/>
+                  <path d={pathD} fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinejoin="round"/>
+                  {pts.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3" fill="#a78bfa"/>)}
+                </>);
+              })()}
+            </svg>
+            <div style={{ display:"flex", justifyContent:"space-between", marginTop:8 }}>
+              {["W1","W2","W3","W4","W5","W6","W7","W8"].map(w=>(
+                <span key={w} style={{ fontSize:9, color:C.subtle }}>{w}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Top sellers table */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+              <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Top Performers This Month</span>
+              <button onClick={()=>navigate("sellers")} style={{ fontSize:11, color:"#a78bfa", background:"none", border:"none", cursor:"pointer", fontWeight:600 }}>View all →</button>
+            </div>
+            {topSellers.map((s,i)=>{
+              const delta=Math.round((s.gmv-s.gmvPrev)/s.gmvPrev*100);
+              const pct=Math.round(s.gmv/networkGMV*100);
+              return (
+                <div key={s.id} onClick={()=>navigate("seller-detail",{sellerId:s.id})}
+                  style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:i<topSellers.length-1?`1px solid ${C.border}`:"none", cursor:"pointer" }}>
+                  <div style={{ width:22, height:22, borderRadius:6, background:`${s.planColor}18`, border:`1px solid ${s.planColor}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:s.planColor, flexShrink:0 }}>
+                    {i+1}
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:3 }}>{s.name}</div>
+                    <div style={{ height:3, background:C.border2, borderRadius:2 }}>
+                      <div style={{ width:`${pct}%`, height:"100%", background:s.planColor, borderRadius:2 }}/>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:"right", flexShrink:0 }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>${(s.gmv/1000).toFixed(1)}k</div>
+                    <div style={{ fontSize:10, color:delta>=0?"#10b981":"#ef4444", fontWeight:600 }}>{delta>=0?"+":""}{delta}%</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right: Alerts + plan breakdown + plan fees */}
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          {/* Alerts */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+              <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Network Alerts</span>
+              <span style={{ fontSize:10, background:"#ef444420", color:"#ef4444", border:"1px solid #ef444433", padding:"1px 8px", borderRadius:99, fontWeight:700 }}>{allAlerts.length}</span>
+            </div>
+            {allAlerts.length===0 ? (
+              <div style={{ fontSize:12, color:C.subtle, textAlign:"center", padding:"12px 0" }}>All clear ✓</div>
+            ) : allAlerts.map((a,i)=>{
+              const col = a.type==="alert"?"#ef4444":a.type==="warning"?"#f59e0b":"#10b981";
+              const icon = a.type==="alert"?"⚠":a.type==="warning"?"▲":"↑";
+              return (
+                <div key={i} onClick={()=>navigate("seller-detail",{sellerId:a.sellerId})}
+                  style={{ display:"flex", gap:10, padding:"9px 0", borderBottom:i<allAlerts.length-1?`1px solid ${C.border}`:"none", cursor:"pointer" }}>
+                  <div style={{ width:20, height:20, borderRadius:5, background:`${col}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, color:col, flexShrink:0, marginTop:1 }}>{icon}</div>
+                  <div>
+                    <div style={{ fontSize:10, fontWeight:700, color:col, marginBottom:2 }}>{a.seller}</div>
+                    <div style={{ fontSize:11, color:C.muted, lineHeight:1.5 }}>{a.text}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Plan breakdown */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Network by Plan</div>
+            {Object.entries(planBreakdown).map(([plan,count])=>{
+              const col=planColors[plan]||"#a78bfa";
+              const gmvForPlan=sellers.filter(s=>s.plan===plan).reduce((a,s)=>a+s.gmv,0);
+              return (
+                <div key={plan} style={{ marginBottom:12 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                    <span style={{ fontSize:10, fontWeight:700, color:col, textTransform:"uppercase" }}>{plan} · {count} sellers</span>
+                    <span style={{ fontSize:10, color:C.muted }}>${(gmvForPlan/1000).toFixed(0)}k GMV</span>
+                  </div>
+                  <div style={{ height:4, background:C.border2, borderRadius:2 }}>
+                    <div style={{ width:`${(count/sellers.length)*100}%`, height:"100%", background:col, borderRadius:2 }}/>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Monthly network fee */}
+          <div style={{ background:"linear-gradient(135deg,#1a0f2e,#12102a)", border:"1px solid #a78bfa33", borderRadius:14, padding:"16px 18px" }}>
+            <div style={{ fontSize:10, fontWeight:800, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Agency Billing</div>
+            {[
+              { label:"Network plan fee",   value:"$999/mo" },
+              { label:"Managed seller fees", value:`$${sellers.reduce((a,s)=>a+s.monthlyFee,0).toLocaleString()}/mo` },
+              { label:"Total monthly",       value:`$${(999+sellers.reduce((a,s)=>a+s.monthlyFee,0)).toLocaleString()}/mo`, bold:true },
+            ].map(r=>(
+              <div key={r.label} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderBottom:`1px solid ${C.border}` }}>
+                <span style={{ fontSize:11, color:C.muted }}>{r.label}</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:r.bold?700:400, color:r.bold?"#a78bfa":C.text }}>{r.value}</span>
+              </div>
+            ))}
+            <button onClick={()=>navigate("billing")} style={{ width:"100%", marginTop:12, background:"#a78bfa18", border:"1px solid #a78bfa33", color:"#a78bfa", fontSize:11, fontWeight:700, padding:"8px", borderRadius:8, cursor:"pointer" }}>
+              View Invoices →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ENTERPRISE: SELLERS LIST ─────────────────────────────────────────────────
+function ScreenSellers({ persona, navigate }) {
+  const [search, setSearch]   = React.useState("");
+  const [filter, setFilter]   = React.useState("all"); // all | active | paused | alert
+  const sellers = persona.managedSellers;
+  const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b" };
+
+  const filtered = sellers.filter(s=>{
+    const q=search.toLowerCase();
+    const matchSearch = !q || s.name.toLowerCase().includes(q) || s.owner.toLowerCase().includes(q) || s.category.toLowerCase().includes(q);
+    const matchFilter = filter==="all" || (filter==="active"&&s.status==="active") || (filter==="paused"&&s.status==="paused") || (filter==="alert"&&s.alerts.length>0);
+    return matchSearch && matchFilter;
+  });
+
+  const alertCount = sellers.filter(s=>s.alerts.length>0).length;
+
+  return (
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
+        <div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Seller Accounts</div>
+          <div style={{ fontSize:12, color:C.muted }}>{sellers.length} managed accounts · {sellers.filter(s=>s.status==="active").length} active</div>
+        </div>
+        <div style={{ display:"flex", gap:8 }}>
+          <div style={{ display:"flex", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, overflow:"hidden" }}>
+            {["all","active","paused","alert"].map(f=>(
+              <button key={f} onClick={()=>setFilter(f)}
+                style={{ padding:"7px 14px", background:filter===f?"#a78bfa18":"transparent", border:"none", color:filter===f?"#a78bfa":C.muted, fontSize:11, fontWeight:filter===f?700:400, cursor:"pointer", position:"relative" }}>
+                {f==="alert"?`Alerts (${alertCount})`:f.charAt(0).toUpperCase()+f.slice(1)}
+              </button>
+            ))}
+          </div>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search sellers…"
+            style={{ background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"7px 14px", color:C.text, fontSize:12, outline:"none", width:180 }}/>
+        </div>
+      </div>
+
+      {/* Seller cards */}
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        {filtered.map(s=>{
+          const col = planColors[s.plan]||"#a78bfa";
+          const delta = Math.round((s.gmv-s.gmvPrev)/s.gmvPrev*100);
+          const manager = ENTERPRISE_TEAM.find(t=>t.id===s.manager);
+          return (
+            <div key={s.id} onClick={()=>navigate("seller-detail",{sellerId:s.id})}
+              style={{ background:C.surface, border:`1px solid ${s.alerts.length>0?C.amber+"44":C.border}`, borderRadius:14, padding:"16px 20px",
+                cursor:"pointer", transition:"border-color .15s", display:"flex", alignItems:"center", gap:16 }}>
+              {/* Avatar + status */}
+              <div style={{ position:"relative", flexShrink:0 }}>
+                <div style={{ width:40, height:40, borderRadius:11, background:`${col}18`, border:`1px solid ${col}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:col }}>
+                  {s.avatar}
+                </div>
+                <div style={{ position:"absolute", bottom:-2, right:-2, width:10, height:10, borderRadius:"50%", background:s.status==="active"?"#10b981":"#374151", border:"2px solid #06060e" }}/>
+              </div>
+
+              {/* Name + meta */}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                  <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{s.name}</span>
+                  <span style={{ fontSize:9, fontWeight:700, color:col, background:`${col}18`, border:`1px solid ${col}33`, padding:"1px 7px", borderRadius:4, textTransform:"uppercase" }}>{s.plan}</span>
+                  {s.status==="paused" && <span style={{ fontSize:9, fontWeight:700, color:"#6b7280", background:"#1f1f35", border:"1px solid #374151", padding:"1px 7px", borderRadius:4 }}>Paused</span>}
+                </div>
+                <div style={{ fontSize:11, color:C.muted }}>{s.owner} · {s.category}</div>
+              </div>
+
+              {/* Platforms */}
+              <div style={{ display:"flex", gap:4, flexShrink:0 }}>
+                {s.platforms.map(p=>{
+                  const pc={WN:"#7c3aed",TT:"#f43f5e",AM:"#f59e0b",IG:"#ec4899"}[p]||C.muted;
+                  return <span key={p} style={{ fontSize:9, fontWeight:700, color:pc, background:`${pc}12`, border:`1px solid ${pc}33`, padding:"1px 6px", borderRadius:4 }}>{p}</span>;
+                })}
+              </div>
+
+              {/* Metrics */}
+              <div style={{ display:"flex", gap:20, flexShrink:0 }}>
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>${(s.gmv/1000).toFixed(1)}k</div>
+                  <div style={{ fontSize:9, color:delta>=0?"#10b981":"#ef4444", fontWeight:600 }}>{delta>=0?"+":""}{delta}%</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>GMV 30d</div>
+                </div>
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>{s.buyerCount.toLocaleString()}</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>buyers</div>
+                </div>
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>{s.showCount}</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>shows</div>
+                </div>
+              </div>
+
+              {/* Manager */}
+              <div style={{ display:"flex", alignItems:"center", gap:7, flexShrink:0 }}>
+                <div style={{ width:26, height:26, borderRadius:7, background:`${manager?.color||C.accent}22`, border:`1px solid ${manager?.color||C.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:manager?.color||C.accent }}>
+                  {manager?.avatar||"?"}
+                </div>
+                <div>
+                  <div style={{ fontSize:10, fontWeight:600, color:C.text }}>{manager?.name.split(" ")[0]||"—"}</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>{manager?.role||""}</div>
+                </div>
+              </div>
+
+              {/* Alerts badge */}
+              {s.alerts.length>0 && (
+                <div style={{ width:18, height:18, borderRadius:"50%", background:"#f59e0b22", border:"1px solid #f59e0b44", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, color:"#f59e0b", fontWeight:700, flexShrink:0 }}>
+                  {s.alerts.length}
+                </div>
+              )}
+
+              <span style={{ fontSize:14, color:C.subtle, flexShrink:0 }}>›</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── ENTERPRISE: SELLER DETAIL ────────────────────────────────────────────────
+function ScreenSellerDetail({ persona, params, navigate }) {
+  const [activeTab, setActiveTab] = React.useState("overview");
+  const s = persona.managedSellers.find(sel=>sel.id===params.sellerId) || persona.managedSellers[0];
+  if (!s) return null;
+  const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b" };
+  const col = planColors[s.plan]||"#a78bfa";
+  const delta = Math.round((s.gmv-s.gmvPrev)/s.gmvPrev*100);
+  const manager = ENTERPRISE_TEAM.find(t=>t.id===s.manager);
+  const planPrices = { starter:79, growth:199, pro:399 };
+  const nextPlan   = { starter:"growth", growth:"pro" };
+  const nextPrice  = { starter:199, growth:399 };
+  const nextColor  = { starter:"#7c3aed", growth:"#f59e0b" };
+
+  // Simulate buyer breakdown
+  const vipCount    = Math.round(s.buyerCount * 0.08);
+  const activeCount = Math.round(s.buyerCount * 0.52);
+  const atRiskCount = Math.round(s.buyerCount * 0.18);
+  const dormantCount= s.buyerCount - vipCount - activeCount - atRiskCount;
+
+  // Simulate show performance
+  const recentShows = Array.from({length:Math.min(s.showCount,4)},(_,i)=>({
+    title:`Show #${s.showCount-i}`,
+    date:`Feb ${22-i*3}, 2025`,
+    platform: s.platforms[i%s.platforms.length],
+    gmv: Math.round(s.gmv/s.showCount * (0.8+Math.random()*0.4)),
+    buyers: Math.round(s.buyerCount*0.04*(0.8+Math.random()*0.4)),
+  }));
+
+  const tabs = ["overview","buyers","shows","campaigns"];
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+      {/* Sub-header */}
+      <div style={{ background:"#050508", borderBottom:`1px solid ${C.border}`, padding:"14px 28px", display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
+        <button onClick={()=>navigate("sellers")}
+          style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", gap:4 }}>
+          ← Sellers
+        </button>
+        <span style={{ color:C.border }}>/</span>
+        <div style={{ width:28, height:28, borderRadius:8, background:`${col}18`, border:`1px solid ${col}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:800, color:col }}>
+          {s.avatar}
+        </div>
+        <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{s.name}</span>
+        <span style={{ fontSize:9, fontWeight:700, color:col, background:`${col}18`, border:`1px solid ${col}33`, padding:"2px 8px", borderRadius:4, textTransform:"uppercase" }}>{s.plan}</span>
+        <span style={{ fontSize:10, color:s.status==="active"?"#10b981":"#6b7280", fontWeight:600 }}>● {s.status}</span>
+        <div style={{ flex:1 }}/>
+        {/* Manager chip */}
+        {manager && (
+          <div style={{ display:"flex", alignItems:"center", gap:7, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"5px 10px" }}>
+            <div style={{ width:20, height:20, borderRadius:5, background:`${manager.color}22`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:manager.color }}>
+              {manager.avatar}
+            </div>
+            <span style={{ fontSize:11, color:C.muted }}>{manager.name}</span>
+            <span style={{ fontSize:9, color:C.subtle }}>{manager.role}</span>
+          </div>
+        )}
+        {s.status==="paused" ? (
+          <button style={{ background:"#10b98118", border:"1px solid #10b98133", color:"#10b981", fontSize:11, fontWeight:700, padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>
+            Reactivate
+          </button>
+        ) : (
+          <button style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:11, fontWeight:700, padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>
+            Pause Account
+          </button>
+        )}
+        <button style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px 16px", borderRadius:8, cursor:"pointer" }}>
+          Enter Account →
+        </button>
+      </div>
+
+      {/* Scrollable body */}
+      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
+        {/* KPI row */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+          {[
+            { label:"GMV (30d)", value:`$${(s.gmv/1000).toFixed(1)}k`, sub:`${delta>=0?"+":""}${delta}% vs prev`, color:col, up:delta>=0 },
+            { label:"Buyers",    value:s.buyerCount.toLocaleString(),     sub:`${vipCount} VIP · ${atRiskCount} at-risk`, color:"#7c3aed", up:true },
+            { label:"Shows (30d)",value:s.showCount,                       sub:`Last: ${s.lastShow}`,              color:"#10b981", up:true },
+            { label:"Subscribers",value:s.subscriberCount.toLocaleString(), sub:"opt-in list",                    color:"#f59e0b", up:true },
+          ].map(k=>(
+            <div key={k.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderTop:`2px solid ${k.color}`, borderRadius:12, padding:"14px 16px" }}>
+              <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700, marginBottom:6 }}>{k.label}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color:C.text, lineHeight:1, marginBottom:4 }}>{k.value}</div>
+              <div style={{ fontSize:10, color:k.up?"#10b981":C.amber }}>{k.sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tab bar */}
+        <div style={{ display:"flex", gap:4, marginBottom:18, borderBottom:`1px solid ${C.border}`, paddingBottom:0 }}>
+          {tabs.map(t=>(
+            <button key={t} onClick={()=>setActiveTab(t)}
+              style={{ padding:"8px 16px", background:"none", border:"none", borderBottom:`2px solid ${activeTab===t?col:"transparent"}`, color:activeTab===t?C.text:C.muted, fontSize:12, fontWeight:activeTab===t?700:400, cursor:"pointer", textTransform:"capitalize", marginBottom:-1 }}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {activeTab==="overview" && (
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+            {/* Alerts */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Alerts & Opportunities</div>
+              {s.alerts.length===0 ? (
+                <div style={{ fontSize:12, color:C.subtle, padding:"8px 0" }}>No active alerts ✓</div>
+              ) : s.alerts.map((a,i)=>{
+                const ac=a.type==="alert"?"#ef4444":a.type==="warning"?"#f59e0b":"#10b981";
+                return (
+                  <div key={i} style={{ display:"flex", gap:10, padding:"10px 12px", background:`${ac}08`, border:`1px solid ${ac}22`, borderRadius:9, marginBottom:8 }}>
+                    <div style={{ width:20,height:20,borderRadius:5,background:`${ac}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:ac,flexShrink:0 }}>
+                      {a.type==="alert"?"⚠":a.type==="warning"?"▲":"↑"}
+                    </div>
+                    <div style={{ fontSize:11, color:C.muted, lineHeight:1.6 }}>{a.text}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Buyer health */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Buyer Health</div>
+              {[
+                { label:"VIP",     count:vipCount,     color:"#7c3aed", pct:Math.round(vipCount/s.buyerCount*100) },
+                { label:"Active",  count:activeCount,  color:"#10b981", pct:Math.round(activeCount/s.buyerCount*100) },
+                { label:"At-Risk", count:atRiskCount,  color:"#f59e0b", pct:Math.round(atRiskCount/s.buyerCount*100) },
+                { label:"Dormant", count:dormantCount, color:"#374151", pct:Math.round(dormantCount/s.buyerCount*100) },
+              ].map(b=>(
+                <div key={b.label} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+                  <span style={{ width:52, fontSize:10, fontWeight:700, color:b.color }}>{b.label}</span>
+                  <div style={{ flex:1, height:4, background:C.border2, borderRadius:2 }}>
+                    <div style={{ width:`${b.pct}%`, height:"100%", background:b.color, borderRadius:2 }}/>
+                  </div>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.text, minWidth:24, textAlign:"right" }}>{b.count}</span>
+                  <span style={{ fontSize:9, color:C.subtle, minWidth:28 }}>{b.pct}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Plan info */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Subscription</div>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                <span style={{ fontSize:11, color:C.muted }}>Current plan</span>
+                <span style={{ fontSize:11, fontWeight:700, color:col, textTransform:"capitalize" }}>{s.plan}</span>
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                <span style={{ fontSize:11, color:C.muted }}>Monthly fee</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.text }}>${planPrices[s.plan]}/mo</span>
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
+                <span style={{ fontSize:11, color:C.muted }}>Platforms</span>
+                <div style={{ display:"flex", gap:4 }}>
+                  {s.platforms.map(p=>{
+                    const pc={WN:"#7c3aed",TT:"#f43f5e",AM:"#f59e0b",IG:"#ec4899"}[p]||C.muted;
+                    return <span key={p} style={{ fontSize:9, fontWeight:700, color:pc, background:`${pc}12`, border:`1px solid ${pc}33`, padding:"1px 5px", borderRadius:4 }}>{p}</span>;
+                  })}
+                </div>
+              </div>
+              {nextPlan[s.plan] && (
+                <div style={{ background:`${nextColor[s.plan]}08`, border:`1px solid ${nextColor[s.plan]}33`, borderRadius:9, padding:"10px 12px" }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:nextColor[s.plan], marginBottom:4 }}>
+                    Upgrade to {nextPlan[s.plan].charAt(0).toUpperCase()+nextPlan[s.plan].slice(1)} — +${nextPrice[s.plan]-planPrices[s.plan]}/mo
+                  </div>
+                  <div style={{ fontSize:10, color:C.muted }}>
+                    {nextPlan[s.plan]==="growth"?"Unlocks Analytics, Loyalty, AI Insights, SMS campaigns":"Unlocks Production Suite, camera & gimbal control"}
+                  </div>
+                  <button style={{ marginTop:8, background:`linear-gradient(135deg,${nextColor[s.plan]},${nextColor[s.plan]}aa)`, border:"none", color:"#fff", fontSize:10, fontWeight:700, padding:"6px 14px", borderRadius:6, cursor:"pointer" }}>
+                    Upgrade This Seller →
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Contact */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Account Details</div>
+              {[
+                { label:"Owner",    value:s.owner },
+                { label:"Category", value:s.category },
+                { label:"Joined",   value:"Nov 2024" },
+                { label:"Manager",  value:manager?.name||"Unassigned" },
+              ].map(r=>(
+                <div key={r.label} style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:`1px solid ${C.border}` }}>
+                  <span style={{ fontSize:11, color:C.muted }}>{r.label}</span>
+                  <span style={{ fontSize:11, fontWeight:600, color:C.text }}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab==="shows" && (
+          <div>
+            {recentShows.length===0 ? (
+              <div style={{ textAlign:"center", padding:"40px", color:C.muted, fontSize:13 }}>No shows recorded yet</div>
+            ) : recentShows.map((show,i)=>{
+              const pc={WN:"#7c3aed",TT:"#f43f5e",AM:"#f59e0b",IG:"#ec4899"}[show.platform]||C.muted;
+              return (
+                <div key={i} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
+                  <div style={{ width:36, height:36, borderRadius:9, background:`${pc}18`, border:`1px solid ${pc}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, flexShrink:0 }}>◈</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{show.title}</div>
+                    <div style={{ fontSize:11, color:C.muted }}>{show.date} · <span style={{ color:pc }}>{show.platform}</span></div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.text }}>${show.gmv.toLocaleString()}</div>
+                    <div style={{ fontSize:10, color:C.muted }}>{show.buyers} buyers</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {activeTab==="buyers" && (
+          <div>
+            {[
+              { label:"VIP Buyers",     count:vipCount,     color:"#7c3aed", desc:"Lifetime spend > $1k, loyal repeat buyers" },
+              { label:"Active",          count:activeCount,  color:"#10b981", desc:"Purchased in last 30 days" },
+              { label:"At-Risk",         count:atRiskCount,  color:"#f59e0b", desc:"28–60 days since last order — needs re-engagement" },
+              { label:"Dormant",         count:dormantCount, color:"#374151", desc:"60+ days inactive" },
+            ].map(seg=>(
+              <div key={seg.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
+                <div style={{ width:40, height:40, borderRadius:11, background:`${seg.color}18`, border:`1px solid ${seg.color}33`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:seg.color }}>{seg.count}</span>
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:seg.color }}>{seg.label}</div>
+                  <div style={{ fontSize:11, color:C.muted }}>{seg.desc}</div>
+                </div>
+                <div style={{ fontSize:12, color:C.subtle }}>{Math.round(seg.count/s.buyerCount*100)}% of list</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab==="campaigns" && (
+          <div>
+            {[
+              { name:"Re-engagement — at-risk buyers",    type:"email",  status:"sent",  sent:atRiskCount, opened:62, converted:18, gmv:Math.round(atRiskCount*240) },
+              { name:"VIP early access notice",           type:"sms",    status:"sent",  sent:vipCount,    opened:91, converted:68, gmv:Math.round(vipCount*890) },
+              { name:"New inventory drop",                type:"ig_dm",  status:"draft", sent:0,           opened:0,  converted:0,  gmv:0 },
+            ].map((c,i)=>{
+              const typeCol={email:"#3b82f6",sms:"#10b981",ig_dm:"#ec4899"}[c.type]||C.accent;
+              return (
+                <div key={i} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
+                  <span style={{ fontSize:9, fontWeight:700, color:typeCol, background:`${typeCol}18`, border:`1px solid ${typeCol}33`, padding:"2px 8px", borderRadius:4, textTransform:"uppercase", flexShrink:0 }}>{c.type}</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{c.name}</div>
+                    {c.status==="sent" && <div style={{ fontSize:10, color:C.muted }}>{c.sent} sent · {c.opened}% opened · {c.converted}% converted</div>}
+                    {c.status==="draft" && <div style={{ fontSize:10, color:C.subtle }}>Draft — not yet sent</div>}
+                  </div>
+                  {c.status==="sent" && c.gmv>0 && (
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:"#10b981" }}>${c.gmv.toLocaleString()}</div>
+                  )}
+                  <span style={{ fontSize:9, fontWeight:700, color:c.status==="sent"?"#10b981":"#6b7280", background:c.status==="sent"?"#0a1e16":"#1a1a2e", border:`1px solid ${c.status==="sent"?"#10b98133":"#374151"}`, padding:"2px 8px", borderRadius:4 }}>{c.status}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── ENTERPRISE: NETWORK ANALYTICS ───────────────────────────────────────────
+function ScreenNetworkAnalytics({ persona }) {
+  const sellers   = persona.managedSellers;
+  const networkGMV = sellers.reduce((a,s)=>a+s.gmv,0);
+  const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b" };
+
+  // Platform GMV breakdown (simulated)
+  const platformGMV = {
+    WN: sellers.filter(s=>s.platforms.includes("WN")).reduce((a,s)=>a+s.gmv*0.44,0),
+    TT: sellers.filter(s=>s.platforms.includes("TT")).reduce((a,s)=>a+s.gmv*0.28,0),
+    AM: sellers.filter(s=>s.platforms.includes("AM")).reduce((a,s)=>a+s.gmv*0.18,0),
+    IG: sellers.filter(s=>s.platforms.includes("IG")).reduce((a,s)=>a+s.gmv*0.10,0),
+  };
+  const platformColors={WN:"#7c3aed",TT:"#f43f5e",AM:"#f59e0b",IG:"#ec4899"};
+
+  // Monthly trend (8 months)
+  const months=["Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb"];
+  const monthlyGMV=[148200,162400,179800,198200,221400,248600,289100,networkGMV];
+
+  // Seller performance table sorted by GMV
+  const ranked=[...sellers].sort((a,b)=>b.gmv-a.gmv);
+
+  return (
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Network Analytics</div>
+      <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Aggregate performance across all {sellers.length} managed accounts</div>
+
+      {/* KPI row */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+        {[
+          { label:"Network GMV",         value:`$${(networkGMV/1000).toFixed(0)}k`, color:"#a78bfa" },
+          { label:"Avg GMV / Seller",    value:`$${Math.round(networkGMV/sellers.length/1000).toFixed(1)}k`, color:"#7c3aed" },
+          { label:"Top Seller Share",    value:`${Math.round(ranked[0].gmv/networkGMV*100)}%`, color:"#f59e0b" },
+          { label:"Sellers Growing",     value:`${sellers.filter(s=>s.gmv>s.gmvPrev).length} / ${sellers.length}`, color:"#10b981" },
+        ].map(k=>(
+          <div key={k.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderTop:`2px solid ${k.color}`, borderRadius:12, padding:"14px 16px" }}>
+            <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700, marginBottom:6 }}>{k.label}</div>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:24, fontWeight:700, color:C.text }}>{k.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+        {/* GMV trend */}
+        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+          <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Network GMV — 8 Month Trend</div>
+          <svg width="100%" height="100" viewBox="0 0 420 100" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="nettrend" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.25"/>
+                <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.02"/>
+              </linearGradient>
+            </defs>
+            {(()=>{
+              const mx=Math.max(...monthlyGMV), mn=Math.min(...monthlyGMV)*0.85;
+              const pts=monthlyGMV.map((v,i)=>[i*(420/7), 100-((v-mn)/(mx-mn))*88]);
+              const pd="M"+pts.map(p=>p.join(",")).join(" L");
+              const ad=pd+` L${pts[pts.length-1][0]},100 L0,100 Z`;
+              return(<>
+                <path d={ad} fill="url(#nettrend)"/>
+                <path d={pd} fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinejoin="round"/>
+                {pts.map((p,i)=>(
+                  <g key={i}>
+                    <circle cx={p[0]} cy={p[1]} r="3.5" fill="#a78bfa"/>
+                    <text x={p[0]} y={100} textAnchor="middle" fill="#374151" fontSize="8">{months[i]}</text>
+                  </g>
+                ))}
+              </>);
+            })()}
+          </svg>
+        </div>
+
+        {/* Platform breakdown */}
+        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+          <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>GMV by Platform</div>
+          {Object.entries(platformGMV).map(([p,v])=>{
+            const pct=Math.round(v/networkGMV*100);
+            const pc=platformColors[p];
+            return (
+              <div key={p} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
+                <span style={{ fontSize:10, fontWeight:700, color:pc, width:24 }}>{p}</span>
+                <div style={{ flex:1, height:6, background:C.border2, borderRadius:3 }}>
+                  <div style={{ width:`${pct}%`, height:"100%", background:pc, borderRadius:3 }}/>
+                </div>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.text, minWidth:48, textAlign:"right" }}>${(v/1000).toFixed(0)}k</span>
+                <span style={{ fontSize:10, color:C.subtle, minWidth:30 }}>{pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Seller performance table */}
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+        <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Seller Performance Ranking</div>
+        <div style={{ display:"grid", gridTemplateColumns:"28px 1fr 80px 80px 80px 80px 80px 72px", gap:0 }}>
+          {/* Header */}
+          {["#","Seller","Plan","GMV 30d","vs Prev","Buyers","Shows","Trend"].map(h=>(
+            <div key={h} style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", padding:"0 8px 10px 0", borderBottom:`1px solid ${C.border}` }}>{h}</div>
+          ))}
+          {/* Rows */}
+          {ranked.map((s,i)=>{
+            const col=planColors[s.plan]||"#a78bfa";
+            const delta=Math.round((s.gmv-s.gmvPrev)/s.gmvPrev*100);
+            const barW=Math.round(s.gmv/ranked[0].gmv*100);
+            return (
+              <React.Fragment key={s.id}>
+                <div style={{ padding:"10px 8px 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.subtle }}>{i+1}</span>
+                </div>
+                <div style={{ padding:"10px 8px 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", gap:8 }}>
+                  <div style={{ width:24,height:24,borderRadius:6,background:`${col}18`,border:`1px solid ${col}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,color:col,flexShrink:0 }}>{s.avatar}</div>
+                  <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{s.name}</span>
+                </div>
+                <div style={{ padding:"10px 8px 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontSize:9,fontWeight:700,color:col,background:`${col}18`,border:`1px solid ${col}33`,padding:"1px 6px",borderRadius:4,textTransform:"uppercase" }}>{s.plan}</span>
+                </div>
+                <div style={{ padding:"10px 8px 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>${(s.gmv/1000).toFixed(1)}k</span>
+                </div>
+                <div style={{ padding:"10px 8px 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontSize:11, fontWeight:600, color:delta>=0?"#10b981":"#ef4444" }}>{delta>=0?"+":""}{delta}%</span>
+                </div>
+                <div style={{ padding:"10px 8px 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontSize:11, color:C.muted }}>{s.buyerCount.toLocaleString()}</span>
+                </div>
+                <div style={{ padding:"10px 8px 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontSize:11, color:C.muted }}>{s.showCount}</span>
+                </div>
+                <div style={{ padding:"10px 0 10px 0", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <div style={{ width:"100%", height:4, background:C.border2, borderRadius:2 }}>
+                    <div style={{ width:`${barW}%`, height:"100%", background:col, borderRadius:2 }}/>
+                  </div>
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ENTERPRISE: TEAM MANAGEMENT ─────────────────────────────────────────────
+function ScreenTeam({ persona }) {
+  const [activeTab, setActiveTab] = React.useState("members");
+  const sellers = persona.managedSellers;
+  const roleColors={Owner:"#a78bfa", Manager:"#7c3aed", Analyst:"#f59e0b", Support:"#10b981"};
+  const permLabels={all:"All Access", view:"View", edit:"Edit", campaigns:"Campaigns", buyers:"Buyers", shows:"Shows", analytics:"Analytics"};
+
+  return (
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
+        <div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Team Management</div>
+          <div style={{ fontSize:12, color:C.muted }}>{ENTERPRISE_TEAM.length} members · {Object.keys(roleColors).map(r=>ENTERPRISE_TEAM.filter(t=>t.role===r).length+" "+r+"s").filter(s=>!s.startsWith("0")).join(" · ")}</div>
+        </div>
+        <button style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
+          + Invite Member
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display:"flex", gap:4, marginBottom:20, borderBottom:`1px solid ${C.border}`, paddingBottom:0 }}>
+        {["members","permissions","assignments"].map(t=>(
+          <button key={t} onClick={()=>setActiveTab(t)}
+            style={{ padding:"8px 18px", background:"none", border:"none", borderBottom:`2px solid ${activeTab===t?"#a78bfa":"transparent"}`, color:activeTab===t?C.text:C.muted, fontSize:12, fontWeight:activeTab===t?700:400, cursor:"pointer", textTransform:"capitalize", marginBottom:-1 }}>
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {activeTab==="members" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          {ENTERPRISE_TEAM.map(m=>{
+            const col=roleColors[m.role]||C.accent;
+            const assignedCount = m.assignedSellers[0]==="all" ? sellers.length : m.assignedSellers.length;
+            return (
+              <div key={m.id} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 20px", display:"flex", alignItems:"center", gap:14 }}>
+                <div style={{ width:40, height:40, borderRadius:11, background:`${col}18`, border:`1px solid ${col}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:col, flexShrink:0 }}>{m.avatar}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                    <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{m.name}</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:col, background:`${col}18`, border:`1px solid ${col}33`, padding:"1px 7px", borderRadius:4 }}>{m.role}</span>
+                    {m.id==="tm1" && <span style={{ fontSize:9, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 7px", borderRadius:4, fontWeight:700 }}>You</span>}
+                  </div>
+                  <div style={{ fontSize:11, color:C.muted }}>{m.email}</div>
+                </div>
+                <div style={{ textAlign:"center", flexShrink:0 }}>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.text }}>{assignedCount}</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>sellers</div>
+                </div>
+                <div style={{ display:"flex", gap:4, flexWrap:"wrap", maxWidth:200, flexShrink:0 }}>
+                  {m.permissions.map(p=>(
+                    <span key={p} style={{ fontSize:8, fontWeight:700, color:col, background:`${col}12`, border:`1px solid ${col}28`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase" }}>
+                      {permLabels[p]||p}
+                    </span>
+                  ))}
+                </div>
+                <div style={{ textAlign:"right", flexShrink:0 }}>
+                  <div style={{ fontSize:10, color:m.lastActive==="Online now"?"#10b981":C.muted, fontWeight:m.lastActive==="Online now"?600:400 }}>{m.lastActive}</div>
+                </div>
+                {m.id!=="tm1" && (
+                  <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+                    <button style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:11, padding:"5px 10px", borderRadius:7, cursor:"pointer" }}>Edit</button>
+                    <button style={{ background:"#ef444410", border:"1px solid #ef444433", color:"#ef4444", fontSize:11, padding:"5px 10px", borderRadius:7, cursor:"pointer" }}>Remove</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {activeTab==="permissions" && (
+        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", overflowX:"auto" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"180px repeat(7,1fr)", gap:0, minWidth:700 }}>
+            {["Member","View","Edit","Buyers","Shows","Campaigns","Analytics","Admin"].map(h=>(
+              <div key={h} style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", padding:"0 0 12px", borderBottom:`1px solid ${C.border}`, textAlign:h==="Member"?"left":"center" }}>{h}</div>
+            ))}
+            {ENTERPRISE_TEAM.map(m=>{
+              const col=roleColors[m.role]||C.accent;
+              const has=(p)=>m.permissions.includes("all")||m.permissions.includes(p);
+              return (
+                <React.Fragment key={m.id}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 0", borderBottom:`1px solid ${C.border}` }}>
+                    <div style={{ width:24, height:24, borderRadius:6, background:`${col}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:col }}>{m.avatar}</div>
+                    <div>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.text }}>{m.name}</div>
+                      <div style={{ fontSize:9, color:C.subtle }}>{m.role}</div>
+                    </div>
+                  </div>
+                  {[has("view"),has("edit"),has("buyers"),has("shows"),has("campaigns"),has("analytics"),m.permissions.includes("all")].map((v,i)=>(
+                    <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"12px 0", borderBottom:`1px solid ${C.border}` }}>
+                      <div style={{ width:16, height:16, borderRadius:4, background:v?`${col}18`:"#1a1a2e", border:`1px solid ${v?col+"44":"#2a2a4a"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:col }}>
+                        {v?"✓":""}
+                      </div>
+                    </div>
+                  ))}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {activeTab==="assignments" && (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+          {ENTERPRISE_TEAM.filter(m=>m.role==="Manager").map(m=>{
+            const col=roleColors[m.role];
+            const assigned = m.assignedSellers[0]==="all" ? sellers : sellers.filter(s=>m.assignedSellers.includes(s.id));
+            return (
+              <div key={m.id} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+                  <div style={{ width:32, height:32, borderRadius:9, background:`${col}18`, border:`1px solid ${col}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:col }}>{m.avatar}</div>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{m.name}</div>
+                    <div style={{ fontSize:10, color:C.muted }}>{assigned.length} sellers assigned</div>
+                  </div>
+                </div>
+                {assigned.map(s=>{
+                  const sc=({starter:"#10b981",growth:"#7c3aed",pro:"#f59e0b"})[s.plan]||"#a78bfa";
+                  return (
+                    <div key={s.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:`1px solid ${C.border}` }}>
+                      <div style={{ width:5, height:5, borderRadius:"50%", background:s.status==="active"?"#10b981":"#374151", flexShrink:0 }}/>
+                      <span style={{ fontSize:11, flex:1, color:C.text }}>{s.name}</span>
+                      <span style={{ fontSize:8, fontWeight:700, color:sc, background:`${sc}18`, border:`1px solid ${sc}33`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase" }}>{s.plan}</span>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.muted }}>${(s.gmv/1000).toFixed(0)}k</span>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ENTERPRISE: BILLING ──────────────────────────────────────────────────────
+function ScreenBilling({ persona }) {
+  const sellers = persona.managedSellers;
+  const planPrices={starter:79,growth:199,pro:399};
+  const sellerTotal=sellers.reduce((a,s)=>a+(planPrices[s.plan]||0),0);
+  const agencyFee=999;
+  const total=agencyFee+sellerTotal;
+  const planColors={starter:"#10b981",growth:"#7c3aed",pro:"#f59e0b"};
+
+  const invoices=[
+    { month:"February 2025", amount:total, status:"current",  date:"Feb 1, 2025" },
+    { month:"January 2025",  amount:total-199, status:"paid", date:"Jan 1, 2025" },
+    { month:"December 2024", amount:total-398, status:"paid", date:"Dec 1, 2024" },
+    { month:"November 2024", amount:total-597, status:"paid", date:"Nov 1, 2024" },
+  ];
+
+  return (
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Billing</div>
+      <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Manage agency subscription and seller plan fees</div>
+
+      {/* Summary cards */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:24 }}>
+        {[
+          { label:"Enterprise Plan",   value:"$999/mo",               sub:"Agency base fee",                    color:"#a78bfa" },
+          { label:"Seller Fees",       value:`$${sellerTotal}/mo`,    sub:`${sellers.length} accounts`,          color:"#7c3aed" },
+          { label:"Total Monthly",     value:`$${total.toLocaleString()}/mo`, sub:"Next invoice: Mar 1, 2025", color:"#10b981" },
+        ].map(k=>(
+          <div key={k.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderTop:`2px solid ${k.color}`, borderRadius:12, padding:"16px 18px" }}>
+            <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700, marginBottom:8 }}>{k.label}</div>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:24, fontWeight:700, color:C.text, marginBottom:4 }}>{k.value}</div>
+            <div style={{ fontSize:10, color:C.subtle }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:16 }}>
+        {/* Seller subscription table */}
+        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+          <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Seller Subscriptions</div>
+          {sellers.map((s,i)=>{
+            const col=planColors[s.plan]||"#a78bfa";
+            const fee=planPrices[s.plan]||0;
+            const nextP={starter:"growth",growth:"pro"}[s.plan];
+            const nextFee={starter:199,growth:399}[s.plan];
+            return (
+              <div key={s.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:i<sellers.length-1?`1px solid ${C.border}`:"none" }}>
+                <div style={{ width:28, height:28, borderRadius:8, background:`${col}18`, border:`1px solid ${col}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:800, color:col, flexShrink:0 }}>{s.avatar}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{s.name}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>{s.owner}</div>
+                </div>
+                <span style={{ fontSize:9, fontWeight:700, color:col, background:`${col}18`, border:`1px solid ${col}33`, padding:"1px 7px", borderRadius:4, textTransform:"uppercase", flexShrink:0 }}>{s.plan}</span>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text, minWidth:60, textAlign:"right" }}>${fee}/mo</div>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:s.status==="active"?"#10b981":"#374151", flexShrink:0 }}/>
+                {nextP && (
+                  <button style={{ fontSize:8, fontWeight:700, color:"#a78bfa", background:"#a78bfa12", border:"1px solid #a78bfa33", padding:"2px 8px", borderRadius:4, cursor:"pointer", whiteSpace:"nowrap" }}>
+                    → {nextP} ${nextFee}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          <div style={{ display:"flex", justifyContent:"space-between", paddingTop:12, marginTop:4 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:C.muted }}>Seller total</span>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>${sellerTotal}/mo</span>
+          </div>
+        </div>
+
+        {/* Invoice history */}
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Invoice History</div>
+            {invoices.map((inv,i)=>(
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom:i<invoices.length-1?`1px solid ${C.border}`:"none" }}>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{inv.month}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>{inv.date}</div>
+                </div>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>${inv.amount.toLocaleString()}</span>
+                <span style={{ fontSize:8, fontWeight:700, color:inv.status==="current"?"#f59e0b":"#10b981", background:inv.status==="current"?"#f59e0b18":"#0a1e16", border:`1px solid ${inv.status==="current"?"#f59e0b33":"#10b98133"}`, padding:"2px 7px", borderRadius:4, textTransform:"uppercase" }}>
+                  {inv.status}
+                </span>
+                <button style={{ fontSize:9, color:"#a78bfa", background:"none", border:"none", cursor:"pointer" }}>↓ PDF</button>
+              </div>
+            ))}
+          </div>
+
+          {/* Payment method */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Payment Method</div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9 }}>
+              <div style={{ width:36, height:24, background:"linear-gradient(135deg,#1a1a2e,#2d2d4e)", border:"1px solid #374151", borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <span style={{ fontSize:9, fontWeight:800, color:"#a78bfa" }}>VISA</span>
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:12, fontWeight:600, color:C.text }}>Visa ending 4242</div>
+                <div style={{ fontSize:10, color:C.muted }}>Expires 09/27</div>
+              </div>
+              <button style={{ fontSize:11, color:"#a78bfa", background:"none", border:"none", cursor:"pointer" }}>Change</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ENTERPRISE: WHITE LABEL ──────────────────────────────────────────────────
+function ScreenWhiteLabel({ persona }) {
+  const [domain, setDomain]  = React.useState(persona.whiteLabelDomain);
+  const [brand, setBrand]    = React.useState("LiveScale");
+  const [accent, setAccent]  = React.useState("#7c3aed");
+  const [saved, setSaved]    = React.useState(false);
+
+  const handleSave=()=>{ setSaved(true); setTimeout(()=>setSaved(false),2500); };
+
+  return (
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>White Label</div>
+      <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Your sellers experience your brand — Streamlive is invisible.</div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
+        {/* Config */}
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          {/* Domain */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Custom Domain</div>
+            <div style={{ display:"flex", gap:10, marginBottom:10 }}>
+              <input value={domain} onChange={e=>setDomain(e.target.value)}
+                style={{ flex:1, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"9px 14px", color:C.text, fontSize:13, outline:"none", fontFamily:"'JetBrains Mono',monospace" }}/>
+              <div style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 12px", background:"#0a1e16", border:"1px solid #10b98133", borderRadius:9 }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:"#10b981" }}/>
+                <span style={{ fontSize:11, fontWeight:700, color:"#10b981" }}>Active</span>
+              </div>
+            </div>
+            <div style={{ fontSize:11, color:C.subtle }}>All seller-facing URLs, emails, and notifications route through your domain. SSL managed automatically.</div>
+          </div>
+
+          {/* Branding */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Brand Identity</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+              <div>
+                <label style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:6 }}>Brand Name</label>
+                <input value={brand} onChange={e=>setBrand(e.target.value)}
+                  style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"9px 14px", color:C.text, fontSize:13, outline:"none", boxSizing:"border-box" }}/>
+              </div>
+              <div>
+                <label style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:6 }}>Accent Color</label>
+                <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                  <div style={{ width:36, height:36, borderRadius:8, background:accent, border:`1px solid ${C.border2}`, cursor:"pointer" }}/>
+                  <input value={accent} onChange={e=>setAccent(e.target.value)}
+                    style={{ flex:1, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"9px 10px", color:C.text, fontSize:12, outline:"none", fontFamily:"'JetBrains Mono',monospace" }}/>
+                </div>
+              </div>
+            </div>
+            {/* Logo upload area */}
+            <div>
+              <label style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:6 }}>Logo</label>
+              <div style={{ border:`2px dashed ${C.border2}`, borderRadius:10, padding:"20px", textAlign:"center", cursor:"pointer" }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:accent+"18", border:`1px solid ${accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, fontWeight:900, color:accent, margin:"0 auto 8px" }}>L</div>
+                <div style={{ fontSize:11, fontWeight:700, color:C.text }}>LiveScale</div>
+                <div style={{ fontSize:10, color:C.muted, marginTop:4 }}>Click to upload PNG or SVG · 512×512 recommended</div>
+              </div>
+            </div>
+          </div>
+
+          {/* SSO + Email */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Authentication & Email</div>
+            {[
+              { label:"SSO Provider",    value:"Google Workspace (G Suite)", status:"connected", color:"#10b981" },
+              { label:"Email Sender",    value:`noreply@${domain}`, status:"verified", color:"#10b981" },
+              { label:"Email Template",  value:"LiveScale brand template active", status:"active", color:"#a78bfa" },
+              { label:"API Access",      value:"REST API + Webhooks enabled", status:"active", color:"#7c3aed" },
+            ].map(r=>(
+              <div key={r.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 0", borderBottom:`1px solid ${C.border}` }}>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:600, color:C.text }}>{r.label}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>{r.value}</div>
+                </div>
+                <span style={{ fontSize:9, fontWeight:700, color:r.color, background:`${r.color}18`, border:`1px solid ${r.color}33`, padding:"2px 8px", borderRadius:5 }}>{r.status}</span>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={handleSave} className="cta-btn"
+            style={{ background:saved?"#0a1e16":"linear-gradient(135deg,#a78bfa,#7c3aed)", border:saved?"1px solid #10b98133":"none", color:saved?"#10b981":"#fff", fontSize:13, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+            {saved?"✓ Changes Saved":"Save White Label Config"}
+          </button>
+        </div>
+
+        {/* Live preview */}
+        <div style={{ position:"sticky", top:0 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Seller Preview</div>
+          <div style={{ background:"#04040a", border:"1px solid #1a1a2e", borderRadius:14, overflow:"hidden" }}>
+            {/* Fake top bar */}
+            <div style={{ background:"#060609", borderBottom:"1px solid #12122a", padding:"8px 14px", display:"flex", alignItems:"center", gap:8 }}>
+              <div style={{ width:20, height:20, borderRadius:6, background:accent, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:900, color:"#fff" }}>
+                {brand.charAt(0)}
+              </div>
+              <span style={{ fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:800, color:"#fff" }}>{brand}</span>
+              <div style={{ flex:1 }}/>
+              <span style={{ fontSize:9, color:"#374151", fontFamily:"'JetBrains Mono',monospace" }}>{domain}</span>
+            </div>
+            {/* Fake sidebar + content */}
+            <div style={{ display:"flex", height:280 }}>
+              <div style={{ width:130, background:"#040407", borderRight:"1px solid #12122a", padding:"10px 8px" }}>
+                {["Dashboard","Buyers","Shows","Analytics","Loyalty","Settings"].map((item,i)=>(
+                  <div key={item} style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 8px", borderRadius:7, marginBottom:2, background:i===0?`${accent}18`:"transparent" }}>
+                    <div style={{ width:4, height:4, borderRadius:"50%", background:i===0?accent:"#374151" }}/>
+                    <span style={{ fontSize:9, color:i===0?"#fff":"#374151", fontWeight:i===0?700:400 }}>{item}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop:"auto", padding:"8px 8px 0", borderTop:"1px solid #12122a", marginTop:80 }}>
+                  <div style={{ fontSize:7, fontWeight:600, color:"#374151" }}>Powered by</div>
+                  <div style={{ fontSize:8, fontWeight:800, color:accent }}>{brand}</div>
+                </div>
+              </div>
+              <div style={{ flex:1, padding:"12px 14px" }}>
+                <div style={{ fontSize:11, fontWeight:800, color:"#fff", fontFamily:"'Syne',sans-serif", marginBottom:8 }}>Good evening, Sarah 👋</div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+                  {[{l:"Buyers",v:"847",c:accent},{l:"GMV",v:"$48.2k",c:"#10b981"},{l:"Shows",v:"8",c:"#f59e0b"},{l:"VIP",v:"68",c:"#ec4899"}].map(k=>(
+                    <div key={k.l} style={{ background:`${k.c}10`, border:`1px solid ${k.c}22`, borderRadius:7, padding:"7px 9px" }}>
+                      <div style={{ fontSize:7, color:"#4b5563", textTransform:"uppercase", letterSpacing:"0.05em" }}>{k.l}</div>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:"#fff", marginTop:2 }}>{k.v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize:10, color:C.subtle, textAlign:"center", marginTop:8 }}>Live preview — what your sellers see</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 // ─── SCREEN: UPGRADE WALL ─────────────────────────────────────────────────────
 function ScreenUpgrade({ feature, persona, navigate }) {
   const wall = UPGRADE_WALLS[feature];
@@ -6372,8 +7500,12 @@ export default function StreamlivePrototype() {
   const activeBuyer = params.buyerId ? buyers.find(b=>b.id===params.buyerId) : null;
   const activeShow  = params.showId  ? SHOWS.find(s=>s.id===params.showId)    : null;
 
+  const isEnterprise = persona.plan === "enterprise";
+
   // Map view to nav item for highlighting
-  const activeNav = ["buyer-profile"].includes(view) ? "buyers" : ["show-report","live","show-planner","order-review"].includes(view) ? "shows" : ["composer"].includes(view) ? "campaigns" : view;
+  const activeNav = isEnterprise
+    ? (view === "seller-detail" ? "sellers" : view)
+    : (["buyer-profile"].includes(view) ? "buyers" : ["show-report","live","show-planner","order-review"].includes(view) ? "shows" : ["composer"].includes(view) ? "campaigns" : view);
 
   return (
     <>
@@ -6394,7 +7526,7 @@ export default function StreamlivePrototype() {
               const locked = Object.keys(UPGRADE_WALLS).filter(f => !PLAN_FEATURES[p.plan].includes(f));
               return (
                 <button key={p.id}
-                  onClick={()=>{ setPersonaId(p.id); setView("dashboard"); setParams({}); setShowPersonaMenu(false); }}
+                  onClick={()=>{ setPersonaId(p.id); setView(p.plan==="enterprise"?"network":"dashboard"); setParams({}); setShowPersonaMenu(false); }}
                   style={{ display:"flex", alignItems:"center", gap:6, padding:"3px 10px 3px 6px", borderRadius:99,
                     background: isCurrent ? `${p.planColor}22` : "transparent",
                     border: `1px solid ${isCurrent ? p.planColor+"55" : "#2a2a4a"}`,
@@ -6431,12 +7563,21 @@ export default function StreamlivePrototype() {
           {/* BREADCRUMB */}
           <div style={{ fontSize:12, color:C.subtle, marginLeft:8 }}>/</div>
           <div style={{ fontSize:12, color:C.muted, textTransform:"capitalize" }}>
-            {view==="buyer-profile" ? `Buyers / ${activeBuyer?.name||"Profile"}` :
+            {/* Enterprise breadcrumbs */}
+            {view==="network"        ? "Network Overview" :
+             view==="sellers"        ? "Sellers" :
+             view==="seller-detail"  ? `Sellers / ${persona.managedSellers?.find(s=>s.id===params.sellerId)?.name||"Detail"}` :
+             view==="net-analytics"  ? "Analytics" :
+             view==="team"           ? "Team" :
+             view==="billing"        ? "Billing" :
+             view==="white-label"    ? "White Label" :
+             /* Standard breadcrumbs */
+             view==="buyer-profile" ? `Buyers / ${activeBuyer?.name||"Profile"}` :
              view==="show-report"   ? `Shows / ${activeShow?.title||"Report"}` :
              view==="composer"      ? "Campaigns / New" :
              view==="live"          ? "Shows / Live Companion" :
              view==="show-planner"  ? "Shows / Show Planner" :
-             view==="order-review"   ? "Shows / Order Review" :
+             view==="order-review"  ? "Shows / Order Review" :
              view==="catalog"       ? "Catalog" :
              view==="analytics"     ? "Analytics" :
              view==="loyalty"       ? "Loyalty Hub" :
@@ -6465,7 +7606,7 @@ export default function StreamlivePrototype() {
               <div className="pop-in" style={{ position:"absolute", right:0, top:"calc(100% + 6px)", background:"#0a0a15", border:`1px solid ${C.border2}`, borderRadius:12, padding:"8px", zIndex:100, minWidth:260, boxShadow:"0 8px 32px rgba(0,0,0,.5)" }}>
                 <div style={{ fontSize:9, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.1em", fontWeight:700, padding:"4px 8px 8px" }}>Switch Test Persona</div>
                 {PERSONAS.map(p=>(
-                  <button key={p.id} onClick={()=>{ setPersonaId(p.id); setView("dashboard"); setParams({}); setShowPersonaMenu(false); }} style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:8, border:"none", background:personaId===p.id?`${p.planColor}12`:"transparent", cursor:"pointer", textAlign:"left" }}>
+                  <button key={p.id} onClick={()=>{ setPersonaId(p.id); setView(p.plan==="enterprise"?"network":"dashboard"); setParams({}); setShowPersonaMenu(false); }} style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:8, border:"none", background:personaId===p.id?`${p.planColor}12`:"transparent", cursor:"pointer", textAlign:"left" }}>
                     <Avatar initials={p.avatar} color={p.planColor} size={30} />
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{p.name}</div>
@@ -6484,62 +7625,92 @@ export default function StreamlivePrototype() {
 
         {/* ── BODY ── */}
         <div style={{ display:"flex", flex:1, overflow:"hidden" }}>
+
           {/* ── SIDEBAR ── */}
           <div style={{ width:216, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", padding:"12px 10px", flexShrink:0, background:"#050508" }}>
-            {NAV.map(n=>{
-              const isActive  = activeNav === n.id;
-              const allowed   = PLAN_FEATURES[persona.plan] || [];
-              const isLocked  = !allowed.includes(n.id);
-              const navColor  = isLocked ? C.subtle : isActive ? C.accent : C.subtle;
-              const textColor = isLocked ? "#374151" : isActive ? C.text : C.muted;
-              return (
-                <button key={n.id} onClick={()=>{ if(isLocked){ navigate("upgrade-"+n.id); } else { navigate(n.id); } }}
-                  style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:9, border:"none", cursor:"pointer", marginBottom:2,
-                    background:isActive?`${C.accent}18`:"transparent", opacity:isLocked?0.45:1, transition:"all .12s" }}>
-                  <span style={{ fontSize:13, color:navColor, width:16, textAlign:"center" }}>{n.icon}</span>
-                  <span style={{ fontSize:13, fontWeight:isActive?700:400, color:textColor }}>{n.label}</span>
-                  {isLocked && (
-                    <span style={{ marginLeft:"auto", fontSize:9, color:"#374151" }}>🔒</span>
-                  )}
-                  {!isLocked && n.id==="subscribers" && notifications>0 && (
-                    <div style={{ marginLeft:"auto", width:16, height:16, borderRadius:"50%", background:"#ef4444", fontSize:9, fontWeight:700, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>{notifications}</div>
-                  )}
-                </button>
-              );
-            })}
-
-            <div style={{ flex:1 }} />
-
-            {/* PLAN BADGE / UPGRADE CTA */}
-            {persona.plan === "enterprise" ? (
-              <div style={{ background:"#a78bfa10", border:"1px solid #a78bfa28", borderRadius:10, padding:"11px 12px", marginBottom:6 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-                  <span style={{ fontSize:9, fontWeight:800, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.07em" }}>Enterprise</span>
-                  <span style={{ fontSize:8, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 6px", borderRadius:4, fontWeight:700 }}>White Label</span>
+            {isEnterprise ? (
+              <>
+                {/* Enterprise agency nav */}
+                <div style={{ fontSize:8, fontWeight:800, color:"#a78bfa44", textTransform:"uppercase", letterSpacing:"0.12em", padding:"2px 12px 8px" }}>Agency</div>
+                {ENTERPRISE_NAV.map(n=>{
+                  const isActive = activeNav === n.id;
+                  return (
+                    <button key={n.id} onClick={()=>navigate(n.id)}
+                      style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:9, border:"none", cursor:"pointer", marginBottom:2, background:isActive?"#a78bfa18":"transparent", transition:"all .12s" }}>
+                      <span style={{ fontSize:13, color:isActive?"#a78bfa":C.subtle, width:16, textAlign:"center" }}>{n.icon}</span>
+                      <span style={{ fontSize:13, fontWeight:isActive?700:400, color:isActive?C.text:C.muted }}>{n.label}</span>
+                    </button>
+                  );
+                })}
+                <div style={{ flex:1 }}/>
+                {/* Seller drill-in context chip */}
+                {view==="seller-detail" && params.sellerId && (()=>{
+                  const s = persona.managedSellers.find(sel=>sel.id===params.sellerId);
+                  if (!s) return null;
+                  const sc = ({starter:"#10b981",growth:"#7c3aed",pro:"#f59e0b"})[s.plan]||"#a78bfa";
+                  return (
+                    <div style={{ background:`${sc}10`, border:`1px solid ${sc}28`, borderRadius:10, padding:"10px 12px", marginBottom:6 }}>
+                      <div style={{ fontSize:8, fontWeight:800, color:sc, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:3 }}>Viewing</div>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:1 }}>{s.name}</div>
+                      <div style={{ fontSize:9, color:C.muted }}>{s.owner} · {s.plan}</div>
+                    </div>
+                  );
+                })()}
+                {/* Enterprise plan badge */}
+                <div style={{ background:"#a78bfa10", border:"1px solid #a78bfa28", borderRadius:10, padding:"10px 12px", marginBottom:6 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:3 }}>
+                    <span style={{ fontSize:9, fontWeight:800, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.07em" }}>Enterprise</span>
+                    <span style={{ fontSize:8, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 5px", borderRadius:3, fontWeight:700 }}>WL</span>
+                  </div>
+                  <div style={{ fontSize:9, color:C.muted }}>{persona.sellerCount} sellers · {persona.teamSize} team</div>
                 </div>
-                <div style={{ fontSize:10, color:C.muted, lineHeight:1.5 }}>{persona.teamSize} team members · {persona.sellerCount} sellers</div>
-              </div>
-            ) : persona.plan === "pro" ? (
-              <div style={{ background:"#f59e0b10", border:"1px solid #f59e0b28", borderRadius:10, padding:"11px 12px", marginBottom:6 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:"#f59e0b", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:4 }}>Pro Plan</div>
-                <div style={{ fontSize:10, color:C.muted, lineHeight:1.5 }}>All features unlocked</div>
-              </div>
+              </>
             ) : (
-              <div style={{ background:`${persona.planColor}10`, border:`1px solid ${persona.planColor}28`, borderRadius:10, padding:"11px 12px", marginBottom:6 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:persona.planColor, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:4 }}>
-                  {persona.plan === "starter" ? "🔒 2 features locked" : "🔒 1 feature locked"}
-                </div>
-                <div style={{ fontSize:10, color:C.muted, marginBottom:8, lineHeight:1.5 }}>
-                  {persona.plan === "starter" ? "Analytics, Loyalty & Production on Growth+" : "Production Suite on Pro+"}
-                </div>
-                <a href={persona.plan==="starter" ? STRIPE_LINKS.growth : STRIPE_LINKS.pro} target="_blank" rel="noopener noreferrer"
-                  style={{ display:"block", textAlign:"center", width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px", borderRadius:7, cursor:"pointer", textDecoration:"none" }}>
-                  Upgrade →
-                </a>
-              </div>
+              <>
+                {/* Standard seller nav */}
+                {NAV.map(n=>{
+                  const isActive  = activeNav === n.id;
+                  const allowed   = PLAN_FEATURES[persona.plan] || [];
+                  const isLocked  = !allowed.includes(n.id);
+                  const navColor  = isLocked ? C.subtle : isActive ? C.accent : C.subtle;
+                  const textColor = isLocked ? "#374151" : isActive ? C.text : C.muted;
+                  return (
+                    <button key={n.id} onClick={()=>{ if(isLocked){ navigate("upgrade-"+n.id); } else { navigate(n.id); } }}
+                      style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:9, border:"none", cursor:"pointer", marginBottom:2,
+                        background:isActive?`${C.accent}18`:"transparent", opacity:isLocked?0.45:1, transition:"all .12s" }}>
+                      <span style={{ fontSize:13, color:navColor, width:16, textAlign:"center" }}>{n.icon}</span>
+                      <span style={{ fontSize:13, fontWeight:isActive?700:400, color:textColor }}>{n.label}</span>
+                      {isLocked && <span style={{ marginLeft:"auto", fontSize:9, color:"#374151" }}>🔒</span>}
+                      {!isLocked && n.id==="subscribers" && notifications>0 && (
+                        <div style={{ marginLeft:"auto", width:16, height:16, borderRadius:"50%", background:"#ef4444", fontSize:9, fontWeight:700, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>{notifications}</div>
+                      )}
+                    </button>
+                  );
+                })}
+                <div style={{ flex:1 }}/>
+                {persona.plan === "pro" ? (
+                  <div style={{ background:"#f59e0b10", border:"1px solid #f59e0b28", borderRadius:10, padding:"11px 12px", marginBottom:6 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:"#f59e0b", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:4 }}>Pro Plan</div>
+                    <div style={{ fontSize:10, color:C.muted, lineHeight:1.5 }}>All features unlocked</div>
+                  </div>
+                ) : (
+                  <div style={{ background:`${persona.planColor}10`, border:`1px solid ${persona.planColor}28`, borderRadius:10, padding:"11px 12px", marginBottom:6 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:persona.planColor, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:4 }}>
+                      {persona.plan === "starter" ? "🔒 3 features locked" : "🔒 1 feature locked"}
+                    </div>
+                    <div style={{ fontSize:10, color:C.muted, marginBottom:8, lineHeight:1.5 }}>
+                      {persona.plan === "starter" ? "Analytics, Loyalty & Production on Growth+" : "Production Suite on Pro+"}
+                    </div>
+                    <a href={persona.plan==="starter" ? STRIPE_LINKS.growth : STRIPE_LINKS.pro} target="_blank" rel="noopener noreferrer"
+                      style={{ display:"block", textAlign:"center", width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px", borderRadius:7, cursor:"pointer", textDecoration:"none" }}>
+                      Upgrade →
+                    </a>
+                  </div>
+                )}
+              </>
             )}
 
-            {/* USER */}
+            {/* USER — always visible at bottom */}
             <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 10px 4px", borderTop:`1px solid ${C.border}`, marginTop:4 }}>
               <Avatar initials={persona.avatar} color={persona.planColor} size={28} />
               <div style={{ flex:1, minWidth:0 }}>
@@ -6551,28 +7722,40 @@ export default function StreamlivePrototype() {
 
           {/* ── MAIN CONTENT ── */}
           <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
-            {/* Upgrade walls for locked nav items */}
-            {view==="upgrade-analytics"  && <ScreenUpgrade feature="analytics"  persona={persona} navigate={navigate} />}
-            {view==="upgrade-loyalty"     && <ScreenUpgrade feature="loyalty"    persona={persona} navigate={navigate} />}
-            {view==="upgrade-production"  && <ScreenUpgrade feature="production" persona={persona} navigate={navigate} />}
-
-            {/* Normal views */}
-            {view==="dashboard"    && <ScreenDashboard     persona={persona} buyers={buyers} navigate={navigate} />}
-            {view==="buyers"       && <ScreenBuyers         buyers={buyers} navigate={navigate} />}
-            {view==="buyer-profile"&& <ScreenBuyerProfile   buyer={activeBuyer} persona={persona} navigate={navigate} />}
-            {view==="shows"        && <ScreenShows          navigate={navigate} persona={persona} />}
-            {view==="show-report"  && <ScreenShowReport      show={activeShow} navigate={navigate} />}
-            {view==="live"         && <ScreenLive            buyers={buyers} navigate={navigate} params={params} />}
-            {view==="campaigns"    && <ScreenCampaigns       navigate={navigate} persona={persona} />}
-            {view==="composer"     && <ScreenComposer        navigate={navigate} persona={persona} />}
-            {view==="subscribers"  && <ScreenSubscribers     persona={persona} />}
-            {view==="settings"     && <ScreenSettings        persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} />}
-            {view==="order-review" && <ScreenOrderReview      params={params} navigate={navigate} />}
-            {view==="catalog"      && <ScreenCatalog         persona={persona} navigate={navigate} />}
-            {view==="show-planner" && <ScreenShowPlanner      navigate={navigate} />}
-            {view==="loyalty"      && <ScreenLoyalty          buyers={buyers} navigate={navigate} persona={persona} />}
-            {view==="production"   && <ScreenProduction       persona={persona} navigate={navigate} />}
-            {view==="analytics"    && <ScreenAnalytics        buyers={buyers} persona={persona} />}
+            {isEnterprise ? (
+              <>
+                {(view==="network"||view==="dashboard") && <ScreenNetwork          persona={persona} navigate={navigate} />}
+                {view==="sellers"        && <ScreenSellers          persona={persona} navigate={navigate} />}
+                {view==="seller-detail"  && <ScreenSellerDetail     persona={persona} params={params}   navigate={navigate} />}
+                {view==="net-analytics"  && <ScreenNetworkAnalytics persona={persona} />}
+                {view==="team"           && <ScreenTeam             persona={persona} />}
+                {view==="billing"        && <ScreenBilling          persona={persona} />}
+                {view==="white-label"    && <ScreenWhiteLabel       persona={persona} />}
+                {view==="settings"       && <ScreenSettings         persona={persona} />}
+              </>
+            ) : (
+              <>
+                {view==="upgrade-analytics"  && <ScreenUpgrade feature="analytics"  persona={persona} navigate={navigate} />}
+                {view==="upgrade-loyalty"     && <ScreenUpgrade feature="loyalty"    persona={persona} navigate={navigate} />}
+                {view==="upgrade-production"  && <ScreenUpgrade feature="production" persona={persona} navigate={navigate} />}
+                {view==="dashboard"    && <ScreenDashboard    persona={persona} buyers={buyers} navigate={navigate} />}
+                {view==="buyers"       && <ScreenBuyers        buyers={buyers} navigate={navigate} />}
+                {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
+                {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} />}
+                {view==="show-report"  && <ScreenShowReport    show={activeShow} navigate={navigate} />}
+                {view==="live"         && <ScreenLive          buyers={buyers} navigate={navigate} params={params} />}
+                {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
+                {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
+                {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
+                {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} />}
+                {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} />}
+                {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} />}
+                {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} />}
+                {view==="loyalty"      && <ScreenLoyalty       buyers={buyers} navigate={navigate} persona={persona} />}
+                {view==="production"   && <ScreenProduction    persona={persona} navigate={navigate} />}
+                {view==="analytics"    && <ScreenAnalytics     buyers={buyers} persona={persona} />}
+              </>
+            )}
           </div>
         </div>
       </div>
