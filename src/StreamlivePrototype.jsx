@@ -293,6 +293,7 @@ const UPCOMING_SHOW = {
 // ─── NAV ITEMS ────────────────────────────────────────────────────────────────
 const NAV = [
   { id:"dashboard",   label:"Dashboard",   icon:"⬡",  route:"/dashboard" },
+  { id:"analytics",   label:"Analytics",   icon:"◑",  route:"/analytics" },
   { id:"buyers",      label:"Buyers",      icon:"◉",  route:"/buyers" },
   { id:"shows",       label:"Shows",       icon:"◈",  route:"/shows" },
   { id:"production",  label:"Production",  icon:"⬛",  route:"/production" },
@@ -4131,6 +4132,688 @@ function ScreenOrderReview({ params, navigate }) {
   );
 }
 
+// ─── SCREEN: ANALYTICS ────────────────────────────────────────────────────────
+function ScreenAnalytics({ buyers, persona }) {
+  const [tab, setTab]           = useState("overview");
+  const [aiExpanded, setAiExpanded] = useState(null);
+  const [dateRange, setDateRange]   = useState("30d");
+
+  // ── DERIVED METRICS ──────────────────────────────────────────────────────────
+  const totalGMV       = SHOWS.reduce((a,s)=>a+s.gmv,0);
+  const totalBuyers    = buyers.length;
+  const totalOrders    = buyers.reduce((a,b)=>a+b.orders,0);
+  const avgOrderValue  = Math.round(totalGMV / totalOrders);
+  const avgRepeatRate  = Math.round(SHOWS.reduce((a,s)=>a+s.repeatRate,0)/SHOWS.length);
+  const vipBuyers      = buyers.filter(b=>b.status==="vip");
+  const vipGMV         = vipBuyers.reduce((a,b)=>a+b.spend,0);
+  const avgLTV         = Math.round(buyers.reduce((a,b)=>a+b.spend,0)/buyers.length);
+  const topLTV         = Math.max(...buyers.map(b=>b.spend));
+  const campaignGMV    = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.gmv,0);
+  const totalCampaignRecipients = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.recipients,0);
+  const avgConvRate    = Math.round(CAMPAIGNS.filter(c=>c.status==="sent"&&c.recipients>0).reduce((a,c)=>a+(c.converted/c.recipients*100),0)/CAMPAIGNS.filter(c=>c.status==="sent").length);
+
+  // Platform breakdown
+  const platformGMV = { WN:0, TT:0, AM:0, IG:0 };
+  SHOWS.forEach(s=>{ platformGMV[s.platform]=(platformGMV[s.platform]||0)+s.gmv; });
+  const platformBuyers = { WN:0, TT:0, AM:0, IG:0 };
+  buyers.forEach(b=>{ platformBuyers[b.platform]=(platformBuyers[b.platform]||0)+1; });
+
+  // Status breakdown
+  const statusCounts = { vip:0, active:0, risk:0, dormant:0, new:0 };
+  buyers.forEach(b=>{ statusCounts[b.status]=(statusCounts[b.status]||0)+1; });
+
+  // Category breakdown
+  const catSpend = {};
+  buyers.forEach(b=>{ catSpend[b.category]=(catSpend[b.category]||0)+b.spend; });
+
+  // 8-week simulated GMV trend
+  const gmvTrend = [2800,3100,2600,3800,4200,3900,4820,5100];
+  const gmvWeeks = ["Jan 2","Jan 9","Jan 16","Jan 23","Jan 30","Feb 6","Feb 13","Feb 20"];
+
+  // Show platform colors
+  const PC = { WN:"#7c3aed", TT:"#f43f5e", IG:"#ec4899", AM:"#f59e0b" };
+  const PN = { WN:"Whatnot", TT:"TikTok", IG:"Instagram", AM:"Amazon" };
+
+  // ── SVG CHART HELPERS ────────────────────────────────────────────────────────
+  const BarChart = ({ data, color="#7c3aed", height=80, showLabels=true }) => {
+    const max = Math.max(...data.map(d=>d.value));
+    const w = 100/data.length;
+    return (
+      <svg width="100%" height={height+24} style={{ overflow:"visible" }}>
+        {data.map((d,i)=>{
+          const barH = max>0 ? (d.value/max)*(height-4) : 0;
+          const x = i*w + w*0.15;
+          const barW = w*0.7;
+          return (
+            <g key={i}>
+              <rect x={`${x}%`} y={height-barH} width={`${barW}%`} height={barH}
+                fill={d.color||color} rx="3" opacity="0.9" />
+              {showLabels && (
+                <text x={`${x+barW/2}%`} y={height+16} textAnchor="middle"
+                  fontSize="8" fill="#6b7280">{d.label}</text>
+              )}
+              {d.value>0 && (
+                <text x={`${x+barW/2}%`} y={height-barH-4} textAnchor="middle"
+                  fontSize="8" fill="#9ca3af" fontWeight="600">
+                  {d.prefix||""}{d.value>=1000?`${(d.value/1000).toFixed(1)}k`:d.value}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    );
+  };
+
+  const LineChart = ({ data, color="#10b981", height=80 }) => {
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const range = max-min||1;
+    const pts = data.map((v,i)=>{
+      const x = (i/(data.length-1))*100;
+      const y = height-((v-min)/range)*(height-10)-5;
+      return `${x},${y}`;
+    }).join(" ");
+    const area = `0,${height} ${pts} 100,${height}`;
+    return (
+      <svg width="100%" height={height} style={{ overflow:"visible" }}>
+        <defs>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
+            <stop offset="100%" stopColor={color} stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        <polygon points={area} fill="url(#lineGrad)" />
+        <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        {data.map((v,i)=>{
+          const x = (i/(data.length-1))*100;
+          const y = height-((v-min)/range)*(height-10)-5;
+          return <circle key={i} cx={`${x}%`} cy={y} r="3" fill={color} />;
+        })}
+      </svg>
+    );
+  };
+
+  const DonutChart = ({ segments, size=120 }) => {
+    const total = segments.reduce((a,s)=>a+s.value,0);
+    const r = 44; const cx = size/2; const cy = size/2;
+    let cumAngle = -90;
+    const slices = segments.map(s=>{
+      const angle = (s.value/total)*360;
+      const startRad = (cumAngle*Math.PI)/180;
+      const endRad   = ((cumAngle+angle)*Math.PI)/180;
+      const x1 = cx + r*Math.cos(startRad);
+      const y1 = cy + r*Math.sin(startRad);
+      const x2 = cx + r*Math.cos(endRad);
+      const y2 = cy + r*Math.sin(endRad);
+      const large = angle>180?1:0;
+      const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`;
+      cumAngle += angle;
+      return { ...s, path };
+    });
+    return (
+      <svg width={size} height={size}>
+        <circle cx={cx} cy={cy} r={r} fill="transparent" />
+        {slices.map((s,i)=>(
+          <path key={i} d={s.path} fill={s.color} opacity="0.9" />
+        ))}
+        <circle cx={cx} cy={cy} r={28} fill="#0a0a15" />
+      </svg>
+    );
+  };
+
+  const HBar = ({ value, max, color, label, suffix="" }) => (
+    <div style={{ marginBottom:10 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+        <span style={{ fontSize:11, color:C.muted }}>{label}</span>
+        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color }}>{value}{suffix}</span>
+      </div>
+      <div style={{ height:6, background:C.surface2, borderRadius:3, overflow:"hidden" }}>
+        <div style={{ width:`${(value/max)*100}%`, height:"100%", background:color, borderRadius:3, transition:"width .6s ease" }} />
+      </div>
+    </div>
+  );
+
+  const KPI = ({ label, value, sub, color="#7c3aed", trend }) => (
+    <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+      <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>{label}</div>
+      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:800, color, marginBottom:4 }}>{value}</div>
+      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+        {trend && <span style={{ fontSize:10, fontWeight:700, color:trend>0?C.green:"#ef4444" }}>{trend>0?`↑ +${trend}%`:`↓ ${trend}%`}</span>}
+        {sub && <span style={{ fontSize:10, color:C.subtle }}>{sub}</span>}
+      </div>
+    </div>
+  );
+
+  // ── TABS ─────────────────────────────────────────────────────────────────────
+  const TABS = [
+    { id:"overview",  label:"Overview"   },
+    { id:"revenue",   label:"Revenue"    },
+    { id:"audience",  label:"Audience"   },
+    { id:"shows",     label:"Shows"      },
+    { id:"ai",        label:"✦ AI Insights" },
+  ];
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+
+      {/* HEADER */}
+      <div style={{ padding:"14px 28px 0", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, letterSpacing:"-0.3px" }}>Analytics</div>
+            <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>All data is real-time from your shows, buyers, and campaigns.</div>
+          </div>
+          <div style={{ display:"flex", gap:6 }}>
+            {["7d","30d","90d","All"].map(r=>(
+              <button key={r} onClick={()=>setDateRange(r)} style={{ fontSize:11, fontWeight:dateRange===r?700:400, color:dateRange===r?C.text:C.muted, background:dateRange===r?C.surface2:"transparent", border:`1px solid ${dateRange===r?C.border2:"transparent"}`, padding:"4px 10px", borderRadius:7, cursor:"pointer" }}>{r}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:0 }}>
+          {TABS.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{ fontSize:12, fontWeight:tab===t.id?700:400, color:tab===t.id?(t.id==="ai"?"#a78bfa":C.text):C.muted, background:"none", border:"none", borderBottom:`2px solid ${tab===t.id?(t.id==="ai"?"#a78bfa":C.accent):"transparent"}`, padding:"8px 18px 10px", cursor:"pointer" }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 28px" }}>
+
+        {/* ─────────────────── OVERVIEW ─────────────────────────────────────── */}
+        {tab==="overview" && (
+          <div>
+            {/* KPI row */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+              <KPI label="Total GMV"        value={`$${totalGMV.toLocaleString()}`}  color={C.green}    trend={14} sub="last 30 days" />
+              <KPI label="Avg Order Value"  value={`$${avgOrderValue}`}              color={C.accent}   trend={8}  sub="per transaction" />
+              <KPI label="Avg Customer LTV" value={`$${avgLTV}`}                     color="#f59e0b"    trend={22} sub="per buyer" />
+              <KPI label="Repeat Rate"      value={`${avgRepeatRate}%`}              color="#a78bfa"    trend={5}  sub="across all shows" />
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
+              <KPI label="Total Buyers"     value={totalBuyers}                       color={C.text}     sub={`${vipBuyers.length} VIP`} />
+              <KPI label="Total Orders"     value={totalOrders}                       color={C.text}     sub={`${SHOWS.length} shows`} />
+              <KPI label="Campaign GMV"     value={`$${campaignGMV.toLocaleString()}`} color={C.green}  sub="from campaigns" />
+              <KPI label="Avg Conv. Rate"   value={`${avgConvRate}%`}                color="#f59e0b"    sub="campaign avg" />
+            </div>
+
+            {/* GMV Trend + Platform split */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16, marginBottom:20 }}>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.text }}>GMV Trend</div>
+                    <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>8-week rolling revenue</div>
+                  </div>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:800, color:C.green }}>${(gmvTrend[gmvTrend.length-1]/1000).toFixed(1)}k</div>
+                </div>
+                <LineChart data={gmvTrend} color={C.green} height={90} />
+                <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
+                  {gmvWeeks.map((w,i)=>(
+                    <span key={i} style={{ fontSize:8, color:C.subtle }}>{w.split(" ")[1]}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Revenue by Platform</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>% of total GMV · ${totalGMV.toLocaleString()}</div>
+                <div style={{ display:"flex", justifyContent:"center", marginBottom:16 }}>
+                  <DonutChart size={110} segments={Object.entries(platformGMV).filter(([,v])=>v>0).map(([k,v])=>({ value:v, color:PC[k], label:PN[k] }))} />
+                </div>
+                {Object.entries(platformGMV).filter(([,v])=>v>0).map(([k,v])=>(
+                  <div key={k} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:PC[k], flexShrink:0 }} />
+                    <span style={{ fontSize:11, color:C.muted, flex:1 }}>{PN[k]}</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.text }}>${v.toLocaleString()}</span>
+                    <span style={{ fontSize:10, color:C.subtle }}>{Math.round(v/totalGMV*100)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Top buyers */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Top Buyers by LTV</div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+                {[...buyers].sort((a,b)=>b.spend-a.spend).slice(0,8).map((b,i)=>(
+                  <div key={b.id} style={{ display:"flex", gap:10, alignItems:"center", padding:"10px 12px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10 }}>
+                    <div style={{ width:28, height:28, borderRadius:8, background:b.status==="vip"?`${C.accent}33`:C.surface, border:`1px solid ${b.status==="vip"?C.accent+"44":C.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:800, color:C.accent, flexShrink:0 }}>{i+1}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{b.name}</div>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green, fontWeight:700 }}>${b.spend.toLocaleString()}</div>
+                    </div>
+                    {b.status==="vip" && <span style={{ fontSize:9 }}>👑</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────── REVENUE ──────────────────────────────────────── */}
+        {tab==="revenue" && (
+          <div>
+            {/* GMV per show bars */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>GMV by Show</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Revenue per live show · last 4 shows</div>
+                <BarChart height={100} data={SHOWS.map(s=>({ value:s.gmv, label:s.date.split(",")[0], color:PC[s.platform], prefix:"$" }))} />
+              </div>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Buyers per Show</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Unique buyers and repeat breakdown</div>
+                <BarChart height={100} data={SHOWS.map(s=>({ value:s.buyers, label:s.date.split(",")[0], color:"#a78bfa" }))} />
+              </div>
+            </div>
+
+            {/* Campaign performance table */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:20 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Campaign Revenue Performance</div>
+              <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr", gap:0 }}>
+                {["Campaign","Recipients","Open Rate","Click Rate","Conv. Rate","GMV"].map(h=>(
+                  <div key={h} style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", padding:"0 0 10px" }}>{h}</div>
+                ))}
+                {CAMPAIGNS.filter(c=>c.status==="sent").map((c,i)=>{
+                  const openRate  = c.recipients>0?Math.round(c.opened/c.recipients*100):0;
+                  const clickRate = c.recipients>0?Math.round(c.clicked/c.recipients*100):0;
+                  const convRate  = c.recipients>0?Math.round(c.converted/c.recipients*100):0;
+                  const typeColors= { email:"#3b82f6", sms:"#10b981", ig_dm:"#ec4899", tt_dm:"#f43f5e", wn_dm:"#7c3aed", am_msg:"#f59e0b" };
+                  return [
+                    <div key={`n${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}` }}>
+                      <div style={{ fontSize:11, fontWeight:600, color:C.text }}>{c.name}</div>
+                      <span style={{ fontSize:9, color:typeColors[c.type]||C.accent, background:`${typeColors[c.type]||C.accent}15`, padding:"1px 6px", borderRadius:4, fontWeight:700 }}>{c.type.toUpperCase()}</span>
+                    </div>,
+                    <div key={`r${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text, display:"flex", alignItems:"center" }}>{c.recipients.toLocaleString()}</div>,
+                    <div key={`o${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:openRate>70?C.green:openRate>40?"#f59e0b":"#9ca3af" }}>{openRate}%</span>
+                    </div>,
+                    <div key={`cl${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:clickRate>50?C.green:clickRate>25?"#f59e0b":"#9ca3af" }}>{clickRate}%</span>
+                    </div>,
+                    <div key={`cv${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:convRate>30?C.green:convRate>15?"#f59e0b":"#9ca3af" }}>{convRate}%</span>
+                    </div>,
+                    <div key={`g${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.green, display:"flex", alignItems:"center" }}>{c.gmv>0?`$${c.gmv.toLocaleString()}`:"—"}</div>,
+                  ];
+                })}
+              </div>
+            </div>
+
+            {/* Product revenue */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Top Products by Revenue (Last 30 Days)</div>
+              {[...PRODUCTS].sort((a,b)=>b.soldLast30*b.price - a.soldLast30*a.price).slice(0,6).map((p,i)=>{
+                const rev = p.soldLast30*p.price;
+                const maxRev = PRODUCTS.reduce((a,pr)=>Math.max(a,pr.soldLast30*pr.price),0);
+                return (
+                  <div key={p.id} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.accent, width:18, textAlign:"right", flexShrink:0 }}>{i+1}</span>
+                    <span style={{ fontSize:16, flexShrink:0 }}>{p.image}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                        <span style={{ fontSize:11, fontWeight:600, color:C.text }}>{p.name}</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.green }}>${rev.toLocaleString()}</span>
+                      </div>
+                      <div style={{ height:4, background:C.surface2, borderRadius:2 }}>
+                        <div style={{ width:`${(rev/maxRev)*100}%`, height:"100%", background:`linear-gradient(90deg,${C.accent},${C.green})`, borderRadius:2 }} />
+                      </div>
+                      <div style={{ display:"flex", gap:12, marginTop:3 }}>
+                        <span style={{ fontSize:9, color:C.muted }}>{p.soldLast30} sold · ${p.price} avg</span>
+                        <span style={{ fontSize:9, color:"#a78bfa" }}>AI Score {p.aiScore}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────── AUDIENCE ─────────────────────────────────────── */}
+        {tab==="audience" && (
+          <div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:20 }}>
+              {/* Buyer status donut */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Buyer Health</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>Status breakdown of {totalBuyers} buyers</div>
+                <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
+                  <DonutChart size={110} segments={[
+                    { value:statusCounts.vip||0,     color:"#7c3aed", label:"VIP"     },
+                    { value:statusCounts.active||0,  color:"#10b981", label:"Active"  },
+                    { value:statusCounts.new||0,     color:"#3b82f6", label:"New"     },
+                    { value:statusCounts.risk||0,    color:"#f59e0b", label:"At Risk" },
+                    { value:statusCounts.dormant||0, color:"#4b5563", label:"Dormant" },
+                  ].filter(s=>s.value>0)} />
+                </div>
+                {[
+                  { label:"VIP",     count:statusCounts.vip||0,     color:"#7c3aed" },
+                  { label:"Active",  count:statusCounts.active||0,  color:C.green   },
+                  { label:"New",     count:statusCounts.new||0,     color:"#3b82f6" },
+                  { label:"At Risk", count:statusCounts.risk||0,    color:"#f59e0b" },
+                  { label:"Dormant", count:statusCounts.dormant||0, color:"#4b5563" },
+                ].filter(s=>s.count>0).map(s=>(
+                  <div key={s.label} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:s.color, flexShrink:0 }} />
+                    <span style={{ fontSize:11, color:C.muted, flex:1 }}>{s.label}</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.text }}>{s.count}</span>
+                    <span style={{ fontSize:10, color:C.subtle }}>{Math.round(s.count/totalBuyers*100)}%</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Platform mix */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Platform Mix</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Where your buyers come from</div>
+                {Object.entries(platformBuyers).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>(
+                  <HBar key={k} label={PN[k]} value={v} max={Math.max(...Object.values(platformBuyers))} color={PC[k]} suffix=" buyers" />
+                ))}
+                <div style={{ marginTop:16, padding:"12px 14px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10 }}>
+                  <div style={{ fontSize:10, color:C.muted, marginBottom:6 }}>Revenue per buyer by platform</div>
+                  {Object.entries(platformGMV).filter(([,v])=>v>0).map(([k,v])=>{
+                    const bCount = platformBuyers[k]||1;
+                    return (
+                      <div key={k} style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                        <span style={{ fontSize:11, color:C.muted }}>{PN[k]}</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:PC[k] }}>${Math.round(v/bCount)}/buyer</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Category preferences */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Category Preferences</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Spend by product category</div>
+                {Object.entries(catSpend).sort((a,b)=>b[1]-a[1]).map(([cat,spend])=>(
+                  <HBar key={cat} label={cat} value={spend} max={Math.max(...Object.values(catSpend))} color={C.accent} suffix={` · $${spend.toLocaleString()}`} />
+                ))}
+              </div>
+            </div>
+
+            {/* LTV distribution */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Lifetime Value Distribution</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Spend concentration across buyer base</div>
+                <BarChart height={90} data={[
+                  { label:"<$500",  value:buyers.filter(b=>b.spend<500).length,              color:"#4b5563" },
+                  { label:"$500-1k",value:buyers.filter(b=>b.spend>=500&&b.spend<1000).length, color:"#6b7280" },
+                  { label:"$1-2k",  value:buyers.filter(b=>b.spend>=1000&&b.spend<2000).length, color:"#7c3aed" },
+                  { label:"$2-5k",  value:buyers.filter(b=>b.spend>=2000&&b.spend<5000).length, color:"#a78bfa" },
+                  { label:"$5k+",   value:buyers.filter(b=>b.spend>=5000).length,             color:"#10b981" },
+                ]} />
+                <div style={{ marginTop:16, display:"flex", justifyContent:"space-between", padding:"10px 14px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9 }}>
+                  <div>
+                    <div style={{ fontSize:9, color:C.muted }}>Top 20% of buyers</div>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:800, color:C.green }}>
+                      {Math.round(vipGMV/totalGMV*100)}% of GMV
+                    </div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontSize:9, color:C.muted }}>Highest LTV</div>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:800, color:C.accent }}>${topLTV.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Purchase frequency */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Purchase Frequency</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Orders per buyer bucket</div>
+                <BarChart height={90} data={[
+                  { label:"1 order",  value:buyers.filter(b=>b.orders===1).length,          color:"#4b5563" },
+                  { label:"2–5",      value:buyers.filter(b=>b.orders>=2&&b.orders<=5).length, color:"#7c3aed" },
+                  { label:"6–15",     value:buyers.filter(b=>b.orders>=6&&b.orders<=15).length, color:"#a78bfa" },
+                  { label:"16–30",    value:buyers.filter(b=>b.orders>=16&&b.orders<=30).length, color:C.green  },
+                  { label:"30+",      value:buyers.filter(b=>b.orders>30).length,            color:"#10b981" },
+                ]} />
+                <div style={{ marginTop:12, fontSize:11, color:C.muted }}>
+                  Avg <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:C.text }}>{Math.round(totalOrders/totalBuyers)}</span> orders/buyer · Most valuable segment: <span style={{ color:C.green, fontWeight:700 }}>6–15 orders</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Loyalty tier breakdown */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Loyalty Tier Health</div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+                {LOYALTY_TIERS.map(tier=>{
+                  const tierBuyers = Object.values(LOYALTY_BUYERS).filter(lb=>lb.tier===tier.id);
+                  const tierGMV    = buyers.filter(b=>{ const lb=LOYALTY_BUYERS[b.id]; return lb&&lb.tier===tier.id; }).reduce((a,b)=>a+b.spend,0);
+                  return (
+                    <div key={tier.id} style={{ background:tier.bg, border:`1px solid ${tier.color}33`, borderRadius:12, padding:"14px 16px" }}>
+                      <div style={{ fontSize:20, marginBottom:8 }}>{tier.icon}</div>
+                      <div style={{ fontSize:13, fontWeight:800, color:tier.color, marginBottom:2 }}>{tier.label}</div>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:800, color:C.text, marginBottom:2 }}>{tierBuyers.length}</div>
+                      <div style={{ fontSize:10, color:C.muted }}>buyers</div>
+                      {tierGMV>0 && <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.green, marginTop:6 }}>${tierGMV.toLocaleString()} GMV</div>}
+                      <div style={{ fontSize:10, color:C.subtle, marginTop:4 }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?`–${tier.maxPoints.toLocaleString()}`:"+"} pts</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────── SHOWS ────────────────────────────────────────── */}
+        {tab==="shows" && (
+          <div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+              <KPI label="Best GMV"       value={`$${Math.max(...SHOWS.map(s=>s.gmv)).toLocaleString()}`} color={C.green} sub="single show" />
+              <KPI label="Avg Show GMV"   value={`$${Math.round(SHOWS.reduce((a,s)=>a+s.gmv,0)/SHOWS.length).toLocaleString()}`} color={C.accent} />
+              <KPI label="Avg Buyers/Show" value={Math.round(SHOWS.reduce((a,s)=>a+s.buyers,0)/SHOWS.length)} color="#a78bfa" />
+              <KPI label="Best Platform"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]&&PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]} color="#f59e0b" sub="by GMV" />
+            </div>
+
+            {/* Show performance table */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:20 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Show-by-Show Performance</div>
+              <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr 1fr", gap:0 }}>
+                {["Show","Platform","Date","GMV","Buyers","Repeat Rate","New Buyers"].map(h=>(
+                  <div key={h} style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", padding:"0 0 10px" }}>{h}</div>
+                ))}
+                {[...SHOWS].sort((a,b)=>new Date(b.date)-new Date(a.date)).map((s,i)=>[
+                  <div key={`t${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontSize:12, fontWeight:600, color:C.text }}>{s.title}</div>,
+                  <div key={`p${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}><PlatformPill code={s.platform} /></div>,
+                  <div key={`d${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontSize:11, color:C.muted, display:"flex", alignItems:"center" }}>{s.date}</div>,
+                  <div key={`g${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:800, color:C.green, display:"flex", alignItems:"center" }}>${s.gmv.toLocaleString()}</div>,
+                  <div key={`b${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text, display:"flex", alignItems:"center" }}>{s.buyers}</div>,
+                  <div key={`r${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:s.repeatRate>=65?C.green:s.repeatRate>=50?"#f59e0b":"#ef4444" }}>{s.repeatRate}%</span>
+                  </div>,
+                  <div key={`n${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:"#a78bfa", display:"flex", alignItems:"center" }}>{s.newBuyers}</div>,
+                ])}
+              </div>
+            </div>
+
+            {/* Platform comparison */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Platform Comparison</div>
+                {Object.entries(platformGMV).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+                  const shows = SHOWS.filter(s=>s.platform===k);
+                  const avgRR = shows.length ? Math.round(shows.reduce((a,s)=>a+s.repeatRate,0)/shows.length) : 0;
+                  return (
+                    <div key={k} style={{ display:"flex", gap:14, alignItems:"center", padding:"12px 0", borderBottom:`1px solid ${C.border}` }}>
+                      <div style={{ width:36, height:36, borderRadius:10, background:`${PC[k]}18`, border:`1px solid ${PC[k]}44`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <PlatformPill code={k} />
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:800, color:C.green }}>${v.toLocaleString()}</div>
+                        <div style={{ fontSize:10, color:C.muted }}>{shows.length} show{shows.length!==1?"s":""} · {avgRR}% repeat rate</div>
+                      </div>
+                      <div style={{ textAlign:"right" }}>
+                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:PC[k] }}>{Math.round(v/totalGMV*100)}%</div>
+                        <div style={{ fontSize:9, color:C.muted }}>of GMV</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Repeat Rate by Show</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Buyer loyalty signal per show</div>
+                <BarChart height={100} data={SHOWS.map(s=>({
+                  value:s.repeatRate,
+                  label:s.date.split(",")[0],
+                  color:s.repeatRate>=65?C.green:s.repeatRate>=50?"#f59e0b":"#ef4444",
+                  prefix:"",
+                }))} />
+                <div style={{ fontSize:10, color:C.muted, marginTop:8 }}>
+                  Target: <span style={{ color:C.green, fontWeight:700 }}>65%+</span> repeat rate · Current avg: <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:C.text }}>{avgRepeatRate}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────── AI INSIGHTS ──────────────────────────────────── */}
+        {tab==="ai" && (
+          <div>
+            <div style={{ background:"linear-gradient(135deg,#2d1f5e18,#1a103022)", border:`1px solid ${C.accent}33`, borderRadius:14, padding:"16px 22px", marginBottom:20, display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:11, background:`${C.accent}22`, border:`1px solid ${C.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>✦</div>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text }}>AI Business Intelligence</div>
+                <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>Insights generated from your real show, buyer, campaign, and product data. Updated after every show.</div>
+              </div>
+              <div style={{ marginLeft:"auto", fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"4px 10px", borderRadius:7 }}>
+                {new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
+              </div>
+            </div>
+
+            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              {[
+                {
+                  id:"i1",
+                  priority:"high",
+                  category:"Revenue",
+                  icon:"💰",
+                  color:C.green,
+                  title:"Your VIP segment is underserved",
+                  insight:`${vipBuyers.length} VIP buyers generate ${Math.round(vipGMV/totalGMV*100)}% of total GMV but haven't had a dedicated VIP-only show in 30+ days. Based on their average spend of $${Math.round(vipGMV/vipBuyers.length).toLocaleString()}/buyer, a private VIP show could generate an estimated $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length/2).toLocaleString()}–$${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length).toLocaleString()} in a single session.`,
+                  action:"Schedule VIP Show",
+                  impact:"$2,400–$4,820 est. GMV",
+                  confidence:91,
+                },
+                {
+                  id:"i2",
+                  priority:"high",
+                  category:"Retention",
+                  icon:"⚠️",
+                  color:"#f59e0b",
+                  title:`${buyers.filter(b=>b.status==="risk").length} at-risk buyers need immediate re-engagement`,
+                  insight:`${buyers.filter(b=>b.status==="risk").map(b=>b.name).join(", ")} haven't purchased in 28–44 days. Their combined historical spend is $${buyers.filter(b=>b.status==="risk").reduce((a,b)=>a+b.spend,0).toLocaleString()}. Win-back campaigns sent within 45 days have a ${avgConvRate+8}% conversion rate on your account — 8 points above average.`,
+                  action:"Launch Win-Back Campaign",
+                  impact:`${buyers.filter(b=>b.status==="risk").length} buyers · potential $${Math.round(buyers.filter(b=>b.status==="risk").reduce((a,b)=>a+b.spend,0)*0.3).toLocaleString()} recovered`,
+                  confidence:84,
+                },
+                {
+                  id:"i3",
+                  priority:"high",
+                  category:"Product",
+                  icon:"🏆",
+                  color:"#a78bfa",
+                  title:"3 high-AI-score products underperformed last show",
+                  insight:`Mystery Box (AI: 8.5), Luka Doncic RC Lot (AI: 9.6), and Jordan RC Reprint (AI: 9.7) all have AI scores above 9.0 but weren't featured in your last 2 shows. Historically, featuring 2+ top-AI-score products per show increases average GMV by $${Math.round(totalGMV/SHOWS.length*0.18).toLocaleString()}. Consider opening your next show with these items.`,
+                  action:"Add to Show Planner",
+                  impact:`+$${Math.round(totalGMV/SHOWS.length*0.18).toLocaleString()} est. GMV per show`,
+                  confidence:88,
+                },
+                {
+                  id:"i4",
+                  priority:"medium",
+                  category:"Platform",
+                  icon:"📱",
+                  color:"#f43f5e",
+                  title:"TikTok shows have 55% repeat rate vs 70% on Whatnot",
+                  insight:`Your TikTok audience skews toward new buyers (avg ${SHOWS.filter(s=>s.platform==="TT")[0]?.newBuyers||14} new buyers/show vs ${SHOWS.filter(s=>s.platform==="WN")[0]?.newBuyers||7} on Whatnot) but lower repeat rate. This suggests TikTok is your acquisition channel and Whatnot is your retention channel. Strategy: use TikTok to acquire → drive to Whatnot via opt-in page for long-term LTV.`,
+                  action:"Set Up Cross-Platform Funnel",
+                  impact:"Estimated +12% LTV on TikTok buyers",
+                  confidence:79,
+                },
+                {
+                  id:"i5",
+                  priority:"medium",
+                  category:"Campaigns",
+                  icon:"📊",
+                  color:"#3b82f6",
+                  title:"SMS campaigns outperform email by 2.4× on conversion",
+                  insight:`Your SMS campaigns average ${Math.round(CAMPAIGNS.filter(c=>c.type==="sms"&&c.status==="sent").reduce((a,c)=>a+(c.converted/c.recipients*100),0)/CAMPAIGNS.filter(c=>c.type==="sms"&&c.status==="sent").length)}% conversion vs ${Math.round(CAMPAIGNS.filter(c=>c.type==="email"&&c.status==="sent").reduce((a,c)=>a+(c.converted/c.recipients*100),0)/CAMPAIGNS.filter(c=>c.type==="email"&&c.status==="sent").length)}% for email. Your SMS list of ${CAMPAIGNS.filter(c=>c.type==="sms")[0]?.recipients||124} subscribers generates $${CAMPAIGNS.filter(c=>c.type==="sms"&&c.status==="sent").reduce((a,c)=>a+c.gmv,0).toLocaleString()} per campaign. Growing this list by 3× could add $${Math.round(CAMPAIGNS.filter(c=>c.type==="sms"&&c.status==="sent").reduce((a,c)=>a+c.gmv,0)*3).toLocaleString()}/campaign.`,
+                  action:"Grow SMS List",
+                  impact:"3× list = est. +$9,600/campaign",
+                  confidence:82,
+                },
+                {
+                  id:"i6",
+                  priority:"low",
+                  category:"Show Timing",
+                  icon:"🕐",
+                  color:"#10b981",
+                  title:"Thursday shows outperform other days by $900 avg GMV",
+                  insight:`Your 2 Thursday shows averaged $${Math.round((4820+5100)/2).toLocaleString()} GMV with ${Math.round((68+72)/2)}% repeat rate. Non-Thursday shows averaged $${Math.round((3210+2100)/2).toLocaleString()} GMV with ${Math.round((55+43)/2)}% repeat rate. Your audience has formed a habit around Thursday nights. Consistency in timing increases repeat attendance — consider locking Thursday 8pm EST as your primary show slot and promoting it as a recurring event.`,
+                  action:"Set Recurring Show Schedule",
+                  impact:"$900/show uplift vs other days",
+                  confidence:76,
+                },
+              ].map(insight=>{
+                const expanded = aiExpanded===insight.id;
+                const priColor = insight.priority==="high"?"#ef4444":insight.priority==="medium"?"#f59e0b":"#6b7280";
+                return (
+                  <div key={insight.id} style={{ background:C.surface, border:`1px solid ${expanded?insight.color+"44":C.border}`, borderRadius:14, overflow:"hidden", transition:"border-color .2s" }}>
+                    <div onClick={()=>setAiExpanded(expanded?null:insight.id)} style={{ padding:"16px 20px", cursor:"pointer", display:"flex", gap:14, alignItems:"flex-start" }}>
+                      <div style={{ width:40, height:40, borderRadius:11, background:`${insight.color}15`, border:`1px solid ${insight.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>{insight.icon}</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5, flexWrap:"wrap" }}>
+                          <span style={{ fontSize:9, fontWeight:800, color:priColor, background:`${priColor}18`, border:`1px solid ${priColor}33`, padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>{insight.priority} priority</span>
+                          <span style={{ fontSize:9, color:C.muted, background:C.surface2, border:`1px solid ${C.border}`, padding:"2px 7px", borderRadius:4 }}>{insight.category}</span>
+                          <span style={{ fontSize:9, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"2px 7px", borderRadius:4 }}>{insight.confidence}% confidence</span>
+                        </div>
+                        <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>{insight.title}</div>
+                        {!expanded && <div style={{ fontSize:11, color:C.muted, lineHeight:1.5, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{insight.insight}</div>}
+                      </div>
+                      <div style={{ fontSize:13, color:C.muted, flexShrink:0, marginTop:4 }}>{expanded?"▲":"▼"}</div>
+                    </div>
+                    {expanded && (
+                      <div style={{ padding:"0 20px 18px", borderTop:`1px solid ${C.border}` }}>
+                        <div style={{ padding:"14px 0 16px", fontSize:12, color:"#d1d5db", lineHeight:1.7 }}>{insight.insight}</div>
+                        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                          <button style={{ background:`linear-gradient(135deg,${insight.color},${insight.color}cc)`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>{insight.action} →</button>
+                          <div style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"8px 14px" }}>
+                            <div style={{ fontSize:9, color:C.muted, marginBottom:2 }}>Estimated Impact</div>
+                            <div style={{ fontSize:11, fontWeight:700, color:C.green }}>{insight.impact}</div>
+                          </div>
+                          <div style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"8px 14px" }}>
+                            <div style={{ fontSize:9, color:C.muted, marginBottom:2 }}>AI Confidence</div>
+                            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                              <div style={{ width:60, height:4, background:C.border2, borderRadius:2 }}>
+                                <div style={{ width:`${insight.confidence}%`, height:"100%", background:"#a78bfa", borderRadius:2 }} />
+                              </div>
+                              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:"#a78bfa" }}>{insight.confidence}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+
 // ─── SCREEN: PRODUCTION ───────────────────────────────────────────────────────
 function ScreenProduction({ persona, navigate }) {
   const [tab, setTab] = useState("equipment");
@@ -5433,6 +6116,7 @@ export default function StreamlivePrototype() {
              view==="show-planner"  ? "Shows / Show Planner" :
              view==="order-review"   ? "Shows / Order Review" :
              view==="catalog"       ? "Catalog" :
+             view==="analytics"     ? "Analytics" :
              view==="loyalty"       ? "Loyalty Hub" :
              view==="production"    ? "Production" :
              view}
@@ -5535,6 +6219,7 @@ export default function StreamlivePrototype() {
             {view==="show-planner" && <ScreenShowPlanner      navigate={navigate} />}
             {view==="loyalty"      && <ScreenLoyalty          buyers={buyers} navigate={navigate} persona={persona} />}
             {view==="production"   && <ScreenProduction       persona={persona} navigate={navigate} />}
+            {view==="analytics"    && <ScreenAnalytics        buyers={buyers} persona={persona} />}
           </div>
         </div>
       </div>
