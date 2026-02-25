@@ -3588,7 +3588,7 @@ export default function StreamlivePrototype() {
             {view==="campaigns"    && <ScreenCampaigns       navigate={navigate} persona={persona} />}
             {view==="composer"     && <ScreenComposer        navigate={navigate} persona={persona} />}
             {view==="subscribers"  && <ScreenSubscribers     persona={persona} />}
-            {view==="settings"     && <ScreenSettings        persona={persona} initialTab={onboardParam==="settings"?"messaging":undefined} />}
+            {view==="settings"     && <ScreenSettings        persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} />}
             {view==="order-review" && <ScreenOrderReview      params={params} navigate={navigate} />}
             {view==="catalog"      && <ScreenCatalog         persona={persona} navigate={navigate} />}
             {view==="show-planner" && <ScreenShowPlanner      navigate={navigate} />}
