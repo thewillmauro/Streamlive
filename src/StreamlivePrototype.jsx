@@ -354,9 +354,8 @@ const NAV = [
   { id:"settings",    label:"Settings",    icon:"◎",  route:"/settings" },
 ];
 
-// Producer role can access these nav items regardless of plan tier
-// (Production is normally locked on Starter/Growth for the account owner,
-//  but a Producer team member gets it on any plan)
+// Producer role requires Pro+ plan — Production Suite is locked on Starter/Growth.
+// Inviting a Producer on Starter or Growth shows an upgrade upsell instead.
 const PRODUCER_NAV_ACCESS = ["dashboard","shows","production","catalog","settings"];
 
 // Plan hierarchy: 0=starter, 1=growth, 2=pro, 3=enterprise
@@ -2726,7 +2725,7 @@ function TeamTab({ persona }) {
   const ROLE_META = {
     Owner:             { color: C.accent,   desc: "Full access to everything" },
     Admin:             { color: "#f59e0b",  desc: "Manage shows, buyers, campaigns, settings" },
-    Producer:          { color: "#06b6d4",  desc: "Production suite, shows & catalog — all plans", badge: "Production Access", access: ["Shows", "Production", "Live Companion", "Catalog"] },
+    Producer:          { color: "#06b6d4",  desc: "Production suite, shows & catalog — Pro+ only", badge: "Pro+", access: ["Shows", "Production", "Live Companion", "Catalog"] },
     "Show Manager":    { color: "#10b981",  desc: "Run live shows and manage orders" },
     "Campaign Manager":{ color: "#3b82f6",  desc: "Create and send campaigns" },
     Viewer:            { color: "#9ca3af",  desc: "Read-only access" },
@@ -3014,14 +3013,34 @@ function TeamTab({ persona }) {
                 {ROLES.map(r => {
                   const rm = ROLE_META[r];
                   const sel = inviteRole === r;
+                  const producerLocked = r === "Producer" && PLAN_LEVEL[persona.plan] < 2;
                   return (
-                    <div key={r} onClick={()=>setInviteRole(r)} style={{ padding:"10px 12px", borderRadius:10, border:`1px solid ${sel?rm.color+"66":C.border}`, background:sel?`${rm.color}10`:"transparent", cursor:"pointer" }}>
+                    <div key={r}
+                      onClick={()=>{ if (!producerLocked) setInviteRole(r); }}
+                      style={{ padding:"10px 12px", borderRadius:10,
+                        border:`1px solid ${producerLocked?"#2a2a3a":sel?rm.color+"66":C.border}`,
+                        background:producerLocked?"#0b0b18":sel?`${rm.color}10`:"transparent",
+                        cursor:producerLocked?"default":"pointer",
+                        opacity:producerLocked?0.6:1, position:"relative" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
-                        <div style={{ fontSize:12, fontWeight:700, color:sel?rm.color:C.text }}>{r}</div>
-                        {rm.badge && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase", letterSpacing:"0.06em" }}>All Plans</span>}
+                        <div style={{ fontSize:12, fontWeight:700, color:producerLocked?"#374151":sel?rm.color:C.text }}>{r}</div>
+                        {producerLocked
+                          ? <span style={{ fontSize:7, fontWeight:800, color:"#f59e0b", background:"#f59e0b14", border:"1px solid #f59e0b33", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>🔒 Pro+</span>
+                          : rm.badge && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>{rm.badge}</span>
+                        }
                       </div>
-                      <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{rm.desc}</div>
-                      {sel && rm.access && (
+                      <div style={{ fontSize:10, color:producerLocked?"#374151":C.muted, marginTop:2 }}>{rm.desc}</div>
+                      {producerLocked && (
+                        <div style={{ marginTop:8, background:"#f59e0b0a", border:"1px solid #f59e0b22", borderRadius:7, padding:"7px 10px" }}>
+                          <div style={{ fontSize:9, color:"#f59e0b", fontWeight:700, marginBottom:3 }}>Upgrade to Pro to add a Producer</div>
+                          <div style={{ fontSize:9, color:C.muted, lineHeight:1.5 }}>Production Suite — camera control, OBS scenes, device automation & more.</div>
+                          <button onClick={e=>{ e.stopPropagation(); setShowInviteModal(false); }}
+                            style={{ marginTop:8, fontSize:9, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b44", padding:"4px 10px", borderRadius:6, cursor:"pointer", width:"100%" }}>
+                            View Pro upgrade →
+                          </button>
+                        </div>
+                      )}
+                      {!producerLocked && sel && rm.access && (
                         <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
                           {rm.access.map(a=>(
                             <span key={a} style={{ fontSize:8, fontWeight:700, color:"#06b6d4", background:"#06b6d412", border:"1px solid #06b6d433", padding:"1px 6px", borderRadius:3 }}>{a}</span>
@@ -6736,7 +6755,7 @@ function ScreenTeam({ persona }) {
     Manager:  "Edit sellers, campaigns, buyers, shows",
     Analyst:  "View analytics across network",
     Support:  "View buyers and handle support",
-    Producer: "Production, shows & live — all plans",
+    Producer: "Production, shows & live — Pro+ sellers only",
   };
 
   const handleInvite = async () => {
@@ -6804,12 +6823,19 @@ function ScreenTeam({ persona }) {
                   {["Manager","Producer","Analyst","Support","Owner"].map(r=>{
                     const col=roleColors[r];
                     const isSelected=inviteRole===r;
+                    // For Producer: flag any managed sellers on Starter/Growth
+                    const lockedSellers = r==="Producer"
+                      ? sellers.filter(s=>PLAN_LEVEL[s.plan]<2)
+                      : [];
                     return (
                       <button key={r} onClick={()=>setInviteRole(r)}
                         style={{ padding:"10px 12px", borderRadius:9, border:`1px solid ${isSelected?col+"66":C.border2}`, background:isSelected?`${col}14`:"transparent", cursor:"pointer", textAlign:"left" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:3 }}>
                           <div style={{ fontSize:11, fontWeight:700, color:isSelected?col:C.muted }}>{r}</div>
-                          {r==="Producer" && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>All Plans</span>}
+                          {r==="Producer"
+                            ? <span style={{ fontSize:7, fontWeight:800, color:"#f59e0b", background:"#f59e0b14", border:"1px solid #f59e0b33", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>Pro+ Sellers</span>
+                            : null
+                          }
                         </div>
                         <div style={{ fontSize:9, color:C.subtle }}>{roleDescriptions[r]}</div>
                         {isSelected && (
@@ -6819,6 +6845,26 @@ function ScreenTeam({ persona }) {
                                 {permLabels[p]||p}
                               </span>
                             ))}
+                          </div>
+                        )}
+                        {isSelected && lockedSellers.length>0 && (
+                          <div style={{ marginTop:8, background:"#f59e0b08", border:"1px solid #f59e0b28", borderRadius:7, padding:"7px 9px" }}>
+                            <div style={{ fontSize:9, fontWeight:700, color:"#f59e0b", marginBottom:3 }}>
+                              ⚠ {lockedSellers.length} seller{lockedSellers.length>1?"s":""} won't get Production access
+                            </div>
+                            <div style={{ fontSize:8, color:C.muted, lineHeight:1.5, marginBottom:5 }}>
+                              {lockedSellers.map(s=>s.name).join(", ")} {lockedSellers.length>1?"are":"is"} on {lockedSellers.length>1?"plans":"a plan"} below Pro. Upgrade to unlock the Production Suite for {lockedSellers.length>1?"them":"this seller"}.
+                            </div>
+                            <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+                              {lockedSellers.map(s=>{
+                                const pc=({starter:"#10b981",growth:"#7c3aed"})[s.plan]||C.accent;
+                                return (
+                                  <span key={s.id} style={{ fontSize:8, fontWeight:700, color:pc, background:`${pc}12`, border:`1px solid ${pc}28`, padding:"1px 7px", borderRadius:4 }}>
+                                    {s.name} · {s.plan}
+                                  </span>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
                       </button>
@@ -7456,7 +7502,7 @@ function ScreenAcceptInvite({ token }) {
   const ROLE_DESC = {
     "Owner":              "Full access to everything",
     "Admin":              "Manage shows, buyers, campaigns, and settings",
-    "Producer":           "Production suite, shows & live companion — all plans",
+    "Producer":           "Production suite, shows & live companion — Pro+ sellers only",
     "Show Manager":       "Run live shows and manage orders",
     "Campaign Manager":   "Create and send campaigns",
     "Viewer":             "Read-only access to all sections",
