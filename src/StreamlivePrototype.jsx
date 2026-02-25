@@ -292,14 +292,15 @@ const UPCOMING_SHOW = {
 
 // ─── NAV ITEMS ────────────────────────────────────────────────────────────────
 const NAV = [
-  { id:"dashboard",   label:"Dashboard",  icon:"⬡",  route:"/dashboard" },
-  { id:"buyers",      label:"Buyers",     icon:"◉",  route:"/buyers" },
-  { id:"shows",       label:"Shows",      icon:"◈",  route:"/shows" },
-  { id:"catalog",     label:"Catalog",    icon:"◧",  route:"/catalog" },
-  { id:"campaigns",   label:"Campaigns",  icon:"◆",  route:"/campaigns" },
-  { id:"subscribers", label:"Subscribers",icon:"●",  route:"/subscribers" },
-  { id:"loyalty",     label:"Loyalty",    icon:"♦",  route:"/loyalty" },
-  { id:"settings",    label:"Settings",   icon:"◎",  route:"/settings" },
+  { id:"dashboard",   label:"Dashboard",   icon:"⬡",  route:"/dashboard" },
+  { id:"buyers",      label:"Buyers",      icon:"◉",  route:"/buyers" },
+  { id:"shows",       label:"Shows",       icon:"◈",  route:"/shows" },
+  { id:"production",  label:"Production",  icon:"⬛",  route:"/production" },
+  { id:"catalog",     label:"Catalog",     icon:"◧",  route:"/catalog" },
+  { id:"campaigns",   label:"Campaigns",   icon:"◆",  route:"/campaigns" },
+  { id:"subscribers", label:"Subscribers", icon:"●",  route:"/subscribers" },
+  { id:"loyalty",     label:"Loyalty",     icon:"♦",  route:"/loyalty" },
+  { id:"settings",    label:"Settings",    icon:"◎",  route:"/settings" },
 ];
 
 const PLAN_FEATURES = {
@@ -831,10 +832,18 @@ function ScreenShowReport({ show, navigate }) {
 }
 
 // ─── SCREEN: LIVE COMPANION ───────────────────────────────────────────────────
-function ScreenLive({ buyers, navigate }) {
+function ScreenLive({ buyers, navigate, params }) {
+  const selectedPlatforms = params?.selectedPlatforms || ["WN"];
+  // Per-platform viewer counts (seeded differently per platform)
+  const [platformViewers, setPlatformViewers] = useState(() => {
+    const seeds = { WN:234, TT:891, IG:312, AM:156 };
+    return Object.fromEntries(selectedPlatforms.map(p=>[p, seeds[p]||200]));
+  });
   const [liveBuyers, setLiveBuyers]   = useState(buyers.slice(0,3));
   const [elapsed, setElapsed]         = useState(0);
-  const [viewerCount, setViewerCount] = useState(234);
+  const [viewerCount, setViewerCount] = useState(
+    selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156}; return a+(s[p]||200);},0)
+  );
   const [gmv, setGmv]                 = useState(1420);
   const [search, setSearch]           = useState("");
   const [selectedId, setSelectedId]   = useState(buyers[0]?.id || null);
@@ -851,6 +860,11 @@ function ScreenLive({ buyers, navigate }) {
   useEffect(()=>{
     const t = setInterval(()=>{
       setElapsed(e=>e+1);
+      setPlatformViewers(prev=>{
+        const next={...prev};
+        selectedPlatforms.forEach(p=>{ next[p]=Math.max(10,next[p]+Math.floor((Math.random()-0.38)*12)); });
+        return next;
+      });
       setViewerCount(v=>Math.max(180, v + Math.floor((Math.random()-0.4)*8)));
       setGmv(g=>g + Math.floor(Math.random()*40));
       if (Math.random() > 0.7) {
@@ -905,13 +919,33 @@ function ScreenLive({ buyers, navigate }) {
 
       {/* ── LIVE HEADER ── */}
       <div style={{ background:"#090916", borderBottom:`1px solid ${C.border}`, padding:"10px 24px", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
+        {/* Timer + LIVE pill */}
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ width:8, height:8, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }} />
-          <span style={{ fontSize:12, fontWeight:700, color:"#ef4444" }}>LIVE</span>
+          <div style={{ display:"flex", alignItems:"center", gap:6, background:"#2d080822", border:"1px solid #ef444433", borderRadius:20, padding:"3px 10px 3px 6px" }}>
+            <div style={{ width:7, height:7, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }} />
+            <span style={{ fontSize:11, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE</span>
+          </div>
           <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:C.muted }}>{fmt(elapsed)}</span>
         </div>
-        <div style={{ display:"flex", gap:20 }}>
-          <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.text }}>{viewerCount}</span><span style={{ fontSize:11, color:C.muted }}> viewers</span></div>
+        {/* Per-platform live badges */}
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+          {selectedPlatforms.map(pid=>{
+            const pc={WN:"#7c3aed",TT:"#f43f5e",IG:"#ec4899",AM:"#f59e0b"};
+            const pn={WN:"Whatnot",TT:"TikTok",IG:"Instagram",AM:"Amazon"};
+            const col=pc[pid]||"#7c3aed";
+            const viewers=platformViewers[pid]||0;
+            return (
+              <div key={pid} style={{ display:"flex", alignItems:"center", gap:6, background:`${col}15`, border:`1px solid ${col}44`, borderRadius:8, padding:"4px 10px" }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:col, animation:"pulse 1s infinite" }} />
+                <span style={{ fontSize:11, fontWeight:700, color:col }}>{pn[pid]}</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.text, fontWeight:700 }}>{viewers.toLocaleString()}</span>
+                <span style={{ fontSize:10, color:C.muted }}>👁</span>
+              </div>
+            );
+          })}
+        </div>
+        {/* GMV + buyers */}
+        <div style={{ display:"flex", gap:16 }}>
           <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.green }}>${gmv.toLocaleString()}</span><span style={{ fontSize:11, color:C.muted }}> GMV</span></div>
           <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:"#a78bfa" }}>{liveBuyers.length}</span><span style={{ fontSize:11, color:C.muted }}> buyers</span></div>
         </div>
@@ -3730,6 +3764,7 @@ function ScreenCatalog({ persona, navigate }) {
 // ─── SCREEN: SHOW PLANNER ──────────────────────────────────────────────────────
 function ScreenShowPlanner({ navigate }) {
   const [step, setStep] = useState(1);
+  const [selectedPlatforms, setSelectedPlatforms] = useState(["WN"]);
   const [selectedProducts, setSelectedProducts] = useState(
     UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
   );
@@ -3743,11 +3778,15 @@ function ScreenShowPlanner({ navigate }) {
     mysteryBonus: true, mysteryThreshold: 3,
   });
 
+  const togglePlatform = (pid) => setSelectedPlatforms(prev =>
+    prev.includes(pid) ? prev.filter(p=>p!==pid) : [...prev, pid]
+  );
+
   const moveUp   = (i) => { if(i===0) return; const a=[...runOrder]; [a[i-1],a[i]]=[a[i],a[i-1]]; setRunOrder(a); };
   const moveDown = (i) => { if(i===runOrder.length-1) return; const a=[...runOrder]; [a[i],a[i+1]]=[a[i+1],a[i]]; setRunOrder(a); };
   const remove   = (i) => setRunOrder(r=>r.filter((_,idx)=>idx!==i));
   const showReadyProducts = PRODUCTS.filter(p=>p.showReady);
-  const steps = ["Select Products","Set Run Order","Show Perks","Ready to Go Live"];
+  const steps = ["Choose Platforms","Select Products","Set Run Order","Show Perks","Go Live"];
 
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
@@ -3775,6 +3814,44 @@ function ScreenShowPlanner({ navigate }) {
       <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
         {step===1 && (
           <div>
+            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Where are you streaming today?</div>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Select all platforms you'll go live on. You can multi-stream to multiple destinations at once.</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, maxWidth:560 }}>
+              {[
+                { id:"WN", name:"Whatnot",     color:"#7c3aed", desc:"Live auction & buy-now",    icon:"◈" },
+                { id:"TT", name:"TikTok Live", color:"#f43f5e", desc:"Short-form + live shopping", icon:"♦" },
+                { id:"IG", name:"Instagram",   color:"#ec4899", desc:"Stories & live video",        icon:"●" },
+                { id:"AM", name:"Amazon Live", color:"#f59e0b", desc:"Product demos & shoppable",   icon:"◆" },
+              ].map(pl => {
+                const active = selectedPlatforms.includes(pl.id);
+                return (
+                  <div key={pl.id} onClick={()=>togglePlatform(pl.id)} style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 18px", background:active?`${pl.color}12`:C.surface, border:`2px solid ${active?pl.color+"66":C.border}`, borderRadius:14, cursor:"pointer", transition:"all .15s" }}>
+                    <div style={{ width:44, height:44, borderRadius:12, background:`${pl.color}22`, border:`1px solid ${pl.color}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, color:pl.color, flexShrink:0 }}>{pl.icon}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:2 }}>{pl.name}</div>
+                      <div style={{ fontSize:11, color:C.muted }}>{pl.desc}</div>
+                    </div>
+                    <div style={{ width:22, height:22, borderRadius:"50%", background:active?pl.color:C.surface2, border:`2px solid ${active?pl.color:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, color:"#fff", flexShrink:0 }}>{active?"✓":""}</div>
+                  </div>
+                );
+              })}
+            </div>
+            {selectedPlatforms.length > 1 && (
+              <div style={{ marginTop:16, display:"flex", alignItems:"center", gap:10, background:"#0a1e16", border:"1px solid #10b98133", borderRadius:10, padding:"10px 16px" }}>
+                <span style={{ color:C.green, fontSize:13 }}>✦</span>
+                <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Multi-stream enabled</span>
+                <span style={{ fontSize:12, color:C.muted }}>— streaming to {selectedPlatforms.length} platforms simultaneously</span>
+              </div>
+            )}
+            <div style={{ marginTop:24, display:"flex", justifyContent:"flex-end" }}>
+              <button onClick={()=>setStep(2)} disabled={selectedPlatforms.length===0} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer", opacity:selectedPlatforms.length===0?0.4:1 }}>
+                Select Products →
+              </button>
+            </div>
+          </div>
+        )}
+        {step===2 && (
+          <div>
             <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Choose products for this show</div>
             <div style={{ fontSize:12, color:C.muted, marginBottom:16 }}>{selectedProducts.length} selected · AI recommends your show-ready items ranked by performance</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
@@ -3797,13 +3874,13 @@ function ScreenShowPlanner({ navigate }) {
               })}
             </div>
             <div style={{ marginTop:20, display:"flex", justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(2)} disabled={selectedProducts.length===0} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer", opacity:selectedProducts.length===0?0.4:1 }}>
+              <button onClick={()=>setStep(3)} disabled={selectedProducts.length===0} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer", opacity:selectedProducts.length===0?0.4:1 }}>
                 Set Run Order ({selectedProducts.length} products) →
               </button>
             </div>
           </div>
         )}
-        {step===2 && (
+        {step===3 && (
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
               <div>
@@ -3847,12 +3924,12 @@ function ScreenShowPlanner({ navigate }) {
               </div>
             </div>
             <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(1)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
-              <button onClick={()=>setStep(3)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Set Show Perks →</button>
+              <button onClick={()=>setStep(2)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
+              <button onClick={()=>setStep(4)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Set Show Perks →</button>
             </div>
           </div>
         )}
-        {step===3 && (
+        {step===4 && (
           <div style={{ maxWidth:680 }}>
             <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Configure perks for this show</div>
             <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>These apply only to this show. Your default loyalty tiers always apply.</div>
@@ -3877,12 +3954,12 @@ function ScreenShowPlanner({ navigate }) {
               </div>
             ))}
             <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(2)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
-              <button onClick={()=>setStep(4)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Review & Confirm →</button>
+              <button onClick={()=>setStep(3)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
+              <button onClick={()=>setStep(5)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Review & Confirm →</button>
             </div>
           </div>
         )}
-        {step===4 && (
+        {step===5 && (
           <div style={{ maxWidth:620 }}>
             <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}44`, borderRadius:16, padding:"22px 24px", marginBottom:16 }}>
               <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Show Summary</div>
@@ -3908,8 +3985,8 @@ function ScreenShowPlanner({ navigate }) {
               ))}
             </div>
             <div style={{ display:"flex", gap:10 }}>
-              <button onClick={()=>setStep(3)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live")} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+              <button onClick={()=>setStep(4)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
+              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
                 🔴 Go Live Now
               </button>
             </div>
@@ -4040,6 +4117,364 @@ function ScreenOrderReview({ params, navigate }) {
     </div>
   );
 }
+
+// ─── SCREEN: PRODUCTION ───────────────────────────────────────────────────────
+function ScreenProduction({ persona, navigate }) {
+  const [tab, setTab] = useState("equipment");
+  const [selectedLayout, setSelectedLayout] = useState("solo");
+  const [sceneSlots, setSceneSlots] = useState({
+    main: "fx3", closeup: "fx6", overlay: null, pip: "ipad",
+  });
+  const [streamReady, setStreamReady] = useState({});
+  const [testingStream, setTestingStream] = useState(null);
+  const [goingLive, setGoingLive] = useState(false);
+
+  const EQUIPMENT = [
+    { id:"fx3",    name:"Sony FX3",       type:"Camera",  icon:"📷", status:"connected", battery:null,  signal:5, res:"4K/60fps",    detail:"Main wide angle",     color:"#7c3aed" },
+    { id:"fx6",    name:"Sony FX6",       type:"Camera",  icon:"🎥", status:"connected", battery:null,  signal:5, res:"4K/120fps",   detail:"Product close-up",    color:"#7c3aed" },
+    { id:"ipad",   name:"iPad Pro 12.9"", type:"Tablet",  icon:"📱", status:"connected", battery:84,   signal:4, res:"1080p",       detail:"Chat monitor / cue",  color:"#3b82f6" },
+    { id:"lg",     name:"LG 27" Monitor", type:"Display", icon:"🖥", status:"connected", battery:null,  signal:5, res:"1080p/60Hz",  detail:"Confidence monitor",  color:"#10b981" },
+    { id:"rode",   name:"Rode Wireless GO II", type:"Audio", icon:"🎙", status:"connected", battery:72, signal:4, res:"48kHz",       detail:"Lav + boom",          color:"#f59e0b" },
+    { id:"macbook",name:"MacBook Pro",    type:"Computer",icon:"💻", status:"connected", battery:91,   signal:5, res:"OBS 4K",      detail:"Stream encoder",      color:"#6b7280" },
+    { id:"hdmi1",  name:"HDMI Capture",   type:"Capture", icon:"🔌", status:"connected", battery:null,  signal:5, res:"4K/60Hz",    detail:"FX3 → MacBook",      color:"#6b7280" },
+    { id:"tripod", name:"Fluid Head Tripod",type:"Mount", icon:"📐", status:"standby",   battery:null,  signal:null, res:"—",       detail:"Main camera support", color:"#4b5563" },
+  ];
+
+  const LAYOUTS = [
+    { id:"solo",     label:"Solo Cam",       desc:"Full screen main cam",         slots:["main"] },
+    { id:"split",    label:"Split",           desc:"Main + close-up side by side", slots:["main","closeup"] },
+    { id:"product",  label:"Product Focus",  desc:"Close-up primary, wide inset",  slots:["closeup","main"] },
+    { id:"pip",      label:"Picture-in-Pic",  desc:"Wide shot with inset corner",  slots:["main","pip"] },
+  ];
+
+  const SOURCES = [
+    { id:"fx3",    label:"Sony FX3",    icon:"📷" },
+    { id:"fx6",    label:"Sony FX6",    icon:"🎥" },
+    { id:"ipad",   label:"iPad Screen", icon:"📱" },
+    { id:"screen", label:"MacBook Screen",icon:"💻" },
+    { id:"graphic",label:"Overlay GFX", icon:"🎨" },
+  ];
+
+  const STREAM_DESTINATIONS = [
+    { id:"WN", label:"Whatnot",    color:"#7c3aed", bitrate:"6 Mbps",  latency:"1.2s",  status:"ready",  rtmp:"rtmp://live.whatnot.com/..." },
+    { id:"TT", label:"TikTok",     color:"#f43f5e", bitrate:"4 Mbps",  latency:"0.8s",  status:"ready",  rtmp:"rtmp://push.tiktokcdn.com/..." },
+    { id:"IG", label:"Instagram",  color:"#ec4899", bitrate:"3.5 Mbps",latency:"1.4s",  status:"ready",  rtmp:"rtmp://live-api-s.facebook.com/..." },
+    { id:"AM", label:"Amazon Live",color:"#f59e0b", bitrate:"4 Mbps",  latency:"2.1s",  status:"ready",  rtmp:"rtmp://live.amazon.com/..." },
+  ];
+
+  const connectedEquipment = EQUIPMENT.filter(e=>e.status==="connected");
+  const allReady = Object.keys(streamReady).length === persona.platforms.length && Object.values(streamReady).every(Boolean);
+
+  const testStream = (pid) => {
+    setTestingStream(pid);
+    setTimeout(()=>{ setTestingStream(null); setStreamReady(prev=>({...prev,[pid]:true})); }, 2000);
+  };
+
+  const SLOT_LABELS = { main:"Main Camera", closeup:"Close-Up", overlay:"Overlay", pip:"PiP Corner" };
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+      {/* HEADER */}
+      <div style={{ padding:"14px 28px 0", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, letterSpacing:"-0.3px" }}>Production</div>
+            <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{connectedEquipment.length} devices connected · Scene ready</div>
+          </div>
+          <button onClick={()=>navigate("show-planner")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
+            → Go to Show Planner
+          </button>
+        </div>
+        {/* TABS */}
+        <div style={{ display:"flex", gap:0 }}>
+          {[
+            { id:"equipment", label:"Equipment" },
+            { id:"scene",     label:"Scene Builder" },
+            { id:"stream",    label:"Stream Destinations" },
+          ].map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{ fontSize:12, fontWeight:tab===t.id?700:400, color:tab===t.id?C.text:C.muted, background:"none", border:"none", borderBottom:`2px solid ${tab===t.id?C.accent:"transparent"}`, padding:"8px 18px 10px", cursor:"pointer", transition:"all .15s" }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 28px" }}>
+
+        {/* ── TAB: EQUIPMENT ── */}
+        {tab==="equipment" && (
+          <div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text }}>Connected Devices</div>
+              <div style={{ fontSize:11, color:C.muted }}>{connectedEquipment.length}/{EQUIPMENT.length} online</div>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12, marginBottom:28 }}>
+              {EQUIPMENT.map(eq=>{
+                const isOn = eq.status==="connected";
+                return (
+                  <div key={eq.id} style={{ background:C.surface, border:`1px solid ${isOn?eq.color+"33":C.border}`, borderRadius:14, padding:"16px 18px", display:"flex", gap:14, alignItems:"flex-start" }}>
+                    <div style={{ width:46, height:46, borderRadius:12, background:isOn?`${eq.color}18`:C.surface2, border:`1px solid ${isOn?eq.color+"44":C.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{eq.icon}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{eq.name}</div>
+                        <div style={{ width:6, height:6, borderRadius:"50%", background:isOn?"#10b981":"#4b5563", flexShrink:0, animation:isOn?"pulse 2s infinite":undefined }} />
+                      </div>
+                      <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>{eq.type} · {eq.detail}</div>
+                      <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                        <span style={{ fontSize:10, color:isOn?C.green:C.muted, background:isOn?"#0a1e16":C.surface2, border:`1px solid ${isOn?C.green+"33":C.border}`, padding:"2px 8px", borderRadius:5, fontWeight:600 }}>
+                          {isOn?"● Live":"○ Standby"}
+                        </span>
+                        <span style={{ fontSize:10, color:C.muted, background:C.surface2, border:`1px solid ${C.border}`, padding:"2px 8px", borderRadius:5 }}>{eq.res}</span>
+                        {eq.battery!==null && (
+                          <span style={{ fontSize:10, color:eq.battery>30?C.green:C.amber, background:C.surface2, border:`1px solid ${C.border}`, padding:"2px 8px", borderRadius:5 }}>
+                            🔋 {eq.battery}%
+                          </span>
+                        )}
+                        {eq.signal!==null && (
+                          <span style={{ fontSize:10, color:C.muted, background:C.surface2, border:`1px solid ${C.border}`, padding:"2px 8px", borderRadius:5 }}>
+                            {"▪".repeat(eq.signal)}{"▫".repeat(5-eq.signal)} Signal
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* QUICK SETUP GUIDE */}
+            <div style={{ background:"#0d0d1a", border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>📋 Studio Setup Checklist</div>
+              {[
+                { done:true,  label:"FX3 connected via HDMI capture to MacBook" },
+                { done:true,  label:"FX6 connected via USB-C for close-up feed" },
+                { done:true,  label:"Rode Wireless GO II paired and levels set" },
+                { done:true,  label:"LG Monitor displaying confidence feed" },
+                { done:true,  label:"iPad Pro showing live chat view" },
+                { done:false, label:"White balance matched across both cameras" },
+                { done:false, label:"OBS scenes configured with correct sources" },
+                { done:false, label:"Stream keys entered for all active platforms" },
+              ].map((item,i)=>(
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:i<7?"1px solid #1a1a2e":"none" }}>
+                  <div style={{ width:18, height:18, borderRadius:5, background:item.done?"#0a1e16":"transparent", border:`1.5px solid ${item.done?C.green:C.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    {item.done && <span style={{ color:C.green, fontSize:11, fontWeight:700 }}>✓</span>}
+                  </div>
+                  <span style={{ fontSize:12, color:item.done?C.muted:C.text }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: SCENE BUILDER ── */}
+        {tab==="scene" && (
+          <div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:20 }}>
+              {/* Layout picker */}
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:12 }}>Layout Preset</div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10, marginBottom:24 }}>
+                  {LAYOUTS.map(l=>{
+                    const active = selectedLayout===l.id;
+                    return (
+                      <div key={l.id} onClick={()=>setSelectedLayout(l.id)} style={{ padding:"14px 16px", background:active?`${C.accent}12`:C.surface, border:`2px solid ${active?C.accent+"66":C.border}`, borderRadius:12, cursor:"pointer", transition:"all .15s" }}>
+                        {/* Layout diagram */}
+                        <div style={{ height:52, background:C.surface2, borderRadius:8, marginBottom:10, display:"flex", gap:2, padding:4, overflow:"hidden" }}>
+                          {l.id==="solo"    && <div style={{ flex:1, background:`${C.accent}44`, borderRadius:5 }} />}
+                          {l.id==="split"   && <><div style={{ flex:1, background:`${C.accent}44`, borderRadius:5 }} /><div style={{ flex:1, background:"#7c3aed44", borderRadius:5 }} /></>}
+                          {l.id==="product" && <><div style={{ flex:3, background:"#7c3aed44", borderRadius:5 }} /><div style={{ flex:1, background:`${C.accent}44`, borderRadius:5 }} /></>}
+                          {l.id==="pip"     && <div style={{ flex:1, background:`${C.accent}44`, borderRadius:5, position:"relative" }}><div style={{ position:"absolute", bottom:4, right:4, width:24, height:18, background:"#7c3aed88", borderRadius:3 }} /></div>}
+                        </div>
+                        <div style={{ fontSize:12, fontWeight:700, color:active?C.text:C.muted }}>{l.label}</div>
+                        <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{l.desc}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Scene slot assignment */}
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:12 }}>Assign Sources to Slots</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {LAYOUTS.find(l=>l.id===selectedLayout)?.slots.map((slot,i)=>(
+                    <div key={slot} style={{ display:"flex", alignItems:"center", gap:12, background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, padding:"12px 16px" }}>
+                      <div style={{ width:28, height:28, borderRadius:7, background:`${C.accent}18`, border:`1px solid ${C.accent}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:C.accent, flexShrink:0 }}>{i+1}</div>
+                      <div style={{ fontSize:12, color:C.muted, minWidth:100 }}>{SLOT_LABELS[slot]}</div>
+                      <select
+                        value={sceneSlots[slot]||""}
+                        onChange={e=>setSceneSlots(s=>({...s,[slot]:e.target.value}))}
+                        style={{ flex:1, background:C.surface2, border:`1px solid ${C.border2}`, color:C.text, fontSize:12, padding:"6px 10px", borderRadius:8, outline:"none" }}
+                      >
+                        <option value="">— None —</option>
+                        {SOURCES.map(src=>(
+                          <option key={src.id} value={src.id}>{src.icon} {src.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Live preview mockup */}
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:12 }}>Scene Preview</div>
+                <div style={{ background:"#000", borderRadius:14, overflow:"hidden", aspectRatio:"16/9", border:`1px solid ${C.border}`, position:"relative" }}>
+                  {/* Layout preview */}
+                  <div style={{ position:"absolute", inset:0, display:"flex", gap:"2px", padding:"2px" }}>
+                    {selectedLayout==="solo" && (
+                      <div style={{ flex:1, background:"#1a1a2e", borderRadius:11, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <div style={{ textAlign:"center" }}>
+                          <div style={{ fontSize:24 }}>📷</div>
+                          <div style={{ fontSize:10, color:C.muted, marginTop:4 }}>Sony FX3</div>
+                          <div style={{ fontSize:9, color:"#4b5563", marginTop:2 }}>4K/60fps</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedLayout==="split" && (
+                      <>
+                        <div style={{ flex:1, background:"#1a1a2e", borderRadius:"11px 0 0 11px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <div style={{ textAlign:"center" }}><div style={{ fontSize:20 }}>📷</div><div style={{ fontSize:9, color:C.muted }}>FX3 Wide</div></div>
+                        </div>
+                        <div style={{ flex:1, background:"#0d0d1a", borderRadius:"0 11px 11px 0", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <div style={{ textAlign:"center" }}><div style={{ fontSize:20 }}>🎥</div><div style={{ fontSize:9, color:C.muted }}>FX6 Close</div></div>
+                        </div>
+                      </>
+                    )}
+                    {selectedLayout==="product" && (
+                      <>
+                        <div style={{ flex:3, background:"#0d0d1a", borderRadius:"11px 0 0 11px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <div style={{ textAlign:"center" }}><div style={{ fontSize:28 }}>🎥</div><div style={{ fontSize:9, color:C.muted }}>FX6 Product</div></div>
+                        </div>
+                        <div style={{ flex:1, background:"#1a1a2e", borderRadius:"0 11px 11px 0", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <div style={{ textAlign:"center" }}><div style={{ fontSize:14 }}>📷</div><div style={{ fontSize:8, color:C.muted }}>FX3</div></div>
+                        </div>
+                      </>
+                    )}
+                    {selectedLayout==="pip" && (
+                      <div style={{ flex:1, background:"#1a1a2e", borderRadius:11, position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <div style={{ textAlign:"center" }}><div style={{ fontSize:24 }}>📷</div><div style={{ fontSize:9, color:C.muted }}>FX3 Wide</div></div>
+                        <div style={{ position:"absolute", bottom:8, right:8, width:60, height:40, background:"#0d0d1a", borderRadius:6, border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <div style={{ textAlign:"center" }}><div style={{ fontSize:12 }}>📱</div><div style={{ fontSize:7, color:C.muted }}>iPad</div></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* PREVIEW badge */}
+                  <div style={{ position:"absolute", top:8, left:8, background:"rgba(0,0,0,0.7)", border:"1px solid #ffffff22", borderRadius:6, padding:"2px 8px" }}>
+                    <span style={{ fontSize:9, fontWeight:700, color:"#9ca3af", letterSpacing:"0.1em" }}>PREVIEW</span>
+                  </div>
+                  {/* Resolution badge */}
+                  <div style={{ position:"absolute", bottom:8, right:8, background:"rgba(0,0,0,0.7)", border:"1px solid #ffffff22", borderRadius:6, padding:"2px 8px" }}>
+                    <span style={{ fontSize:9, fontWeight:700, color:C.green }}>4K · 60fps</span>
+                  </div>
+                </div>
+
+                {/* Audio levels */}
+                <div style={{ marginTop:12, background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, padding:"12px 14px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.muted, marginBottom:8 }}>Audio</div>
+                  {["Main (Rode GO II)","Ambient Mic"].map((ch,i)=>{
+                    const level = i===0?82:34;
+                    return (
+                      <div key={ch} style={{ marginBottom:i===0?8:0 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
+                          <span style={{ fontSize:10, color:C.muted }}>{ch}</span>
+                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.green }}>{level}%</span>
+                        </div>
+                        <div style={{ height:4, background:C.surface2, borderRadius:2, overflow:"hidden" }}>
+                          <div style={{ width:`${level}%`, height:"100%", background:level>85?"#ef4444":level>70?C.green:"#3b82f6", borderRadius:2, transition:"width .3s" }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: STREAM DESTINATIONS ── */}
+        {tab==="stream" && (
+          <div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text }}>Stream Destinations</div>
+                <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>Test each connection before going live. All must be green.</div>
+              </div>
+              <button
+                onClick={()=>{ setGoingLive(true); setTimeout(()=>{ setGoingLive(false); navigate("show-planner"); },1500); }}
+                disabled={!allReady}
+                style={{ background:allReady?"linear-gradient(135deg,#10b981,#059669)":"#1a1a2e", border:`1px solid ${allReady?C.green+"44":C.border}`, color:allReady?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"10px 24px", borderRadius:10, cursor:allReady?"pointer":"not-allowed", transition:"all .2s" }}
+              >
+                {goingLive ? "Connecting…" : allReady ? "🔴 All Systems Go →" : `Test all streams first (${Object.values(streamReady).filter(Boolean).length}/${persona.platforms.length})`}
+              </button>
+            </div>
+
+            <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:24 }}>
+              {STREAM_DESTINATIONS.filter(d=>persona.platforms.includes(d.id)).map(dest=>{
+                const ready = streamReady[dest.id];
+                const testing = testingStream===dest.id;
+                return (
+                  <div key={dest.id} style={{ background:C.surface, border:`1px solid ${ready?dest.color+"44":C.border}`, borderRadius:14, padding:"16px 20px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                      <div style={{ width:42, height:42, borderRadius:11, background:`${dest.color}18`, border:`1px solid ${dest.color}33`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <PlatformPill code={dest.id} />
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                          <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{dest.label}</span>
+                          {ready && <span style={{ fontSize:10, fontWeight:700, color:C.green, background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 8px", borderRadius:5 }}>✓ Ready</span>}
+                        </div>
+                        <div style={{ display:"flex", gap:16 }}>
+                          <div><span style={{ fontSize:10, color:C.muted }}>Bitrate </span><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.text }}>{dest.bitrate}</span></div>
+                          <div><span style={{ fontSize:10, color:C.muted }}>Latency </span><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:dest.latency>"2s"?C.amber:C.green }}>{dest.latency}</span></div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={()=>!ready&&testStream(dest.id)}
+                        disabled={ready||testing}
+                        style={{ background:ready?"#0a1e16":testing?C.surface2:`${dest.color}18`, border:`1px solid ${ready?C.green+"44":dest.color+"33"}`, color:ready?C.green:testing?C.muted:dest.color, fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:ready?"default":"pointer", transition:"all .2s", whiteSpace:"nowrap" }}
+                      >
+                        {ready?"✓ Connected":testing?"Testing…":"Test Connection"}
+                      </button>
+                    </div>
+                    {/* RTMP */}
+                    <div style={{ marginTop:10, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", flexShrink:0 }}>RTMP</span>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.subtle, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{dest.rtmp}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Stream health overview */}
+            <div style={{ background:"#0d0d1a", border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 20px" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Stream Quality Settings</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+                {[
+                  { label:"Video Codec",    value:"H.264",       note:"Broadest compatibility" },
+                  { label:"Resolution",     value:"1920×1080",   note:"1080p60 for all platforms" },
+                  { label:"Keyframe Interval", value:"2 sec",    note:"Recommended for live" },
+                  { label:"Audio Bitrate",  value:"128 kbps",    note:"AAC stereo" },
+                  { label:"Buffer Size",    value:"6000 kbps",   note:"Matches max bitrate" },
+                  { label:"Encoder",        value:"x264 / Apple VT", note:"Hardware accelerated" },
+                ].map(s=>(
+                  <div key={s.label} style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
+                    <div>
+                      <div style={{ fontSize:11, color:C.muted }}>{s.label}</div>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text, marginTop:2 }}>{s.value}</div>
+                      <div style={{ fontSize:10, color:"#4b5563", marginTop:1 }}>{s.note}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 // ─── SCREEN: LOYALTY HUB ─────────────────────────────────────────────────────
 function ScreenLoyalty({ buyers, navigate, persona }) {
@@ -4659,6 +5094,7 @@ export default function StreamlivePrototype() {
              view==="order-review"   ? "Shows / Order Review" :
              view==="catalog"       ? "Catalog" :
              view==="loyalty"       ? "Loyalty Hub" :
+             view==="production"    ? "Production" :
              view}
           </div>
 
@@ -4749,7 +5185,7 @@ export default function StreamlivePrototype() {
             {view==="buyer-profile"&& <ScreenBuyerProfile   buyer={activeBuyer} persona={persona} navigate={navigate} />}
             {view==="shows"        && <ScreenShows          navigate={navigate} persona={persona} />}
             {view==="show-report"  && <ScreenShowReport      show={activeShow} navigate={navigate} />}
-            {view==="live"         && <ScreenLive            buyers={buyers} navigate={navigate} />}
+            {view==="live"         && <ScreenLive            buyers={buyers} navigate={navigate} params={params} />}
             {view==="campaigns"    && <ScreenCampaigns       navigate={navigate} persona={persona} />}
             {view==="composer"     && <ScreenComposer        navigate={navigate} persona={persona} />}
             {view==="subscribers"  && <ScreenSubscribers     persona={persona} />}
@@ -4758,6 +5194,7 @@ export default function StreamlivePrototype() {
             {view==="catalog"      && <ScreenCatalog         persona={persona} navigate={navigate} />}
             {view==="show-planner" && <ScreenShowPlanner      navigate={navigate} />}
             {view==="loyalty"      && <ScreenLoyalty          buyers={buyers} navigate={navigate} persona={persona} />}
+            {view==="production"   && <ScreenProduction       persona={persona} navigate={navigate} />}
           </div>
         </div>
       </div>
