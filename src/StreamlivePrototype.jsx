@@ -6842,6 +6842,11 @@ function ScreenTeam({ persona }) {
   const [inviteLink,     setInviteLink]      = useState("");
   const [inviteSent,     setInviteSent]      = useState(false);
   const [inviteLoading,  setInviteLoading]   = useState(false);
+  const [teamMembers,    setTeamMembers]     = useState(ENTERPRISE_TEAM);
+  const [editMember,     setEditMember]      = useState(null); // member obj being edited
+  const [editRole,       setEditRole]        = useState("");
+  const [editSellers,    setEditSellers]     = useState([]);
+  const [removeTarget,   setRemoveTarget]    = useState(null);
 
   const sellers = persona.managedSellers;
   const roleColors={Owner:"#a78bfa", Manager:"#7c3aed", Analyst:"#f59e0b", Support:"#10b981", Producer:"#06b6d4"};
@@ -6861,6 +6866,26 @@ function ScreenTeam({ persona }) {
     Analyst:  "View analytics across network",
     Support:  "View buyers and handle support",
     Producer: "Production, shows & live — Pro+ sellers only",
+  };
+
+  const openEdit = (m) => {
+    setEditMember(m);
+    setEditRole(m.role);
+    setEditSellers(m.assignedSellers || []);
+  };
+
+  const saveEdit = () => {
+    setTeamMembers(prev => prev.map(m =>
+      m.id === editMember.id
+        ? { ...m, role: editRole, permissions: rolePerms[editRole] || m.permissions, assignedSellers: editSellers }
+        : m
+    ));
+    setEditMember(null);
+  };
+
+  const confirmRemove = (id) => {
+    setTeamMembers(prev => prev.filter(m => m.id !== id));
+    setRemoveTarget(null);
   };
 
   const handleInvite = async () => {
@@ -7023,10 +7048,110 @@ function ScreenTeam({ persona }) {
         </div>
       )}
 
+      {/* ── EDIT MEMBER MODAL ── */}
+      {editMember && (
+        <div onClick={()=>setEditMember(null)}
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+          <div onClick={e=>e.stopPropagation()} className="pop-in"
+            style={{ background:"#09090f", border:"1px solid #2a2a3a", borderRadius:18, padding:28, width:420, maxWidth:"94vw" }}>
+
+            {/* Header */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:22 }}>
+              <div>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text }}>Edit Member</div>
+                <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{editMember.name} · {editMember.email}</div>
+              </div>
+              <button onClick={()=>setEditMember(null)} style={{ background:"none", border:"none", color:C.muted, fontSize:18, cursor:"pointer" }}>✕</button>
+            </div>
+
+            {/* Role picker */}
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Role</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+                {["Manager","Producer","Analyst","Support","Owner"].map(r => {
+                  const col = roleColors[r] || C.accent;
+                  const sel = editRole === r;
+                  return (
+                    <button key={r} onClick={()=>setEditRole(r)}
+                      style={{ padding:"10px 12px", borderRadius:9, border:`1px solid ${sel?col+"55":C.border2}`,
+                        background:sel?`${col}14`:"transparent", cursor:"pointer", textAlign:"left" }}>
+                      <div style={{ fontSize:12, fontWeight:700, color:sel?col:C.muted, marginBottom:2 }}>{r}</div>
+                      <div style={{ fontSize:9, color:C.subtle }}>{roleDescriptions[r]}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Seller assignment */}
+            <div style={{ marginBottom:22 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>
+                Assigned Sellers <span style={{ color:C.subtle, fontWeight:400, textTransform:"none", fontSize:9 }}>({editSellers.length} selected)</span>
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:5, maxHeight:180, overflowY:"auto" }}>
+                {(persona.managedSellers||[]).map(s => {
+                  const assigned = editSellers.includes(s.id);
+                  const pc = ({starter:"#10b981",growth:"#7c3aed",pro:"#f59e0b",enterprise:"#a78bfa"})[s.plan]||C.accent;
+                  return (
+                    <div key={s.id} onClick={()=>setEditSellers(prev=>assigned?prev.filter(x=>x!==s.id):[...prev,s.id])}
+                      style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:8,
+                        border:`1px solid ${assigned?C.accent+"44":C.border2}`,
+                        background:assigned?`${C.accent}08`:"transparent", cursor:"pointer" }}>
+                      <div style={{ width:16, height:16, borderRadius:4, border:`1.5px solid ${assigned?C.accent:C.border2}`,
+                        background:assigned?C.accent:"transparent", display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:9, color:"#fff", flexShrink:0 }}>{assigned?"✓":""}</div>
+                      <div style={{ flex:1, fontSize:11, color:C.text }}>{s.name}</div>
+                      <span style={{ fontSize:8, fontWeight:700, color:pc, background:`${pc}15`, border:`1px solid ${pc}28`, padding:"1px 6px", borderRadius:4, textTransform:"capitalize" }}>{s.plan}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>setEditMember(null)}
+                style={{ flex:1, background:"none", border:`1px solid ${C.border2}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px", borderRadius:9, cursor:"pointer" }}>
+                Cancel
+              </button>
+              <button onClick={saveEdit}
+                style={{ flex:2, background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── REMOVE CONFIRM DIALOG ── */}
+      {removeTarget && (
+        <div onClick={()=>setRemoveTarget(null)}
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+          <div onClick={e=>e.stopPropagation()} className="pop-in"
+            style={{ background:"#09090f", border:"1px solid #ef444433", borderRadius:16, padding:24, width:340, maxWidth:"94vw", textAlign:"center" }}>
+            <div style={{ fontSize:28, marginBottom:12 }}>⚠️</div>
+            <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:6 }}>Remove member?</div>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:20, lineHeight:1.6 }}>
+              {teamMembers.find(m=>m.id===removeTarget)?.name} will lose access to all sellers and features immediately.
+            </div>
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>setRemoveTarget(null)}
+                style={{ flex:1, background:"none", border:`1px solid ${C.border2}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px", borderRadius:8, cursor:"pointer" }}>
+                Cancel
+              </button>
+              <button onClick={()=>confirmRemove(removeTarget)}
+                style={{ flex:1, background:"#ef444418", border:"1px solid #ef444444", color:"#ef4444", fontSize:12, fontWeight:700, padding:"9px", borderRadius:8, cursor:"pointer" }}>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
         <div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Team Management</div>
-          <div style={{ fontSize:12, color:C.muted }}>{ENTERPRISE_TEAM.length} members · {Object.keys(roleColors).map(r=>ENTERPRISE_TEAM.filter(t=>t.role===r).length+" "+r+"s").filter(s=>!s.startsWith("0")).join(" · ")}</div>
+          <div style={{ fontSize:12, color:C.muted }}>{teamMembers.length} members · {Object.keys(roleColors).map(r=>teamMembers.filter(t=>t.role===r).length+" "+r+"s").filter(s=>!s.startsWith("0")).join(" · ")}</div>
         </div>
         <button onClick={()=>setShowInvite(true)}
           style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
@@ -7046,7 +7171,7 @@ function ScreenTeam({ persona }) {
 
       {activeTab==="members" && (
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          {ENTERPRISE_TEAM.map(m=>{
+          {teamMembers.map(m=>{
             const col=roleColors[m.role]||C.accent;
             const assignedCount = m.assignedSellers[0]==="all" ? sellers.length : m.assignedSellers.length;
             return (
@@ -7076,8 +7201,8 @@ function ScreenTeam({ persona }) {
                 </div>
                 {m.id!=="tm1" && (
                   <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-                    <button style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:11, padding:"5px 10px", borderRadius:7, cursor:"pointer" }}>Edit</button>
-                    <button style={{ background:"#ef444410", border:"1px solid #ef444433", color:"#ef4444", fontSize:11, padding:"5px 10px", borderRadius:7, cursor:"pointer" }}>Remove</button>
+                    <button onClick={()=>openEdit(m)} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:11, padding:"5px 10px", borderRadius:7, cursor:"pointer" }}>Edit</button>
+                    <button onClick={()=>setRemoveTarget(m.id)} style={{ background:"#ef444410", border:"1px solid #ef444433", color:"#ef4444", fontSize:11, padding:"5px 10px", borderRadius:7, cursor:"pointer" }}>Remove</button>
                   </div>
                 )}
               </div>
@@ -7092,7 +7217,7 @@ function ScreenTeam({ persona }) {
             {["Member","View","Edit","Buyers","Shows","Campaigns","Production","Analytics","Admin"].map(h=>(
               <div key={h} style={{ fontSize:9, fontWeight:700, color:h==="Production"?"#06b6d4":C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", padding:"0 0 12px", borderBottom:`1px solid ${C.border}`, textAlign:h==="Member"?"left":"center" }}>{h}</div>
             ))}
-            {ENTERPRISE_TEAM.map(m=>{
+            {teamMembers.map(m=>{
               const col=roleColors[m.role]||C.accent;
               const has=(p)=>m.permissions.includes("all")||m.permissions.includes(p);
               return (
@@ -7120,7 +7245,7 @@ function ScreenTeam({ persona }) {
 
       {activeTab==="assignments" && (
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          {ENTERPRISE_TEAM.filter(m=>m.role==="Manager"||m.role==="Producer").map(m=>{
+          {teamMembers.filter(m=>m.role==="Manager"||m.role==="Producer").map(m=>{
             const col=roleColors[m.role];
             const assigned = m.assignedSellers[0]==="all" ? sellers : sellers.filter(s=>m.assignedSellers.includes(s.id));
             return (
