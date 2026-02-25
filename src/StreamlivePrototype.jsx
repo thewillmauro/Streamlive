@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // ─── FONTS ────────────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
@@ -17,6 +17,8 @@ const GLOBAL_CSS = `
   .slide-in { animation: slideIn .25s ease both; }
   .pop-in   { animation: pop     .2s ease both; }
   select option { background: #0d0d1e; }
+  .cta-btn { transition: opacity .15s; }
+  .cta-btn:hover { opacity: .88; }
 `;
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
@@ -6163,8 +6165,8 @@ function ScreenNetwork({ persona, navigate }) {
 
 // ─── ENTERPRISE: SELLERS LIST ─────────────────────────────────────────────────
 function ScreenSellers({ persona, navigate }) {
-  const [search, setSearch]   = React.useState("");
-  const [filter, setFilter]   = React.useState("all"); // all | active | paused | alert
+  const [search, setSearch]   = useState("");
+  const [filter, setFilter]   = useState("all"); // all | active | paused | alert
   const sellers = persona.managedSellers;
   const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b" };
 
@@ -6281,7 +6283,7 @@ function ScreenSellers({ persona, navigate }) {
 
 // ─── ENTERPRISE: SELLER DETAIL ────────────────────────────────────────────────
 function ScreenSellerDetail({ persona, params, navigate }) {
-  const [activeTab, setActiveTab] = React.useState("overview");
+  const [activeTab, setActiveTab] = useState("overview");
   const s = persona.managedSellers.find(sel=>sel.id===params.sellerId) || persona.managedSellers[0];
   if (!s) return null;
   const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b" };
@@ -6691,7 +6693,7 @@ function ScreenNetworkAnalytics({ persona }) {
 
 // ─── ENTERPRISE: TEAM MANAGEMENT ─────────────────────────────────────────────
 function ScreenTeam({ persona }) {
-  const [activeTab, setActiveTab] = React.useState("members");
+  const [activeTab, setActiveTab] = useState("members");
   const sellers = persona.managedSellers;
   const roleColors={Owner:"#a78bfa", Manager:"#7c3aed", Analyst:"#f59e0b", Support:"#10b981"};
   const permLabels={all:"All Access", view:"View", edit:"Edit", campaigns:"Campaigns", buyers:"Buyers", shows:"Shows", analytics:"Analytics"};
@@ -6936,10 +6938,10 @@ function ScreenBilling({ persona }) {
 
 // ─── ENTERPRISE: WHITE LABEL ──────────────────────────────────────────────────
 function ScreenWhiteLabel({ persona }) {
-  const [domain, setDomain]  = React.useState(persona.whiteLabelDomain);
-  const [brand, setBrand]    = React.useState("LiveScale");
-  const [accent, setAccent]  = React.useState("#7c3aed");
-  const [saved, setSaved]    = React.useState(false);
+  const [domain, setDomain]  = useState(persona.whiteLabelDomain);
+  const [brand, setBrand]    = useState("LiveScale");
+  const [accent, setAccent]  = useState("#7c3aed");
+  const [saved, setSaved]    = useState(false);
 
   const handleSave=()=>{ setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
