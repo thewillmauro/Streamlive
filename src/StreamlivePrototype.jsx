@@ -142,11 +142,25 @@ const SHOWS = [
 
 // ─── CAMPAIGNS DATA ───────────────────────────────────────────────────────────
 const CAMPAIGNS = [
-  { id:"c1", name:"Thursday Break Reminder",  type:"email", status:"sent",    sentAt:"Feb 19, 2025", recipients:842, opened:61, clicked:38, converted:22, gmv:1840 },
-  { id:"c2", name:"VIP Early Access — Feb",   type:"sms",   status:"sent",    sentAt:"Feb 14, 2025", recipients:124, opened:89, clicked:62, converted:41, gmv:3200 },
-  { id:"c3", name:"Win-Back: 30-Day Dormant", type:"email", status:"sent",    sentAt:"Feb 8,  2025",  recipients:203, opened:34, clicked:18, converted:9,  gmv:680  },
-  { id:"c4", name:"New Inventory Drop Alert", type:"sms",   status:"draft",   sentAt:null,            recipients:0,   opened:0,  clicked:0,  converted:0,  gmv:0    },
+  { id:"c1", name:"Thursday Break Reminder",       type:"email",  status:"sent",  sentAt:"Feb 19, 2025", recipients:842, opened:61, clicked:38, converted:22, gmv:1840 },
+  { id:"c2", name:"VIP Early Access — Feb",        type:"sms",    status:"sent",  sentAt:"Feb 14, 2025", recipients:124, opened:89, clicked:62, converted:41, gmv:3200 },
+  { id:"c3", name:"Win-Back: 30-Day Dormant",      type:"email",  status:"sent",  sentAt:"Feb 8, 2025",  recipients:203, opened:34, clicked:18, converted:9,  gmv:680  },
+  { id:"c4", name:"New Inventory Drop Alert",      type:"sms",    status:"draft", sentAt:null,           recipients:0,   opened:0,  clicked:0,  converted:0,  gmv:0    },
+  { id:"c5", name:"IG Keyword: DM BREAK",          type:"ig_dm",  status:"sent",  sentAt:"Feb 17, 2025", recipients:531, opened:94, clicked:71, converted:38, gmv:2840 },
+  { id:"c6", name:"TikTok Show Announcement",      type:"tt_dm",  status:"sent",  sentAt:"Feb 12, 2025", recipients:289, opened:88, clicked:64, converted:19, gmv:1140 },
+  { id:"c7", name:"Whatnot Show Notification",     type:"wn_dm",  status:"sent",  sentAt:"Feb 10, 2025", recipients:406, opened:79, clicked:52, converted:28, gmv:1960 },
+  { id:"c8", name:"Amazon Order Follow-Up",        type:"am_msg", status:"sent",  sentAt:"Feb 6, 2025",  recipients:88,  opened:62, clicked:0,  converted:0,  gmv:0    },
+  { id:"c9", name:"IG: Mystery Box Drop",          type:"ig_dm",  status:"draft", sentAt:null,           recipients:0,   opened:0,  clicked:0,  converted:0,  gmv:0    },
 ];
+
+const CHANNEL_META = {
+  email:  { label:"Email",               color:"#3b82f6", bg:"#0f1e2e", icon:"✉",  via:"Direct",  note:"",                                                    canBroadcast:true  },
+  sms:    { label:"SMS",                 color:"#a78bfa", bg:"#2d1f5e", icon:"💬", via:"Direct",  note:"",                                                    canBroadcast:true  },
+  ig_dm:  { label:"Instagram DM",        color:"#e1306c", bg:"#2d1020", icon:"📸", via:"ManyChat", note:"Broadcasts to opted-in IG followers only",           canBroadcast:true  },
+  tt_dm:  { label:"TikTok DM",           color:"#69c9d0", bg:"#0d2828", icon:"🎵", via:"ManyChat", note:"Business account required · US/non-EU only",         canBroadcast:true  },
+  wn_dm:  { label:"Whatnot Notification",color:"#f59e0b", bg:"#2e1f0a", icon:"🔔", via:"Whatnot", note:"Show notifications & in-show chat only — no bulk DM", canBroadcast:false },
+  am_msg: { label:"Amazon Message",      color:"#f97316", bg:"#2e1608", icon:"📦", via:"SP-API",  note:"Transactional only — order-related messages only",    canBroadcast:false },
+};
 
 
 // ─── STRIPE PAYMENT LINKS ─────────────────────────────────────────────────────
@@ -474,9 +488,24 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
             <div style={{ fontSize:16, fontWeight:700, color:C.text }}>{buyer.name}</div>
             <div style={{ fontSize:12, color:C.muted }}>{buyer.handle}</div>
           </div>
-          <div style={{ display:"flex", gap:8, marginBottom:18 }}>
+          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
             <PlatformPill code={buyer.platform} />
             <Badge label={st.label} bg={st.bg} text={st.text} />
+          </div>
+
+          {/* QUICK DM BUTTONS */}
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:18 }}>
+            {[
+              { code:"ig_dm",  icon:"📸", label:"IG DM",    ch:CHANNEL_META.ig_dm,  on:true  },
+              { code:"tt_dm",  icon:"🎵", label:"TikTok",   ch:CHANNEL_META.tt_dm,  on:true  },
+              { code:"sms",    icon:"💬", label:"SMS",       ch:CHANNEL_META.sms,    on:true  },
+              { code:"am_msg", icon:"📦", label:"Amazon",   ch:CHANNEL_META.am_msg,  on:false },
+              { code:"wn_dm",  icon:"🔔", label:"Whatnot",  ch:CHANNEL_META.wn_dm,   on:false },
+            ].map(item=>(
+              <button key={item.code} disabled={!item.on} title={item.on?"Send DM via "+item.ch.via:item.ch.note} style={{ display:"flex", alignItems:"center", gap:4, fontSize:9, fontWeight:700, color:item.on?item.ch.color:C.subtle, background:item.on?item.ch.bg:C.surface2, border:`1px solid ${item.on?item.ch.color+"44":C.border}`, padding:"4px 9px", borderRadius:6, cursor:item.on?"pointer":"not-allowed", opacity:item.on?1:0.4 }}>
+                {item.icon} {item.label}
+              </button>
+            ))}
           </div>
 
           {/* STATS */}
@@ -943,6 +972,29 @@ function ScreenLive({ buyers, navigate }) {
                       {savedFeedback==="note" ? "✓ Note Saved!" : "Save Note"}
                     </button>
 
+                    {/* QUICK DM */}
+                    <div style={{ marginTop:14, paddingTop:14, borderTop:`1px solid ${C.border}` }}>
+                      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Quick DM</div>
+                      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                        {[
+                          { code:"ig_dm", label:"IG", color:CHANNEL_META.ig_dm.color, bg:CHANNEL_META.ig_dm.bg, icon:"📸", available:true  },
+                          { code:"tt_dm", label:"TT", color:CHANNEL_META.tt_dm.color, bg:CHANNEL_META.tt_dm.bg, icon:"🎵", available:true  },
+                          { code:"wn_dm", label:"WN", color:CHANNEL_META.wn_dm.color, bg:CHANNEL_META.wn_dm.bg, icon:"🔔", available:false },
+                          { code:"sms",   label:"SMS",color:CHANNEL_META.sms.color,   bg:CHANNEL_META.sms.bg,   icon:"💬", available:true  },
+                        ].map(ch=>(
+                          <button key={ch.code} disabled={!ch.available} onClick={()=>setSavedFeedback("dm_"+ch.code)} style={{ display:"flex", alignItems:"center", gap:4, fontSize:10, fontWeight:700, color:ch.available?ch.color:C.subtle, background:ch.available?ch.bg:C.surface2, border:`1px solid ${ch.available?ch.color+"44":C.border}`, padding:"5px 10px", borderRadius:7, cursor:ch.available?"pointer":"not-allowed", opacity:ch.available?1:0.4 }}>
+                            {ch.icon} {ch.label}
+                          </button>
+                        ))}
+                      </div>
+                      {savedFeedback?.startsWith("dm_") && (
+                        <div style={{ marginTop:8, fontSize:11, color:C.green }}>✓ DM sent via {savedFeedback.replace("dm_","").toUpperCase()}</div>
+                      )}
+                      <div style={{ marginTop:6, fontSize:9, color:C.subtle, lineHeight:1.5 }}>
+                        Sends current note as a DM to {selectedBuyer?.name?.split(" ")[0]} on the selected channel
+                      </div>
+                    </div>
+
                     {/* Past notes from buyer profile */}
                     {(LOYALTY_BUYERS[selectedBuyer.id]?.history||[]).length > 0 && (
                       <div style={{ marginTop:16 }}>
@@ -1120,44 +1172,98 @@ function ScreenLive({ buyers, navigate }) {
 
 // ─── SCREEN: CAMPAIGNS ────────────────────────────────────────────────────────
 function ScreenCampaigns({ navigate, persona }) {
+  const [filterType, setFilterType] = useState("all");
+
+  const filtered = filterType==="all" ? CAMPAIGNS : CAMPAIGNS.filter(c=>c.type===filterType);
+
+  const totalGMV     = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.gmv,0);
+  const totalSent    = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.recipients,0);
+  const avgOpen      = Math.round(CAMPAIGNS.filter(c=>c.opened>0).reduce((a,c,_,arr)=>a+c.opened/arr.length,0));
+  const avgConverted = CAMPAIGNS.filter(c=>c.converted>0).reduce((a,c,_,arr)=>a+c.converted/arr.length,0).toFixed(0);
+
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
         <div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Campaigns</div>
-          <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{CAMPAIGNS.length} campaigns</div>
+          <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{CAMPAIGNS.length} campaigns across {Object.keys(CHANNEL_META).length} channels</div>
         </div>
         <button onClick={()=>navigate("composer")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
           + New Campaign
         </button>
       </div>
 
-      {/* STATS */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
-        <StatCard label="Emails Sent"    value="1,045"  sub="last 30 days"     color={C.blue}   />
-        <StatCard label="Avg Open Rate"  value="61%"    sub="industry avg 22%" color={C.green}  />
-        <StatCard label="Converted"      value="72"     sub="purchases tracked" color={C.accent} />
-        <StatCard label="Revenue Driven" value="$5,720" sub="attributed GMV"   color={C.amber}  />
+      {/* KPI STATS */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+        <StatCard label="Total Sent"       value={totalSent.toLocaleString()} sub="all channels"        color={C.blue}   />
+        <StatCard label="Avg Open Rate"    value={`${avgOpen}%`}              sub="across all channels" color={C.green}  />
+        <StatCard label="Avg Conversions"  value={avgConverted}               sub="per campaign"        color={C.accent} />
+        <StatCard label="Revenue Driven"   value={`$${totalGMV.toLocaleString()}`} sub="attributed GMV"   color={C.amber}  />
       </div>
 
-      {/* TABLE */}
+      {/* CHANNEL CONNECTION STATUS */}
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 20px", marginBottom:20 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+          <div style={{ fontSize:12, fontWeight:700, color:C.text }}>Connected Channels</div>
+          <button onClick={()=>navigate("settings")} style={{ fontSize:11, color:C.accent, background:"none", border:"none", cursor:"pointer" }}>Manage →</button>
+        </div>
+        <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+          {Object.entries(CHANNEL_META).map(([key,ch])=>{
+            const connected = ["email","sms","ig_dm","tt_dm"].includes(key);
+            return (
+              <div key={key} style={{ display:"flex", alignItems:"center", gap:7, background:connected?ch.bg:C.surface2, border:`1px solid ${connected?ch.color+"44":C.border}`, borderRadius:9, padding:"7px 12px" }}>
+                <span style={{ fontSize:13 }}>{ch.icon}</span>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:700, color:connected?ch.color:C.muted }}>{ch.label}</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>{connected?"✓ Connected":ch.via==="ManyChat"?"Needs ManyChat":"Not connected"}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* CHANNEL FILTER TABS */}
+      <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16 }}>
+        {[["all","All"],["email","Email"],["sms","SMS"],["ig_dm","Instagram DM"],["tt_dm","TikTok DM"],["wn_dm","Whatnot"],["am_msg","Amazon"]].map(([v,l])=>(
+          <button key={v} onClick={()=>setFilterType(v)} style={{ background:"none", border:"none", borderBottom:`2px solid ${filterType===v?(CHANNEL_META[v]?.color||C.accent):"transparent"}`, color:filterType===v?(CHANNEL_META[v]?.color||"#a78bfa"):C.muted, fontSize:11, fontWeight:filterType===v?700:400, padding:"0 14px 10px", cursor:"pointer", whiteSpace:"nowrap" }}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {/* CAMPAIGN TABLE */}
       <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"1.8fr 0.7fr 0.8fr 0.7fr 0.7fr 0.7fr 0.8fr", padding:"10px 22px", borderBottom:`1px solid ${C.border}` }}>
-          {["Campaign","Type","Status","Recipients","Opened","Clicked","GMV"].map(h=>(
-            <div key={h} style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700 }}>{h}</div>
+        <div style={{ display:"grid", gridTemplateColumns:"2fr 0.8fr 0.7fr 0.7fr 0.6fr 0.6fr 0.7fr 0.8fr", padding:"10px 22px", borderBottom:`1px solid ${C.border}` }}>
+          {["Campaign","Channel","Via","Status","Reach","Opened","Converted","GMV"].map(h=>(
+            <div key={h} style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", fontWeight:700 }}>{h}</div>
           ))}
         </div>
-        {CAMPAIGNS.map((c,i)=>(
-          <div key={c.id} style={{ display:"grid", gridTemplateColumns:"1.8fr 0.7fr 0.8fr 0.7fr 0.7fr 0.7fr 0.8fr", padding:"13px 22px", borderBottom:i<CAMPAIGNS.length-1?`1px solid #0d0d18`:"none", alignItems:"center" }}>
-            <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{c.name}</div>
-            <div><span style={{ fontSize:10, fontWeight:700, color:c.type==="email"?C.blue:"#a78bfa", background:c.type==="email"?"#0f1e2e":"#2d1f5e", border:`1px solid ${c.type==="email"?C.blue+"44":"#7c3aed44"}`, padding:"2px 8px", borderRadius:6, textTransform:"uppercase" }}>{c.type}</span></div>
-            <div><span style={{ fontSize:10, fontWeight:700, color:c.status==="sent"?C.green:C.amber, background:c.status==="sent"?"#0a1e16":"#2e1f0a", border:`1px solid ${c.status==="sent"?C.green+"44":C.amber+"44"}`, padding:"2px 8px", borderRadius:6, textTransform:"uppercase" }}>{c.status}</span></div>
-            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"#9ca3af" }}>{c.recipients||"—"}</div>
-            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:C.green }}>{c.opened?`${c.opened}%`:"—"}</div>
-            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:C.blue }}>{c.clicked?`${c.clicked}%`:"—"}</div>
-            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:c.gmv?C.amber:C.subtle }}>{c.gmv?`$${c.gmv.toLocaleString()}`:"—"}</div>
-          </div>
-        ))}
+        {filtered.map((c,i)=>{
+          const ch = CHANNEL_META[c.type] || CHANNEL_META.email;
+          return (
+            <div key={c.id} style={{ display:"grid", gridTemplateColumns:"2fr 0.8fr 0.7fr 0.7fr 0.6fr 0.6fr 0.7fr 0.8fr", padding:"12px 22px", borderBottom:i<filtered.length-1?`1px solid #0d0d18`:"none", alignItems:"center" }}>
+              <div>
+                <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{c.name}</div>
+                {c.sentAt && <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{c.sentAt}</div>}
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                <span style={{ fontSize:11 }}>{ch.icon}</span>
+                <span style={{ fontSize:9, fontWeight:700, color:ch.color, background:ch.bg, border:`1px solid ${ch.color}33`, padding:"2px 6px", borderRadius:5, textTransform:"uppercase" }}>{ch.label.split(" ")[0]}</span>
+              </div>
+              <div style={{ fontSize:10, color:C.muted }}>{ch.via}</div>
+              <div>
+                <span style={{ fontSize:10, fontWeight:700, color:c.status==="sent"?C.green:C.amber, background:c.status==="sent"?"#0a1e16":"#2e1f0a", border:`1px solid ${c.status==="sent"?C.green+"44":C.amber+"44"}`, padding:"2px 7px", borderRadius:5, textTransform:"uppercase" }}>
+                  {c.status}
+                </span>
+              </div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.recipients>0?C.text:C.subtle }}>{c.recipients>0?c.recipients.toLocaleString():"—"}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.opened>0?C.green:C.subtle }}>{c.opened>0?`${c.opened}%`:"—"}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.converted>0?C.blue:C.subtle }}>{c.converted>0?c.converted:"—"}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:c.gmv>0?C.amber:C.subtle }}>{c.gmv>0?`$${c.gmv.toLocaleString()}`:"—"}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1165,24 +1271,54 @@ function ScreenCampaigns({ navigate, persona }) {
 
 // ─── SCREEN: CAMPAIGN COMPOSER ────────────────────────────────────────────────
 function ScreenComposer({ navigate, persona }) {
-  const [step, setStep] = useState(1);
-  const [type, setType] = useState("email");
+  const [step, setStep]       = useState(1);
+  const [type, setType]       = useState("email");
   const [segment, setSegment] = useState("all");
   const [subject, setSubject] = useState("Thursday Night Break starts in 1 hour 🎉");
-  const [body, setBody] = useState("Hey {{first_name}},\n\nJust a reminder — my Thursday Night Break kicks off at 8PM EST tonight on Whatnot.\n\nLast week's show had some insane pulls. Tonight I'm opening a fresh hobby box live. Don't miss it!\n\n👉 Tap to set a reminder: {{show_link}}\n\nSee you there,\n{{seller_name}}");
+  const [body, setBody]       = useState("Hey {{first_name}},\n\nJust a reminder — my Thursday Night Break kicks off at 8PM EST tonight on Whatnot.\n\nLast week's show had some insane pulls. Tonight I'm opening a fresh hobby box live. Don't miss it!\n\n👉 Tap to set a reminder: {{show_link}}\n\nSee you there,\n{{seller_name}}");
+  const [keyword, setKeyword] = useState("BREAK");
+  const [flowType, setFlowType] = useState("broadcast");
+  const [amMsgType, setAmMsgType] = useState("confirmOrderDetails");
+
+  const ch = CHANNEL_META[type] || CHANNEL_META.email;
 
   const segmentSizes = { all:847, vip:124, risk:68, new:89, dormant:203 };
+  const igFollowers  = 2840;
+  const ttFollowers  = 5210;
+
+  const audienceLabel = ()=>{
+    if (type==="ig_dm")  return flowType==="broadcast" ? `${igFollowers.toLocaleString()} opted-in IG followers` : `Anyone who DMs keyword: ${keyword}`;
+    if (type==="tt_dm")  return flowType==="broadcast" ? `${ttFollowers.toLocaleString()} TikTok DM subscribers` : `Anyone who DMs keyword: ${keyword}`;
+    if (type==="wn_dm")  return "All Whatnot followers (show notification)";
+    if (type==="am_msg") return "Buyers with eligible orders";
+    return `${segment==="all"?"Everyone":segment==="vip"?"VIP Buyers":segment==="risk"?"At-Risk Buyers":"New Buyers"} · ${segmentSizes[segment]} recipients`;
+  };
+
+  const channelGroups = [
+    {
+      label: "Direct Outreach",
+      channels: ["email","sms"],
+    },
+    {
+      label: "Social DM via ManyChat",
+      channels: ["ig_dm","tt_dm"],
+    },
+    {
+      label: "Platform Native",
+      channels: ["wn_dm","am_msg"],
+    },
+  ];
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", maxWidth:860 }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", maxWidth:900 }}>
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
         <button onClick={()=>navigate("campaigns")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>New Campaign</div>
       </div>
 
-      {/* STEPS */}
+      {/* STEP INDICATOR */}
       <div style={{ display:"flex", gap:0, marginBottom:28 }}>
-        {[{n:1,l:"Audience & Type"},{n:2,l:"Message"},{n:3,l:"Review & Send"}].map((s,i)=>(
+        {[{n:1,l:"Channel & Audience"},{n:2,l:"Message"},{n:3,l:"Review & Send"}].map((s,i)=>(
           <div key={s.n} style={{ display:"flex", alignItems:"center" }}>
             <button onClick={()=>setStep(s.n)} style={{ display:"flex", alignItems:"center", gap:8, background:"none", border:"none", cursor:"pointer", padding:"0 4px" }}>
               <div style={{ width:24, height:24, borderRadius:"50%", background:step>=s.n?C.accent:C.surface2, border:`2px solid ${step>=s.n?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:step>=s.n?"#fff":C.subtle }}>
@@ -1195,60 +1331,175 @@ function ScreenComposer({ navigate, persona }) {
         ))}
       </div>
 
+      {/* ── STEP 1: CHANNEL + AUDIENCE ── */}
       {step===1 && (
-        <div className="fade-up" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
-          {/* TYPE */}
+        <div className="fade-up" style={{ display:"grid", gridTemplateColumns:"1.1fr 0.9fr", gap:20 }}>
+
+          {/* CHANNEL PICKER */}
           <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px" }}>
-            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Channel</div>
-            {["email","sms"].map(t=>(
-              <div key={t} onClick={()=>setType(t)} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", borderRadius:10, border:`1px solid ${type===t?C.accent+"66":C.border}`, background:type===t?"#2d1f5e22":"transparent", cursor:"pointer", marginBottom:8 }}>
-                <div style={{ width:32, height:32, borderRadius:8, background:`${type===t?C.accent:"#3d3d6e"}22`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>{t==="email"?"✉":"💬"}</div>
-                <div>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.text, textTransform:"capitalize" }}>{t}</div>
-                  <div style={{ fontSize:11, color:C.muted }}>{t==="email"?"Up to 2,000 recipients":"Up to 500 recipients"}</div>
-                </div>
-                <div style={{ marginLeft:"auto", width:16, height:16, borderRadius:"50%", border:`2px solid ${type===t?C.accent:C.border2}`, background:type===t?C.accent:"transparent" }} />
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Channel</div>
+            {channelGroups.map(group=>(
+              <div key={group.label} style={{ marginBottom:16 }}>
+                <div style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.09em", marginBottom:8 }}>{group.label}</div>
+                {group.channels.map(t=>{
+                  const c = CHANNEL_META[t];
+                  const connected = ["email","sms","ig_dm","tt_dm"].includes(t);
+                  const isSelected = type===t;
+                  return (
+                    <div key={t} onClick={()=>connected&&setType(t)} style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 14px", borderRadius:10, border:`1px solid ${isSelected?c.color+"66":C.border}`, background:isSelected?c.bg:"transparent", cursor:connected?"pointer":"not-allowed", marginBottom:7, opacity:connected?1:0.5 }}>
+                      <div style={{ width:34, height:34, borderRadius:9, background:`${c.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{c.icon}</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                          <span style={{ fontSize:12, fontWeight:700, color:C.text }}>{c.label}</span>
+                          <span style={{ fontSize:9, fontWeight:700, color:c.color, background:c.bg, border:`1px solid ${c.color}33`, padding:"1px 6px", borderRadius:4 }}>{c.via}</span>
+                        </div>
+                        <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{connected?c.note||"Ready to send":"Not connected · set up in Settings"}</div>
+                      </div>
+                      {!connected && <span style={{ fontSize:10, color:C.muted }}>⚙</span>}
+                      {connected && <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${isSelected?c.color:C.border2}`, background:isSelected?c.color:"transparent", flexShrink:0 }} />}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
 
-          {/* SEGMENT */}
-          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px" }}>
-            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Audience</div>
-            {[["all","Everyone",`${segmentSizes.all} subscribers`],["vip","VIP Buyers",`${segmentSizes.vip} subscribers`],["risk","At-Risk Buyers",`${segmentSizes.risk} subscribers`],["new","New Buyers",`${segmentSizes.new} subscribers`]].map(([v,l,d])=>(
-              <div key={v} onClick={()=>setSegment(v)} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:9, border:`1px solid ${segment===v?C.accent+"55":C.border}`, background:segment===v?"#2d1f5e1a":"transparent", cursor:"pointer", marginBottom:6 }}>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{l}</div>
-                  <div style={{ fontSize:10, color:C.muted }}>{d}</div>
-                </div>
-                <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${segment===v?C.accent:C.border2}`, background:segment===v?C.accent:"transparent" }} />
-              </div>
-            ))}
-          </div>
+          {/* AUDIENCE + FLOW TYPE */}
+          <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
 
-          <button onClick={()=>setStep(2)} style={{ gridColumn:"1/-1", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
-            Continue to Message →
-          </button>
+            {/* Platform constraint note */}
+            {ch.note && (
+              <div style={{ background:`${ch.color}10`, border:`1px solid ${ch.color}33`, borderRadius:10, padding:"10px 14px", display:"flex", gap:8 }}>
+                <span style={{ color:ch.color, fontSize:13, flexShrink:0 }}>ⓘ</span>
+                <span style={{ fontSize:11, color:ch.color, lineHeight:1.5 }}>{ch.note}</span>
+              </div>
+            )}
+
+            {/* IG / TT: flow type picker */}
+            {(type==="ig_dm"||type==="tt_dm") && (
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Flow Type</div>
+                {[
+                  { v:"broadcast", l:"Broadcast", d:`Send to all opted-in ${type==="ig_dm"?"IG":"TikTok"} followers`, icon:"📢" },
+                  { v:"keyword",   l:"Keyword Trigger", d:`Auto-reply when someone DMs your keyword`, icon:"🔑" },
+                ].map(f=>(
+                  <div key={f.v} onClick={()=>setFlowType(f.v)} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:9, border:`1px solid ${flowType===f.v?ch.color+"66":C.border}`, background:flowType===f.v?ch.bg:"transparent", cursor:"pointer", marginBottom:7 }}>
+                    <span style={{ fontSize:16 }}>{f.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{f.l}</div>
+                      <div style={{ fontSize:10, color:C.muted }}>{f.d}</div>
+                    </div>
+                    <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${flowType===f.v?ch.color:C.border2}`, background:flowType===f.v?ch.color:"transparent" }} />
+                  </div>
+                ))}
+                {flowType==="keyword" && (
+                  <div style={{ marginTop:10 }}>
+                    <div style={{ fontSize:10, color:C.muted, marginBottom:5 }}>Keyword</div>
+                    <input value={keyword} onChange={e=>setKeyword(e.target.value.toUpperCase())} placeholder="e.g. BREAK, SALE, VIP" style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"8px 12px", color:C.text, fontSize:13, fontWeight:700, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+                    <div style={{ fontSize:10, color:C.muted, marginTop:5 }}>Tell your viewers: "DM me {keyword} to get the link"</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Amazon message type */}
+            {type==="am_msg" && (
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Message Type</div>
+                <div style={{ fontSize:10, color:C.muted, marginBottom:10, lineHeight:1.6 }}>Amazon restricts messages to order-related types only. No marketing or promotional content allowed.</div>
+                {[
+                  { v:"confirmOrderDetails", l:"Confirm Order Details", d:"Ask buyer to confirm order specifics before shipping" },
+                  { v:"confirmCustomization", l:"Confirm Customization", d:"Confirm custom product details with the buyer" },
+                  { v:"negativeFeedback", l:"Feedback Removal Request", d:"After resolving an issue, ask buyer to update feedback" },
+                ].map(m=>(
+                  <div key={m.v} onClick={()=>setAmMsgType(m.v)} style={{ padding:"9px 12px", borderRadius:9, border:`1px solid ${amMsgType===m.v?CHANNEL_META.am_msg.color+"66":C.border}`, background:amMsgType===m.v?CHANNEL_META.am_msg.bg:"transparent", cursor:"pointer", marginBottom:7 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{m.l}</div>
+                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{m.d}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Standard Email/SMS/WN audience picker */}
+            {!["ig_dm","tt_dm","am_msg"].includes(type) && (
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:12 }}>Audience</div>
+                {type==="wn_dm" ? (
+                  <div style={{ background:CHANNEL_META.wn_dm.bg, border:`1px solid ${CHANNEL_META.wn_dm.color}33`, borderRadius:9, padding:"11px 14px" }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:CHANNEL_META.wn_dm.color }}>All Whatnot Followers</div>
+                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>Show notification sent to 1,240 followers</div>
+                  </div>
+                ) : (
+                  [[" all","Everyone",`${segmentSizes.all} subscribers`],["vip","VIP Buyers",`${segmentSizes.vip} subscribers`],["risk","At-Risk Buyers",`${segmentSizes.risk} subscribers`],["new","New Buyers",`${segmentSizes.new} subscribers`]].map(([v,l,d])=>(
+                    <div key={v} onClick={()=>setSegment(v.trim())} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:9, border:`1px solid ${segment===v.trim()?C.accent+"55":C.border}`, background:segment===v.trim()?"#2d1f5e1a":"transparent", cursor:"pointer", marginBottom:6 }}>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{l}</div>
+                        <div style={{ fontSize:10, color:C.muted }}>{d}</div>
+                      </div>
+                      <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${segment===v.trim()?C.accent:C.border2}`, background:segment===v.trim()?C.accent:"transparent" }} />
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            <button onClick={()=>setStep(2)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+              Continue to Message →
+            </button>
+          </div>
         </div>
       )}
 
+      {/* ── STEP 2: MESSAGE ── */}
       {step===2 && (
         <div className="fade-up">
+
+          {/* IG / TT DM message */}
+          {(type==="ig_dm"||type==="tt_dm") && (
+            <div style={{ background:ch.bg, border:`1px solid ${ch.color}33`, borderRadius:12, padding:"12px 16px", marginBottom:16, fontSize:11, color:ch.color, lineHeight:1.6 }}>
+              <strong>ManyChat message rules:</strong> Links aren't clickable inside {type==="ig_dm"?"Instagram":"TikTok"} DMs — send URLs as plain text so recipients can copy them. Max 1000 chars. No images in TT DMs.
+            </div>
+          )}
+
+          {/* Amazon notice */}
+          {type==="am_msg" && (
+            <div style={{ background:CHANNEL_META.am_msg.bg, border:`1px solid ${CHANNEL_META.am_msg.color}33`, borderRadius:12, padding:"12px 16px", marginBottom:16, fontSize:11, color:CHANNEL_META.am_msg.color, lineHeight:1.6 }}>
+              <strong>Amazon policy:</strong> Only factual order-related info allowed. No promotional language, no "please review", no links to external sites, no seller contact details outside Amazon.
+            </div>
+          )}
+
+          {/* Subject line (email only) */}
           {type==="email" && (
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px", marginBottom:16 }}>
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px", marginBottom:16 }}>
               <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Subject Line</div>
               <input value={subject} onChange={e=>setSubject(e.target.value)} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13, outline:"none" }} />
             </div>
           )}
-          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px", marginBottom:16 }}>
-            <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Message Body</div>
-            <textarea value={body} onChange={e=>setBody(e.target.value)} rows={10} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13, outline:"none", resize:"vertical", fontFamily:"'DM Sans',sans-serif", lineHeight:1.65 }} />
-            <div style={{ marginTop:8, display:"flex", gap:8 }}>
-              {["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=>(
-                <button key={t} onClick={()=>setBody(b=>b+t)} style={{ fontSize:10, color:"#a78bfa", background:"#2d1f5e44", border:"1px solid #7c3aed33", padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>
-              ))}
+
+          {/* Keyword reminder for IG/TT */}
+          {(type==="ig_dm"||type==="tt_dm") && flowType==="keyword" && (
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:16, display:"flex", gap:14, alignItems:"center" }}>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Trigger keyword: <span style={{ fontFamily:"'JetBrains Mono',monospace", color:ch.color }}>{keyword}</span></div>
+                <div style={{ fontSize:10, color:C.muted, marginTop:3 }}>Message below auto-sends when someone DMs "{keyword}" to your account</div>
+              </div>
+            </div>
+          )}
+
+          {/* Message body */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px", marginBottom:16 }}>
+            <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>
+              {type==="wn_dm"?"Show Notification Text":type==="am_msg"?"Message to Buyer":"Message Body"}
+            </div>
+            <textarea value={body} onChange={e=>setBody(e.target.value)} rows={9} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13, outline:"none", resize:"vertical", fontFamily:"'DM Sans',sans-serif", lineHeight:1.65 }} />
+            <div style={{ marginTop:8, display:"flex", gap:7, flexWrap:"wrap" }}>
+              {type==="email"   && ["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=><button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:"#a78bfa", background:"#2d1f5e44", border:"1px solid #7c3aed33", padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>)}
+              {type==="sms"     && ["{{first_name}}","{{show_link}}"].map(t=><button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:"#a78bfa", background:"#2d1f5e44", border:"1px solid #7c3aed33", padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>)}
+              {(type==="ig_dm"||type==="tt_dm") && ["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=><button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:ch.color, background:ch.bg, border:`1px solid ${ch.color}33`, padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>)}
+              <div style={{ marginLeft:"auto", fontSize:10, color:body.length>800?"#ef4444":C.muted }}>{body.length}{type==="sms"?"/160":type==="ig_dm"||type==="tt_dm"?"/1000":""}</div>
             </div>
           </div>
+
           <div style={{ display:"flex", gap:10 }}>
             <button onClick={()=>setStep(1)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
             <button onClick={()=>setStep(3)} style={{ flex:1, background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>Review Campaign →</button>
@@ -1256,25 +1507,33 @@ function ScreenComposer({ navigate, persona }) {
         </div>
       )}
 
+      {/* ── STEP 3: REVIEW + SEND ── */}
       {step===3 && (
         <div className="fade-up">
-          <div style={{ background:"#2d1f5e22", border:`1px solid ${C.accent}44`, borderRadius:14, padding:"20px 22px", marginBottom:16 }}>
-            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Campaign Summary</div>
+          <div style={{ background:ch.bg, border:`1px solid ${ch.color}44`, borderRadius:14, padding:"20px 24px", marginBottom:16 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Campaign Summary</div>
             {[
-              ["Channel", type.toUpperCase()],
-              ["Audience", `${segment==="all"?"Everyone":segment==="vip"?"VIP Buyers":segment==="risk"?"At-Risk Buyers":"New Buyers"} · ${segmentSizes[segment]} recipients`],
-              ["Subject", subject],
+              ["Channel", `${ch.icon} ${ch.label}`],
+              ["Via",     ch.via],
+              ...(type==="ig_dm"||type==="tt_dm" ? [["Flow Type", flowType==="keyword"?`Keyword: ${keyword}`:"Broadcast"]] : []),
+              ...(type==="am_msg" ? [["Message Type", amMsgType]] : []),
+              ["Audience", audienceLabel()],
+              ...(type==="email" ? [["Subject", subject]] : []),
             ].map(([k,v])=>(
-              <div key={k} style={{ display:"flex", gap:14, marginBottom:10 }}>
-                <span style={{ fontSize:11, color:C.muted, minWidth:80 }}>{k}</span>
-                <span style={{ fontSize:12, color:C.text }}>{v}</span>
+              <div key={k} style={{ display:"flex", gap:14, marginBottom:10, alignItems:"flex-start" }}>
+                <span style={{ fontSize:11, color:C.muted, minWidth:90, flexShrink:0 }}>{k}</span>
+                <span style={{ fontSize:12, color:C.text, lineHeight:1.5 }}>{v}</span>
               </div>
             ))}
+            <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:12, marginTop:4 }}>
+              <div style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Message Preview</div>
+              <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65, whiteSpace:"pre-line", maxHeight:100, overflow:"hidden" }}>{body.slice(0,180)}{body.length>180?"…":""}</div>
+            </div>
           </div>
           <div style={{ display:"flex", gap:10 }}>
             <button onClick={()=>setStep(2)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-            <button onClick={()=>{ alert(`Campaign sent to ${segmentSizes[segment]} ${type === "email" ? "email" : "SMS"} subscribers! ✉`); navigate("campaigns"); }} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
-              Send Campaign 🚀
+            <button onClick={()=>{ navigate("campaigns"); }} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
+              {type==="ig_dm"||type==="tt_dm" ? "Send via ManyChat 🚀" : type==="wn_dm" ? "Send Whatnot Notification 🔔" : type==="am_msg" ? "Send Amazon Message 📦" : "Send Campaign 🚀"}
             </button>
           </div>
         </div>
@@ -1349,6 +1608,11 @@ function ScreenSubscribers({ persona }) {
 // ─── SCREEN: SETTINGS ────────────────────────────────────────────────────────
 function ScreenSettings({ persona }) {
   const [tab, setTab] = useState("platforms");
+  const [manychatConnected, setManychatConnected] = useState(false);
+  const [igDmConnected, setIgDmConnected]         = useState(true);
+  const [ttDmConnected, setTtDmConnected]         = useState(true);
+  const [wnDmConnected, setWnDmConnected]         = useState(false);
+  const [amDmConnected, setAmDmConnected]         = useState(false);
   const [platforms, setPlatforms] = useState(
     persona.platforms.map(p => ({ id:p, connected:true }))
   );
@@ -1367,7 +1631,7 @@ function ScreenSettings({ persona }) {
 
       {/* TABS */}
       <div style={{ display:"flex", gap:0, marginBottom:24, borderBottom:`1px solid ${C.border}` }}>
-        {["platforms","profile","billing","team"].map(t=>(
+        {["platforms","messaging","profile","billing","team"].map(t=>(
           <button key={t} onClick={()=>setTab(t)} style={{ background:"none", border:"none", borderBottom:`2px solid ${tab===t?C.accent:"transparent"}`, color:tab===t?"#a78bfa":C.muted, fontSize:12, fontWeight:tab===t?700:400, padding:"0 16px 12px", cursor:"pointer", textTransform:"capitalize" }}>
             {t}
           </button>
@@ -1402,6 +1666,52 @@ function ScreenSettings({ persona }) {
         </div>
       )}
 
+      {tab==="messaging" && (
+        <div className="fade-up" style={{ maxWidth:680 }}>
+          {/* MANYCHAT */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px", marginBottom:16 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>ManyChat</div>
+            <div style={{ fontSize:11, color:C.muted, marginBottom:16, lineHeight:1.6 }}>Powers Instagram DM and TikTok DM campaigns. Official Meta Business Partner + Official TikTok Partner. Connect once — both channels activate automatically.</div>
+            <div style={{ background:manychatConnected?"#0a1e16":"#1a0f2e", border:`1px solid ${manychatConnected?C.green+"44":"#7c3aed44"}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:10, background:manychatConnected?"#0a3020":"#2d1f5e", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>🤖</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text }}>ManyChat Account</div>
+                <div style={{ fontSize:11, color:manychatConnected?C.green:C.muted, marginTop:2 }}>{manychatConnected?"✓ Connected — Instagram DM + TikTok DM campaigns active":"Not connected — required for social DM campaigns"}</div>
+              </div>
+              <button onClick={()=>setManychatConnected(m=>!m)} style={{ fontSize:11, fontWeight:700, color:manychatConnected?"#f87171":"#a78bfa", background:manychatConnected?"#1c0f0f":"#2d1f5e", border:`1px solid ${manychatConnected?"#ef444444":"#7c3aed44"}`, padding:"8px 18px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>
+                {manychatConnected?"Disconnect":"Connect ManyChat →"}
+              </button>
+            </div>
+          </div>
+
+          {/* PER-CHANNEL STATUS */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px" }}>
+            <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Messaging Channels</div>
+            <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Manage each platform's messaging capabilities and understand their limits.</div>
+            {[
+              { key:"ig",  label:"Instagram DM",       icon:"📸", ch:CHANNEL_META.ig_dm,  connected:igDmConnected, setFn:setIgDmConnected, via:"ManyChat",   note:"Broadcast to opted-in followers or set keyword automations. Requires ManyChat." },
+              { key:"tt",  label:"TikTok DM",           icon:"🎵", ch:CHANNEL_META.tt_dm,  connected:ttDmConnected, setFn:setTtDmConnected, via:"ManyChat",   note:"Business account required. US/non-EU only. Keyword triggers + broadcasts." },
+              { key:"wn",  label:"Whatnot Notifications",icon:"🟡",ch:CHANNEL_META.wn_dm,  connected:wnDmConnected, setFn:setWnDmConnected, via:"Whatnot",    note:"Show notifications to followers only. No bulk DM API — Whatnot doesn't expose one." },
+              { key:"am",  label:"Amazon Messages",     icon:"📦", ch:CHANNEL_META.am_msg, connected:amDmConnected, setFn:setAmDmConnected, via:"SP-API",     note:"Transactional order messages only. No marketing allowed. Routed via Amazon's email system." },
+            ].map((item,i)=>(
+              <div key={item.key} style={{ display:"flex", alignItems:"flex-start", gap:14, paddingTop:14, paddingBottom:14, borderBottom:i<3?`1px solid ${C.border}`:"none" }}>
+                <div style={{ width:34, height:34, borderRadius:9, background:`${item.ch.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0, marginTop:2 }}>{item.icon}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                    <span style={{ fontSize:12, fontWeight:700, color:C.text }}>{item.label}</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:item.ch.color, background:item.ch.bg, border:`1px solid ${item.ch.color}33`, padding:"1px 6px", borderRadius:4 }}>via {item.via}</span>
+                    {item.connected && <span style={{ fontSize:9, fontWeight:700, color:C.green, background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 6px", borderRadius:4 }}>✓ Active</span>}
+                  </div>
+                  <div style={{ fontSize:10, color:C.muted, lineHeight:1.6 }}>{item.note}</div>
+                </div>
+                <button onClick={()=>item.setFn(v=>!v)} style={{ fontSize:10, fontWeight:700, color:item.connected?"#f87171":item.ch.color, background:item.connected?"#1c0f0f":item.ch.bg, border:`1px solid ${item.connected?"#ef444433":item.ch.color+"44"}`, padding:"6px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0, marginTop:2 }}>
+                  {item.connected?"Disconnect":"Connect"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {tab==="profile" && (
         <div className="fade-up" style={{ maxWidth:500 }}>
           {[
