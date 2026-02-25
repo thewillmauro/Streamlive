@@ -1280,6 +1280,228 @@ function ScreenCampaigns({ navigate, persona }) {
   );
 }
 
+// ─── AUDIENCE SEGMENTS (computed from CRM) ────────────────────────────────────
+// Helper: flatten all buyers from all personas, deduplicate by id + enrich
+const ALL_CRM_BUYERS = (() => {
+  const seen = new Set();
+  const all = [];
+  Object.values(BUYERS_BY_PERSONA).forEach(list => {
+    list.forEach(b => {
+      const key = b.email;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const loyalty = LOYALTY_BUYERS[b.id] || { points: 0, tier: "bronze" };
+        const daysAgo = parseInt(b.lastOrder) || (b.lastOrder.includes("d") ? parseInt(b.lastOrder) : 999);
+        all.push({ ...b, loyalty, daysAgo });
+      }
+    });
+  });
+  return all;
+})();
+
+// Segment definitions — each has id, label, icon, color, description, filter fn
+const AUDIENCE_SEGMENTS = [
+  {
+    id: "all",
+    label: "Everyone",
+    icon: "👥",
+    color: "#a78bfa",
+    bg: "#2d1f5e",
+    description: "Your full CRM — all buyers across every platform",
+    filter: () => true,
+    category: "All",
+  },
+  {
+    id: "vip",
+    label: "VIP Buyers",
+    icon: "👑",
+    color: "#f59e0b",
+    bg: "#2e1f0a",
+    description: "Highest-value loyal buyers — top loyalty tier",
+    filter: b => b.status === "vip",
+    category: "Loyalty",
+  },
+  {
+    id: "gold_tier",
+    label: "Gold Tier",
+    icon: "🥇",
+    color: "#d97706",
+    bg: "#261a06",
+    description: "Gold loyalty members — 2,000–4,999 pts",
+    filter: b => b.loyalty.tier === "gold",
+    category: "Loyalty",
+  },
+  {
+    id: "silver_tier",
+    label: "Silver Tier",
+    icon: "🥈",
+    color: "#9ca3af",
+    bg: "#1c2028",
+    description: "Silver loyalty members — 500–1,999 pts",
+    filter: b => b.loyalty.tier === "silver",
+    category: "Loyalty",
+  },
+  {
+    id: "at_risk",
+    label: "At-Risk Buyers",
+    icon: "⚠️",
+    color: "#f59e0b",
+    bg: "#2e1f0a",
+    description: "Buyers who haven't ordered in 28–60 days",
+    filter: b => b.status === "risk",
+    category: "Engagement",
+  },
+  {
+    id: "dormant",
+    label: "Dormant",
+    icon: "💤",
+    color: "#6b7280",
+    bg: "#111118",
+    description: "60+ days since last order — win-back candidates",
+    filter: b => b.status === "dormant",
+    category: "Engagement",
+  },
+  {
+    id: "new_buyers",
+    label: "New Buyers",
+    icon: "✨",
+    color: "#3b82f6",
+    bg: "#0f1e2e",
+    description: "Joined in the last 30 days or first 1–2 orders",
+    filter: b => b.status === "new" || b.orders <= 2,
+    category: "Engagement",
+  },
+  {
+    id: "active",
+    label: "Active Regulars",
+    icon: "🔥",
+    color: "#10b981",
+    bg: "#0a1e16",
+    description: "Bought in the last 14 days — warm and engaged",
+    filter: b => b.status === "active",
+    category: "Engagement",
+  },
+  {
+    id: "high_spend",
+    label: "High Spenders",
+    icon: "💰",
+    color: "#10b981",
+    bg: "#0a1e16",
+    description: "Lifetime spend $1,000 or more",
+    filter: b => b.spend >= 1000,
+    category: "Spend",
+  },
+  {
+    id: "mid_spend",
+    label: "Mid-Tier Spenders",
+    icon: "💵",
+    color: "#6ee7b7",
+    bg: "#0a2016",
+    description: "Lifetime spend $250–$999",
+    filter: b => b.spend >= 250 && b.spend < 1000,
+    category: "Spend",
+  },
+  {
+    id: "platform_wn",
+    label: "Whatnot Buyers",
+    icon: "🟡",
+    color: "#f59e0b",
+    bg: "#2e1f0a",
+    description: "All buyers originating from Whatnot",
+    filter: b => b.platform === "WN",
+    category: "Platform",
+  },
+  {
+    id: "platform_tt",
+    label: "TikTok Buyers",
+    icon: "🎵",
+    color: "#69c9d0",
+    bg: "#0d2828",
+    description: "All buyers originating from TikTok Shop",
+    filter: b => b.platform === "TT",
+    category: "Platform",
+  },
+  {
+    id: "platform_ig",
+    label: "Instagram Buyers",
+    icon: "📸",
+    color: "#e1306c",
+    bg: "#2d1020",
+    description: "All buyers originating from Instagram Live",
+    filter: b => b.platform === "IG",
+    category: "Platform",
+  },
+  {
+    id: "platform_am",
+    label: "Amazon Buyers",
+    icon: "📦",
+    color: "#f97316",
+    bg: "#2e1608",
+    description: "All buyers originating from Amazon Live",
+    filter: b => b.platform === "AM",
+    category: "Platform",
+  },
+  {
+    id: "multi_platform",
+    label: "Multi-Platform",
+    icon: "🌐",
+    color: "#a78bfa",
+    bg: "#2d1f5e",
+    description: "Buyers who have purchased on 2+ platforms",
+    filter: b => b.orders >= 8 && b.spend >= 500,
+    category: "Platform",
+  },
+  {
+    id: "repeat_buyer",
+    label: "Repeat Buyers",
+    icon: "🔁",
+    color: "#34d399",
+    bg: "#0a2016",
+    description: "3 or more orders placed — proven repeat purchasers",
+    filter: b => b.orders >= 3,
+    category: "Behavior",
+  },
+  {
+    id: "big_order",
+    label: "High Order Count",
+    icon: "📈",
+    color: "#60a5fa",
+    bg: "#0f1e2e",
+    description: "Buyers with 10+ orders — your most frequent customers",
+    filter: b => b.orders >= 10,
+    category: "Behavior",
+  },
+  {
+    id: "no_email",
+    label: "Email Only",
+    icon: "✉️",
+    color: "#3b82f6",
+    bg: "#0f1e2e",
+    description: "Buyers with email but no SMS opt-in",
+    filter: b => !!b.email,
+    category: "Contact",
+  },
+  {
+    id: "sms_opted",
+    label: "SMS Opted-In",
+    icon: "💬",
+    color: "#a78bfa",
+    bg: "#2d1f5e",
+    description: "Buyers who have provided a phone number",
+    filter: b => !!b.phone,
+    category: "Contact",
+  },
+];
+
+// Enrich each segment with live count from CRM
+AUDIENCE_SEGMENTS.forEach(seg => {
+  seg.count = ALL_CRM_BUYERS.filter(seg.filter).length;
+  seg.buyers = ALL_CRM_BUYERS.filter(seg.filter);
+  // Scale to full list size (demo data is small; multiply for realistic numbers)
+  seg.scaledCount = Math.round(seg.count * 105 + Math.floor(Math.random() * 20));
+});
+
+
 // ─── SCREEN: CAMPAIGN COMPOSER ────────────────────────────────────────────────
 function ScreenComposer({ navigate, persona }) {
   const [step, setStep]             = useState(1);
@@ -3599,224 +3821,3 @@ export default function StreamlivePrototype() {
     </>
   );
 }
-// ─── AUDIENCE SEGMENTS (computed from CRM) ────────────────────────────────────
-// Helper: flatten all buyers from all personas, deduplicate by id + enrich
-const ALL_CRM_BUYERS = (() => {
-  const seen = new Set();
-  const all = [];
-  Object.values(BUYERS_BY_PERSONA).forEach(list => {
-    list.forEach(b => {
-      const key = b.email;
-      if (!seen.has(key)) {
-        seen.add(key);
-        const loyalty = LOYALTY_BUYERS[b.id] || { points: 0, tier: "bronze" };
-        const daysAgo = parseInt(b.lastOrder) || (b.lastOrder.includes("d") ? parseInt(b.lastOrder) : 999);
-        all.push({ ...b, loyalty, daysAgo });
-      }
-    });
-  });
-  return all;
-})();
-
-// Segment definitions — each has id, label, icon, color, description, filter fn
-const AUDIENCE_SEGMENTS = [
-  {
-    id: "all",
-    label: "Everyone",
-    icon: "👥",
-    color: "#a78bfa",
-    bg: "#2d1f5e",
-    description: "Your full CRM — all buyers across every platform",
-    filter: () => true,
-    category: "All",
-  },
-  {
-    id: "vip",
-    label: "VIP Buyers",
-    icon: "👑",
-    color: "#f59e0b",
-    bg: "#2e1f0a",
-    description: "Highest-value loyal buyers — top loyalty tier",
-    filter: b => b.status === "vip",
-    category: "Loyalty",
-  },
-  {
-    id: "gold_tier",
-    label: "Gold Tier",
-    icon: "🥇",
-    color: "#d97706",
-    bg: "#261a06",
-    description: "Gold loyalty members — 2,000–4,999 pts",
-    filter: b => b.loyalty.tier === "gold",
-    category: "Loyalty",
-  },
-  {
-    id: "silver_tier",
-    label: "Silver Tier",
-    icon: "🥈",
-    color: "#9ca3af",
-    bg: "#1c2028",
-    description: "Silver loyalty members — 500–1,999 pts",
-    filter: b => b.loyalty.tier === "silver",
-    category: "Loyalty",
-  },
-  {
-    id: "at_risk",
-    label: "At-Risk Buyers",
-    icon: "⚠️",
-    color: "#f59e0b",
-    bg: "#2e1f0a",
-    description: "Buyers who haven't ordered in 28–60 days",
-    filter: b => b.status === "risk",
-    category: "Engagement",
-  },
-  {
-    id: "dormant",
-    label: "Dormant",
-    icon: "💤",
-    color: "#6b7280",
-    bg: "#111118",
-    description: "60+ days since last order — win-back candidates",
-    filter: b => b.status === "dormant",
-    category: "Engagement",
-  },
-  {
-    id: "new_buyers",
-    label: "New Buyers",
-    icon: "✨",
-    color: "#3b82f6",
-    bg: "#0f1e2e",
-    description: "Joined in the last 30 days or first 1–2 orders",
-    filter: b => b.status === "new" || b.orders <= 2,
-    category: "Engagement",
-  },
-  {
-    id: "active",
-    label: "Active Regulars",
-    icon: "🔥",
-    color: "#10b981",
-    bg: "#0a1e16",
-    description: "Bought in the last 14 days — warm and engaged",
-    filter: b => b.status === "active",
-    category: "Engagement",
-  },
-  {
-    id: "high_spend",
-    label: "High Spenders",
-    icon: "💰",
-    color: "#10b981",
-    bg: "#0a1e16",
-    description: "Lifetime spend $1,000 or more",
-    filter: b => b.spend >= 1000,
-    category: "Spend",
-  },
-  {
-    id: "mid_spend",
-    label: "Mid-Tier Spenders",
-    icon: "💵",
-    color: "#6ee7b7",
-    bg: "#0a2016",
-    description: "Lifetime spend $250–$999",
-    filter: b => b.spend >= 250 && b.spend < 1000,
-    category: "Spend",
-  },
-  {
-    id: "platform_wn",
-    label: "Whatnot Buyers",
-    icon: "🟡",
-    color: "#f59e0b",
-    bg: "#2e1f0a",
-    description: "All buyers originating from Whatnot",
-    filter: b => b.platform === "WN",
-    category: "Platform",
-  },
-  {
-    id: "platform_tt",
-    label: "TikTok Buyers",
-    icon: "🎵",
-    color: "#69c9d0",
-    bg: "#0d2828",
-    description: "All buyers originating from TikTok Shop",
-    filter: b => b.platform === "TT",
-    category: "Platform",
-  },
-  {
-    id: "platform_ig",
-    label: "Instagram Buyers",
-    icon: "📸",
-    color: "#e1306c",
-    bg: "#2d1020",
-    description: "All buyers originating from Instagram Live",
-    filter: b => b.platform === "IG",
-    category: "Platform",
-  },
-  {
-    id: "platform_am",
-    label: "Amazon Buyers",
-    icon: "📦",
-    color: "#f97316",
-    bg: "#2e1608",
-    description: "All buyers originating from Amazon Live",
-    filter: b => b.platform === "AM",
-    category: "Platform",
-  },
-  {
-    id: "multi_platform",
-    label: "Multi-Platform",
-    icon: "🌐",
-    color: "#a78bfa",
-    bg: "#2d1f5e",
-    description: "Buyers who have purchased on 2+ platforms",
-    filter: b => b.orders >= 8 && b.spend >= 500,
-    category: "Platform",
-  },
-  {
-    id: "repeat_buyer",
-    label: "Repeat Buyers",
-    icon: "🔁",
-    color: "#34d399",
-    bg: "#0a2016",
-    description: "3 or more orders placed — proven repeat purchasers",
-    filter: b => b.orders >= 3,
-    category: "Behavior",
-  },
-  {
-    id: "big_order",
-    label: "High Order Count",
-    icon: "📈",
-    color: "#60a5fa",
-    bg: "#0f1e2e",
-    description: "Buyers with 10+ orders — your most frequent customers",
-    filter: b => b.orders >= 10,
-    category: "Behavior",
-  },
-  {
-    id: "no_email",
-    label: "Email Only",
-    icon: "✉️",
-    color: "#3b82f6",
-    bg: "#0f1e2e",
-    description: "Buyers with email but no SMS opt-in",
-    filter: b => !!b.email,
-    category: "Contact",
-  },
-  {
-    id: "sms_opted",
-    label: "SMS Opted-In",
-    icon: "💬",
-    color: "#a78bfa",
-    bg: "#2d1f5e",
-    description: "Buyers who have provided a phone number",
-    filter: b => !!b.phone,
-    category: "Contact",
-  },
-];
-
-// Enrich each segment with live count from CRM
-AUDIENCE_SEGMENTS.forEach(seg => {
-  seg.count = ALL_CRM_BUYERS.filter(seg.filter).length;
-  seg.buyers = ALL_CRM_BUYERS.filter(seg.filter);
-  // Scale to full list size (demo data is small; multiply for realistic numbers)
-  seg.scaledCount = Math.round(seg.count * 105 + Math.floor(Math.random() * 20));
-});
-
