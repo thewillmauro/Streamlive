@@ -1727,15 +1727,155 @@ function ScreenSubscribers({ persona }) {
 
 // ─── SCREEN: SETTINGS ────────────────────────────────────────────────────────
 function ScreenSettings({ persona }) {
-  const [tab, setTab] = useState("platforms");
-  const [manychatConnected, setManychatConnected] = useState(false);
-  const [igDmConnected, setIgDmConnected]         = useState(true);
-  const [ttDmConnected, setTtDmConnected]         = useState(true);
-  const [wnDmConnected, setWnDmConnected]         = useState(false);
-  const [amDmConnected, setAmDmConnected]         = useState(false);
-  const [platforms, setPlatforms] = useState(
+  const [tab, setTab]           = useState("platforms");
+  const [connections, setConnections] = useState({});
+  const [modal, setModal]       = useState(null); // { type: "manychat"|"ig"|"tt"|"wn"|"am"|"email"|"sms" }
+  const [modalStep, setModalStep]     = useState(1);
+  const [apiKey, setApiKey]     = useState("");
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [refreshToken, setRefreshToken] = useState("");
+  const [marketplaceId, setMarketplaceId] = useState("ATVPDKIKX0DER");
+  const [accountSid, setAccountSid] = useState("");
+  const [authToken, setAuthToken]   = useState("");
+  const [fromNumber, setFromNumber] = useState("");
+  const [smtpHost, setSmtpHost]     = useState("");
+  const [smtpUser, setSmtpUser]     = useState("");
+  const [smtpPass, setSmtpPass]     = useState("");
+  const [connecting, setConnecting] = useState(false);
+  const [platforms, setPlatforms]   = useState(
     persona.platforms.map(p => ({ id:p, connected:true }))
   );
+
+  // ── Load persisted connections on mount ───────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await window.storage.get("strmlive:connections");
+        if (result?.value) {
+          setConnections(JSON.parse(result.value));
+        }
+      } catch(e) {
+        // No saved connections yet
+      }
+    })();
+  }, []);
+
+  // ── Persist whenever connections change ───────────────────────────────────
+  const saveConnections = async (updated) => {
+    setConnections(updated);
+    try {
+      await window.storage.set("strmlive:connections", JSON.stringify(updated));
+    } catch(e) {}
+  };
+
+  const connect = async (type, data) => {
+    setConnecting(true);
+    await new Promise(r => setTimeout(r, 1400)); // simulate API handshake
+    const now = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+    const updated = {
+      ...connections,
+      [type]: { ...data, connectedAt: now, status: "active" }
+    };
+    await saveConnections(updated);
+    setConnecting(false);
+    setModal(null);
+    resetModalFields();
+  };
+
+  const disconnect = async (type) => {
+    const updated = { ...connections };
+    delete updated[type];
+    await saveConnections(updated);
+  };
+
+  const resetModalFields = () => {
+    setApiKey(""); setClientId(""); setClientSecret(""); setRefreshToken("");
+    setAccountSid(""); setAuthToken(""); setFromNumber("");
+    setSmtpHost(""); setSmtpUser(""); setSmtpPass("");
+    setModalStep(1); setConnecting(false);
+  };
+
+  const openModal = (type) => { resetModalFields(); setModal(type); };
+
+  const isConnected = (type) => !!connections[type];
+  const conn        = (type) => connections[type] || {};
+
+  // ── Modal configs per integration ─────────────────────────────────────────
+  const INTEGRATIONS = {
+    manychat: {
+      label: "ManyChat",
+      icon: "🤖",
+      color: "#a78bfa",
+      bg: "#2d1f5e",
+      description: "Powers Instagram DM and TikTok DM automation. Official Meta + TikTok partner.",
+      authType: "apikey",
+      docsUrl: "https://manychat.com/",
+      apiKeyLabel: "ManyChat API Key",
+      apiKeyHint: "Found in ManyChat → Settings → API",
+      apiKeyPlaceholder: "mc-xxxxxxxxxxxxxxxxxxxxxxxx",
+      connectWith: () => connect("manychat", { account: "Your ManyChat workspace", scopes: ["IG DM", "TikTok DM", "Broadcasts", "Flows"] }),
+    },
+    ig: {
+      label: "Instagram",
+      icon: "📸",
+      color: "#e1306c",
+      bg: "#2d1020",
+      description: "Instagram Business account — DM automation via ManyChat, audience insights.",
+      authType: "oauth",
+      scopes: ["instagram_basic", "instagram_manage_messages", "pages_read_engagement"],
+      connectWith: () => connect("ig", { account: "@" + persona.shop.toLowerCase().replace(/\s/g,"_"), followers: "2,840", scopes: ["DM Automation", "Broadcasts", "Audience Insights"] }),
+    },
+    tt: {
+      label: "TikTok",
+      icon: "🎵",
+      color: "#69c9d0",
+      bg: "#0d2828",
+      description: "TikTok Business account — DM keyword automations via ManyChat.",
+      authType: "oauth",
+      scopes: ["user.info.basic", "message.write", "message.read"],
+      connectWith: () => connect("tt", { account: "@" + persona.shop.toLowerCase().replace(/\s/g,"_") + "_tt", followers: "5,210", scopes: ["DM Automation", "Keyword Triggers"] }),
+    },
+    wn: {
+      label: "Whatnot",
+      icon: "🟡",
+      color: "#f59e0b",
+      bg: "#2e1f0a",
+      description: "Whatnot Seller API — inventory sync, show notifications to followers.",
+      authType: "apikey",
+      apiKeyLabel: "Whatnot API Key",
+      apiKeyHint: "Request access at whatnot.com/seller-api (private beta)",
+      apiKeyPlaceholder: "wn_live_xxxxxxxxxxxxxxxx",
+      connectWith: () => connect("wn", { account: persona.shop, followers: "1,240", scopes: ["Inventory Sync", "Show Notifications", "Order Webhooks"] }),
+    },
+    am: {
+      label: "Amazon SP-API",
+      icon: "📦",
+      color: "#f97316",
+      bg: "#2e1608",
+      description: "Amazon Selling Partner API — post-show order sync, transactional buyer messages.",
+      authType: "spapi",
+      connectWith: () => connect("am", { account: persona.shop + " Amazon Store", marketplaceId, scopes: ["Order Sync", "Buyer Messages", "Reports"] }),
+    },
+    sms: {
+      label: "SMS (Twilio)",
+      icon: "💬",
+      color: "#a78bfa",
+      bg: "#2d1f5e",
+      description: "Send SMS campaigns and order notifications via Twilio.",
+      authType: "twilio",
+      connectWith: () => connect("sms", { account: fromNumber, scopes: ["SMS Campaigns", "Order Alerts"] }),
+    },
+    email: {
+      label: "Email (SMTP)",
+      icon: "✉️",
+      color: "#3b82f6",
+      bg: "#0f1e2e",
+      description: "Send email campaigns via your own SMTP provider (SendGrid, Mailgun, etc.).",
+      authType: "smtp",
+      connectWith: () => connect("email", { account: smtpUser || persona.email, scopes: ["Email Campaigns", "Transactional Email"] }),
+    },
+  };
 
   const PLATFORM_LIST = ["WN","TT","AM","IG"];
   const platformData = {
@@ -1745,8 +1885,204 @@ function ScreenSettings({ persona }) {
     IG: { accountType:"Business or Creator", note:"Audience insights + DM automation (Pro)" },
   };
 
+  // ── Connected status card ─────────────────────────────────────────────────
+  const ConnectedCard = ({ type }) => {
+    const intg = INTEGRATIONS[type];
+    const c    = conn(type);
+    return (
+      <div style={{ background:`${intg.color}0d`, border:`1px solid ${intg.color}44`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"flex-start", gap:14 }}>
+        <div style={{ width:38, height:38, borderRadius:10, background:`${intg.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>{intg.icon}</div>
+        <div style={{ flex:1 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+            <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{intg.label}</span>
+            <span style={{ fontSize:9, fontWeight:700, color:C.green, background:"#0a1e16", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:5 }}>✓ CONNECTED</span>
+          </div>
+          <div style={{ fontSize:11, color:"#9ca3af", marginBottom:4 }}>{c.account}</div>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            {(c.scopes||[]).map(s => (
+              <span key={s} style={{ fontSize:9, fontWeight:600, color:intg.color, background:intg.bg, border:`1px solid ${intg.color}33`, padding:"1px 7px", borderRadius:4 }}>{s}</span>
+            ))}
+          </div>
+          <div style={{ fontSize:9, color:C.subtle, marginTop:5 }}>Connected {c.connectedAt} · status: active</div>
+        </div>
+        <button onClick={()=>disconnect(type)} style={{ fontSize:10, fontWeight:700, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"6px 13px", borderRadius:7, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+          Disconnect
+        </button>
+      </div>
+    );
+  };
+
+  // ── Connection modal ───────────────────────────────────────────────────────
+  const Modal = () => {
+    if (!modal) return null;
+    const intg = INTEGRATIONS[modal];
+    const canSubmit = {
+      apikey:  apiKey.trim().length > 4,
+      oauth:   true,
+      spapi:   clientId.trim() && clientSecret.trim() && refreshToken.trim(),
+      twilio:  accountSid.trim() && authToken.trim() && fromNumber.trim(),
+      smtp:    smtpHost.trim() && smtpUser.trim() && smtpPass.trim(),
+    }[intg.authType];
+
+    return (
+      <div style={{ position:"fixed", inset:0, background:"#000000cc", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={e=>e.target===e.currentTarget&&setModal(null)}>
+        <div style={{ background:"#0e0e1a", border:`1px solid ${intg.color}44`, borderRadius:18, padding:"28px 32px", width:500, maxWidth:"90vw", maxHeight:"85vh", overflowY:"auto" }}>
+
+          {/* HEADER */}
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
+            <div style={{ width:44, height:44, borderRadius:12, background:`${intg.color}18`, border:`1px solid ${intg.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>{intg.icon}</div>
+            <div>
+              <div style={{ fontSize:16, fontWeight:700, color:C.text }}>Connect {intg.label}</div>
+              <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{intg.description}</div>
+            </div>
+            <button onClick={()=>setModal(null)} style={{ marginLeft:"auto", background:"none", border:"none", color:C.muted, fontSize:18, cursor:"pointer", flexShrink:0 }}>✕</button>
+          </div>
+
+          {/* AUTH FORM */}
+
+          {/* API KEY */}
+          {intg.authType === "apikey" && (
+            <div>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 18px", marginBottom:16 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>{intg.apiKeyLabel}</div>
+                <input
+                  value={apiKey} onChange={e=>setApiKey(e.target.value)}
+                  placeholder={intg.apiKeyPlaceholder}
+                  style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none", fontFamily:"'JetBrains Mono',monospace" }}
+                />
+                <div style={{ fontSize:10, color:C.muted, marginTop:7 }}>💡 {intg.apiKeyHint}</div>
+              </div>
+              <a href={intg.docsUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:intg.color, textDecoration:"none" }}>
+                Get your API key →
+              </a>
+            </div>
+          )}
+
+          {/* OAUTH */}
+          {intg.authType === "oauth" && (
+            <div>
+              {modalStep === 1 && (
+                <div>
+                  <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 18px", marginBottom:16 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:8 }}>Permissions requested</div>
+                    {(intg.scopes||[]).map(s => (
+                      <div key={s} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:`1px solid ${C.border}` }}>
+                        <span style={{ fontSize:11, color:C.green }}>✓</span>
+                        <span style={{ fontSize:11, color:"#9ca3af", fontFamily:"'JetBrains Mono',monospace" }}>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize:10, color:C.muted, marginBottom:16, lineHeight:1.6 }}>
+                    Clicking "Authorize" will open the {intg.label} login window. Sign in to your {intg.label} Business account and grant the permissions above.
+                  </div>
+                </div>
+              )}
+              {modalStep === 2 && (
+                <div style={{ background:"#0a1e16", border:"1px solid #10b98133", borderRadius:12, padding:"18px", marginBottom:16, textAlign:"center" }}>
+                  <div style={{ fontSize:24, marginBottom:8 }}>✓</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.green }}>Authorization successful</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:4 }}>Account linked and permissions granted</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SP-API (Amazon) */}
+          {intg.authType === "spapi" && (
+            <div>
+              <div style={{ background:`${intg.color}0d`, border:`1px solid ${intg.color}33`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:10, color:intg.color, lineHeight:1.6 }}>
+                ⚙ Create an SP-API app in Seller Central → Developer Console. Copy the credentials below. Requires "Buyer Communication" role for messaging.
+              </div>
+              {[
+                { label:"LWA Client ID",       val:clientId,      set:setClientId,      ph:"amzn1.application-oa2-client.xxx" },
+                { label:"LWA Client Secret",   val:clientSecret,  set:setClientSecret,  ph:"••••••••••••••••••••••" },
+                { label:"Refresh Token",       val:refreshToken,  set:setRefreshToken,  ph:"Atz|..." },
+                { label:"Marketplace ID",      val:marketplaceId, set:setMarketplaceId, ph:"ATVPDKIKX0DER" },
+              ].map(f=>(
+                <div key={f.label} style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
+                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
+                    style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* TWILIO (SMS) */}
+          {intg.authType === "twilio" && (
+            <div>
+              <div style={{ background:`${intg.color}0d`, border:`1px solid ${intg.color}33`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:10, color:intg.color, lineHeight:1.6 }}>
+                📞 Get your credentials from twilio.com → Console. Create a messaging service and copy the phone number you want to send from.
+              </div>
+              {[
+                { label:"Account SID",   val:accountSid,  set:setAccountSid,  ph:"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" },
+                { label:"Auth Token",    val:authToken,   set:setAuthToken,   ph:"••••••••••••••••••••••••••••••••" },
+                { label:"From Number",   val:fromNumber,  set:setFromNumber,  ph:"+15551234567" },
+              ].map(f=>(
+                <div key={f.label} style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
+                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
+                    style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* SMTP (Email) */}
+          {intg.authType === "smtp" && (
+            <div>
+              <div style={{ background:`${intg.color}0d`, border:`1px solid ${intg.color}33`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:10, color:intg.color, lineHeight:1.6 }}>
+                ✉ Works with SendGrid, Mailgun, Postmark, or any SMTP provider. For SendGrid use smtp.sendgrid.net:587 with "apikey" as username.
+              </div>
+              {[
+                { label:"SMTP Host",     val:smtpHost, set:setSmtpHost, ph:"smtp.sendgrid.net" },
+                { label:"Username",      val:smtpUser, set:setSmtpUser, ph:"apikey" },
+                { label:"Password / Key",val:smtpPass, set:setSmtpPass, ph:"SG.••••••••••••••••••••••" },
+              ].map(f=>(
+                <div key={f.label} style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
+                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
+                    style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ACTION BUTTONS */}
+          <div style={{ display:"flex", gap:10, marginTop:20 }}>
+            <button onClick={()=>setModal(null)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>
+              Cancel
+            </button>
+            <button
+              disabled={!canSubmit || connecting}
+              onClick={async ()=>{
+                if (intg.authType==="oauth" && modalStep===1) {
+                  setModalStep(2);
+                  return;
+                }
+                await intg.connectWith();
+              }}
+              style={{ flex:1, background:canSubmit&&!connecting?`linear-gradient(135deg,${intg.color},${intg.color}bb)`:"#1a1a2e", border:`1px solid ${canSubmit?intg.color+"66":C.border}`, color:canSubmit&&!connecting?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:canSubmit&&!connecting?"pointer":"default", transition:"all .2s" }}
+            >
+              {connecting ? (
+                <span style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center" }}>
+                  <div style={{ width:12, height:12, border:"2px solid #ffffff44", borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+                  Connecting…
+                </span>
+              ) : intg.authType==="oauth" && modalStep===1 ? `Authorize ${intg.label} →`
+                : `Connect ${intg.label}`}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", position:"relative" }}>
+      <Modal />
+
       <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px", marginBottom:20 }}>Settings</div>
 
       {/* TABS */}
@@ -1758,15 +2094,16 @@ function ScreenSettings({ persona }) {
         ))}
       </div>
 
+      {/* ── PLATFORMS TAB ── */}
       {tab==="platforms" && (
-        <div className="fade-up" style={{ maxWidth:600 }}>
+        <div className="fade-up" style={{ maxWidth:620 }}>
           <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Connect your selling platforms to import buyer and order data.</div>
           {PLATFORM_LIST.map(pid=>{
-            const p = PLATFORMS[pid];
+            const p  = PLATFORMS[pid];
             const pd = platformData[pid];
-            const isConnected = platforms.find(pl=>pl.id===pid)?.connected;
+            const isConn = platforms.find(pl=>pl.id===pid)?.connected;
             return (
-              <div key={pid} style={{ background:C.surface, border:`1px solid ${isConnected?p.color+"44":C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
+              <div key={pid} style={{ background:C.surface, border:`1px solid ${isConn?p.color+"44":C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
                 <div style={{ width:42, height:42, borderRadius:11, background:`${p.color}18`, border:`1px solid ${p.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:p.color, flexShrink:0 }}>{pid}</div>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
@@ -1774,11 +2111,11 @@ function ScreenSettings({ persona }) {
                     <span style={{ fontSize:9, fontWeight:700, color:p.color, background:`${p.color}18`, border:`1px solid ${p.color}33`, padding:"2px 7px", borderRadius:6, textTransform:"uppercase" }}>{pd.accountType}</span>
                   </div>
                   <div style={{ fontSize:11, color:C.muted }}>{pd.note}</div>
-                  {isConnected && <div style={{ fontSize:10, color:C.green, marginTop:4 }}>● Connected · Last sync 12 min ago · 847 buyers</div>}
+                  {isConn && <div style={{ fontSize:10, color:C.green, marginTop:4 }}>● Connected · Last sync 12 min ago · 847 buyers</div>}
                 </div>
-                {isConnected
+                {isConn
                   ? <button onClick={()=>setPlatforms(ps=>ps.map(pl=>pl.id===pid?{...pl,connected:false}:pl))} style={{ fontSize:11, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Disconnect</button>
-                  : <button onClick={()=>setPlatforms(ps=>{const existing=ps.find(pl=>pl.id===pid);return existing?ps.map(pl=>pl.id===pid?{...pl,connected:true}:pl):[...ps,{id:pid,connected:true}]})} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Connect</button>
+                  : <button onClick={()=>setPlatforms(ps=>{const ex=ps.find(pl=>pl.id===pid);return ex?ps.map(pl=>pl.id===pid?{...pl,connected:true}:pl):[...ps,{id:pid,connected:true}]})} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Connect</button>
                 }
               </div>
             );
@@ -1786,60 +2123,78 @@ function ScreenSettings({ persona }) {
         </div>
       )}
 
+      {/* ── MESSAGING TAB ── */}
       {tab==="messaging" && (
         <div className="fade-up" style={{ maxWidth:680 }}>
-          {/* MANYCHAT */}
-          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px", marginBottom:16 }}>
-            <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>ManyChat</div>
-            <div style={{ fontSize:11, color:C.muted, marginBottom:16, lineHeight:1.6 }}>Powers Instagram DM and TikTok DM campaigns. Official Meta Business Partner + Official TikTok Partner. Connect once — both channels activate automatically.</div>
-            <div style={{ background:manychatConnected?"#0a1e16":"#1a0f2e", border:`1px solid ${manychatConnected?C.green+"44":"#7c3aed44"}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:14 }}>
-              <div style={{ width:40, height:40, borderRadius:10, background:manychatConnected?"#0a3020":"#2d1f5e", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>🤖</div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.text }}>ManyChat Account</div>
-                <div style={{ fontSize:11, color:manychatConnected?C.green:C.muted, marginTop:2 }}>{manychatConnected?"✓ Connected — Instagram DM + TikTok DM campaigns active":"Not connected — required for social DM campaigns"}</div>
-              </div>
-              <button onClick={()=>setManychatConnected(m=>!m)} style={{ fontSize:11, fontWeight:700, color:manychatConnected?"#f87171":"#a78bfa", background:manychatConnected?"#1c0f0f":"#2d1f5e", border:`1px solid ${manychatConnected?"#ef444444":"#7c3aed44"}`, padding:"8px 18px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>
-                {manychatConnected?"Disconnect":"Connect ManyChat →"}
-              </button>
-            </div>
+
+          {/* CONNECTION STATUS OVERVIEW */}
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
+            {Object.keys(INTEGRATIONS).map(type=>{
+              const intg = INTEGRATIONS[type];
+              const connected = isConnected(type);
+              return (
+                <div key={type} style={{ display:"flex", alignItems:"center", gap:6, background:connected?intg.bg:C.surface2, border:`1px solid ${connected?intg.color+"44":C.border}`, borderRadius:8, padding:"5px 10px" }}>
+                  <span style={{ fontSize:12 }}>{intg.icon}</span>
+                  <span style={{ fontSize:10, fontWeight:700, color:connected?intg.color:C.subtle }}>{intg.label}</span>
+                  <div style={{ width:6, height:6, borderRadius:"50%", background:connected?C.green:C.border2 }} />
+                </div>
+              );
+            })}
           </div>
 
-          {/* PER-CHANNEL STATUS */}
-          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px" }}>
-            <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Messaging Channels</div>
-            <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Manage each platform's messaging capabilities and understand their limits.</div>
-            {[
-              { key:"ig",  label:"Instagram DM",       icon:"📸", ch:CHANNEL_META.ig_dm,  connected:igDmConnected, setFn:setIgDmConnected, via:"ManyChat",   note:"Broadcast to opted-in followers or set keyword automations. Requires ManyChat." },
-              { key:"tt",  label:"TikTok DM",           icon:"🎵", ch:CHANNEL_META.tt_dm,  connected:ttDmConnected, setFn:setTtDmConnected, via:"ManyChat",   note:"Business account required. US/non-EU only. Keyword triggers + broadcasts." },
-              { key:"wn",  label:"Whatnot Notifications",icon:"🟡",ch:CHANNEL_META.wn_dm,  connected:wnDmConnected, setFn:setWnDmConnected, via:"Whatnot",    note:"Show notifications to followers only. No bulk DM API — Whatnot doesn't expose one." },
-              { key:"am",  label:"Amazon Messages",     icon:"📦", ch:CHANNEL_META.am_msg, connected:amDmConnected, setFn:setAmDmConnected, via:"SP-API",     note:"Transactional order messages only. No marketing allowed. Routed via Amazon's email system." },
-            ].map((item,i)=>(
-              <div key={item.key} style={{ display:"flex", alignItems:"flex-start", gap:14, paddingTop:14, paddingBottom:14, borderBottom:i<3?`1px solid ${C.border}`:"none" }}>
-                <div style={{ width:34, height:34, borderRadius:9, background:`${item.ch.color}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0, marginTop:2 }}>{item.icon}</div>
-                <div style={{ flex:1 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
-                    <span style={{ fontSize:12, fontWeight:700, color:C.text }}>{item.label}</span>
-                    <span style={{ fontSize:9, fontWeight:700, color:item.ch.color, background:item.ch.bg, border:`1px solid ${item.ch.color}33`, padding:"1px 6px", borderRadius:4 }}>via {item.via}</span>
-                    {item.connected && <span style={{ fontSize:9, fontWeight:700, color:C.green, background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 6px", borderRadius:4 }}>✓ Active</span>}
+          {/* EACH INTEGRATION */}
+          {[
+            { type:"manychat", group:"Social DM Gateway" },
+            { type:"ig",       group:"Social DM Gateway" },
+            { type:"tt",       group:"Social DM Gateway" },
+            { type:"wn",       group:"Platform Native"   },
+            { type:"am",       group:"Platform Native"   },
+            { type:"sms",      group:"Direct Outreach"   },
+            { type:"email",    group:"Direct Outreach"   },
+          ].reduce((acc, item) => {
+            const last = acc[acc.length-1];
+            if (!last || last.group !== item.group) acc.push({ group:item.group, items:[item] });
+            else last.items.push(item);
+            return acc;
+          }, []).map(group=>(
+            <div key={group.group} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:12 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.09em", marginBottom:14 }}>{group.group}</div>
+              {group.items.map(({ type }, i) => {
+                const intg = INTEGRATIONS[type];
+                const connected = isConnected(type);
+                return (
+                  <div key={type} style={{ paddingBottom:i<group.items.length-1?14:0, marginBottom:i<group.items.length-1?14:0, borderBottom:i<group.items.length-1?`1px solid ${C.border}`:"none" }}>
+                    {connected ? (
+                      <ConnectedCard type={type} />
+                    ) : (
+                      <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
+                        <div style={{ width:38, height:38, borderRadius:10, background:`${intg.color}10`, border:`1px solid ${intg.color}22`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>{intg.icon}</div>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:3 }}>{intg.label}</div>
+                          <div style={{ fontSize:10, color:C.muted, lineHeight:1.6 }}>{intg.description}</div>
+                        </div>
+                        <button onClick={()=>openModal(type)} style={{ fontSize:11, fontWeight:700, color:intg.color, background:intg.bg, border:`1px solid ${intg.color}44`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                          Connect →
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div style={{ fontSize:10, color:C.muted, lineHeight:1.6 }}>{item.note}</div>
-                </div>
-                <button onClick={()=>item.setFn(v=>!v)} style={{ fontSize:10, fontWeight:700, color:item.connected?"#f87171":item.ch.color, background:item.connected?"#1c0f0f":item.ch.bg, border:`1px solid ${item.connected?"#ef444433":item.ch.color+"44"}`, padding:"6px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0, marginTop:2 }}>
-                  {item.connected?"Disconnect":"Connect"}
-                </button>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       )}
+
+      {/* ── PROFILE TAB ── */}
       {tab==="profile" && (
         <div className="fade-up" style={{ maxWidth:500 }}>
           {[
-            { label:"Full Name",   value:persona.name,  type:"text"  },
-            { label:"Shop Name",   value:persona.shop,  type:"text"  },
-            { label:"Email",       value:persona.email, type:"email" },
-            { label:"Category",    value:persona.category, type:"text" },
-            { label:"Short Bio",   value:persona.bio,   type:"textarea" },
+            { label:"Full Name",   value:persona.name,     type:"text"     },
+            { label:"Shop Name",   value:persona.shop,     type:"text"     },
+            { label:"Email",       value:persona.email,    type:"email"    },
+            { label:"Category",    value:persona.category, type:"text"     },
+            { label:"Short Bio",   value:persona.bio,      type:"textarea" },
           ].map(f=>(
             <div key={f.label} style={{ marginBottom:16 }}>
               <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>{f.label}</div>
@@ -1853,6 +2208,7 @@ function ScreenSettings({ persona }) {
         </div>
       )}
 
+      {/* ── BILLING TAB ── */}
       {tab==="billing" && (
         <div className="fade-up" style={{ maxWidth:560 }}>
           <div style={{ background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}44`, borderRadius:14, padding:"20px 22px", marginBottom:20 }}>
@@ -1868,909 +2224,44 @@ function ScreenSettings({ persona }) {
           {persona.plan !== "pro" && (
             <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
               <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Upgrade to {persona.plan==="starter"?"Growth":"Pro"}</div>
-              <div style={{ fontSize:12, color:C.muted, marginBottom:14 }}>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>
                 {persona.plan==="starter"
                   ? "Unlock real-time Live Companion, AI weekly briefings, and SMS campaigns."
-                  : "Unlock Instagram DM automation, AI churn narratives, and multi-platform attribution."}
+                  : "Unlock advanced AI automation, white-label reports, and priority support."}
               </div>
-              <a href={persona.plan==="starter" ? STRIPE_LINKS.growth : STRIPE_LINKS.pro} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer", textDecoration:"none" }}>
-                Upgrade — ${persona.plan==="starter"?149:349}/mo
+              <a href={STRIPE_LINKS[persona.plan==="starter"?"growth":"pro"]} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", fontSize:12, fontWeight:700, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, padding:"9px 22px", borderRadius:9, textDecoration:"none" }}>
+                Upgrade Now →
               </a>
             </div>
           )}
         </div>
       )}
 
+      {/* ── TEAM TAB ── */}
       {tab==="team" && (
         <div className="fade-up" style={{ maxWidth:560 }}>
-          <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Invite your VA or co-host to access Streamlive with limited permissions.</div>
-          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-            <Avatar initials={persona.avatar} color={persona.planColor} size={34} />
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{persona.name} (you)</div>
-              <div style={{ fontSize:11, color:C.muted }}>{persona.email}</div>
+          <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Invite team members to help manage your shows, campaigns, and buyers.</div>
+          {[
+            { name:persona.name, email:persona.email, role:"Owner", avatar:persona.name.split(" ").map(n=>n[0]).join("") },
+          ].map(m=>(
+            <div key={m.email} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+              <Avatar initials={m.avatar} color={C.accent} size={36} />
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{m.name}</div>
+                <div style={{ fontSize:11, color:C.muted }}>{m.email}</div>
+              </div>
+              <span style={{ fontSize:10, fontWeight:700, color:C.accent, background:`${C.accent}22`, border:`1px solid ${C.accent}44`, padding:"3px 10px", borderRadius:5 }}>{m.role}</span>
             </div>
-            <span style={{ fontSize:10, color:C.green, background:"#0a1e16", border:`1px solid ${C.green}44`, padding:"3px 9px", borderRadius:6, fontWeight:700 }}>OWNER</span>
-          </div>
-          <div style={{ display:"flex", gap:10 }}>
-            <input placeholder="Invite by email address…" style={{ flex:1, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"9px 12px", color:C.text, fontSize:12, outline:"none" }} />
-            <button style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 18px", borderRadius:9, cursor:"pointer" }}>Invite</button>
-          </div>
+          ))}
+          <button style={{ marginTop:8, background:C.surface, border:`2px dashed ${C.border2}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px", borderRadius:10, cursor:"pointer", width:"100%" }}>
+            + Invite Team Member
+          </button>
         </div>
       )}
     </div>
   );
 }
 
-
-// ─── SCREEN: CATALOG ──────────────────────────────────────────────────────────
-function ScreenCatalog({ persona, navigate }) {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [products, setProducts] = useState(PRODUCTS);
-  const [syncPulse, setSyncPulse] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState("all");
-
-  const toggleShowReady = (id) => {
-    setProducts(ps => ps.map(p => p.id===id ? {...p, showReady:!p.showReady} : p));
-  };
-
-  const filtered = products.filter(p => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter==="all" || (filter==="show-ready" && p.showReady) || (filter==="not-ready" && !p.showReady);
-    const matchPlatform = selectedPlatform==="all" || p.platforms.includes(selectedPlatform);
-    return matchSearch && matchFilter && matchPlatform;
-  });
-
-  const showReadyCount = products.filter(p=>p.showReady).length;
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
-      {/* HEADER */}
-      <div style={{ padding:"16px 28px 12px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-          <div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, letterSpacing:"-0.3px" }}>Shopify Catalog</div>
-            <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{products.length} products synced · {showReadyCount} show-ready · Last sync 4 min ago</div>
-          </div>
-          <div style={{ display:"flex", gap:8 }}>
-            <button onClick={()=>navigate("show-planner")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
-              + Plan a Show
-            </button>
-            <button onClick={()=>{ setSyncPulse(true); setTimeout(()=>setSyncPulse(false),2000); }} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:syncPulse?C.green:C.muted, fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:9, cursor:"pointer" }}>
-              {syncPulse ? "✓ Synced!" : "↻ Sync Shopify"}
-            </button>
-          </div>
-        </div>
-
-        {/* STATS ROW */}
-        <div style={{ display:"flex", gap:16, marginBottom:12 }}>
-          {[
-            { label:"Total Products",  value:products.length,       color:C.accent },
-            { label:"Show-Ready",       value:showReadyCount,         color:C.green  },
-            { label:"Low Stock (<5)",   value:products.filter(p=>p.inventory<5).length, color:C.amber },
-            { label:"Avg AI Score",     value:(products.reduce((a,p)=>a+p.aiScore,0)/products.length).toFixed(1), color:"#a78bfa" },
-          ].map(s=>(
-            <div key={s.label} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"8px 14px", display:"flex", gap:10, alignItems:"center" }}>
-              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:s.color }}>{s.value}</span>
-              <span style={{ fontSize:10, color:C.muted }}>{s.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* FILTERS */}
-        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-          <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 12px" }}>
-            <span style={{ color:C.subtle }}>🔍</span>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search products or SKU..." style={{ flex:1, background:"none", border:"none", color:C.text, fontSize:12, outline:"none" }} />
-          </div>
-          {["all","show-ready","not-ready"].map(f=>(
-            <button key={f} onClick={()=>setFilter(f)} style={{ background:"none", border:"none", borderBottom:`2px solid ${filter===f?C.accent:"transparent"}`, color:filter===f?"#a78bfa":C.muted, fontSize:12, fontWeight:filter===f?700:400, padding:"4px 12px 8px", cursor:"pointer" }}>
-              {f==="all"?"All":f==="show-ready"?"Show-Ready":"Not Ready"}
-            </button>
-          ))}
-          <div style={{ width:1, height:20, background:C.border }} />
-          {["all","WN","TT","AM","IG"].map(pl=>{
-            const color = pl==="all"?C.muted:PLATFORMS[pl]?.color;
-            return (
-              <button key={pl} onClick={()=>setSelectedPlatform(pl)} style={{ fontSize:10, fontWeight:700, color:selectedPlatform===pl?color:"#4b5563", background:selectedPlatform===pl?`${color}18`:"transparent", border:`1px solid ${selectedPlatform===pl?color+"44":C.border}`, padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>
-                {pl==="all"?"All Platforms":pl}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* PRODUCT GRID */}
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
-          {filtered.map(p=>(
-            <div key={p.id} style={{ background:C.surface, border:`1px solid ${p.showReady?C.accent+"44":C.border}`, borderRadius:14, padding:"16px", transition:"border-color .15s" }}>
-              {/* TOP */}
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
-                <div style={{ width:42, height:42, borderRadius:10, background:`${C.accent}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>{p.image}</div>
-                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:4 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                    <span style={{ fontSize:9, color:"#a78bfa" }}>AI Score</span>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:p.aiScore>=9?"#10b981":p.aiScore>=7.5?"#a78bfa":C.amber }}>{p.aiScore}</span>
-                  </div>
-                  <span style={{ fontSize:8, fontWeight:700, color:C.muted, background:C.surface2, padding:"2px 6px", borderRadius:4, textTransform:"uppercase" }}>{p.category}</span>
-                </div>
-              </div>
-
-              {/* NAME + SKU */}
-              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:3, lineHeight:1.3 }}>{p.name}</div>
-              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.subtle, marginBottom:10 }}>{p.sku}</div>
-
-              {/* PRICE + INVENTORY */}
-              <div style={{ display:"flex", gap:12, marginBottom:10 }}>
-                <div>
-                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:C.text }}>${p.price}</div>
-                  <div style={{ fontSize:9, color:C.muted }}>price</div>
-                </div>
-                <div>
-                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:p.inventory<5?C.amber:C.text }}>{p.inventory}</div>
-                  <div style={{ fontSize:9, color:C.muted }}>in stock</div>
-                </div>
-                <div>
-                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:C.green }}>{p.soldLast30}</div>
-                  <div style={{ fontSize:9, color:C.muted }}>sold/30d</div>
-                </div>
-              </div>
-
-              {/* PLATFORMS */}
-              <div style={{ display:"flex", gap:4, marginBottom:12, flexWrap:"wrap" }}>
-                {p.platforms.map(pl=><PlatformPill key={pl} code={pl} />)}
-              </div>
-
-              {/* SHOW-READY TOGGLE */}
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:10, borderTop:`1px solid ${C.border}` }}>
-                <span style={{ fontSize:11, color:p.showReady?C.green:C.muted, fontWeight:600 }}>
-                  {p.showReady ? "✓ Show-Ready" : "Not in rotation"}
-                </span>
-                <div onClick={()=>toggleShowReady(p.id)} style={{ width:40, height:22, borderRadius:11, background:p.showReady?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}>
-                  <div style={{ position:"absolute", top:3, left:p.showReady?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── SCREEN: SHOW PLANNER ─────────────────────────────────────────────────────
-function ScreenShowPlanner({ navigate }) {
-  const [step, setStep] = useState(1);
-  const [selectedProducts, setSelectedProducts] = useState(
-    UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
-  );
-  const [runOrder, setRunOrder] = useState(
-    UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
-  );
-  const [perks, setPerks] = useState({
-    earlyAccess: true, earlyMinutes: 15,
-    newBuyerDiscount: true, newBuyerPct: 10,
-    vipFirstPick: true,
-    doublePoints: false,
-    mysteryBonus: true, mysteryThreshold: 3,
-  });
-  const [dragIdx, setDragIdx] = useState(null);
-  const [overIdx, setOverIdx] = useState(null);
-  const [rules, setRules] = useState([
-    { id:"r1", enabled:true,  trigger:"buyer_tier",     triggerVal:"vip",    action:"apply_discount", actionVal:"15", label:"If buyer is VIP → 15% discount" },
-    { id:"r2", enabled:true,  trigger:"first_purchase", triggerVal:"true",   action:"apply_discount", actionVal:"10", label:"If first-time buyer → 10% discount" },
-    { id:"r3", enabled:false, trigger:"order_count",    triggerVal:"3",      action:"add_perk",       actionVal:"mysteryItem", label:"If 3+ items ordered → Mystery Bonus" },
-    { id:"r4", enabled:false, trigger:"buyer_tier",     triggerVal:"gold",   action:"add_perk",       actionVal:"bonusPoints", label:"If buyer is Gold → 2× Points" },
-    { id:"r5", enabled:false, trigger:"spend_lifetime", triggerVal:"500",    action:"apply_discount", actionVal:"5",  label:"If lifetime spend $500+ → 5% off" },
-  ]);
-  const [showRuleBuilder, setShowRuleBuilder] = useState(false);
-  const [newRule, setNewRule] = useState({ trigger:"buyer_tier", triggerVal:"vip", action:"apply_discount", actionVal:"10" });
-
-  const TRIGGER_OPTIONS = [
-    { value:"buyer_tier",     label:"Buyer tier is",          vals:[{v:"bronze",l:"Bronze"},{v:"silver",l:"Silver"},{v:"gold",l:"Gold"},{v:"vip",l:"VIP"}] },
-    { value:"first_purchase", label:"First-time buyer",        vals:[{v:"true",l:"Yes"}] },
-    { value:"order_count",    label:"Items ordered ≥",         vals:[{v:"2",l:"2"},{v:"3",l:"3"},{v:"5",l:"5"}] },
-    { value:"spend_lifetime", label:"Lifetime spend ≥ $",      vals:[{v:"100",l:"$100"},{v:"250",l:"$250"},{v:"500",l:"$500"},{v:"1000",l:"$1,000"}] },
-    { value:"platform",       label:"Platform is",             vals:[{v:"WN",l:"Whatnot"},{v:"TT",l:"TikTok"},{v:"AM",l:"Amazon"},{v:"IG",l:"Instagram"}] },
-  ];
-  const ACTION_OPTIONS = [
-    { value:"apply_discount", label:"Apply discount",  vals:[{v:"5",l:"5%"},{v:"10",l:"10%"},{v:"15",l:"15%"},{v:"20",l:"20%"},{v:"25",l:"25%"}] },
-    { value:"add_perk",       label:"Grant perk",      vals:[{v:"bonusPoints",l:"2× Points"},{v:"mysteryItem",l:"Mystery Bonus"},{v:"freeShipping",l:"Free Shipping"},{v:"firstPick",l:"First Pick"}] },
-    { value:"add_item",       label:"Add catalog item", vals:PRODUCTS.filter(p=>p.showReady).map(p=>({v:p.id,l:p.name.slice(0,24)})) },
-  ];
-
-  const addRule = () => {
-    const tOpt = TRIGGER_OPTIONS.find(t=>t.value===newRule.trigger);
-    const aOpt = ACTION_OPTIONS.find(a=>a.value===newRule.action);
-    const tLabel = tOpt?.label || newRule.trigger;
-    const aLabel = aOpt?.label || newRule.action;
-    const tValLabel = tOpt?.vals.find(v=>v.v===newRule.triggerVal)?.l || newRule.triggerVal;
-    const aValLabel = aOpt?.vals.find(v=>v.v===newRule.actionVal)?.l  || newRule.actionVal;
-    setRules(r=>[...r, { id:`r${Date.now()}`, enabled:true, ...newRule, label:`If ${tLabel} ${tValLabel} → ${aLabel} ${aValLabel}` }]);
-    setShowRuleBuilder(false);
-  };
-  const toggleRule   = (id) => setRules(rs=>rs.map(r=>r.id===id?{...r,enabled:!r.enabled}:r));
-  const deleteRule   = (id) => setRules(rs=>rs.filter(r=>r.id!==id));
-
-  const moveUp   = (i) => { if(i===0) return; const a=[...runOrder]; [a[i-1],a[i]]=[a[i],a[i-1]]; setRunOrder(a); };
-  const moveDown = (i) => { if(i===runOrder.length-1) return; const a=[...runOrder]; [a[i],a[i+1]]=[a[i+1],a[i]]; setRunOrder(a); };
-  const remove   = (i) => setRunOrder(r=>r.filter((_,idx)=>idx!==i));
-
-  const showReadyProducts = PRODUCTS.filter(p=>p.showReady);
-
-  const steps = ["Select Products","Set Run Order","Show Perks","Automation Rules","Review & Go Live"];
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
-      {/* HEADER */}
-      <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-          <button onClick={()=>navigate("shows")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text }}>Show Planner</div>
-          <div style={{ marginLeft:"auto" }}>
-            <PlatformPill code={UPCOMING_SHOW.platform} />
-          </div>
-        </div>
-        <div style={{ fontSize:12, color:C.muted, marginBottom:14 }}>{UPCOMING_SHOW.title} · {UPCOMING_SHOW.date} at {UPCOMING_SHOW.time}</div>
-
-        {/* STEP PROGRESS */}
-        <div style={{ display:"flex", gap:0 }}>
-          {steps.map((s,i)=>(
-            <div key={s} style={{ display:"flex", alignItems:"center" }}>
-              <button onClick={()=>setStep(i+1)} style={{ display:"flex", alignItems:"center", gap:7, background:"none", border:"none", cursor:"pointer", padding:"0 4px" }}>
-                <div style={{ width:22, height:22, borderRadius:"50%", background:step>i+1?C.green:step===i+1?C.accent:C.surface2, border:`2px solid ${step>i+1?C.green:step===i+1?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:step>=i+1?"#fff":C.subtle, flexShrink:0 }}>
-                  {step>i+1?"✓":i+1}
-                </div>
-                <span style={{ fontSize:11, fontWeight:step===i+1?700:400, color:step===i+1?C.text:C.muted, whiteSpace:"nowrap" }}>{s}</span>
-              </button>
-              {i<steps.length-1 && <div style={{ width:32, height:1, background:step>i+1?C.green:C.border, margin:"0 4px" }} />}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* STEP CONTENT */}
-      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
-
-        {/* STEP 1: SELECT PRODUCTS */}
-        {step===1 && (
-          <div className="fade-up">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-              <div>
-                <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Choose products for this show</div>
-                <div style={{ fontSize:12, color:C.muted }}>{selectedProducts.length} selected · AI recommends your show-ready items ranked by performance</div>
-              </div>
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-              {showReadyProducts.map(p=>{
-                const sel = selectedProducts.find(s=>s.id===p.id);
-                return (
-                  <div key={p.id} onClick={()=>{ setSelectedProducts(prev=>sel?prev.filter(s=>s.id!==p.id):[...prev,p]); setRunOrder(prev=>sel?prev.filter(s=>s.id!==p.id):[...prev,p]); }} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:sel?`${C.accent}12`:C.surface, border:`1px solid ${sel?C.accent+"55":C.border}`, borderRadius:12, cursor:"pointer", transition:"all .15s" }}>
-                    <div style={{ fontSize:20 }}>{p.image}</div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:2 }}>{p.name}</div>
-                      <div style={{ display:"flex", gap:8 }}>
-                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green }}>${p.price}</span>
-                        <span style={{ fontSize:10, color:C.muted }}>{p.inventory} in stock</span>
-                        <span style={{ fontSize:10, color:"#a78bfa" }}>AI: {p.aiScore}</span>
-                      </div>
-                    </div>
-                    <div style={{ width:20, height:20, borderRadius:"50%", background:sel?C.accent:C.surface2, border:`2px solid ${sel?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:"#fff", flexShrink:0 }}>
-                      {sel?"✓":""}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ marginTop:20, display:"flex", justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(2)} disabled={selectedProducts.length===0} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer", opacity:selectedProducts.length===0?0.4:1 }}>
-                Set Run Order ({selectedProducts.length} products) →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 2: RUN ORDER */}
-        {step===2 && (
-          <div className="fade-up">
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
-              {/* ORDERED LIST */}
-              <div>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:3 }}>Drag to reorder your run-of-show</div>
-                    <div style={{ fontSize:11, color:C.muted }}>AI sorted by predicted sales performance. Reorder as you like.</div>
-                  </div>
-                </div>
-                {runOrder.map((p,i)=>(
-                  <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, marginBottom:8 }}>
-                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.accent, width:24, textAlign:"center", flexShrink:0 }}>{i+1}</div>
-                    <div style={{ fontSize:18, flexShrink:0 }}>{p.image}</div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{p.name}</div>
-                      <div style={{ fontSize:10, color:C.muted }}>${p.price} · {p.inventory} in stock · AI: {p.aiScore}</div>
-                    </div>
-                    <div style={{ display:"flex", gap:4 }}>
-                      <button onClick={()=>moveUp(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↑</button>
-                      <button onClick={()=>moveDown(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↓</button>
-                      <button onClick={()=>remove(i)} style={{ background:"#1c0f0f", border:"1px solid #ef444433", color:"#f87171", fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>✕</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* AI INSIGHT PANEL */}
-              <div>
-                <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}33`, borderRadius:14, padding:"16px 18px", marginBottom:14 }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>✦ AI Show Strategy</div>
-                  <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65 }}>
-                    Opening with the Mystery Box is your highest-converting cold opener — it drives 7.2 units/show on average. 
-                    Following with Luka RC creates urgency early while buyers are most engaged. 
-                    Save the Vintage Wax Box for the 90-min mark when your VIP core is still active.
-                  </div>
-                </div>
-                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>Projected Show Performance</div>
-                  {[
-                    { label:"Est. GMV",      value:`$${UPCOMING_SHOW.estimatedGMV.toLocaleString()}`, color:C.green },
-                    { label:"Est. Buyers",   value:UPCOMING_SHOW.estimatedBuyers,                     color:C.text },
-                    { label:"Products",      value:runOrder.length,                                   color:"#a78bfa" },
-                    { label:"Est. Duration", value:`${Math.round(runOrder.length*12)} min`,           color:C.muted },
-                  ].map(m=>(
-                    <div key={m.label} style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-                      <span style={{ fontSize:12, color:C.muted }}>{m.label}</span>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:m.color }}>{m.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(1)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
-              <button onClick={()=>setStep(3)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Set Show Perks →</button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: PERKS */}
-        {step===3 && (
-          <div className="fade-up" style={{ maxWidth:680 }}>
-            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Configure perks for this show</div>
-            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>These apply only to this show. Your default loyalty tiers always apply.</div>
-
-            {[
-              { key:"earlyAccess",     icon:"⏰", title:"VIP Early Access",           desc:"Let VIP buyers into the show early",          extra: perks.earlyAccess && <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}><span style={{ fontSize:11, color:C.muted }}>Minutes early:</span>{[5,10,15,30].map(m=><button key={m} onClick={()=>setPerks(p=>({...p,earlyMinutes:m}))} style={{ fontSize:11, fontWeight:perks.earlyMinutes===m?700:400, color:perks.earlyMinutes===m?"#fff":C.muted, background:perks.earlyMinutes===m?C.accent:C.surface2, border:`1px solid ${perks.earlyMinutes===m?C.accent:C.border}`, padding:"3px 10px", borderRadius:6, cursor:"pointer" }}>{m}</button>)}</div> },
-              { key:"newBuyerDiscount",icon:"🎁", title:"New Buyer Welcome Discount",  desc:"First-time buyers get an instant discount",  extra: perks.newBuyerDiscount && <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}><span style={{ fontSize:11, color:C.muted }}>Discount:</span>{[5,10,15,20].map(p=><button key={p} onClick={()=>setPerks(pr=>({...pr,newBuyerPct:p}))} style={{ fontSize:11, fontWeight:perks.newBuyerPct===p?700:400, color:perks.newBuyerPct===p?"#fff":C.muted, background:perks.newBuyerPct===p?C.green:C.surface2, border:`1px solid ${perks.newBuyerPct===p?C.green:C.border}`, padding:"3px 10px", borderRadius:6, cursor:"pointer" }}>{p}%</button>)}</div> },
-              { key:"vipFirstPick",    icon:"👑", title:"VIP First Pick",              desc:"VIP tier buyers get first pick on limited items", extra:null },
-              { key:"doublePoints",    icon:"⚡", title:"Double Points Show",          desc:"All buyers earn 2× loyalty points tonight",   extra:null },
-              { key:"mysteryBonus",    icon:"🎲", title:"Mystery Bonus at Threshold",  desc:"Buyers who purchase X+ items get a mystery bonus", extra: perks.mysteryBonus && <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}><span style={{ fontSize:11, color:C.muted }}>Trigger at:</span>{[2,3,4,5].map(n=><button key={n} onClick={()=>setPerks(p=>({...p,mysteryThreshold:n}))} style={{ fontSize:11, fontWeight:perks.mysteryThreshold===n?700:400, color:perks.mysteryThreshold===n?"#fff":C.muted, background:perks.mysteryThreshold===n?C.amber:C.surface2, border:`1px solid ${perks.mysteryThreshold===n?C.amber:C.border}`, padding:"3px 10px", borderRadius:6, cursor:"pointer" }}>{n}+ items</button>)}</div> },
-            ].map(perk=>(
-              <div key={perk.key} style={{ background:perks[perk.key]?`${C.accent}08`:C.surface, border:`1px solid ${perks[perk.key]?C.accent+"44":C.border}`, borderRadius:13, padding:"14px 16px", marginBottom:10 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <div style={{ width:36, height:36, borderRadius:9, background:perks[perk.key]?`${C.accent}22`:C.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{perk.icon}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{perk.title}</div>
-                    <div style={{ fontSize:11, color:C.muted }}>{perk.desc}</div>
-                  </div>
-                  <div onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))} style={{ width:40, height:22, borderRadius:11, background:perks[perk.key]?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}>
-                    <div style={{ position:"absolute", top:3, left:perks[perk.key]?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
-                  </div>
-                </div>
-                {perk.extra}
-              </div>
-            ))}
-
-            <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(2)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
-              <button onClick={()=>setStep(4)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Review & Confirm →</button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: AUTOMATION RULES */}
-        {step===4 && (
-          <div className="fade-up" style={{ maxWidth:700 }}>
-            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Set automation rules for this show</div>
-            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Rules run automatically as orders come in during the live. You can still override any buyer manually.</div>
-
-            {/* ACTIVE RULES LIST */}
-            {rules.map(r=>(
-              <div key={r.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", background:r.enabled?`${C.accent}08`:C.surface, border:`1px solid ${r.enabled?C.accent+"33":C.border}`, borderRadius:11, marginBottom:8 }}>
-                <div style={{ width:10, height:10, borderRadius:"50%", background:r.enabled?C.green:C.border2, flexShrink:0 }} />
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:12, fontWeight:600, color:r.enabled?C.text:C.muted }}>{r.label}</div>
-                  <div style={{ fontSize:10, color:C.subtle, marginTop:2 }}>
-                    {r.action==="apply_discount"?`Discount: ${r.actionVal}%`:r.action==="add_perk"?`Perk: ${r.actionVal}`:`Item: ${PRODUCTS.find(p=>p.id===r.actionVal)?.name||r.actionVal}`}
-                  </div>
-                </div>
-                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div onClick={()=>toggleRule(r.id)} style={{ width:36, height:20, borderRadius:10, background:r.enabled?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}>
-                    <div style={{ position:"absolute", top:2, left:r.enabled?17:2, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s" }} />
-                  </div>
-                  <button onClick={()=>deleteRule(r.id)} style={{ background:"none", border:"none", color:"#4b5563", fontSize:14, cursor:"pointer", padding:"0 4px" }}>✕</button>
-                </div>
-              </div>
-            ))}
-
-            {/* ADD RULE BUTTON */}
-            {!showRuleBuilder ? (
-              <button onClick={()=>setShowRuleBuilder(true)} style={{ width:"100%", background:"none", border:`2px dashed ${C.border2}`, color:C.muted, fontSize:12, fontWeight:600, padding:"11px", borderRadius:11, cursor:"pointer", marginTop:4 }}>
-                + Add Rule
-              </button>
-            ) : (
-              <div style={{ background:C.surface, border:`1px solid ${C.accent}44`, borderRadius:13, padding:"16px 18px", marginTop:8 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:14, textTransform:"uppercase", letterSpacing:"0.06em" }}>New Rule</div>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr", gap:10, alignItems:"center", marginBottom:14 }}>
-                  {/* TRIGGER */}
-                  <div>
-                    <div style={{ fontSize:10, color:C.muted, marginBottom:5, fontWeight:700, textTransform:"uppercase" }}>If...</div>
-                    <select value={newRule.trigger} onChange={e=>setNewRule(r=>({...r,trigger:e.target.value,triggerVal:TRIGGER_OPTIONS.find(t=>t.value===e.target.value)?.vals[0]?.v||""}))}
-                      style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 10px", color:C.text, fontSize:11, outline:"none", marginBottom:6 }}>
-                      {TRIGGER_OPTIONS.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}
-                    </select>
-                    <select value={newRule.triggerVal} onChange={e=>setNewRule(r=>({...r,triggerVal:e.target.value}))}
-                      style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 10px", color:C.text, fontSize:11, outline:"none" }}>
-                      {(TRIGGER_OPTIONS.find(t=>t.value===newRule.trigger)?.vals||[]).map(v=><option key={v.v} value={v.v}>{v.l}</option>)}
-                    </select>
-                  </div>
-                  <div style={{ fontSize:18, color:C.accent, fontWeight:700, paddingTop:20 }}>→</div>
-                  {/* ACTION */}
-                  <div>
-                    <div style={{ fontSize:10, color:C.muted, marginBottom:5, fontWeight:700, textTransform:"uppercase" }}>Then...</div>
-                    <select value={newRule.action} onChange={e=>setNewRule(r=>({...r,action:e.target.value,actionVal:ACTION_OPTIONS.find(a=>a.value===e.target.value)?.vals[0]?.v||""}))}
-                      style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 10px", color:C.text, fontSize:11, outline:"none", marginBottom:6 }}>
-                      {ACTION_OPTIONS.map(a=><option key={a.value} value={a.value}>{a.label}</option>)}
-                    </select>
-                    <select value={newRule.actionVal} onChange={e=>setNewRule(r=>({...r,actionVal:e.target.value}))}
-                      style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 10px", color:C.text, fontSize:11, outline:"none" }}>
-                      {(ACTION_OPTIONS.find(a=>a.value===newRule.action)?.vals||[]).map(v=><option key={v.v} value={v.v}>{v.l}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div style={{ display:"flex", gap:8 }}>
-                  <button onClick={()=>setShowRuleBuilder(false)} style={{ flex:0, background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"8px 16px", borderRadius:8, cursor:"pointer" }}>Cancel</button>
-                  <button onClick={addRule} style={{ flex:1, background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px", borderRadius:8, cursor:"pointer" }}>Save Rule</button>
-                </div>
-              </div>
-            )}
-
-            <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(3)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
-              <button onClick={()=>setStep(5)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Review & Confirm →</button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 5: CONFIRM */}
-        {step===5 && (
-          <div className="fade-up" style={{ maxWidth:620 }}>
-            <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}44`, borderRadius:16, padding:"22px 24px", marginBottom:16 }}>
-              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Show Summary</div>
-              <div style={{ display:"flex", gap:20, marginBottom:14 }}>
-                {[
-                  { label:"Products",   value:runOrder.length,   color:C.accent },
-                  { label:"Est. GMV",   value:`$${UPCOMING_SHOW.estimatedGMV.toLocaleString()}`, color:C.green },
-                  { label:"Perks Active", value:Object.values(perks).filter(v=>v===true).length, color:"#a78bfa" },
-                ].map(m=>(
-                  <div key={m.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 16px" }}>
-                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:700, color:m.color }}>{m.value}</div>
-                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{m.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize:11, color:C.muted, marginBottom:8, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.06em" }}>Run Order</div>
-              {runOrder.map((p,i)=>(
-                <div key={p.id} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:6 }}>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.accent, width:18 }}>{i+1}.</span>
-                  <span style={{ fontSize:11 }}>{p.image}</span>
-                  <span style={{ fontSize:12, color:C.text }}>{p.name}</span>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green, marginLeft:"auto" }}>${p.price}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ display:"flex", gap:10 }}>
-              <button onClick={()=>setStep(3)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live")} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
-                🔴 Go Live Now
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── SCREEN: LOYALTY HUB ─────────────────────────────────────────────────────
-function ScreenLoyalty({ buyers, navigate, persona }) {
-  const [tab, setTab] = useState("overview");
-
-  const buyerLoyalty = buyers.map(b=>({ ...b, loyalty: LOYALTY_BUYERS[b.id] || { points:0, tier:"bronze", pointsToNext:500 } }));
-  const tierCounts = LOYALTY_TIERS.map(t=>({ ...t, count: buyerLoyalty.filter(b=>b.loyalty.tier===t.id).length }));
-  const totalPoints = buyerLoyalty.reduce((a,b)=>a+b.loyalty.points,0);
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
-      {/* HEADER */}
-      <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
-        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, letterSpacing:"-0.3px", marginBottom:4 }}>Loyalty Hub</div>
-        <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>Manage tiers, points, and perks across {buyers.length} buyers</div>
-        <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}` }}>
-          {["overview","tiers","buyers","perks"].map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={{ background:"none", border:"none", borderBottom:`2px solid ${tab===t?C.accent:"transparent"}`, color:tab===t?"#a78bfa":C.muted, fontSize:12, fontWeight:tab===t?700:400, padding:"0 16px 12px", cursor:"pointer", textTransform:"capitalize" }}>{t}</button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
-
-        {/* OVERVIEW TAB */}
-        {tab==="overview" && (
-          <div className="fade-up">
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
-              {tierCounts.map(t=>(
-                <div key={t.id} style={{ background:t.bg, border:`1px solid ${t.color}44`, borderRadius:13, padding:"16px 18px" }}>
-                  <div style={{ fontSize:22, marginBottom:8 }}>{t.icon}</div>
-                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:24, fontWeight:700, color:t.color }}>{t.count}</div>
-                  <div style={{ fontSize:11, color:t.color, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.06em" }}>{t.label}</div>
-                  <div style={{ fontSize:10, color:C.muted, marginTop:4 }}>{t.id==="bronze"?`0–499`:t.id==="silver"?`500–1,999`:t.id==="gold"?`2,000–4,999`:`5,000+`} pts</div>
-                </div>
-              ))}
-            </div>
-
-            {/* TOP LOYALTY BUYERS */}
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:16 }}>
-              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Top Loyalty Buyers</div>
-              {buyerLoyalty.sort((a,b)=>b.loyalty.points-a.loyalty.points).slice(0,5).map((b,i)=>{
-                const tier = LOYALTY_TIERS.find(t=>t.id===b.loyalty.tier);
-                const pl   = PLATFORMS[b.platform];
-                const pct  = tier.maxPoints ? Math.round((b.loyalty.points-tier.minPoints)/(tier.maxPoints-tier.minPoints)*100) : 100;
-                return (
-                  <div key={b.id} onClick={()=>navigate("buyer-profile",{buyerId:b.id})} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:i<4?`1px solid ${C.border}`:"none", cursor:"pointer" }}>
-                    <Avatar initials={b.avatar} color={pl?.color} size={30} />
-                    <div style={{ flex:1 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-                        <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{b.name}</span>
-                        <span style={{ fontSize:10 }}>{tier.icon}</span>
-                        <span style={{ fontSize:9, fontWeight:700, color:tier.color, background:tier.bg, padding:"1px 7px", borderRadius:5, textTransform:"uppercase" }}>{tier.label}</span>
-                      </div>
-                      <div style={{ height:4, background:C.border, borderRadius:2, width:"60%", overflow:"hidden" }}>
-                        <div style={{ height:"100%", width:`${pct}%`, background:tier.color, borderRadius:2, transition:"width .3s" }} />
-                      </div>
-                    </div>
-                    <div style={{ textAlign:"right" }}>
-                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:tier.color }}>{b.loyalty.points.toLocaleString()}</div>
-                      <div style={{ fontSize:9, color:C.muted }}>points</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* PROGRAM STATS */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              <StatCard label="Total Points Issued" value={totalPoints.toLocaleString()} sub="across all buyers"         color="#a78bfa" />
-              <StatCard label="Avg Points/Buyer"    value={Math.round(totalPoints/buyers.length).toLocaleString()} sub="per active buyer" color={C.amber} />
-            </div>
-          </div>
-        )}
-
-        {/* TIERS TAB */}
-        {tab==="tiers" && (
-          <div className="fade-up">
-            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Buyers advance automatically as they accumulate points. 1 point = $1 spent.</div>
-            {LOYALTY_TIERS.map(t=>(
-              <div key={t.id} style={{ background:t.bg, border:`1px solid ${t.color}44`, borderRadius:14, padding:"18px 20px", marginBottom:12 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-                  <div style={{ fontSize:28 }}>{t.icon}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:15, fontWeight:700, color:t.color }}>{t.label}</div>
-                    <div style={{ fontSize:11, color:C.muted }}>{t.minPoints.toLocaleString()}{t.maxPoints?`–${t.maxPoints.toLocaleString()}`:"+"} points · {buyerLoyalty.filter(b=>b.loyalty.tier===t.id).length} buyers</div>
-                  </div>
-                </div>
-                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Perks included</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
-                  {t.perks.map(p=>(
-                    <div key={p} style={{ display:"flex", gap:8 }}>
-                      <span style={{ color:t.color, fontSize:10, marginTop:1 }}>✓</span>
-                      <span style={{ fontSize:12, color:"#9ca3af" }}>{p}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* BUYERS TAB */}
-        {tab==="buyers" && (
-          <div className="fade-up">
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"1.6fr 0.8fr 0.8fr 0.8fr 0.8fr", padding:"10px 20px", borderBottom:`1px solid ${C.border}` }}>
-                {["Buyer","Tier","Points","To Next","Last Order"].map(h=><div key={h} style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", fontWeight:700 }}>{h}</div>)}
-              </div>
-              {buyerLoyalty.sort((a,b)=>b.loyalty.points-a.loyalty.points).map((b,i)=>{
-                const tier = LOYALTY_TIERS.find(t=>t.id===b.loyalty.tier);
-                const pl   = PLATFORMS[b.platform];
-                return (
-                  <div key={b.id} onClick={()=>navigate("buyer-profile",{buyerId:b.id})} style={{ display:"grid", gridTemplateColumns:"1.6fr 0.8fr 0.8fr 0.8fr 0.8fr", padding:"11px 20px", borderBottom:i<buyerLoyalty.length-1?`1px solid #0d0d18`:"none", cursor:"pointer", alignItems:"center" }}
-                    onMouseEnter={e=>e.currentTarget.style.background=C.surface2}
-                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-                  >
-                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <Avatar initials={b.avatar} color={pl?.color} size={28} />
-                      <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{b.name}</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                      <span style={{ fontSize:12 }}>{tier.icon}</span>
-                      <span style={{ fontSize:10, fontWeight:700, color:tier.color }}>{tier.label}</span>
-                    </div>
-                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:tier.color }}>{b.loyalty.points.toLocaleString()}</div>
-                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.muted }}>{tier.maxPoints?b.loyalty.pointsToNext.toLocaleString()+"pts":"MAX"}</div>
-                    <div style={{ fontSize:11, color:C.muted }}>{b.lastOrder}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* PERKS TAB */}
-        {tab==="perks" && (
-          <div className="fade-up" style={{ maxWidth:600 }}>
-            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>These are your always-on perks. Show-specific perks are configured in the Show Planner.</div>
-            {[
-              { icon:"🎂", title:"Birthday Discount",       desc:"Auto-sends a discount code on buyer's birthday. Tier-based %.", enabled:true  },
-              { icon:"⏰", title:"VIP Early Show Access",   desc:"VIP buyers get notified and admitted before the show opens.",   enabled:true  },
-              { icon:"📦", title:"Free Shipping Threshold", desc:"Silver+ buyers get free shipping above their tier threshold.",   enabled:true  },
-              { icon:"🎁", title:"New Buyer Welcome Perk",  desc:"First purchase gets a welcome discount + a bonus mystery card.", enabled:true  },
-              { icon:"📈", title:"Points Multiplier Events",desc:"Run 2× or 3× points during special shows or holidays.",         enabled:false },
-              { icon:"🔔", title:"Win-Back Bonus Points",   desc:"Dormant buyers get bonus points to come back after 45+ days.",  enabled:false },
-            ].map(perk=>(
-              <div key={perk.title} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", background:perk.enabled?`${C.accent}08`:C.surface, border:`1px solid ${perk.enabled?C.accent+"33":C.border}`, borderRadius:12, marginBottom:8 }}>
-                <div style={{ width:38, height:38, borderRadius:10, background:perk.enabled?`${C.accent}18`:C.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>{perk.icon}</div>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{perk.title}</div>
-                  <div style={{ fontSize:11, color:C.muted, lineHeight:1.5 }}>{perk.desc}</div>
-                </div>
-                <div style={{ width:40, height:22, borderRadius:11, background:perk.enabled?C.accent:C.border2, position:"relative", flexShrink:0, cursor:"pointer" }}>
-                  <div style={{ position:"absolute", top:3, left:perk.enabled?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-
-// ─── SCREEN: ORDER REVIEW ─────────────────────────────────────────────────────
-function ScreenOrderReview({ params, navigate }) {
-  const { liveBuyers=[], buyerNotes={}, buyerDiscounts={}, buyerPerks={}, buyerItems={}, gmv=0, elapsed=0 } = params || {};
-
-  const [processed, setProcessed] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
-
-  const fmt = (s) => `${String(Math.floor(s/3600)).padStart(2,"0")}:${String(Math.floor((s%3600)/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
-
-  // Build order summary per buyer
-  const orders = liveBuyers.map(b=>{
-    const discount  = buyerDiscounts[b.id] || 0;
-    const perks     = buyerPerks[b.id]     || {};
-    const itemIds   = buyerItems[b.id]     || [];
-    const items     = PRODUCTS.filter(p=>itemIds.includes(p.id));
-    const note      = buyerNotes[b.id]     || "";
-    const loyalty   = LOYALTY_BUYERS[b.id] || { points:0, tier:"bronze" };
-    const tier      = LOYALTY_TIERS.find(t=>t.id===loyalty.tier);
-    const hasChanges= discount>0 || Object.values(perks).some(Boolean) || items.length>0 || note.length>0;
-    const addedGMV  = items.reduce((a,p)=>a+p.price,0);
-    return { buyer:b, discount, perks, items, note, loyalty, tier, hasChanges, addedGMV };
-  });
-
-  const totalChanges   = orders.filter(o=>o.hasChanges).length;
-  const totalDiscounts = orders.filter(o=>o.discount>0).length;
-  const totalPerks     = orders.filter(o=>Object.values(o.perks).some(Boolean)).length;
-  const totalItems     = orders.filter(o=>o.items.length>0).length;
-  const totalAddedGMV  = orders.reduce((a,o)=>a+o.addedGMV,0);
-
-  const processAll = () => {
-    setProcessing(true);
-    setTimeout(()=>{ setProcessing(false); setProcessed(true); }, 2200);
-  };
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden", background:C.bg }}>
-
-      {/* HEADER */}
-      <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
-          <div>
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
-              <div style={{ width:8, height:8, borderRadius:"50%", background:"#4b5563" }} />
-              <span style={{ fontSize:11, fontWeight:700, color:"#4b5563", textTransform:"uppercase", letterSpacing:"0.08em" }}>Show Ended</span>
-              {elapsed>0 && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.muted }}>Duration: {fmt(elapsed)}</span>}
-            </div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.4px" }}>Order Review</div>
-            <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>Review all changes before processing. Nothing is sent until you hit Process.</div>
-          </div>
-          {!processed && (
-            <button
-              onClick={processAll}
-              disabled={processing || totalChanges===0}
-              style={{ background:processing?"#1a1a2e":totalChanges>0?`linear-gradient(135deg,${C.green},#059669)`:"#1a1a2e", border:`1px solid ${totalChanges>0?C.green+"44":C.border}`, color:totalChanges>0?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:totalChanges>0?"pointer":"default", minWidth:180, transition:"all .2s" }}
-            >
-              {processing ? (
-                <span style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center" }}>
-                  <div style={{ width:12, height:12, border:"2px solid #ffffff44", borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-                  Processing…
-                </span>
-              ) : `Process All Changes (${totalChanges})`}
-            </button>
-          )}
-          {processed && (
-            <div style={{ display:"flex", alignItems:"center", gap:8, background:"#0a1e16", border:"1px solid #10b98144", borderRadius:10, padding:"10px 18px" }}>
-              <span style={{ fontSize:14, color:C.green }}>✓</span>
-              <span style={{ fontSize:13, fontWeight:700, color:C.green }}>All changes processed!</span>
-            </div>
-          )}
-        </div>
-
-        {/* SHOW SUMMARY STATS */}
-        <div style={{ display:"flex", gap:12 }}>
-          {[
-            { label:"Total Buyers",   value:liveBuyers.length,              color:C.accent  },
-            { label:"Show GMV",       value:`$${gmv.toLocaleString()}`,     color:C.green   },
-            { label:"Added GMV",      value:`+$${totalAddedGMV}`,           color:C.green   },
-            { label:"With Changes",   value:totalChanges,                   color:"#a78bfa" },
-            { label:"Discounts",      value:totalDiscounts,                 color:C.amber   },
-            { label:"Perks Applied",  value:totalPerks,                     color:"#f43f5e" },
-            { label:"Items Added",    value:totalItems,                     color:C.blue    },
-          ].map(s=>(
-            <div key={s.label} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:9, padding:"8px 14px" }}>
-              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:s.color }}>{s.value}</div>
-              <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ORDER LIST */}
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
-
-        {/* CHANGES FIRST, then no-changes buyers */}
-        {[...orders.filter(o=>o.hasChanges), ...orders.filter(o=>!o.hasChanges)].map((order,i)=>{
-          const { buyer:b, discount, perks, items, note, tier, hasChanges } = order;
-          const pl        = PLATFORMS[b.platform];
-          const isExpanded= expandedId===b.id;
-          const activePerks = Object.entries(perks).filter(([k,v])=>v===true&&k!=="discountReason");
-          const PERK_LABELS = { bonusPoints:"2× Points", earlyAccess:"VIP Early Access", mysteryItem:"Mystery Bonus", freeShipping:"Free Shipping", firstPick:"First Pick" };
-
-          return (
-            <div key={b.id} style={{ background:hasChanges?C.surface:"#070710", border:`1px solid ${hasChanges?C.border2:C.border}`, borderRadius:14, marginBottom:8, overflow:"hidden", opacity:!hasChanges?0.5:1 }}>
-              {/* ROW HEADER */}
-              <div
-                onClick={()=>hasChanges&&setExpandedId(isExpanded?null:b.id)}
-                style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 18px", cursor:hasChanges?"pointer":"default" }}
-              >
-                <Avatar initials={b.avatar} color={pl?.color} size={32} />
-                <div style={{ flex:1 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
-                    <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{b.name}</span>
-                    {tier && <span style={{ fontSize:10 }}>{tier.icon}</span>}
-                    <PlatformPill code={b.platform} />
-                    {!hasChanges && <span style={{ fontSize:10, color:C.muted }}>— no changes</span>}
-                  </div>
-                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                    {discount>0     && <span style={{ fontSize:9, fontWeight:700, color:C.green,   background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 7px", borderRadius:5 }}>{discount}% OFF</span>}
-                    {items.length>0 && <span style={{ fontSize:9, fontWeight:700, color:C.amber,   background:"#1e1206", border:"1px solid #d9770633", padding:"1px 7px", borderRadius:5 }}>+{items.length} item{items.length>1?"s":""}</span>}
-                    {activePerks.map(([k])=><span key={k} style={{ fontSize:9, fontWeight:700, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #7c3aed33", padding:"1px 7px", borderRadius:5 }}>{PERK_LABELS[k]||k}</span>)}
-                    {note && <span style={{ fontSize:9, fontWeight:700, color:C.blue, background:"#0f1e2e", border:"1px solid #3b82f633", padding:"1px 7px", borderRadius:5 }}>📝 Note</span>}
-                  </div>
-                </div>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  {items.length>0 && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.green }}>+${items.reduce((a,p)=>a+p.price,0)}</span>}
-                  {processed && hasChanges && <span style={{ fontSize:11, fontWeight:700, color:C.green }}>✓ Processed</span>}
-                  {hasChanges && <span style={{ fontSize:11, color:C.muted }}>{isExpanded?"▲":"▼"}</span>}
-                </div>
-              </div>
-
-              {/* EXPANDED DETAIL */}
-              {isExpanded && hasChanges && (
-                <div style={{ borderTop:`1px solid ${C.border}`, padding:"14px 18px", background:"#080812" }}>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
-
-                    {/* LEFT: ORDER CHANGES */}
-                    <div>
-                      {discount>0 && (
-                        <div style={{ marginBottom:12 }}>
-                          <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Discount</div>
-                          <div style={{ background:"#0a1e16", border:"1px solid #10b98133", borderRadius:9, padding:"9px 12px", display:"flex", justifyContent:"space-between" }}>
-                            <span style={{ fontSize:12, color:"#9ca3af" }}>{discount}% off applied</span>
-                            {perks.discountReason && <span style={{ fontSize:11, color:C.muted }}>Reason: {perks.discountReason}</span>}
-                          </div>
-                        </div>
-                      )}
-                      {items.length>0 && (
-                        <div style={{ marginBottom:12 }}>
-                          <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Items Added to Order</div>
-                          {items.map(p=>(
-                            <div key={p.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 10px", background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, marginBottom:5 }}>
-                              <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                                <span style={{ fontSize:14 }}>{p.image}</span>
-                                <span style={{ fontSize:11, color:C.text }}>{p.name}</span>
-                              </div>
-                              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.green }}>${p.price}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {activePerks.length>0 && (
-                        <div style={{ marginBottom:12 }}>
-                          <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Perks Granted</div>
-                          {activePerks.map(([k])=>(
-                            <div key={k} style={{ display:"flex", gap:8, alignItems:"center", padding:"6px 10px", background:"#1a0f2e", border:"1px solid #7c3aed33", borderRadius:8, marginBottom:5 }}>
-                              <span style={{ fontSize:12, color:"#a78bfa" }}>✓</span>
-                              <span style={{ fontSize:11, color:"#c4b5fd" }}>{PERK_LABELS[k]||k}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* RIGHT: NOTE */}
-                    <div>
-                      {note && (
-                        <div>
-                          <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Note</div>
-                          <div style={{ background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", fontSize:12, color:"#9ca3af", lineHeight:1.6, fontStyle:"italic" }}>
-                            "{note}"
-                          </div>
-                        </div>
-                      )}
-                      <div style={{ marginTop:12 }}>
-                        <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Buyer Stats</div>
-                        <div style={{ fontSize:11, color:C.muted }}>Lifetime spend: <span style={{ color:C.text, fontWeight:600 }}>${b.spend.toLocaleString()}</span></div>
-                        <div style={{ fontSize:11, color:C.muted, marginTop:3 }}>Total orders: <span style={{ color:C.text, fontWeight:600 }}>{b.orders}</span></div>
-                        {tier && <div style={{ fontSize:11, color:C.muted, marginTop:3 }}>Loyalty: <span style={{ color:tier.color, fontWeight:600 }}>{tier.icon} {tier.label}</span></div>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* POST-PROCESS CTA */}
-        {processed && (
-          <div style={{ background:"#0a1e16", border:"1px solid #10b98144", borderRadius:14, padding:"24px", textAlign:"center", marginTop:8 }}>
-            <div style={{ fontSize:20, marginBottom:8 }}>🎉</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text, marginBottom:6 }}>All done!</div>
-            <div style={{ fontSize:12, color:C.muted, marginBottom:18 }}>Discounts applied, perks granted, items added to orders, notes saved to buyer profiles.</div>
-            <div style={{ display:"flex", gap:10, justifyContent:"center" }}>
-              <button onClick={()=>navigate("shows")} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 22px", borderRadius:9, cursor:"pointer" }}>← Back to Shows</button>
-              <button onClick={()=>navigate("dashboard")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 22px", borderRadius:9, cursor:"pointer" }}>View Dashboard →</button>
-            </div>
-          </div>
-        )}
-
-        {liveBuyers.length===0 && (
-          <div style={{ textAlign:"center", padding:"60px 0", color:C.muted }}>
-            <div style={{ fontSize:32, marginBottom:12 }}>📋</div>
-            <div style={{ fontSize:14, fontWeight:600, color:C.text, marginBottom:6 }}>No orders from this show</div>
-            <div style={{ fontSize:12 }}>End a live show to see your order review here.</div>
-            <button onClick={()=>navigate("shows")} style={{ marginTop:16, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"8px 20px", borderRadius:9, cursor:"pointer" }}>← Back to Shows</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 export default function StreamlivePrototype() {
