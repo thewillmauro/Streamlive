@@ -2158,8 +2158,8 @@ function TeamTab({ persona }) {
   );
 }
 
-function ScreenSettings({ persona }) {
-  const [tab, setTab]           = useState("platforms");
+function ScreenSettings({ persona, initialTab }) {
+  const [tab, setTab]           = useState(initialTab || "platforms");
   const [connections, setConnections] = useState({});
   const [modal, setModal]       = useState(null); // { type: "manychat"|"ig"|"tt"|"wn"|"am"|"email"|"sms" }
   const [modalStep, setModalStep]     = useState(1);
@@ -3430,8 +3430,9 @@ function ScreenAcceptInvite({ token }) {
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 export default function StreamlivePrototype() {
   // All hooks must come before any conditional returns (Rules of Hooks)
+  const onboardParam = new URLSearchParams(window.location.search).get("onboard");
   const [personaId, setPersonaId]   = useState("sarah");
-  const [view, setView]             = useState("dashboard");
+  const [view, setView]             = useState(onboardParam === "settings" ? "settings" : "dashboard");
   const [params, setParams]         = useState({});
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [notifications, setNotifications] = useState(3);
@@ -3587,7 +3588,7 @@ export default function StreamlivePrototype() {
             {view==="campaigns"    && <ScreenCampaigns       navigate={navigate} persona={persona} />}
             {view==="composer"     && <ScreenComposer        navigate={navigate} persona={persona} />}
             {view==="subscribers"  && <ScreenSubscribers     persona={persona} />}
-            {view==="settings"     && <ScreenSettings        persona={persona} />}
+            {view==="settings"     && <ScreenSettings        persona={persona} initialTab={onboardParam==="settings"?"messaging":undefined} />}
             {view==="order-review" && <ScreenOrderReview      params={params} navigate={navigate} />}
             {view==="catalog"      && <ScreenCatalog         persona={persona} navigate={navigate} />}
             {view==="show-planner" && <ScreenShowPlanner      navigate={navigate} />}

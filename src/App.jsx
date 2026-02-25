@@ -572,7 +572,7 @@ function Welcome() {
             ))}
           </div>
           <div className="fade-a3">
-            <button onClick={()=>{ window.location.href='/app' }} className="cta-btn"
+            <button onClick={()=>{ window.location.href = p.id === 'starter' ? '/app?onboard=settings' : p.id === 'growth' ? '/app?onboard=settings' : '/app?onboard=settings' }} className="cta-btn"
               style={{ width:'100%', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:15, fontWeight:700, padding:14, borderRadius:12, cursor:'pointer', marginBottom:10 }}>
               {p.nextLabel}
             </button>
