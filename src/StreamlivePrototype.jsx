@@ -4132,8 +4132,8 @@ function ScreenProduction({ persona, navigate }) {
   const EQUIPMENT = [
     { id:"fx3",    name:"Sony FX3",       type:"Camera",  icon:"📷", status:"connected", battery:null,  signal:5, res:"4K/60fps",    detail:"Main wide angle",     color:"#7c3aed" },
     { id:"fx6",    name:"Sony FX6",       type:"Camera",  icon:"🎥", status:"connected", battery:null,  signal:5, res:"4K/120fps",   detail:"Product close-up",    color:"#7c3aed" },
-    { id:"ipad",   name:"iPad Pro 12.9"", type:"Tablet",  icon:"📱", status:"connected", battery:84,   signal:4, res:"1080p",       detail:"Chat monitor / cue",  color:"#3b82f6" },
-    { id:"lg",     name:"LG 27" Monitor", type:"Display", icon:"🖥", status:"connected", battery:null,  signal:5, res:"1080p/60Hz",  detail:"Confidence monitor",  color:"#10b981" },
+    { id:"ipad",   name:"iPad Pro 12.9in", type:"Tablet",  icon:"📱", status:"connected", battery:84,   signal:4, res:"1080p",       detail:"Chat monitor / cue",  color:"#3b82f6" },
+    { id:"lg",     name:"LG 27in Monitor", type:"Display", icon:"🖥", status:"connected", battery:null,  signal:5, res:"1080p/60Hz",  detail:"Confidence monitor",  color:"#10b981" },
     { id:"rode",   name:"Rode Wireless GO II", type:"Audio", icon:"🎙", status:"connected", battery:72, signal:4, res:"48kHz",       detail:"Lav + boom",          color:"#f59e0b" },
     { id:"macbook",name:"MacBook Pro",    type:"Computer",icon:"💻", status:"connected", battery:91,   signal:5, res:"OBS 4K",      detail:"Stream encoder",      color:"#6b7280" },
     { id:"hdmi1",  name:"HDMI Capture",   type:"Capture", icon:"🔌", status:"connected", battery:null,  signal:5, res:"4K/60Hz",    detail:"FX3 → MacBook",      color:"#6b7280" },
