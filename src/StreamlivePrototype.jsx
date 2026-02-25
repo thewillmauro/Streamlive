@@ -1917,12 +1917,14 @@ function ScreenSettings({ persona }) {
     if (!modal) return null;
     const intg = INTEGRATIONS[modal];
     const canSubmit = {
-      apikey:  apiKey.trim().length > 4,
-      oauth:   true,
-      spapi:   clientId.trim() && clientSecret.trim() && refreshToken.trim(),
-      twilio:  accountSid.trim() && authToken.trim() && fromNumber.trim(),
-      smtp:    smtpHost.trim() && smtpUser.trim() && smtpPass.trim(),
-    }[intg.authType];
+      manychat: apiKey.trim().length > 4,
+      ig:       true,
+      tt:       true,
+      wn:       apiKey.trim().length > 4,
+      am:       clientId.trim().length > 4 && clientSecret.trim().length > 4 && refreshToken.trim().length > 4,
+      sms:      accountSid.trim().length > 4 && authToken.trim().length > 4 && fromNumber.trim().length > 4,
+      email:    smtpHost.trim().length > 2 && smtpUser.trim().length > 2 && smtpPass.trim().length > 4,
+    }[modal] || false;
 
     return (
       <div style={{ position:"fixed", inset:0, background:"#000000cc", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={e=>e.target===e.currentTarget&&setModal(null)}>
@@ -1938,113 +1940,303 @@ function ScreenSettings({ persona }) {
             <button onClick={()=>setModal(null)} style={{ marginLeft:"auto", background:"none", border:"none", color:C.muted, fontSize:18, cursor:"pointer", flexShrink:0 }}>✕</button>
           </div>
 
-          {/* AUTH FORM */}
+          {/* ── AUTH FORM ── */}
 
-          {/* API KEY */}
-          {intg.authType === "apikey" && (
+          {/* MANYCHAT */}
+          {modal === "manychat" && (
             <div>
-              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 18px", marginBottom:16 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>{intg.apiKeyLabel}</div>
-                <input
-                  value={apiKey} onChange={e=>setApiKey(e.target.value)}
-                  placeholder={intg.apiKeyPlaceholder}
-                  style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none", fontFamily:"'JetBrains Mono',monospace" }}
-                />
-                <div style={{ fontSize:10, color:C.muted, marginTop:7 }}>💡 {intg.apiKeyHint}</div>
+              <div style={{ background:"#0d0d18", border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 18px", marginBottom:14 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:12 }}>How to get your ManyChat API Key</div>
+                {[
+                  { n:1, text:"Go to your ManyChat account", link:"https://app.manychat.com", linkLabel:"app.manychat.com →" },
+                  { n:2, text:'Click Settings in the left sidebar, then select "API" tab' },
+                  { n:3, text:'Click "Generate API Key" — copy the full key starting with mc-' },
+                  { n:4, text:"Paste it below" },
+                ].map(s=>(
+                  <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", background:"#2d1f5e", border:"1px solid #7c3aed44", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#a78bfa", flexShrink:0, marginTop:1 }}>{s.n}</div>
+                    <div style={{ flex:1 }}>
+                      <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.5 }}>{s.text} </span>
+                      {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#a78bfa", textDecoration:"none", fontWeight:600 }}>{s.linkLabel}</a>}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <a href={intg.docsUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:intg.color, textDecoration:"none" }}>
-                Get your API key →
-              </a>
+              <div style={{ marginBottom:8 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>ManyChat API Key</div>
+                <input value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="mc-xxxxxxxxxxxxxxxxxxxxxxxx"
+                  style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+              </div>
+              <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginTop:10 }}>
+                <a href="https://app.manychat.com" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#a78bfa", textDecoration:"none", fontWeight:600 }}>Open ManyChat →</a>
+                <a href="https://manychat.com/blog/manychat-api/" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>API docs</a>
+              </div>
             </div>
           )}
 
-          {/* OAUTH */}
-          {intg.authType === "oauth" && (
+          {/* INSTAGRAM OAuth */}
+          {modal === "ig" && (
             <div>
               {modalStep === 1 && (
                 <div>
-                  <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 18px", marginBottom:16 }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:8 }}>Permissions requested</div>
-                    {(intg.scopes||[]).map(s => (
-                      <div key={s} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:`1px solid ${C.border}` }}>
-                        <span style={{ fontSize:11, color:C.green }}>✓</span>
-                        <span style={{ fontSize:11, color:"#9ca3af", fontFamily:"'JetBrains Mono',monospace" }}>{s}</span>
+                  <div style={{ background:"#1a0810", border:"1px solid #e1306c33", borderRadius:12, padding:"16px 18px", marginBottom:14 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:12 }}>Before you connect</div>
+                    {[
+                      { n:1, text:"You need an Instagram Business or Creator account", link:"https://www.facebook.com/business/help/502981923235522", linkLabel:"Switch here →" },
+                      { n:2, text:"Your Instagram must be linked to a Facebook Page", link:"https://www.facebook.com/help/1148909221857370", linkLabel:"Link guide →" },
+                      { n:3, text:"ManyChat must already be connected (step above) as it handles the DM routing" },
+                      { n:4, text:'Click "Authorize Instagram" below — sign into Facebook and grant all permissions' },
+                    ].map(s=>(
+                      <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
+                        <div style={{ width:20, height:20, borderRadius:"50%", background:"#2d1020", border:"1px solid #e1306c33", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#e1306c", flexShrink:0, marginTop:1 }}>{s.n}</div>
+                        <div style={{ flex:1 }}>
+                          <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.5 }}>{s.text} </span>
+                          {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#e1306c", textDecoration:"none", fontWeight:600 }}>{s.linkLabel}</a>}
+                        </div>
                       </div>
                     ))}
                   </div>
-                  <div style={{ fontSize:10, color:C.muted, marginBottom:16, lineHeight:1.6 }}>
-                    Clicking "Authorize" will open the {intg.label} login window. Sign in to your {intg.label} Business account and grant the permissions above.
+                  <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 16px", marginBottom:14 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:C.muted, marginBottom:8, textTransform:"uppercase", letterSpacing:"0.07em" }}>Permissions we'll request</div>
+                    {["instagram_basic","instagram_manage_messages","pages_messaging","pages_read_engagement"].map(s=>(
+                      <div key={s} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 0", borderBottom:`1px solid ${C.border}` }}>
+                        <span style={{ color:C.green, fontSize:11 }}>✓</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#9ca3af" }}>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display:"flex", gap:12 }}>
+                    <a href="https://business.instagram.com/" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#e1306c", textDecoration:"none", fontWeight:600 }}>Instagram Business →</a>
+                    <a href="https://manychat.com/blog/instagram-automation/" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>Setup guide</a>
                   </div>
                 </div>
               )}
               {modalStep === 2 && (
-                <div style={{ background:"#0a1e16", border:"1px solid #10b98133", borderRadius:12, padding:"18px", marginBottom:16, textAlign:"center" }}>
-                  <div style={{ fontSize:24, marginBottom:8 }}>✓</div>
-                  <div style={{ fontSize:13, fontWeight:700, color:C.green }}>Authorization successful</div>
-                  <div style={{ fontSize:11, color:C.muted, marginTop:4 }}>Account linked and permissions granted</div>
+                <div style={{ background:"#0a1e16", border:"1px solid #10b98133", borderRadius:12, padding:"22px", marginBottom:16, textAlign:"center" }}>
+                  <div style={{ fontSize:28, marginBottom:8 }}>✓</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:C.green }}>Instagram connected</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:4 }}>DM automation and broadcasts are now active via ManyChat</div>
                 </div>
               )}
             </div>
           )}
 
-          {/* SP-API (Amazon) */}
-          {intg.authType === "spapi" && (
+          {/* TIKTOK OAuth */}
+          {modal === "tt" && (
             <div>
-              <div style={{ background:`${intg.color}0d`, border:`1px solid ${intg.color}33`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:10, color:intg.color, lineHeight:1.6 }}>
-                ⚙ Create an SP-API app in Seller Central → Developer Console. Copy the credentials below. Requires "Buyer Communication" role for messaging.
-              </div>
-              {[
-                { label:"LWA Client ID",       val:clientId,      set:setClientId,      ph:"amzn1.application-oa2-client.xxx" },
-                { label:"LWA Client Secret",   val:clientSecret,  set:setClientSecret,  ph:"••••••••••••••••••••••" },
-                { label:"Refresh Token",       val:refreshToken,  set:setRefreshToken,  ph:"Atz|..." },
-                { label:"Marketplace ID",      val:marketplaceId, set:setMarketplaceId, ph:"ATVPDKIKX0DER" },
-              ].map(f=>(
-                <div key={f.label} style={{ marginBottom:12 }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
-                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
-                    style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+              {modalStep === 1 && (
+                <div>
+                  <div style={{ background:"#050d0d", border:"1px solid #69c9d033", borderRadius:12, padding:"16px 18px", marginBottom:14 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:12 }}>Before you connect</div>
+                    {[
+                      { n:1, text:"You need a TikTok Business account (not personal/creator)", link:"https://www.tiktok.com/business/en/blog/tiktok-business-account-vs-creator-account", linkLabel:"How to switch →" },
+                      { n:2, text:"Currently available in US and non-EU/UK regions only" },
+                      { n:3, text:"ManyChat must already be connected — TikTok DMs route through it" },
+                      { n:4, text:'Click "Authorize TikTok" and sign in with your TikTok Business credentials' },
+                    ].map(s=>(
+                      <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
+                        <div style={{ width:20, height:20, borderRadius:"50%", background:"#0d2828", border:"1px solid #69c9d033", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#69c9d0", flexShrink:0, marginTop:1 }}>{s.n}</div>
+                        <div style={{ flex:1 }}>
+                          <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.5 }}>{s.text} </span>
+                          {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#69c9d0", textDecoration:"none", fontWeight:600 }}>{s.linkLabel}</a>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 16px", marginBottom:14 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:C.muted, marginBottom:8, textTransform:"uppercase", letterSpacing:"0.07em" }}>Permissions we'll request</div>
+                    {["user.info.basic","message.write","message.read","video.list"].map(s=>(
+                      <div key={s} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 0", borderBottom:`1px solid ${C.border}` }}>
+                        <span style={{ color:C.green, fontSize:11 }}>✓</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#9ca3af" }}>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display:"flex", gap:12 }}>
+                    <a href="https://www.tiktok.com/business/en" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#69c9d0", textDecoration:"none", fontWeight:600 }}>TikTok for Business →</a>
+                    <a href="https://help.manychat.com/hc/en-us/articles/17928990909084" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>ManyChat TikTok setup</a>
+                  </div>
                 </div>
-              ))}
+              )}
+              {modalStep === 2 && (
+                <div style={{ background:"#0a1e16", border:"1px solid #10b98133", borderRadius:12, padding:"22px", marginBottom:16, textAlign:"center" }}>
+                  <div style={{ fontSize:28, marginBottom:8 }}>✓</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:C.green }}>TikTok connected</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:4 }}>Keyword automations and broadcasts are now active via ManyChat</div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* TWILIO (SMS) */}
-          {intg.authType === "twilio" && (
+          {/* WHATNOT */}
+          {modal === "wn" && (
             <div>
-              <div style={{ background:`${intg.color}0d`, border:`1px solid ${intg.color}33`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:10, color:intg.color, lineHeight:1.6 }}>
-                📞 Get your credentials from twilio.com → Console. Create a messaging service and copy the phone number you want to send from.
-              </div>
-              {[
-                { label:"Account SID",   val:accountSid,  set:setAccountSid,  ph:"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" },
-                { label:"Auth Token",    val:authToken,   set:setAuthToken,   ph:"••••••••••••••••••••••••••••••••" },
-                { label:"From Number",   val:fromNumber,  set:setFromNumber,  ph:"+15551234567" },
-              ].map(f=>(
-                <div key={f.label} style={{ marginBottom:12 }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
-                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
-                    style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+              <div style={{ background:"#0d0a04", border:"1px solid #f59e0b33", borderRadius:12, padding:"16px 18px", marginBottom:14 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:12 }}>How to get your Whatnot API Key</div>
+                {[
+                  { n:1, text:"Request Seller API access (currently private beta)", link:"https://seller.whatnot.com/api", linkLabel:"Apply at seller.whatnot.com/api →" },
+                  { n:2, text:"Once approved, go to Whatnot Seller Hub → Settings → Developer", link:"https://seller.whatnot.com/settings", linkLabel:"Seller Hub →" },
+                  { n:3, text:'Click "Generate API Key" under the API section' },
+                  { n:4, text:'Copy the key starting with "wn_live_" and paste it below' },
+                ].map(s=>(
+                  <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", background:"#2e1f0a", border:"1px solid #f59e0b33", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#f59e0b", flexShrink:0, marginTop:1 }}>{s.n}</div>
+                    <div style={{ flex:1 }}>
+                      <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.5 }}>{s.text} </span>
+                      {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#f59e0b", textDecoration:"none", fontWeight:600 }}>{s.linkLabel}</a>}
+                    </div>
+                  </div>
+                ))}
+                <div style={{ background:"#1a0e00", border:"1px solid #f59e0b22", borderRadius:8, padding:"8px 12px", marginTop:8, fontSize:10, color:"#f59e0b", lineHeight:1.6 }}>
+                  ⚠ API access grants inventory sync and show notifications only. Whatnot does not expose a bulk buyer DM endpoint.
                 </div>
-              ))}
+              </div>
+              <div style={{ marginBottom:8 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Whatnot API Key</div>
+                <input value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="wn_live_xxxxxxxxxxxxxxxx"
+                  style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 14px", color:C.text, fontSize:13, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+              </div>
+              <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginTop:10 }}>
+                <a href="https://seller.whatnot.com/api" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#f59e0b", textDecoration:"none", fontWeight:600 }}>Apply for API access →</a>
+                <a href="https://seller.whatnot.com" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>Seller Hub</a>
+              </div>
             </div>
           )}
 
-          {/* SMTP (Email) */}
-          {intg.authType === "smtp" && (
+          {/* AMAZON SP-API */}
+          {modal === "am" && (
             <div>
-              <div style={{ background:`${intg.color}0d`, border:`1px solid ${intg.color}33`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:10, color:intg.color, lineHeight:1.6 }}>
-                ✉ Works with SendGrid, Mailgun, Postmark, or any SMTP provider. For SendGrid use smtp.sendgrid.net:587 with "apikey" as username.
+              <div style={{ background:"#0d0701", border:"1px solid #f9731633", borderRadius:12, padding:"16px 18px", marginBottom:14 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:12 }}>How to get your SP-API credentials</div>
+                {[
+                  { n:1, text:"Sign into Seller Central and go to Apps & Services → Develop Apps", link:"https://sellercentral.amazon.com/sellerapp/seller-apps", linkLabel:"Seller Central →" },
+                  { n:2, text:'Click "Add New App Client" — give it a name like "Streamlive"' },
+                  { n:3, text:'Under "Roles", enable: Reports, Orders, Buyer Communication, and Notifications' },
+                  { n:4, text:"Copy the LWA Client ID and Client Secret from the app credentials page" },
+                  { n:5, text:"Generate a Refresh Token using the SP-API Auth workflow — or use the token tool below", link:"https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md", linkLabel:"SP-API auth guide →" },
+                ].map(s=>(
+                  <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", background:"#2e1608", border:"1px solid #f9731633", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#f97316", flexShrink:0, marginTop:1 }}>{s.n}</div>
+                    <div style={{ flex:1 }}>
+                      <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.5 }}>{s.text} </span>
+                      {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#f97316", textDecoration:"none", fontWeight:600 }}>{s.linkLabel}</a>}
+                    </div>
+                  </div>
+                ))}
               </div>
               {[
-                { label:"SMTP Host",     val:smtpHost, set:setSmtpHost, ph:"smtp.sendgrid.net" },
-                { label:"Username",      val:smtpUser, set:setSmtpUser, ph:"apikey" },
-                { label:"Password / Key",val:smtpPass, set:setSmtpPass, ph:"SG.••••••••••••••••••••••" },
+                { label:"LWA Client ID",     val:clientId,      set:setClientId,      ph:"amzn1.application-oa2-client.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" },
+                { label:"LWA Client Secret", val:clientSecret,  set:setClientSecret,  ph:"amzn1.oa2-cs.v1.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" },
+                { label:"Refresh Token",     val:refreshToken,  set:setRefreshToken,  ph:"Atz|IwEBIxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" },
+                { label:"Marketplace ID",    val:marketplaceId, set:setMarketplaceId, ph:"ATVPDKIKX0DER  (US)" },
               ].map(f=>(
-                <div key={f.label} style={{ marginBottom:12 }}>
+                <div key={f.label} style={{ marginBottom:11 }}>
                   <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
                   <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
                     style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
                 </div>
               ))}
+              <div style={{ background:"#100400", border:"1px solid #f9731622", borderRadius:8, padding:"8px 12px", fontSize:10, color:"#f97316", lineHeight:1.6, marginTop:4 }}>
+                ℹ Marketplace IDs: US = ATVPDKIKX0DER · CA = A2EUQ1WTGCTBG2 · UK = A1F83G8C2ARO7P · DE = A1PA6795UKMFR9
+              </div>
+              <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginTop:12 }}>
+                <a href="https://sellercentral.amazon.com/sellerapp/seller-apps" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#f97316", textDecoration:"none", fontWeight:600 }}>Seller Central Apps →</a>
+                <a href="https://developer-docs.amazon.com/sp-api/docs/get-started" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>SP-API docs</a>
+                <a href="https://developer-docs.amazon.com/sp-api/docs/messaging-api" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>Messaging API</a>
+              </div>
+            </div>
+          )}
+
+          {/* TWILIO SMS */}
+          {modal === "sms" && (
+            <div>
+              <div style={{ background:"#0d0a14", border:"1px solid #a78bfa33", borderRadius:12, padding:"16px 18px", marginBottom:14 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:12 }}>How to get your Twilio credentials</div>
+                {[
+                  { n:1, text:"Create a free Twilio account or sign in", link:"https://www.twilio.com/try-twilio", linkLabel:"twilio.com →" },
+                  { n:2, text:"From the Twilio Console homepage, copy your Account SID and Auth Token", link:"https://console.twilio.com/", linkLabel:"Console →" },
+                  { n:3, text:"Go to Phone Numbers → Manage → Buy a Number to get a sending number", link:"https://console.twilio.com/us1/develop/phone-numbers/manage/search", linkLabel:"Buy number →" },
+                  { n:4, text:"Optionally create a Messaging Service for better deliverability", link:"https://console.twilio.com/us1/develop/sms/services", linkLabel:"Messaging Services →" },
+                ].map(s=>(
+                  <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", background:"#2d1f5e", border:"1px solid #a78bfa33", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#a78bfa", flexShrink:0, marginTop:1 }}>{s.n}</div>
+                    <div style={{ flex:1 }}>
+                      <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.5 }}>{s.text} </span>
+                      {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#a78bfa", textDecoration:"none", fontWeight:600 }}>{s.linkLabel}</a>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {[
+                { label:"Account SID",  val:accountSid, set:setAccountSid, ph:"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", hint:"Starts with AC — from Twilio Console homepage" },
+                { label:"Auth Token",   val:authToken,  set:setAuthToken,  ph:"••••••••••••••••••••••••••••••••", hint:"Hidden by default — click the eye icon to reveal" },
+                { label:"From Number",  val:fromNumber, set:setFromNumber, ph:"+15551234567", hint:"Must be a Twilio phone number with SMS capability" },
+              ].map(f=>(
+                <div key={f.label} style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
+                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
+                    style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+                  <div style={{ fontSize:9, color:C.subtle, marginTop:4 }}>💡 {f.hint}</div>
+                </div>
+              ))}
+              <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginTop:8 }}>
+                <a href="https://console.twilio.com/" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#a78bfa", textDecoration:"none", fontWeight:600 }}>Open Twilio Console →</a>
+                <a href="https://www.twilio.com/docs/sms/quickstart" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>SMS quickstart</a>
+              </div>
+            </div>
+          )}
+
+          {/* EMAIL SMTP */}
+          {modal === "email" && (
+            <div>
+              <div style={{ background:"#060c18", border:"1px solid #3b82f633", borderRadius:12, padding:"16px 18px", marginBottom:14 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>Choose your email provider</div>
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:14 }}>
+                  {[
+                    { name:"SendGrid",  host:"smtp.sendgrid.net",    user:"apikey",       link:"https://app.sendgrid.com/settings/api_keys", color:"#3b82f6" },
+                    { name:"Mailgun",   host:"smtp.mailgun.org",      user:"postmaster@yourdomain.com", link:"https://app.mailgun.com/mg/dashboard", color:"#f97316" },
+                    { name:"Postmark",  host:"smtp.postmarkapp.com",  user:"your-api-token", link:"https://account.postmarkapp.com/servers", color:"#f59e0b" },
+                    { name:"Gmail",     host:"smtp.gmail.com",         user:"your@gmail.com", link:"https://myaccount.google.com/apppasswords", color:"#10b981" },
+                  ].map(p=>(
+                    <button key={p.name} onClick={()=>{ setSmtpHost(p.host); setSmtpUser(p.user); }}
+                      style={{ fontSize:10, fontWeight:700, color:p.color, background:p.color+"15", border:`1px solid ${p.color}44`, padding:"4px 12px", borderRadius:6, cursor:"pointer" }}>
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>How to get your credentials</div>
+                {[
+                  { n:1, text:"Pick a provider above — it auto-fills the SMTP host and username format", },
+                  { n:2, text:"For SendGrid: create an API key with Mail Send permission", link:"https://app.sendgrid.com/settings/api_keys", linkLabel:"SendGrid API keys →" },
+                  { n:3, text:"For Mailgun: find SMTP credentials under Domains → your domain → SMTP", link:"https://app.mailgun.com/mg/sending/domains", linkLabel:"Mailgun domains →" },
+                  { n:4, text:"For Gmail: enable 2FA then create an App Password (not your login password)", link:"https://myaccount.google.com/apppasswords", linkLabel:"App passwords →" },
+                ].map(s=>(
+                  <div key={s.n} style={{ display:"flex", gap:10, marginBottom:9, alignItems:"flex-start" }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", background:"#0f1e2e", border:"1px solid #3b82f633", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#3b82f6", flexShrink:0, marginTop:1 }}>{s.n}</div>
+                    <div style={{ flex:1 }}>
+                      <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.5 }}>{s.text} </span>
+                      {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#3b82f6", textDecoration:"none", fontWeight:600 }}>{s.linkLabel}</a>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {[
+                { label:"SMTP Host",      val:smtpHost, set:setSmtpHost, ph:"smtp.sendgrid.net",         hint:"Port 587 (TLS) is standard for most providers" },
+                { label:"Username",       val:smtpUser, set:setSmtpUser, ph:"apikey",                    hint:"For SendGrid this is literally the word 'apikey'" },
+                { label:"Password / Key", val:smtpPass, set:setSmtpPass, ph:"SG.xxxxxxxxxxxxxxxxxxxxxxxx", hint:"Your API key or SMTP password — never your account login" },
+              ].map(f=>(
+                <div key={f.label} style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
+                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
+                    style={{ width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'JetBrains Mono',monospace" }} />
+                  <div style={{ fontSize:9, color:C.subtle, marginTop:4 }}>💡 {f.hint}</div>
+                </div>
+              ))}
+              <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginTop:8 }}>
+                <a href="https://app.sendgrid.com/settings/api_keys" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#3b82f6", textDecoration:"none", fontWeight:600 }}>SendGrid API keys →</a>
+                <a href="https://app.mailgun.com/mg/dashboard" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>Mailgun</a>
+                <a href="https://account.postmarkapp.com/" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, textDecoration:"none" }}>Postmark</a>
+              </div>
             </div>
           )}
 
@@ -2056,7 +2248,7 @@ function ScreenSettings({ persona }) {
             <button
               disabled={!canSubmit || connecting}
               onClick={async ()=>{
-                if (intg.authType==="oauth" && modalStep===1) {
+                if ((modal==="ig"||modal==="tt") && modalStep===1) {
                   setModalStep(2);
                   return;
                 }
@@ -2069,7 +2261,7 @@ function ScreenSettings({ persona }) {
                   <div style={{ width:12, height:12, border:"2px solid #ffffff44", borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
                   Connecting…
                 </span>
-              ) : intg.authType==="oauth" && modalStep===1 ? `Authorize ${intg.label} →`
+              ) : (modal==="ig"||modal==="tt") && modalStep===1 ? `Authorize ${intg.label} →`
                 : `Connect ${intg.label}`}
             </button>
           </div>
