@@ -1742,8 +1742,10 @@ function TeamTab({ persona }) {
   const [inviteName,  setInviteName]  = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole,  setInviteRole]  = useState("Show Manager");
-  const [saving, setSaving]           = useState(false);
-  const [saved, setSaved]             = useState(false);
+  const [saving, setSaving]             = useState(false);
+  const [saved, setSaved]               = useState(false);
+  const [emailSendStatus, setEmailSendStatus] = useState(null); // null | "sending" | "sent" | "no_smtp" | "error"
+  const [emailSendError, setEmailSendError]   = useState("");
   const [removeTarget, setRemoveTarget] = useState(null);
 
   // Load persisted team members
@@ -1764,11 +1766,14 @@ function TeamTab({ persona }) {
   const sendInvite = async () => {
     if (!inviteEmail.trim() || !inviteName.trim()) return;
     setSaving(true);
+    setEmailSendStatus(null);
+    setEmailSendError("");
 
-    // Generate a unique invite token
-    const token = "inv_" + Math.random().toString(36).slice(2,11) + Date.now().toString(36);
+    // ── Generate token + invite link ──────────────────────────────────────────
+    const token      = "inv_" + crypto.randomUUID().replace(/-/g,"").slice(0,16);
     const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${token}`;
-    const now = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+    const now        = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+    const expiresAt  = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     const newMember = {
       id:        Date.now(),
@@ -1781,87 +1786,94 @@ function TeamTab({ persona }) {
       token,
     };
 
-    // Store the pending invite so the acceptance screen can look it up
+    // ── Persist the pending invite record (used by acceptance screen) ─────────
+    await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
+      token,
+      name:      newMember.name,
+      email:     newMember.email,
+      role:      inviteRole,
+      invitedBy: persona.name,
+      workspace: persona.shop,
+      fromEmail: persona.email,
+      invitedAt: now,
+      expiresAt,
+      status:    "pending",
+    }));
+
+    // ── Read SMTP credentials from stored connections ──────────────────────────
+    let smtpCreds = null;
     try {
-      await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
-        token,
-        name:        newMember.name,
-        email:       newMember.email,
-        role:        newMember.role,
-        invitedBy:   persona.name,
-        workspace:   persona.shop,
-        invitedAt:   now,
-        status:      "pending",
-      }));
+      const connResult = await window.storage.get("strmlive:connections");
+      if (connResult?.value) {
+        const conns = JSON.parse(connResult.value);
+        if (conns.email) {
+          smtpCreds = conns.email._smtp || null;
+          // Also check if smtp fields were stored directly on the email connection
+          if (!smtpCreds && conns.email.smtpHost) {
+            smtpCreds = {
+              host: conns.email.smtpHost,
+              user: conns.email.smtpUser,
+              pass: conns.email.smtpPass,
+            };
+          }
+        }
+      }
     } catch(e) {}
 
-    // Use the Anthropic API to generate and "send" a real HTML invitation email
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: `You are an email delivery system for Streamlive, a live-selling platform.
-Generate a professional HTML invitation email with these exact details:
+    // ── Send via Vercel API function ───────────────────────────────────────────
+    if (smtpCreds?.host && smtpCreds?.user && smtpCreds?.pass) {
+      setEmailSendStatus("sending");
+      try {
+        const apiRes = await fetch("/api/send-invite", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to:         newMember.email,
+            toName:     newMember.name,
+            role:       inviteRole,
+            workspace:  persona.shop,
+            invitedBy:  persona.name,
+            inviteLink,
+            token,
+            smtpHost:   smtpCreds.host,
+            smtpUser:   smtpCreds.user,
+            smtpPass:   smtpCreds.pass,
+            smtpPort:   smtpCreds.port || "587",
+            fromEmail:  persona.email,
+            fromName:   persona.shop,
+          }),
+        });
 
-To: ${newMember.email}
-Invited person's name: ${newMember.name}
-Role: ${newMember.role}
-Workspace: ${persona.shop}
-Invited by: ${persona.name}
-Accept invite URL: ${inviteLink}
+        const result = await apiRes.json();
 
-Return ONLY a JSON object with these fields (no markdown, no explanation):
-{
-  "subject": "email subject line",
-  "previewText": "short preview text under 90 chars",
-  "bodyHtml": "complete HTML email body as a single-line escaped string",
-  "bodyText": "plain text version"
-}
-
-The email should:
-- Be dark-themed, professional, matching Streamlive's purple brand (#7c3aed)
-- Clearly state what Streamlive is (a live-selling platform dashboard)
-- Show the inviter's name and workspace
-- Display the role and what it means
-- Have a prominent CTA button linking to the accept URL
-- Include that the link expires in 7 days
-- Be welcoming and concise`
-          }],
-        }),
-      });
-
-      const data = await response.json();
-      const text = (data.content||[]).map(c=>c.text||"").join("");
-      let emailData = {};
-      try { emailData = JSON.parse(text.replace(/```json|```/g,"").trim()); } catch(e) {}
-
-      // Store the generated email content (so we can display it in the UI)
-      await window.storage.set(`strmlive:invite_email:${token}`, JSON.stringify({
-        to:      newMember.email,
-        subject: emailData.subject || `You've been invited to ${persona.shop} on Streamlive`,
-        preview: emailData.previewText || "",
-        html:    emailData.bodyHtml || "",
-        text:    emailData.bodyText || "",
-        sentAt:  now,
-      }));
-    } catch(e) {
-      // Email generation failed — invite link still works
-      console.warn("Email generation error:", e);
+        if (apiRes.ok && result.success) {
+          setEmailSendStatus("sent");
+          await window.storage.set(`strmlive:invite_email:${token}`, JSON.stringify({
+            to:        newMember.email,
+            subject:   `${persona.name} invited you to ${persona.shop} on Streamlive`,
+            sentAt:    now,
+            messageId: result.messageId,
+            method:    "smtp",
+          }));
+        } else {
+          setEmailSendStatus("error");
+          setEmailSendError(result.detail || result.error || "SMTP send failed");
+          console.error("Email send error:", result);
+        }
+      } catch(e) {
+        setEmailSendStatus("error");
+        setEmailSendError(e.message);
+        console.error("Email API error:", e);
+      }
+    } else {
+      // No SMTP configured — invite link still works, user can copy it manually
+      setEmailSendStatus("no_smtp");
     }
 
     await persistTeam([...teamMembers, newMember]);
     setSaving(false);
     setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
-      setShowInviteModal(false);
-      setInviteName(""); setInviteEmail(""); setInviteRole("Show Manager");
-    }, 1500);
+    // Don't auto-close — let user see the delivery status first
   };
 
   const removeMember = async (id) => {
@@ -2017,24 +2029,97 @@ The email should:
               </div>
             </div>
 
+            {/* EMAIL DELIVERY STATUS — shown after sending */}
+            {saved && emailSendStatus && (
+              <div style={{ marginBottom:16 }}>
+                {emailSendStatus === "sent" && (
+                  <div style={{ background:"#0a1e16", border:"1px solid #10b98144", borderRadius:10, padding:"12px 16px" }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.green, marginBottom:4 }}>✓ Email delivered to {inviteEmail}</div>
+                    <div style={{ fontSize:11, color:C.muted, lineHeight:1.6 }}>
+                      {inviteName} will receive a branded invite with a button to create their account.
+                      The link expires in 7 days.
+                    </div>
+                  </div>
+                )}
+                {emailSendStatus === "no_smtp" && (
+                  <div style={{ background:"#2e1f0a", border:"1px solid #f59e0b44", borderRadius:10, padding:"12px 16px" }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.amber, marginBottom:4 }}>⚠ No email provider connected</div>
+                    <div style={{ fontSize:11, color:C.muted, lineHeight:1.6, marginBottom:10 }}>
+                      Connect an SMTP provider in <strong style={{ color:C.amber }}>Settings → Messaging</strong> to send emails automatically.
+                      Share this link with {inviteName} manually for now:
+                    </div>
+                    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                      <code style={{ flex:1, fontSize:9, color:"#a78bfa", background:"#1a1030", border:"1px solid #7c3aed33", padding:"6px 10px", borderRadius:6, wordBreak:"break-all", lineHeight:1.5 }}>
+                        {`${window.location.origin}${window.location.pathname}?invite=...`}
+                      </code>
+                      <button
+                        onClick={async () => {
+                          const token = teamMembers[teamMembers.length-1]?.token;
+                          if (token) {
+                            const link = `${window.location.origin}${window.location.pathname}?invite=${token}`;
+                            await navigator.clipboard.writeText(link);
+                          }
+                        }}
+                        style={{ fontSize:10, fontWeight:700, color:"#a78bfa", background:"#2d1f5e", border:"1px solid #7c3aed44", padding:"6px 12px", borderRadius:7, cursor:"pointer", whiteSpace:"nowrap" }}
+                      >
+                        Copy link
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {emailSendStatus === "error" && (
+                  <div style={{ background:"#1c0f0f", border:"1px solid #ef444444", borderRadius:10, padding:"12px 16px" }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#f87171", marginBottom:4 }}>✗ Email failed to send</div>
+                    <div style={{ fontSize:11, color:C.muted, lineHeight:1.6, marginBottom:6 }}>
+                      SMTP error: <code style={{ color:"#fca5a5", fontSize:10 }}>{emailSendError}</code>
+                    </div>
+                    <div style={{ fontSize:11, color:C.muted }}>
+                      The invite is saved — copy the link below to share manually, or check your SMTP settings.
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const token = teamMembers[teamMembers.length-1]?.token;
+                        if (token) {
+                          const link = `${window.location.origin}${window.location.pathname}?invite=${token}`;
+                          await navigator.clipboard.writeText(link);
+                        }
+                      }}
+                      style={{ marginTop:8, fontSize:10, fontWeight:700, color:"#a78bfa", background:"#2d1f5e", border:"1px solid #7c3aed44", padding:"5px 12px", borderRadius:7, cursor:"pointer" }}
+                    >
+                      Copy invite link
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ACTIONS */}
-            <div style={{ display:"flex", gap:10 }}>
-              <button onClick={()=>setShowInviteModal(false)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>
-                Cancel
-              </button>
+            {!saved ? (
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={()=>{ setShowInviteModal(false); setEmailSendStatus(null); }} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>
+                  Cancel
+                </button>
+                <button
+                  disabled={!inviteName.trim() || !isValidEmail || saving}
+                  onClick={sendInvite}
+                  style={{ flex:1, background:inviteName.trim()&&isValidEmail?`linear-gradient(135deg,${C.accent},${C.accent2})`:"#1a1a2e", border:`1px solid ${inviteName.trim()&&isValidEmail?C.accent+"44":C.border}`, color:inviteName.trim()&&isValidEmail?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:inviteName.trim()&&isValidEmail&&!saving?"pointer":"default", transition:"all .2s" }}
+                >
+                  {saving ? (
+                    <span style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center" }}>
+                      <div style={{ width:12, height:12, border:"2px solid #ffffff44", borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
+                      Sending invite…
+                    </span>
+                  ) : `Send Invite to ${inviteRole}`}
+                </button>
+              </div>
+            ) : (
               <button
-                disabled={!inviteName.trim() || !isValidEmail || saving || saved}
-                onClick={sendInvite}
-                style={{ flex:1, background:saved?"#0a1e16":inviteName.trim()&&isValidEmail?`linear-gradient(135deg,${C.accent},${C.accent2})`:"#1a1a2e", border:`1px solid ${saved?C.green+"66":inviteName.trim()&&isValidEmail?C.accent+"44":C.border}`, color:saved?C.green:inviteName.trim()&&isValidEmail?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:inviteName.trim()&&isValidEmail&&!saving&&!saved?"pointer":"default", transition:"all .2s" }}
+                onClick={()=>{ setShowInviteModal(false); setEmailSendStatus(null); setSaved(false); setInviteName(""); setInviteEmail(""); setInviteRole("Show Manager"); }}
+                style={{ width:"100%", background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:13, fontWeight:600, padding:"10px", borderRadius:9, cursor:"pointer" }}
               >
-                {saved ? "✓ Invite Sent!" : saving ? (
-                  <span style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center" }}>
-                    <div style={{ width:12, height:12, border:"2px solid #ffffff44", borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-                    Sending invite…
-                  </span>
-                ) : `Send Invite to ${inviteRole}`}
+                Done
               </button>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -2210,7 +2295,12 @@ function ScreenSettings({ persona }) {
       bg: "#0f1e2e",
       description: "Send email campaigns via your own SMTP provider (SendGrid, Mailgun, etc.).",
       authType: "smtp",
-      connectWith: () => connect("email", { account: smtpUser || persona.email, scopes: ["Email Campaigns", "Transactional Email"] }),
+      connectWith: () => connect("email", {
+        account: smtpUser || persona.email,
+        scopes:  ["Email Campaigns", "Transactional Email"],
+        // Store SMTP credentials so the invite API function can use them
+        _smtp: { host: smtpHost, user: smtpUser, pass: smtpPass, port: "587" },
+      }),
     },
   };
 
@@ -2775,6 +2865,253 @@ function ScreenSettings({ persona }) {
 }
 
 
+
+// ─── SCREEN: LOYALTY HUB ─────────────────────────────────────────────────────
+function ScreenLoyalty({ buyers, navigate, persona }) {
+  const [tab, setTab]     = useState("overview");
+  const [search, setSearch] = useState("");
+
+  // Enrich buyers with loyalty data
+  const enriched = buyers.map(b => ({
+    ...b,
+    loyalty: LOYALTY_BUYERS[b.id] || { points:0, tier:"bronze", pointsToNext:500, history:[] },
+  }));
+
+  const tierCounts = LOYALTY_TIERS.reduce((acc, t) => {
+    acc[t.id] = enriched.filter(b => b.loyalty.tier === t.id).length;
+    return acc;
+  }, {});
+  const totalPoints = enriched.reduce((s, b) => s + b.loyalty.points, 0);
+  const avgPoints   = enriched.length ? Math.round(totalPoints / enriched.length) : 0;
+  const vipBuyers   = enriched.filter(b => b.loyalty.tier === "vip");
+  const nearUpgrade = enriched.filter(b => {
+    const tier = LOYALTY_TIERS.find(t => t.id === b.loyalty.tier);
+    return tier?.maxPoints && b.loyalty.pointsToNext <= 300;
+  });
+
+  const filtered = enriched.filter(b => {
+    const q = search.toLowerCase();
+    return !q || b.name.toLowerCase().includes(q) || b.handle.toLowerCase().includes(q);
+  }).sort((a,b) => b.loyalty.points - a.loyalty.points);
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+
+      {/* HEADER */}
+      <div style={{ padding:"24px 28px 0", flexShrink:0 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Loyalty Hub</div>
+            <div style={{ fontSize:12, color:C.muted, marginTop:3 }}>{enriched.length} members across {LOYALTY_TIERS.length} tiers</div>
+          </div>
+          <button style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
+            + Award Points
+          </button>
+        </div>
+
+        {/* KPI ROW */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
+          {[
+            { label:"Total Points Issued",  value:totalPoints.toLocaleString(),  sub:"across all members",      color:C.accent },
+            { label:"Avg Points / Buyer",   value:avgPoints.toLocaleString(),     sub:"lifetime average",        color:"#3b82f6" },
+            { label:"VIP Members",          value:vipBuyers.length,               sub:"top-tier buyers",         color:"#7c3aed" },
+            { label:"Near Upgrade",         value:nearUpgrade.length,             sub:"within 300 pts of tier",  color:"#f59e0b" },
+          ].map(k => (
+            <div key={k.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderTop:`2px solid ${k.color}`, borderRadius:12, padding:"14px 16px" }}>
+              <div style={{ fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700, marginBottom:6 }}>{k.label}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color:C.text, lineHeight:1, marginBottom:4 }}>{k.value}</div>
+              <div style={{ fontSize:10, color:C.subtle }}>{k.sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* TIER BREAKDOWN */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:20 }}>
+          {LOYALTY_TIERS.slice().reverse().map(tier => {
+            const count = tierCounts[tier.id] || 0;
+            const pct   = enriched.length ? Math.round((count/enriched.length)*100) : 0;
+            return (
+              <div key={tier.id} style={{ background:tier.bg, border:`1px solid ${tier.color}33`, borderRadius:12, padding:"14px 16px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                  <span style={{ fontSize:18 }}>{tier.icon}</span>
+                  <span style={{ fontSize:10, fontWeight:700, color:tier.color, fontFamily:"'JetBrains Mono',monospace" }}>{count}</span>
+                </div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:2 }}>{tier.label}</div>
+                <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?`–${tier.maxPoints.toLocaleString()}`:"+"}  pts</div>
+                <div style={{ height:3, background:`${tier.color}22`, borderRadius:2 }}>
+                  <div style={{ height:"100%", width:`${pct}%`, background:tier.color, borderRadius:2 }} />
+                </div>
+                <div style={{ fontSize:9, color:C.subtle, marginTop:4 }}>{pct}% of members</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* TABS */}
+        <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}` }}>
+          {[["overview","Members"],["perks","Tier Perks"],["activity","Recent Activity"]].map(([id,label]) => (
+            <button key={id} onClick={()=>setTab(id)} style={{ background:"none", border:"none", borderBottom:`2px solid ${tab===id?C.accent:"transparent"}`, color:tab===id?"#a78bfa":C.muted, fontSize:12, fontWeight:tab===id?700:400, padding:"0 16px 12px", cursor:"pointer" }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── TAB: MEMBERS ── */}
+      {tab==="overview" && (
+        <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
+          {/* NEAR UPGRADE CALLOUT */}
+          {nearUpgrade.length > 0 && (
+            <div style={{ background:"#2e1f0a", border:"1px solid #f59e0b33", borderRadius:12, padding:"12px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
+              <span style={{ fontSize:18 }}>⚡</span>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:12, fontWeight:700, color:"#f59e0b" }}>{nearUpgrade.length} buyer{nearUpgrade.length!==1?"s are":"is"} close to a tier upgrade</div>
+                <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>
+                  {nearUpgrade.map(b => `${b.name} (${b.loyalty.pointsToNext} pts to go)`).join(" · ")}
+                </div>
+              </div>
+              <button onClick={()=>navigate("composer")} style={{ fontSize:11, fontWeight:700, color:"#f59e0b", background:"#2e1f0a", border:"1px solid #f59e0b44", padding:"6px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>
+                Send nudge →
+              </button>
+            </div>
+          )}
+
+          {/* SEARCH */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"8px 12px", marginBottom:14 }}>
+            <span style={{ color:C.subtle, fontSize:12 }}>🔍</span>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search members…" style={{ flex:1, background:"none", border:"none", color:C.text, fontSize:12, outline:"none" }} />
+          </div>
+
+          {/* TABLE HEADER */}
+          <div style={{ display:"grid", gridTemplateColumns:"1.8fr 1fr 0.8fr 0.8fr 1.2fr 1fr", padding:"8px 0", borderBottom:`1px solid ${C.border}`, marginBottom:4 }}>
+            {["Member","Tier","Points","Orders","Progress","Actions"].map(h => (
+              <div key={h} style={{ fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700 }}>{h}</div>
+            ))}
+          </div>
+
+          {filtered.map(b => {
+            const tier    = LOYALTY_TIERS.find(t => t.id === b.loyalty.tier);
+            const nextTier = LOYALTY_TIERS[LOYALTY_TIERS.indexOf(tier)+1];
+            const pct     = tier?.maxPoints ? Math.min(100, Math.round((b.loyalty.points - tier.minPoints) / (tier.maxPoints - tier.minPoints) * 100)) : 100;
+            return (
+              <div key={b.id} style={{ display:"grid", gridTemplateColumns:"1.8fr 1fr 0.8fr 0.8fr 1.2fr 1fr", padding:"10px 0", borderBottom:`1px solid ${C.border}`, alignItems:"center" }}>
+                {/* Member */}
+                <div style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer" }} onClick={()=>navigate("buyer-profile",{buyerId:b.id})}>
+                  <Avatar initials={b.avatar} color={PLATFORMS[b.platform]?.color} size={30} />
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{b.name}</div>
+                    <div style={{ fontSize:10, color:C.muted }}>{b.handle}</div>
+                  </div>
+                </div>
+                {/* Tier badge */}
+                <div>
+                  <span style={{ fontSize:10, fontWeight:700, color:tier?.color, background:tier?.bg, border:`1px solid ${tier?.color}33`, padding:"2px 8px", borderRadius:5 }}>
+                    {tier?.icon} {tier?.label}
+                  </span>
+                </div>
+                {/* Points */}
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>
+                  {b.loyalty.points.toLocaleString()}
+                </div>
+                {/* Orders */}
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"#9ca3af" }}>
+                  {b.orders}
+                </div>
+                {/* Progress bar */}
+                <div>
+                  <div style={{ height:4, background:`${tier?.color}22`, borderRadius:2, marginBottom:4, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${pct}%`, background:tier?.color, borderRadius:2 }} />
+                  </div>
+                  {nextTier ? (
+                    <div style={{ fontSize:9, color:C.subtle }}>{b.loyalty.pointsToNext} pts to {nextTier.icon} {nextTier.label}</div>
+                  ) : (
+                    <div style={{ fontSize:9, color:tier?.color }}>Max tier reached</div>
+                  )}
+                </div>
+                {/* Actions */}
+                <div style={{ display:"flex", gap:6 }}>
+                  <button
+                    onClick={()=>navigate("buyer-profile",{buyerId:b.id})}
+                    style={{ fontSize:10, color:C.accent, background:`${C.accent}10`, border:`1px solid ${C.accent}33`, padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>
+                    View
+                  </button>
+                  <button
+                    style={{ fontSize:10, color:"#f59e0b", background:"#2e1f0a", border:"1px solid #f59e0b33", padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>
+                    +pts
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── TAB: TIER PERKS ── */}
+      {tab==="perks" && (
+        <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+            {LOYALTY_TIERS.slice().reverse().map(tier => (
+              <div key={tier.id} style={{ background:tier.bg, border:`1px solid ${tier.color}33`, borderRadius:14, padding:"20px 22px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+                  <span style={{ fontSize:26 }}>{tier.icon}</span>
+                  <div>
+                    <div style={{ fontSize:15, fontWeight:700, color:C.text }}>{tier.label}</div>
+                    <div style={{ fontSize:11, color:tier.color }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?` – ${tier.maxPoints.toLocaleString()}`:"+"}  points</div>
+                  </div>
+                  <div style={{ marginLeft:"auto", fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:tier.color }}>
+                    {tierCounts[tier.id] || 0} members
+                  </div>
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {tier.perks.map(perk => (
+                    <div key={perk} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:tier.color, flexShrink:0 }} />
+                      <span style={{ fontSize:12, color:"#d1d5db" }}>{perk}</span>
+                    </div>
+                  ))}
+                </div>
+                <button style={{ marginTop:14, width:"100%", background:`${tier.color}18`, border:`1px solid ${tier.color}44`, color:tier.color, fontSize:11, fontWeight:700, padding:"8px", borderRadius:8, cursor:"pointer" }}>
+                  Edit {tier.label} Perks
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB: RECENT ACTIVITY ── */}
+      {tab==="activity" && (
+        <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
+          {enriched
+            .flatMap(b => (b.loyalty.history||[]).map(h => ({ ...h, buyer:b })))
+            .sort((a,b) => new Date(b.date) - new Date(a.date))
+            .slice(0,30)
+            .map((item, i) => {
+              const tier = LOYALTY_TIERS.find(t => t.id === item.buyer.loyalty.tier);
+              return (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:`1px solid ${C.border}` }}>
+                  <Avatar initials={item.buyer.avatar} color={PLATFORMS[item.buyer.platform]?.color} size={28} />
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:12, color:C.text }}>
+                      <strong>{item.buyer.name}</strong> — {item.event}
+                    </div>
+                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{item.date} · {item.buyer.loyalty.points.toLocaleString()} pts total</div>
+                  </div>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:item.pts > 0 ? "#10b981" : "#f87171" }}>
+                    {item.pts > 0 ? "+" : ""}{item.pts} pts
+                  </div>
+                  <span style={{ fontSize:10, fontWeight:700, color:tier?.color, background:tier?.bg, border:`1px solid ${tier?.color}33`, padding:"2px 8px", borderRadius:5 }}>
+                    {tier?.icon} {tier?.label}
+                  </span>
+                </div>
+              );
+            })
+          }
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── SCREEN: ACCEPT INVITE ────────────────────────────────────────────────────
 function ScreenAcceptInvite({ token }) {
