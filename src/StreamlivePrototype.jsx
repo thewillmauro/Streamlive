@@ -154,6 +154,80 @@ const CAMPAIGNS = [
 ];
 
 
+const KEYWORD_AUTOMATIONS = [
+  {
+    id: "ka1",
+    name: "Main Opt-In",
+    status: "active",
+    platforms: ["TT", "IG"],
+    keywords: [
+      { word: "JOIN",      optIns: 180, thisWeek: 12 },
+      { word: "SUBSCRIBE", optIns: 43,  thisWeek: 6  },
+      { word: "IN",        optIns: 28,  thisWeek: 3  },
+    ],
+    reply: "Hey {first_name}! 🎉 You're officially on the {shop_name} VIP list. You'll get first access to breaks, exclusive drops, and show alerts. Stay tuned!",
+    goal: "list_growth",
+    createdAt: "Jan 10, 2025",
+    totalOptIns: 251,
+    byPlatform: { TT: 148, IG: 103 },
+  },
+  {
+    id: "ka2",
+    name: "Thursday Break Hype",
+    status: "active",
+    platforms: ["TT", "IG"],
+    keywords: [
+      { word: "BREAK", optIns: 94, thisWeek: 22 },
+      { word: "CARDS", optIns: 31, thisWeek: 8  },
+    ],
+    reply: "You're locked in for Thursday's break! 📦 I'll DM you 1 hour before we go live with the direct link. See you there!",
+    goal: "event",
+    createdAt: "Feb 1, 2025",
+    totalOptIns: 125,
+    byPlatform: { TT: 88, IG: 37 },
+  },
+  {
+    id: "ka3",
+    name: "VIP Flash Deals",
+    status: "paused",
+    platforms: ["IG"],
+    keywords: [
+      { word: "VIP",   optIns: 67, thisWeek: 0 },
+      { word: "DEALS", optIns: 19, thisWeek: 0 },
+    ],
+    reply: "Welcome to the VIP list 👑 You'll get exclusive deals and early access before anyone else. Watch your DMs — your first offer is coming soon!",
+    goal: "vip_access",
+    createdAt: "Jan 28, 2025",
+    totalOptIns: 86,
+    byPlatform: { TT: 0, IG: 86 },
+  },
+  {
+    id: "ka4",
+    name: "Mystery Box Drop",
+    status: "active",
+    platforms: ["TT"],
+    keywords: [
+      { word: "MYSTERY", optIns: 112, thisWeek: 34 },
+      { word: "BOX",     optIns: 58,  thisWeek: 18 },
+      { word: "SURPRISE",optIns: 29,  thisWeek: 11 },
+    ],
+    reply: "You're in for the Mystery Box drop! 🎁 Limited stock — I'll DM you the link the second it goes live. Get ready!",
+    goal: "product_drop",
+    createdAt: "Feb 10, 2025",
+    totalOptIns: 199,
+    byPlatform: { TT: 199, IG: 0 },
+  },
+];
+
+const GOAL_META = {
+  list_growth:  { label: "List Growth",   color: "#10b981", bg: "#0a1e16",  icon: "📈" },
+  event:        { label: "Event Alert",   color: "#3b82f6", bg: "#0f1e2e",  icon: "🔔" },
+  vip_access:   { label: "VIP Access",    color: "#a78bfa", bg: "#2d1f5e",  icon: "👑" },
+  product_drop: { label: "Product Drop",  color: "#f59e0b", bg: "#2e1f0a",  icon: "🎁" },
+  discount:     { label: "Discount",      color: "#f43f5e", bg: "#2d1020",  icon: "💸" },
+  win_back:     { label: "Win-Back",      color: "#ec4899", bg: "#2d1028",  icon: "♻️"  },
+};
+
 const CHANNEL_META = {
   email:  { label:"Email",               color:"#3b82f6", bg:"#0f1e2e", icon:"✉",  via:"Direct",  note:"",                                                    canBroadcast:true  },
   sms:    { label:"SMS",                 color:"#a78bfa", bg:"#2d1f5e", icon:"💬", via:"Direct",  note:"",                                                    canBroadcast:true  },
@@ -1183,40 +1257,55 @@ function ScreenLive({ buyers, navigate }) {
 
 // ─── SCREEN: CAMPAIGNS ────────────────────────────────────────────────────────
 function ScreenCampaigns({ navigate, persona }) {
+  const [mainTab, setMainTab] = useState("broadcasts");
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+      <div style={{ padding:"20px 32px 0", borderBottom:`1px solid ${C.border}`, background:C.surface, flexShrink:0 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Campaigns</div>
+            <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>Broadcast messages and keyword-triggered DM automations</div>
+          </div>
+          {mainTab === "broadcasts"
+            ? <button onClick={()=>navigate("composer")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>+ New Broadcast</button>
+            : null
+          }
+        </div>
+        <div style={{ display:"flex", gap:0 }}>
+          {[["broadcasts","Broadcasts"],["automations","Keyword Automations"]].map(([v,l])=>(
+            <button key={v} onClick={()=>setMainTab(v)} style={{ background:"none", border:"none", borderBottom:`2px solid ${mainTab===v?C.accent:"transparent"}`, color:mainTab===v?C.text:C.muted, fontSize:13, fontWeight:mainTab===v?700:400, padding:"0 20px 12px", cursor:"pointer" }}>{l}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{ flex:1, overflowY:"auto" }}>
+        {mainTab === "broadcasts" && <BroadcastsTab navigate={navigate} persona={persona} />}
+        {mainTab === "automations" && <KeywordAutomationsTab persona={persona} />}
+      </div>
+    </div>
+  );
+}
+
+function BroadcastsTab({ navigate, persona }) {
   const [filterType, setFilterType] = useState("all");
-
   const filtered = filterType==="all" ? CAMPAIGNS : CAMPAIGNS.filter(c=>c.type===filterType);
-
   const totalGMV     = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.gmv,0);
   const totalSent    = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.recipients,0);
   const avgOpen      = Math.round(CAMPAIGNS.filter(c=>c.opened>0).reduce((a,c,_,arr)=>a+c.opened/arr.length,0));
   const avgConverted = CAMPAIGNS.filter(c=>c.converted>0).reduce((a,c,_,arr)=>a+c.converted/arr.length,0).toFixed(0);
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-        <div>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Campaigns</div>
-          <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{CAMPAIGNS.length} campaigns across {Object.keys(CHANNEL_META).length} channels</div>
-        </div>
-        <button onClick={()=>navigate("composer")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>
-          + New Campaign
-        </button>
-      </div>
-
-      {/* KPI STATS */}
+    <div style={{ padding:"24px 32px" }}>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-        <StatCard label="Total Sent"       value={totalSent.toLocaleString()} sub="all channels"        color={C.blue}   />
-        <StatCard label="Avg Open Rate"    value={`${avgOpen}%`}              sub="across all channels" color={C.green}  />
-        <StatCard label="Avg Conversions"  value={avgConverted}               sub="per campaign"        color={C.accent} />
-        <StatCard label="Revenue Driven"   value={`$${totalGMV.toLocaleString()}`} sub="attributed GMV"   color={C.amber}  />
+        <StatCard label="Total Sent"      value={totalSent.toLocaleString()} sub="all channels"        color={C.blue}   />
+        <StatCard label="Avg Open Rate"   value={`${avgOpen}%`}              sub="across all channels" color={C.green}  />
+        <StatCard label="Avg Conversions" value={avgConverted}               sub="per campaign"        color={C.accent} />
+        <StatCard label="Revenue Driven"  value={`$${totalGMV.toLocaleString()}`} sub="attributed GMV" color={C.amber}  />
       </div>
-
-      {/* CHANNEL CONNECTION STATUS */}
       <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 20px", marginBottom:20 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div style={{ fontSize:12, fontWeight:700, color:C.text }}>Connected Channels</div>
-          <button onClick={()=>navigate("settings")} style={{ fontSize:11, color:C.accent, background:"none", border:"none", cursor:"pointer" }}>Manage →</button>
+          <button onClick={()=>navigate("settings")} style={{ fontSize:11, color:C.accent, background:"none", border:"none", cursor:"pointer" }}>Manage</button>
         </div>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           {Object.entries(CHANNEL_META).map(([key,ch])=>{
@@ -1226,24 +1315,18 @@ function ScreenCampaigns({ navigate, persona }) {
                 <span style={{ fontSize:13 }}>{ch.icon}</span>
                 <div>
                   <div style={{ fontSize:11, fontWeight:700, color:connected?ch.color:C.muted }}>{ch.label}</div>
-                  <div style={{ fontSize:9, color:C.subtle }}>{connected?"✓ Connected":ch.via==="ManyChat"?"Needs ManyChat":"Not connected"}</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>{connected?"Connected":ch.via==="ManyChat"?"Needs ManyChat":"Not connected"}</div>
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* CHANNEL FILTER TABS */}
       <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16 }}>
         {[["all","All"],["email","Email"],["sms","SMS"],["ig_dm","Instagram DM"],["tt_dm","TikTok DM"],["wn_dm","Whatnot"],["am_msg","Amazon"]].map(([v,l])=>(
-          <button key={v} onClick={()=>setFilterType(v)} style={{ background:"none", border:"none", borderBottom:`2px solid ${filterType===v?(CHANNEL_META[v]?.color||C.accent):"transparent"}`, color:filterType===v?(CHANNEL_META[v]?.color||"#a78bfa"):C.muted, fontSize:11, fontWeight:filterType===v?700:400, padding:"0 14px 10px", cursor:"pointer", whiteSpace:"nowrap" }}>
-            {l}
-          </button>
+          <button key={v} onClick={()=>setFilterType(v)} style={{ background:"none", border:"none", borderBottom:`2px solid ${filterType===v?(CHANNEL_META[v]?.color||C.accent):"transparent"}`, color:filterType===v?(CHANNEL_META[v]?.color||"#a78bfa"):C.muted, fontSize:11, fontWeight:filterType===v?700:400, padding:"0 14px 10px", cursor:"pointer", whiteSpace:"nowrap" }}>{l}</button>
         ))}
       </div>
-
-      {/* CAMPAIGN TABLE */}
       <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
         <div style={{ display:"grid", gridTemplateColumns:"2fr 0.8fr 0.7fr 0.7fr 0.6fr 0.6fr 0.7fr 0.8fr", padding:"10px 22px", borderBottom:`1px solid ${C.border}` }}>
           {["Campaign","Channel","Via","Status","Reach","Opened","Converted","GMV"].map(h=>(
@@ -1264,14 +1347,12 @@ function ScreenCampaigns({ navigate, persona }) {
               </div>
               <div style={{ fontSize:10, color:C.muted }}>{ch.via}</div>
               <div>
-                <span style={{ fontSize:10, fontWeight:700, color:c.status==="sent"?C.green:C.amber, background:c.status==="sent"?"#0a1e16":"#2e1f0a", border:`1px solid ${c.status==="sent"?C.green+"44":C.amber+"44"}`, padding:"2px 7px", borderRadius:5, textTransform:"uppercase" }}>
-                  {c.status}
-                </span>
+                <span style={{ fontSize:10, fontWeight:700, color:c.status==="sent"?C.green:C.amber, background:c.status==="sent"?"#0a1e16":"#2e1f0a", border:`1px solid ${c.status==="sent"?C.green+"44":C.amber+"44"}`, padding:"2px 7px", borderRadius:5, textTransform:"uppercase" }}>{c.status}</span>
               </div>
-              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.recipients>0?C.text:C.subtle }}>{c.recipients>0?c.recipients.toLocaleString():"—"}</div>
-              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.opened>0?C.green:C.subtle }}>{c.opened>0?`${c.opened}%`:"—"}</div>
-              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.converted>0?C.blue:C.subtle }}>{c.converted>0?c.converted:"—"}</div>
-              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:c.gmv>0?C.amber:C.subtle }}>{c.gmv>0?`$${c.gmv.toLocaleString()}`:"—"}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.recipients>0?C.text:C.subtle }}>{c.recipients>0?c.recipients.toLocaleString():"--"}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.opened>0?C.green:C.subtle }}>{c.opened>0?`${c.opened}%`:"--"}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:c.converted>0?C.blue:C.subtle }}>{c.converted>0?c.converted:"--"}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:c.gmv>0?C.amber:C.subtle }}>{c.gmv>0?`$${c.gmv.toLocaleString()}`:"--"}</div>
             </div>
           );
         })}
@@ -1280,8 +1361,417 @@ function ScreenCampaigns({ navigate, persona }) {
   );
 }
 
-// ─── AUDIENCE SEGMENTS (computed from CRM) ────────────────────────────────────
-// Helper: flatten all buyers from all personas, deduplicate by id + enrich
+function KeywordAutomationsTab({ persona }) {
+  const [automations, setAutomations] = useState(KEYWORD_AUTOMATIONS);
+  const [selected, setSelected]       = useState(null);
+  const [showBuilder, setShowBuilder] = useState(false);
+  const [editTarget, setEditTarget]   = useState(null);
+
+  const totalOptIns = automations.reduce((a,k)=>a+k.totalOptIns,0);
+  const thisWeek    = automations.reduce((a,k)=>a+k.keywords.reduce((b,kw)=>b+kw.thisWeek,0),0);
+  const activeCount = automations.filter(k=>k.status==="active").length;
+  const totalKws    = automations.reduce((a,k)=>a+k.keywords.length,0);
+
+  const openNew  = () => { setEditTarget(null); setShowBuilder(true); };
+  const openEdit = (a) => { setEditTarget(a); setShowBuilder(true); setSelected(null); };
+
+  const toggleStatus = (id) =>
+    setAutomations(prev=>prev.map(a=>a.id===id?{...a,status:a.status==="active"?"paused":"active"}:a));
+
+  const saveAutomation = (data) => {
+    if (editTarget) {
+      setAutomations(prev=>prev.map(a=>a.id===editTarget.id?{...a,...data,keywords:data.keywords.map(w=>{ const existing=editTarget.keywords.find(k=>k.word===w); return existing||{word:w,optIns:0,thisWeek:0}; })}:a));
+    } else {
+      const newA = { id:`ka${Date.now()}`, ...data, totalOptIns:0, byPlatform:{TT:0,IG:0}, createdAt:new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}), keywords:data.keywords.map(w=>({word:w,optIns:0,thisWeek:0})) };
+      setAutomations(prev=>[...prev,newA]);
+    }
+    setShowBuilder(false);
+    setEditTarget(null);
+  };
+
+  return (
+    <div style={{ padding:"24px 32px", position:"relative" }}>
+      {/* HOW IT WORKS */}
+      <div style={{ background:"linear-gradient(135deg,#0d2828,#2d1020)", border:"1px solid #1e3a3a", borderRadius:14, padding:"16px 20px", marginBottom:24, display:"flex", gap:20, alignItems:"center" }}>
+        <div style={{ fontSize:28, flexShrink:0 }}>⚡</div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:"#fff", marginBottom:4 }}>How keyword automations work</div>
+          <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.6 }}>
+            When someone DMs a trigger keyword to your TikTok or Instagram account, ManyChat instantly sends your auto-reply and adds them to your subscriber list.
+            Multiple keywords per campaign lets you A/B test which words drive the most opt-ins.
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+          <div style={{ background:"#0d282820", border:"1px solid #69c9d033", borderRadius:8, padding:"8px 14px", textAlign:"center" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#69c9d0" }}>TikTok DM</div>
+            <div style={{ fontSize:9, color:"#9ca3af", marginTop:2 }}>via ManyChat</div>
+          </div>
+          <div style={{ background:"#2d102018", border:"1px solid #e1306c33", borderRadius:8, padding:"8px 14px", textAlign:"center" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#e1306c" }}>Instagram DM</div>
+            <div style={{ fontSize:9, color:"#9ca3af", marginTop:2 }}>via ManyChat</div>
+          </div>
+        </div>
+      </div>
+
+      {/* KPI */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
+        <StatCard label="Total Opt-Ins"   value={totalOptIns.toLocaleString()} sub="across all automations"          color={C.green}  />
+        <StatCard label="This Week"       value={thisWeek}                     sub="new opt-ins"                     color={C.blue}   />
+        <StatCard label="Active"          value={activeCount}                  sub={`of ${automations.length} automations`} color={C.accent} />
+        <StatCard label="Avg / Keyword"   value={totalKws>0?Math.round(totalOptIns/totalKws):0} sub="opt-ins per trigger word" color={C.amber} />
+      </div>
+
+      {/* LIST HEADER */}
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+        <div style={{ fontSize:13, fontWeight:700, color:C.text }}>Your Automations <span style={{ fontWeight:400, color:C.muted, fontSize:12 }}>({automations.length})</span></div>
+        <button onClick={openNew} style={{ background:"linear-gradient(135deg,#f43f5e,#ec4899)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>+ New Automation</button>
+      </div>
+
+      {/* CARDS */}
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        {automations.map(a => {
+          const goal  = GOAL_META[a.goal] || GOAL_META.list_growth;
+          const isOpen = selected === a.id;
+          const topKw  = [...a.keywords].sort((x,y)=>y.optIns-x.optIns)[0];
+          const weekTotal = a.keywords.reduce((s,k)=>s+k.thisWeek,0);
+          return (
+            <div key={a.id} style={{ background:C.surface, border:`1px solid ${isOpen?C.accent+"55":C.border}`, borderRadius:14, overflow:"hidden", transition:"border-color .2s" }}>
+              {/* HEADER ROW */}
+              <div onClick={()=>setSelected(isOpen?null:a.id)} style={{ display:"flex", alignItems:"center", gap:16, padding:"16px 20px", cursor:"pointer" }}>
+                {/* Goal icon */}
+                <div style={{ width:40, height:40, borderRadius:10, background:goal.bg, border:`1px solid ${goal.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>{goal.icon}</div>
+
+                {/* Name + meta */}
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                    <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{a.name}</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:goal.color, background:goal.bg, border:`1px solid ${goal.color}33`, padding:"2px 7px", borderRadius:5, textTransform:"uppercase", flexShrink:0 }}>{goal.label}</span>
+                  </div>
+                  <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
+                    {a.platforms.map(p=>(
+                      <span key={p} style={{ fontSize:9, fontWeight:700, color:p==="TT"?"#69c9d0":"#e1306c", background:p==="TT"?"#0d282812":"#2d102012", border:`1px solid ${p==="TT"?"#69c9d033":"#e1306c33"}`, padding:"2px 7px", borderRadius:5 }}>{p==="TT"?"TikTok DM":"Instagram DM"}</span>
+                    ))}
+                    <span style={{ fontSize:10, color:C.subtle }}>·</span>
+                    <div style={{ display:"flex", gap:4 }}>
+                      {a.keywords.slice(0,4).map(kw=>(
+                        <span key={kw.word} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.muted, background:C.surface2, border:`1px solid ${C.border}`, padding:"1px 6px", borderRadius:5 }}>{kw.word}</span>
+                      ))}
+                      {a.keywords.length>4 && <span style={{ fontSize:10, color:C.subtle }}>+{a.keywords.length-4}</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div style={{ textAlign:"center", minWidth:60 }}>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:700, color:C.green }}>{a.totalOptIns.toLocaleString()}</div>
+                  <div style={{ fontSize:9, color:C.muted }}>total opt-ins</div>
+                </div>
+                <div style={{ textAlign:"center", minWidth:52 }}>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:700, color:weekTotal>0?C.blue:C.subtle }}>{weekTotal}</div>
+                  <div style={{ fontSize:9, color:C.muted }}>this week</div>
+                </div>
+
+                {/* Status toggle */}
+                <div onClick={e=>{e.stopPropagation();toggleStatus(a.id);}} style={{ display:"flex", alignItems:"center", gap:6, cursor:"pointer", flexShrink:0 }}>
+                  <div style={{ width:36, height:20, borderRadius:10, background:a.status==="active"?C.green:C.border2, position:"relative", transition:"background .2s", flexShrink:0 }}>
+                    <div style={{ position:"absolute", top:3, left:a.status==="active"?18:3, width:14, height:14, borderRadius:"50%", background:"#fff", transition:"left .2s" }} />
+                  </div>
+                  <span style={{ fontSize:10, fontWeight:700, color:a.status==="active"?C.green:C.muted, minWidth:36 }}>{a.status==="active"?"Live":"Off"}</span>
+                </div>
+
+                <div style={{ fontSize:11, color:C.muted, transform:isOpen?"rotate(180deg)":"none", transition:"transform .2s", flexShrink:0 }}>▼</div>
+              </div>
+
+              {/* EXPANDED */}
+              {isOpen && (
+                <div style={{ borderTop:`1px solid ${C.border}`, background:"#06060d" }}>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+
+                    {/* LEFT: keyword breakdown */}
+                    <div style={{ padding:"20px 24px", borderRight:`1px solid ${C.border}` }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:14 }}>Keyword Performance</div>
+                      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                        {[...a.keywords].sort((x,y)=>y.optIns-x.optIns).map((kw,i) => {
+                          const pct    = a.totalOptIns>0?Math.round(kw.optIns/a.totalOptIns*100):0;
+                          const maxOI  = Math.max(...a.keywords.map(k=>k.optIns), 1);
+                          const barPct = (kw.optIns/maxOI)*100;
+                          return (
+                            <div key={kw.word}>
+                              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
+                                <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                                  {i===0 && <span style={{ fontSize:10 }}>🏆</span>}
+                                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text, background:C.surface, border:`1px solid ${C.border2}`, padding:"3px 10px", borderRadius:7 }}>{kw.word}</span>
+                                  {kw.thisWeek>0 && <span style={{ fontSize:10, color:C.green }}>+{kw.thisWeek} this week</span>}
+                                </div>
+                                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.text }}>{kw.optIns.toLocaleString()}</span>
+                                  <span style={{ fontSize:10, color:C.subtle, minWidth:30, textAlign:"right" }}>{pct}%</span>
+                                </div>
+                              </div>
+                              <div style={{ height:5, background:C.surface2, borderRadius:3 }}>
+                                <div style={{ height:"100%", width:`${barPct}%`, background:`linear-gradient(90deg,${C.accent},${C.accent2})`, borderRadius:3, transition:"width .5s" }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Platform split */}
+                      <div style={{ marginTop:20, paddingTop:16, borderTop:`1px solid ${C.border}` }}>
+                        <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Platform Split</div>
+                        <div style={{ display:"flex", gap:10 }}>
+                          {a.platforms.includes("TT") && (
+                            <div style={{ flex:1, background:"#0d282814", border:"1px solid #69c9d033", borderRadius:10, padding:"12px", textAlign:"center" }}>
+                              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:700, color:"#69c9d0" }}>{a.byPlatform.TT}</div>
+                              <div style={{ fontSize:10, color:"#9ca3af", marginTop:3 }}>TikTok DM</div>
+                              <div style={{ fontSize:9, color:"#4b5563", marginTop:2 }}>{a.totalOptIns>0?Math.round((a.byPlatform.TT||0)/a.totalOptIns*100):0}%</div>
+                            </div>
+                          )}
+                          {a.platforms.includes("IG") && (
+                            <div style={{ flex:1, background:"#2d102014", border:"1px solid #e1306c33", borderRadius:10, padding:"12px", textAlign:"center" }}>
+                              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:700, color:"#e1306c" }}>{a.byPlatform.IG}</div>
+                              <div style={{ fontSize:10, color:"#9ca3af", marginTop:3 }}>Instagram DM</div>
+                              <div style={{ fontSize:9, color:"#4b5563", marginTop:2 }}>{a.totalOptIns>0?Math.round((a.byPlatform.IG||0)/a.totalOptIns*100):0}%</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* RIGHT: preview + actions */}
+                    <div style={{ padding:"20px 24px" }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:12 }}>Auto-Reply Preview</div>
+                      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 16px", marginBottom:16 }}>
+                        <div style={{ fontSize:10, color:C.subtle, marginBottom:8 }}>Someone DMs: <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.text }}>"{topKw?.word}"</span></div>
+                        <div style={{ width:1, height:10, background:C.border, margin:"0 0 8px 10px" }} />
+                        <div style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
+                          <div style={{ width:26, height:26, borderRadius:"50%", background:`${C.accent}22`, border:`1px solid ${C.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:C.accent, flexShrink:0, marginTop:1 }}>S</div>
+                          <div style={{ background:C.surface2, borderRadius:"3px 10px 10px 10px", padding:"10px 13px", fontSize:12, color:C.text, lineHeight:1.6 }}>
+                            {a.reply.replace("{first_name}","Alex").replace("{shop_name}","CardVaultSC")}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize:11, color:C.subtle, marginBottom:6, lineHeight:1.5 }}>
+                        Created {a.createdAt}
+                      </div>
+                      <div style={{ display:"flex", gap:8, marginTop:16 }}>
+                        <button onClick={()=>openEdit(a)} style={{ flex:1, background:C.surface2, border:`1px solid ${C.border2}`, color:C.text, fontSize:12, fontWeight:600, padding:"9px", borderRadius:9, cursor:"pointer" }}>Edit</button>
+                        <button onClick={()=>toggleStatus(a.id)} style={{ flex:1, background:a.status==="active"?"#2d120814":"#0a1e1614", border:`1px solid ${a.status==="active"?"#ef444433":C.green+"33"}`, color:a.status==="active"?"#ef4444":C.green, fontSize:12, fontWeight:600, padding:"9px", borderRadius:9, cursor:"pointer" }}>
+                          {a.status==="active"?"Pause":"Activate"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* BUILDER MODAL */}
+      {showBuilder && (
+        <AutomationBuilder
+          initial={editTarget}
+          onSave={saveAutomation}
+          onClose={()=>{ setShowBuilder(false); setEditTarget(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AutomationBuilder({ initial, onSave, onClose }) {
+  const [name, setName]           = useState(initial?.name || "");
+  const [platforms, setPlatforms] = useState(initial?.platforms || ["TT","IG"]);
+  const [keywordList, setKeywordList] = useState(initial ? initial.keywords.map(k=>k.word) : []);
+  const [reply, setReply]         = useState(initial?.reply || "");
+  const [goal, setGoal]           = useState(initial?.goal || "list_growth");
+  const [newKw, setNewKw]         = useState("");
+  const [errors, setErrors]       = useState({});
+
+  const togglePlatform = (p) =>
+    setPlatforms(prev=>prev.includes(p)?prev.filter(x=>x!==p):[...prev,p]);
+
+  const addKeyword = () => {
+    const word = newKw.trim().toUpperCase().replace(/\s+/g,"_");
+    if (!word || keywordList.includes(word)) return;
+    setKeywordList(prev=>[...prev,word]);
+    setNewKw("");
+    setErrors(e=>({...e,keywords:null}));
+  };
+
+  const removeKeyword = (i) => setKeywordList(prev=>prev.filter((_,idx)=>idx!==i));
+
+  const handleKeyDown = (e) => { if(e.key==="Enter"){ e.preventDefault(); addKeyword(); } };
+
+  const validate = () => {
+    const e = {};
+    if (!name.trim()) e.name = "Campaign name is required";
+    if (platforms.length===0) e.platforms = "Select at least one platform";
+    if (keywordList.length===0) e.keywords = "Add at least one trigger keyword";
+    if (!reply.trim()) e.reply = "Auto-reply message is required";
+    return e;
+  };
+
+  const handleSave = () => {
+    const e = validate();
+    if (Object.keys(e).length){ setErrors(e); return; }
+    onSave({ name, platforms, keywords:keywordList, reply, goal, status:initial?.status||"active" });
+  };
+
+  const preview = reply.replace(/\{first_name\}/g,"Alex").replace(/\{shop_name\}/g,"CardVaultSC");
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.8)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }} onClick={onClose}>
+      <div style={{ background:"#0a0a15", border:`1px solid ${C.border2}`, borderRadius:18, width:"100%", maxWidth:800, maxHeight:"92vh", overflowY:"auto", boxShadow:"0 32px 80px rgba(0,0,0,.8)" }} onClick={e=>e.stopPropagation()}>
+
+        {/* HEADER */}
+        <div style={{ padding:"22px 28px 18px", borderBottom:`1px solid ${C.border}`, display:"flex", justifyContent:"space-between", alignItems:"center", position:"sticky", top:0, background:"#0a0a15", zIndex:10 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text }}>{initial?"Edit Automation":"New Keyword Automation"}</div>
+            <div style={{ fontSize:12, color:C.muted, marginTop:3 }}>Set keywords, write your reply, choose platforms, and track every opt-in</div>
+          </div>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:C.muted, fontSize:20, cursor:"pointer", padding:"2px 8px", lineHeight:1 }}>✕</button>
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+          {/* LEFT */}
+          <div style={{ padding:"24px 28px", borderRight:`1px solid ${C.border}` }}>
+
+            {/* Name */}
+            <div style={{ marginBottom:22 }}>
+              <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:"block", marginBottom:6 }}>Campaign Name *</label>
+              <input
+                value={name}
+                onChange={e=>{setName(e.target.value);setErrors(r=>({...r,name:null}));}}
+                placeholder="e.g. Thursday Break Sign-Up"
+                style={{ width:"100%", background:C.surface2, border:`1.5px solid ${errors.name?"#ef4444":C.border2}`, borderRadius:9, padding:"11px 14px", color:C.text, fontSize:13, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+              />
+              {errors.name && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.name}</div>}
+            </div>
+
+            {/* Platforms */}
+            <div style={{ marginBottom:22 }}>
+              <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:"block", marginBottom:6 }}>Platforms *</label>
+              <div style={{ display:"flex", gap:8 }}>
+                {[["TT","TikTok DM","#69c9d0"],["IG","Instagram DM","#e1306c"]].map(([code,label,color])=>(
+                  <button key={code} onClick={()=>{togglePlatform(code);setErrors(r=>({...r,platforms:null}));}} style={{ flex:1, padding:"11px 8px", borderRadius:10, border:`2px solid ${platforms.includes(code)?color:C.border2}`, background:platforms.includes(code)?`${color}12`:"transparent", color:platforms.includes(code)?color:C.muted, fontSize:12, fontWeight:700, cursor:"pointer", transition:"all .15s" }}>
+                    {platforms.includes(code)?"✓ ":""}{label}
+                  </button>
+                ))}
+              </div>
+              {errors.platforms && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.platforms}</div>}
+            </div>
+
+            {/* Goal */}
+            <div style={{ marginBottom:22 }}>
+              <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:"block", marginBottom:6 }}>Campaign Goal</label>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+                {Object.entries(GOAL_META).map(([key,g])=>(
+                  <button key={key} onClick={()=>setGoal(key)} style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 11px", borderRadius:8, border:`1.5px solid ${goal===key?g.color:C.border}`, background:goal===key?g.bg:"transparent", cursor:"pointer", transition:"all .15s" }}>
+                    <span style={{ fontSize:14 }}>{g.icon}</span>
+                    <span style={{ fontSize:11, fontWeight:goal===key?700:400, color:goal===key?g.color:C.muted }}>{g.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Keywords */}
+            <div>
+              <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:"block", marginBottom:4 }}>Trigger Keywords *</label>
+              <div style={{ fontSize:11, color:C.subtle, marginBottom:8, lineHeight:1.5 }}>Each keyword is tracked separately — use multiple to A/B test</div>
+              <div style={{ display:"flex", gap:7, marginBottom:8 }}>
+                <input
+                  value={newKw}
+                  onChange={e=>setNewKw(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g,""))}
+                  onKeyDown={handleKeyDown}
+                  placeholder="KEYWORD"
+                  style={{ flex:1, background:C.surface2, border:`1.5px solid ${errors.keywords?"#ef444488":C.border2}`, borderRadius:9, padding:"10px 13px", color:C.text, fontSize:13, fontFamily:"'JetBrains Mono',monospace", outline:"none", letterSpacing:"0.08em" }}
+                />
+                <button onClick={addKeyword} style={{ background:`${C.accent}cc`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"10px 18px", borderRadius:9, cursor:"pointer" }}>Add</button>
+              </div>
+              {errors.keywords && <div style={{ fontSize:11, color:"#ef4444", marginBottom:8 }}>{errors.keywords}</div>}
+              <div style={{ display:"flex", flexWrap:"wrap", gap:6, minHeight:32 }}>
+                {keywordList.map((kw,i)=>(
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:6, background:C.surface, border:`1px solid ${C.border2}`, borderRadius:7, padding:"5px 8px 5px 12px" }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>{kw}</span>
+                    <button onClick={()=>removeKeyword(i)} style={{ background:"none", border:"none", color:C.subtle, cursor:"pointer", fontSize:11, padding:0, lineHeight:1, display:"flex", alignItems:"center" }}>✕</button>
+                  </div>
+                ))}
+                {keywordList.length===0 && <div style={{ fontSize:11, color:C.subtle, display:"flex", alignItems:"center" }}>No keywords yet</div>}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT */}
+          <div style={{ padding:"24px 28px" }}>
+            {/* Reply */}
+            <div style={{ marginBottom:18 }}>
+              <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:"block", marginBottom:4 }}>Auto-Reply Message *</label>
+              <div style={{ fontSize:11, color:C.subtle, marginBottom:8, lineHeight:1.5 }}>
+                Merge fields: <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.muted, cursor:"pointer" }} onClick={()=>setReply(r=>r+"{first_name}")}>{"  {first_name}  "}</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.muted, cursor:"pointer" }} onClick={()=>setReply(r=>r+"{shop_name}")}>{"{shop_name}"}</span>
+              </div>
+              <textarea
+                value={reply}
+                onChange={e=>{setReply(e.target.value);setErrors(r=>({...r,reply:null}));}}
+                placeholder={"Hey {first_name}! You're in 🎉 I'll DM you before every show with the link..."}
+                rows={5}
+                style={{ width:"100%", background:C.surface2, border:`1.5px solid ${errors.reply?"#ef4444":C.border2}`, borderRadius:9, padding:"11px 14px", color:C.text, fontSize:13, outline:"none", fontFamily:"'DM Sans',sans-serif", resize:"vertical", lineHeight:1.6 }}
+              />
+              <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
+                {errors.reply ? <div style={{ fontSize:11, color:"#ef4444" }}>{errors.reply}</div> : <div />}
+                <div style={{ fontSize:10, color:reply.length>640?"#ef4444":reply.length>500?C.amber:C.subtle }}>{reply.length}/640</div>
+              </div>
+            </div>
+
+            {/* PREVIEW */}
+            <div style={{ marginBottom:18 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Live Preview</div>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 16px" }}>
+                <div style={{ fontSize:10, color:C.subtle, marginBottom:8 }}>
+                  Someone DMs: <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.text }}>"{keywordList[0]||"KEYWORD"}"</span>
+                </div>
+                <div style={{ width:1, height:10, background:C.border, margin:"0 0 8px 10px" }} />
+                <div style={{ display:"flex", gap:8 }}>
+                  <div style={{ width:24, height:24, borderRadius:"50%", background:`${C.accent}22`, border:`1px solid ${C.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:C.accent, flexShrink:0, marginTop:2 }}>S</div>
+                  <div style={{ background:C.surface2, borderRadius:"3px 10px 10px 10px", padding:"10px 13px", fontSize:12, lineHeight:1.6, color:preview?C.text:C.subtle, fontStyle:preview?"normal":"italic", flex:1 }}>
+                    {preview||"Your message will appear here…"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* TIPS */}
+            <div style={{ background:"#0c1a10", border:"1px solid #1a3320", borderRadius:10, padding:"12px 14px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.green, marginBottom:8 }}>Tips for higher opt-ins</div>
+              {[
+                "Keep messages under 300 chars for best read rates",
+                "Lead with the value — what does the subscriber get?",
+                "Add urgency: 'I'll DM you 1 hour before we go live'",
+                "Use {first_name} to feel personal, not broadcast-y",
+                "Run 2-3 keywords and compare after 7 days",
+              ].map((tip,i)=>(
+                <div key={i} style={{ fontSize:11, color:"#6b7280", marginBottom:i<4?4:0, lineHeight:1.5 }}>→ {tip}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div style={{ padding:"18px 28px", borderTop:`1px solid ${C.border}`, display:"flex", justifyContent:"flex-end", gap:10, position:"sticky", bottom:0, background:"#0a0a15" }}>
+          <button onClick={onClose} style={{ background:"none", border:`1px solid ${C.border2}`, color:C.muted, fontSize:13, fontWeight:600, padding:"11px 24px", borderRadius:9, cursor:"pointer" }}>Cancel</button>
+          <button onClick={handleSave} style={{ background:"linear-gradient(135deg,#f43f5e,#ec4899)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:9, cursor:"pointer" }}>
+            {initial?"Save Changes":"Create Automation"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 const ALL_CRM_BUYERS = (() => {
   const seen = new Set();
   const all = [];
