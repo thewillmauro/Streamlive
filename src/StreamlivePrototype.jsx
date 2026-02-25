@@ -354,6 +354,11 @@ const NAV = [
   { id:"settings",    label:"Settings",    icon:"◎",  route:"/settings" },
 ];
 
+// Producer role can access these nav items regardless of plan tier
+// (Production is normally locked on Starter/Growth for the account owner,
+//  but a Producer team member gets it on any plan)
+const PRODUCER_NAV_ACCESS = ["dashboard","shows","production","catalog","settings"];
+
 // Plan hierarchy: 0=starter, 1=growth, 2=pro, 3=enterprise
 const PLAN_LEVEL = { starter:0, growth:1, pro:2, enterprise:3 };
 
@@ -374,7 +379,8 @@ const ENTERPRISE_TEAM = [
   { id:"tm5", name:"Devon Walsh",  role:"Manager", email:"devon@livescale.io",  avatar:"DW", color:"#ec4899", lastActive:"30m ago",      assignedSellers:["s3","s7","s8"],                                 permissions:["view","edit","campaigns","buyers","shows"] },
   { id:"tm6", name:"Amy Torres",   role:"Support", email:"amy@livescale.io",    avatar:"AT", color:"#3b82f6", lastActive:"Yesterday",    assignedSellers:["s1","s2","s3","s4","s5","s6"],                  permissions:["view","buyers"] },
   { id:"tm7", name:"Chris Park",   role:"Support", email:"chris@livescale.io",  avatar:"CP", color:"#f43f5e", lastActive:"3h ago",       assignedSellers:["s7","s8","s9","s10","s11","s12"],               permissions:["view","buyers"] },
-  { id:"tm8", name:"Sam Rivera",   role:"Analyst", email:"sam@livescale.io",    avatar:"SR", color:"#a78bfa", lastActive:"1d ago",       assignedSellers:["all"],                                          permissions:["view","analytics"] },
+  { id:"tm8", name:"Sam Rivera",   role:"Analyst",  email:"sam@livescale.io",    avatar:"SR", color:"#a78bfa", lastActive:"1d ago",   assignedSellers:["all"],                                          permissions:["view","analytics"] },
+  { id:"tm9", name:"Jordan Reed",  role:"Producer", email:"jordan@livescale.io", avatar:"JR", color:"#06b6d4", lastActive:"Online now", assignedSellers:["s1","s2","s6","s8","s11"], permissions:["shows","production","catalog","live"] },
 ];
 
 // ─── ENTERPRISE NAV ───────────────────────────────────────────────────────────
@@ -2716,13 +2722,14 @@ function ScreenSubscribers({ persona }) {
 // ─── SCREEN: SETTINGS ────────────────────────────────────────────────────────
 // ─── TEAM TAB COMPONENT ──────────────────────────────────────────────────────
 function TeamTab({ persona }) {
-  const ROLES = ["Admin", "Show Manager", "Campaign Manager", "Viewer"];
+  const ROLES = ["Admin", "Producer", "Show Manager", "Campaign Manager", "Viewer"];
   const ROLE_META = {
-    Owner:             { color: C.accent,  desc: "Full access to everything" },
-    Admin:             { color: "#f59e0b", desc: "Manage shows, buyers, campaigns, settings" },
-    "Show Manager":    { color: "#10b981", desc: "Run live shows and manage orders" },
-    "Campaign Manager":{ color: "#3b82f6", desc: "Create and send campaigns" },
-    Viewer:            { color: "#9ca3af", desc: "Read-only access" },
+    Owner:             { color: C.accent,   desc: "Full access to everything" },
+    Admin:             { color: "#f59e0b",  desc: "Manage shows, buyers, campaigns, settings" },
+    Producer:          { color: "#06b6d4",  desc: "Production suite, shows & catalog — all plans", badge: "Production Access", access: ["Shows", "Production", "Live Companion", "Catalog"] },
+    "Show Manager":    { color: "#10b981",  desc: "Run live shows and manage orders" },
+    "Campaign Manager":{ color: "#3b82f6",  desc: "Create and send campaigns" },
+    Viewer:            { color: "#9ca3af",  desc: "Read-only access" },
   };
 
   const [teamMembers, setTeamMembers] = useState([]);
@@ -3009,8 +3016,18 @@ function TeamTab({ persona }) {
                   const sel = inviteRole === r;
                   return (
                     <div key={r} onClick={()=>setInviteRole(r)} style={{ padding:"10px 12px", borderRadius:10, border:`1px solid ${sel?rm.color+"66":C.border}`, background:sel?`${rm.color}10`:"transparent", cursor:"pointer" }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:sel?rm.color:C.text }}>{r}</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:sel?rm.color:C.text }}>{r}</div>
+                        {rm.badge && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase", letterSpacing:"0.06em" }}>All Plans</span>}
+                      </div>
                       <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{rm.desc}</div>
+                      {sel && rm.access && (
+                        <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
+                          {rm.access.map(a=>(
+                            <span key={a} style={{ fontSize:8, fontWeight:700, color:"#06b6d4", background:"#06b6d412", border:"1px solid #06b6d433", padding:"1px 6px", borderRadius:3 }}>{a}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -6703,14 +6720,23 @@ function ScreenTeam({ persona }) {
   const [inviteLoading,  setInviteLoading]   = useState(false);
 
   const sellers = persona.managedSellers;
-  const roleColors={Owner:"#a78bfa", Manager:"#7c3aed", Analyst:"#f59e0b", Support:"#10b981"};
-  const permLabels={all:"All Access", view:"View", edit:"Edit", campaigns:"Campaigns", buyers:"Buyers", shows:"Shows", analytics:"Analytics"};
+  const roleColors={Owner:"#a78bfa", Manager:"#7c3aed", Analyst:"#f59e0b", Support:"#10b981", Producer:"#06b6d4"};
+  const permLabels={all:"All Access", view:"View", edit:"Edit", campaigns:"Campaigns", buyers:"Buyers", shows:"Shows", analytics:"Analytics", production:"Production", catalog:"Catalog", live:"Live"};
 
   const rolePerms = {
-    Owner:   ["all"],
-    Manager: ["view","edit","campaigns","buyers","shows"],
-    Analyst: ["view","analytics"],
-    Support: ["view","buyers"],
+    Owner:    ["all"],
+    Manager:  ["view","edit","campaigns","buyers","shows"],
+    Analyst:  ["view","analytics"],
+    Support:  ["view","buyers"],
+    Producer: ["shows","production","catalog","live"],
+  };
+
+  const roleDescriptions = {
+    Owner:    "Full access to everything",
+    Manager:  "Edit sellers, campaigns, buyers, shows",
+    Analyst:  "View analytics across network",
+    Support:  "View buyers and handle support",
+    Producer: "Production, shows & live — all plans",
   };
 
   const handleInvite = async () => {
@@ -6775,16 +6801,26 @@ function ScreenTeam({ persona }) {
               <div style={{ marginBottom:22 }}>
                 <label style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:8 }}>Role</label>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-                  {["Manager","Analyst","Support","Owner"].map(r=>{
+                  {["Manager","Producer","Analyst","Support","Owner"].map(r=>{
                     const col=roleColors[r];
                     const isSelected=inviteRole===r;
                     return (
                       <button key={r} onClick={()=>setInviteRole(r)}
                         style={{ padding:"10px 12px", borderRadius:9, border:`1px solid ${isSelected?col+"66":C.border2}`, background:isSelected?`${col}14`:"transparent", cursor:"pointer", textAlign:"left" }}>
-                        <div style={{ fontSize:11, fontWeight:700, color:isSelected?col:C.muted, marginBottom:3 }}>{r}</div>
-                        <div style={{ fontSize:9, color:C.subtle }}>
-                          {rolePerms[r].map(p=>permLabels[p]||p).join(", ")}
+                        <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:3 }}>
+                          <div style={{ fontSize:11, fontWeight:700, color:isSelected?col:C.muted }}>{r}</div>
+                          {r==="Producer" && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>All Plans</span>}
                         </div>
+                        <div style={{ fontSize:9, color:C.subtle }}>{roleDescriptions[r]}</div>
+                        {isSelected && (
+                          <div style={{ marginTop:6, display:"flex", flexWrap:"wrap", gap:3 }}>
+                            {rolePerms[r].map(p=>(
+                              <span key={p} style={{ fontSize:8, fontWeight:700, color:col, background:`${col}12`, border:`1px solid ${col}28`, padding:"1px 5px", borderRadius:3 }}>
+                                {permLabels[p]||p}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </button>
                     );
                   })}
@@ -6901,9 +6937,9 @@ function ScreenTeam({ persona }) {
 
       {activeTab==="permissions" && (
         <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", overflowX:"auto" }}>
-          <div style={{ display:"grid", gridTemplateColumns:"180px repeat(7,1fr)", gap:0, minWidth:700 }}>
-            {["Member","View","Edit","Buyers","Shows","Campaigns","Analytics","Admin"].map(h=>(
-              <div key={h} style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", padding:"0 0 12px", borderBottom:`1px solid ${C.border}`, textAlign:h==="Member"?"left":"center" }}>{h}</div>
+          <div style={{ display:"grid", gridTemplateColumns:"180px repeat(8,1fr)", gap:0, minWidth:780 }}>
+            {["Member","View","Edit","Buyers","Shows","Campaigns","Production","Analytics","Admin"].map(h=>(
+              <div key={h} style={{ fontSize:9, fontWeight:700, color:h==="Production"?"#06b6d4":C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", padding:"0 0 12px", borderBottom:`1px solid ${C.border}`, textAlign:h==="Member"?"left":"center" }}>{h}</div>
             ))}
             {ENTERPRISE_TEAM.map(m=>{
               const col=roleColors[m.role]||C.accent;
@@ -6914,10 +6950,10 @@ function ScreenTeam({ persona }) {
                     <div style={{ width:24, height:24, borderRadius:6, background:`${col}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:col }}>{m.avatar}</div>
                     <div>
                       <div style={{ fontSize:11, fontWeight:700, color:C.text }}>{m.name}</div>
-                      <div style={{ fontSize:9, color:C.subtle }}>{m.role}</div>
+                      <div style={{ fontSize:9, color:col }}>{m.role}</div>
                     </div>
                   </div>
-                  {[has("view"),has("edit"),has("buyers"),has("shows"),has("campaigns"),has("analytics"),m.permissions.includes("all")].map((v,i)=>(
+                  {[has("view"),has("edit"),has("buyers"),has("shows"),has("campaigns"),has("production"),has("analytics"),m.permissions.includes("all")].map((v,i)=>(
                     <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"12px 0", borderBottom:`1px solid ${C.border}` }}>
                       <div style={{ width:16, height:16, borderRadius:4, background:v?`${col}18`:"#1a1a2e", border:`1px solid ${v?col+"44":"#2a2a4a"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:col }}>
                         {v?"✓":""}
@@ -6933,7 +6969,7 @@ function ScreenTeam({ persona }) {
 
       {activeTab==="assignments" && (
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          {ENTERPRISE_TEAM.filter(m=>m.role==="Manager").map(m=>{
+          {ENTERPRISE_TEAM.filter(m=>m.role==="Manager"||m.role==="Producer").map(m=>{
             const col=roleColors[m.role];
             const assigned = m.assignedSellers[0]==="all" ? sellers : sellers.filter(s=>m.assignedSellers.includes(s.id));
             return (
@@ -7420,9 +7456,13 @@ function ScreenAcceptInvite({ token }) {
   const ROLE_DESC = {
     "Owner":              "Full access to everything",
     "Admin":              "Manage shows, buyers, campaigns, and settings",
+    "Producer":           "Production suite, shows & live companion — all plans",
     "Show Manager":       "Run live shows and manage orders",
     "Campaign Manager":   "Create and send campaigns",
     "Viewer":             "Read-only access to all sections",
+    "Manager":            "Edit sellers, campaigns, buyers, and shows",
+    "Analyst":            "View analytics across the network",
+    "Support":            "View buyers and handle support",
   };
 
   // ── SCREENS ──────────────────────────────────────────────────────────────────
