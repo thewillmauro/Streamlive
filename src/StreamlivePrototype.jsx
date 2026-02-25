@@ -581,14 +581,24 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
               {/* SPEND BARS */}
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:16 }}>
                 <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Spend Over Time (last 6 shows)</div>
-                <div style={{ display:"flex", gap:8, alignItems:"flex-end", height:80 }}>
-                  {[320, 185, 0, 640, 420, 180].map((v,i)=>(
-                    <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-                      <div style={{ width:"100%", height:`${Math.round(v/640*100)}%`, background: v>0 ? `${C.accent}cc` : C.border, borderRadius:"4px 4px 0 0", minHeight:v>0?4:2, transition:"height .3s ease" }} />
-                      <div style={{ fontSize:9, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>{v?`$${v}`:"-"}</div>
+                {(()=>{
+                  const vals = [320,185,0,640,420,180];
+                  const maxV = Math.max(...vals);
+                  const BAR_H = 72;
+                  return (
+                    <div style={{ display:"flex", gap:8, alignItems:"flex-end", height:BAR_H+20 }}>
+                      {vals.map((v,i) => {
+                        const barPx = v > 0 ? Math.max(4, Math.round((v/maxV)*BAR_H)) : 2;
+                        return (
+                          <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-end", height:"100%", gap:4 }}>
+                            <div style={{ fontSize:9, color:v>0?C.text:C.subtle, fontFamily:"'JetBrains Mono',monospace" }}>{v?`$${v}`:"-"}</div>
+                            <div style={{ width:"100%", height:barPx, background: v>0 ? `linear-gradient(180deg,${C.accent},${C.accent2})` : C.border, borderRadius:"4px 4px 0 0" }} />
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
 
               {/* AI INSIGHT */}
