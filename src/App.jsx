@@ -597,7 +597,7 @@ const SELLER_PROFILES = {
     avatar: "SC",
     color: "#7c3aed",
     category: "Trading Cards & Sports Collectibles",
-    platforms: ["WN", "TT", "AM", "IG"],
+    platforms: ["WN", "TT", "IG"],
     badge: "🏆",
     followers: "12.4K",
     perks: [
@@ -644,9 +644,10 @@ const SELLER_PROFILES = {
 };
 
 const PLATFORM_META = {
-  WN: { label: "Whatnot",    color: "#7c3aed", icon: "◈", placeholder: "@yourhandle",  manychat: false, dmNote: null },
-  TT: { label: "TikTok",     color: "#f43f5e", icon: "♦", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on TikTok to activate show alerts" },
-  IG: { label: "Instagram",  color: "#ec4899", icon: "●", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on Instagram to activate show alerts" },
+  WN: { label: "Whatnot",      color: "#7c3aed", icon: "◈", placeholder: "@yourhandle",  manychat: false, dmNote: null },
+  TT: { label: "TikTok",       color: "#f43f5e", icon: "♦", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on TikTok to activate show alerts" },
+  AM: { label: "Amazon Live",  color: "#f59e0b", icon: "◆", placeholder: null,            manychat: false, dmNote: null },
+  IG: { label: "Instagram",    color: "#ec4899", icon: "●", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on Instagram to activate show alerts" },
 };
 // Platforms we collect handles for (excludes Amazon — no user DMs possible)
 const DM_PLATFORMS = ["WN", "TT", "IG"];
