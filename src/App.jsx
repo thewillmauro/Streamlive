@@ -614,7 +614,7 @@ const SELLER_PROFILES = {
     avatar: "TR",
     color: "#f43f5e",
     category: "Sneakers & Streetwear",
-    platforms: ["TT", "AM"],
+    platforms: ["TT"],
     badge: "👟",
     followers: "8.2K",
     perks: [
@@ -644,11 +644,12 @@ const SELLER_PROFILES = {
 };
 
 const PLATFORM_META = {
-  WN: { label: "Whatnot",      color: "#7c3aed", icon: "◈", placeholder: "@yourhandle" },
-  TT: { label: "TikTok",       color: "#f43f5e", icon: "♦", placeholder: "@yourhandle" },
-  AM: { label: "Amazon Live",  color: "#f59e0b", icon: "◆", placeholder: "Amazon storefront URL" },
-  IG: { label: "Instagram",    color: "#ec4899", icon: "●", placeholder: "@yourhandle" },
+  WN: { label: "Whatnot",    color: "#7c3aed", icon: "◈", placeholder: "@yourhandle",  manychat: false, dmNote: null },
+  TT: { label: "TikTok",     color: "#f43f5e", icon: "♦", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on TikTok to activate show alerts" },
+  IG: { label: "Instagram",  color: "#ec4899", icon: "●", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on Instagram to activate show alerts" },
 };
+// Platforms we collect handles for (excludes Amazon — no user DMs possible)
+const DM_PLATFORMS = ["WN", "TT", "IG"];
 
 // ─── OPT-IN PAGE ──────────────────────────────────────────────────────────────
 function OptInPage({ slug }) {
@@ -711,7 +712,7 @@ function OptInPage({ slug }) {
             Welcome to the <span style={{ color:"#fff", fontWeight:600 }}>{seller.name}</span> subscriber list.
             You'll be the first to know about shows, exclusive drops, and VIP offers.
           </div>
-          <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"20px 24px", marginBottom:28, textAlign:"left" }}>
+          <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
             <div style={{ fontSize:11, color:"#6b7280", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>What to expect</div>
             {seller.perks.map((p,i) => (
               <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:i<seller.perks.length-1?"1px solid #1e1e3a":"none" }}>
@@ -720,6 +721,33 @@ function OptInPage({ slug }) {
               </div>
             ))}
           </div>
+          {/* ManyChat activation steps */}
+          {seller.platforms.filter(p=>PLATFORM_META[p]?.manychat).length > 0 && (
+            <div style={{ background:"#0d1a1f", border:"1px solid #1e3a2e", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
+              <div style={{ fontSize:11, color:"#34d399", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>🔔 Activate your DM alerts</div>
+              <div style={{ fontSize:12, color:"#9ca3af", marginBottom:14, lineHeight:1.6 }}>
+                To receive show alerts as a direct message, send <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0a1e16", border:"1px solid #34d39933", padding:"2px 8px", borderRadius:4, color:"#34d399", fontWeight:600 }}>JOIN</span> to {seller.name} on each platform:
+              </div>
+              {seller.platforms.filter(p=>PLATFORM_META[p]?.manychat).map(p => {
+                const pm = PLATFORM_META[p];
+                return (
+                  <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"1px solid #1e1e3a" }}>
+                    <div style={{ width:32, height:32, borderRadius:8, background:`${pm.color}18`, border:`1px solid ${pm.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, flexShrink:0 }}>
+                      {p === "TT" ? "♦" : "●"}
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>DM on {pm.label}</div>
+                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Open {pm.label} → find <span style={{ color:pm.color }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> → send "JOIN"</div>
+                    </div>
+                    <span style={{ fontSize:11, fontWeight:700, color:pm.color, background:`${pm.color}15`, border:`1px solid ${pm.color}33`, padding:"3px 10px", borderRadius:6 }}>Required</span>
+                  </div>
+                );
+              })}
+              <div style={{ fontSize:11, color:"#4b5563", marginTop:12, lineHeight:1.5 }}>
+                This activates ManyChat so {seller.name} can send you instant alerts on these platforms. Only takes 30 seconds.
+              </div>
+            </div>
+          )}
           <a href={`https://strmlive.com/s/${slug}`} style={{ fontSize:13, color:"#6b7280", textDecoration:"none" }}>← Back to page</a>
         </div>
       </div>
@@ -828,27 +856,52 @@ function OptInPage({ slug }) {
             </div>
 
             {/* Platform handles */}
-            <div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>
-                Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
-              </label>
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                {seller.platforms.map(p => {
-                  const pm = PLATFORM_META[p];
-                  return (
-                    <div key={p} style={{ display:"flex", alignItems:"center", gap:10, background:"#0d0d1a", border:`1.5px solid ${handles[p]?pm.color+"44":"#1e1e3a"}`, borderRadius:10, padding:"10px 14px", transition:"border-color .15s" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:pm.color, minWidth:64 }}>{pm.label}</span>
-                      <input
-                        style={{ flex:1, background:"none", border:"none", color:"#fff", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
-                        placeholder={pm.placeholder}
-                        value={handles[p]||""}
-                        onChange={e=>setHandles(h=>({...h,[p]:e.target.value}))}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {(() => {
+              const dmPlatforms = seller.platforms.filter(p => DM_PLATFORMS.includes(p));
+              if (dmPlatforms.length === 0) return null;
+              return (
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:4 }}>
+                    Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
+                  </label>
+                  <div style={{ fontSize:11, color:"#6b7280", marginBottom:10, lineHeight:1.5 }}>
+                    Optional — helps us match you across platforms and send you personalized DMs.
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {dmPlatforms.map(p => {
+                      const pm = PLATFORM_META[p];
+                      const hasHandle = handles[p] && handles[p].length > 1;
+                      return (
+                        <div key={p}>
+                          <div style={{ display:"flex", alignItems:"center", gap:10, background:"#0d0d1a", border:`1.5px solid ${hasHandle?pm.color+"55":"#1e1e3a"}`, borderRadius:10, padding:"10px 14px", transition:"border-color .15s" }}>
+                            <span style={{ fontSize:11, fontWeight:700, color:pm.color, minWidth:68 }}>{pm.label}</span>
+                            <input
+                              style={{ flex:1, background:"none", border:"none", color:"#fff", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+                              placeholder={pm.placeholder}
+                              value={handles[p]||""}
+                              onChange={e=>setHandles(h=>({...h,[p]:e.target.value}))}
+                            />
+                          </div>
+                          {pm.manychat && hasHandle && (
+                            <div style={{ display:"flex", alignItems:"flex-start", gap:8, background:`${pm.color}0d`, border:`1px solid ${pm.color}22`, borderRadius:8, padding:"9px 12px", marginTop:6 }}>
+                              <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>💬</span>
+                              <div>
+                                <div style={{ fontSize:11, fontWeight:700, color:pm.color, marginBottom:2 }}>Activate {pm.label} DMs</div>
+                                <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.5 }}>
+                                  To receive show alerts via {pm.label} DM, send the message{" "}
+                                  <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0d0d1a", border:`1px solid ${pm.color}33`, padding:"1px 7px", borderRadius:4, color:"#fff", fontWeight:600 }}>JOIN</span>
+                                  {" "}to <span style={{ color:pm.color, fontWeight:600 }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> on {pm.label} after signing up.
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Consent checkboxes */}
             <div style={{ background:"#0d0d1a", border:`1px solid ${errors.consent?"#ef444444":"#1e1e3a"}`, borderRadius:12, padding:"16px 18px" }}>
