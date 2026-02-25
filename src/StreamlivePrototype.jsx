@@ -1894,6 +1894,33 @@ function ScreenComposer({ navigate, persona }) {
   );
 }
 
+// ─── COPY LINK CARD ──────────────────────────────────────────────────────────
+function CopyLinkCard({ slug }) {
+  const [copied, setCopied] = useState(false);
+  const url = `strmlive.com/s/${slug}`;
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`https://${url}`).catch(()=>{});
+    setCopied(true);
+    setTimeout(()=>setCopied(false), 2000);
+  };
+  return (
+    <div style={{ background:"#0a1e16", border:`1px solid ${C.green}33`, borderRadius:14, padding:"16px 20px", marginBottom:20 }}>
+      <div style={{ fontSize:12, fontWeight:700, color:C.green, marginBottom:8 }}>Your opt-in page is live</div>
+      <button
+        onClick={handleCopy}
+        style={{ display:"flex", alignItems:"center", gap:12, background:"#061410", border:`1px solid ${copied?"#34d39966":"#34d39933"}`, borderRadius:9, padding:"10px 16px", cursor:"pointer", transition:"all .15s", width:"100%", textAlign:"left" }}
+      >
+        <span style={{ fontSize:14 }}>🔗</span>
+        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"#34d399", flex:1 }}>{url}</span>
+        <span style={{ fontSize:11, fontWeight:700, color:copied?"#34d399":C.muted, background:copied?"#0a1e16":"transparent", border:`1px solid ${copied?"#34d39944":"transparent"}`, padding:"3px 10px", borderRadius:6, whiteSpace:"nowrap", transition:"all .2s" }}>
+          {copied ? "✓ Copied!" : "Copy link"}
+        </span>
+      </button>
+      <div style={{ fontSize:11, color:C.muted, marginTop:8 }}>Share in your show chat, bio, and story highlights to grow your subscriber list</div>
+    </div>
+  );
+}
+
 // ─── SCREEN: SUBSCRIBERS ─────────────────────────────────────────────────────
 function ScreenSubscribers({ persona }) {
   const subs = [
@@ -1909,10 +1936,7 @@ function ScreenSubscribers({ persona }) {
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
         <div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Subscribers</div>
-          <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{persona.subscriberCount} total · Opt-in page at strmlive.com/s/{persona.slug}</div>
-        </div>
-        <div style={{ display:"flex", gap:8 }}>
-          <button style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, fontWeight:600, padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Copy opt-in link 🔗</button>
+          <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{persona.subscriberCount} total subscribers opted in to messages</div>
         </div>
       </div>
 
@@ -1924,14 +1948,7 @@ function ScreenSubscribers({ persona }) {
       </div>
 
       {/* OPT-IN LINK CARD */}
-      <div style={{ background:"#0a1e16", border:`1px solid ${C.green}33`, borderRadius:14, padding:"16px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:14 }}>
-        <div style={{ flex:1 }}>
-          <div style={{ fontSize:12, fontWeight:700, color:C.green, marginBottom:4 }}>Your opt-in page is live</div>
-          <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"#34d399" }}>strmlive.com/s/{persona.slug}</div>
-          <div style={{ fontSize:11, color:C.muted, marginTop:4 }}>Share this link in your show chat, bio, and story highlights</div>
-        </div>
-        <div style={{ fontSize:28 }}>🔗</div>
-      </div>
+      <CopyLinkCard slug={persona.slug} />
 
       {/* SUBSCRIBER TABLE */}
       <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
