@@ -4105,9 +4105,227 @@ function ScreenCatalog({ persona, navigate }) {
   const [syncPulse, setSyncPulse] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState("all");
 
+  // ── Shopify connection state ──────────────────────────────────────────────
+  const [shopifyConnected, setShopifyConnected] = useState(false);
+  const [connectStep, setConnectStep]   = useState(1);   // 1 | 2 | 3 | 4
+  const [storeUrl, setStoreUrl]         = useState("");
+  const [storeUrlError, setStoreUrlError] = useState("");
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [isSyncing, setIsSyncing]       = useState(false);
+  const [syncProgress, setSyncProgress] = useState(0);
+
+  const validateStore = () => {
+    const clean = storeUrl.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+    if (!clean) { setStoreUrlError("Please enter your Shopify store URL"); return; }
+    if (!clean.includes(".")) { setStoreUrlError("Enter a valid URL, e.g. mystore.myshopify.com"); return; }
+    setStoreUrlError("");
+    setStoreUrl(clean);
+    setConnectStep(2);
+  };
+
+  const handleAuthorize = () => {
+    setIsAuthorizing(true);
+    setTimeout(() => {
+      setIsAuthorizing(false);
+      setConnectStep(3);
+    }, 2200);
+  };
+
+  const handleSync = () => {
+    setIsSyncing(true);
+    setSyncProgress(0);
+    const steps = [12, 28, 45, 61, 74, 88, 100];
+    steps.forEach((p, i) => setTimeout(() => {
+      setSyncProgress(p);
+      if (p === 100) setTimeout(() => { setIsSyncing(false); setShopifyConnected(true); }, 600);
+    }, i * 380));
+  };
+
   const toggleShowReady = (id) => {
     setProducts(ps => ps.map(p => p.id===id ? {...p, showReady:!p.showReady} : p));
   };
+
+  // ── Pre-connection screen ─────────────────────────────────────────────────
+  if (!shopifyConnected) {
+    const STEPS = [
+      { n:1, label:"Store URL",    icon:"🏪" },
+      { n:2, label:"Install App",  icon:"📦" },
+      { n:3, label:"Sync Catalog", icon:"⚡" },
+    ];
+
+    return (
+      <div style={{ flex:1, overflowY:"auto", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:"40px 24px", minHeight:0 }}>
+        <div style={{ maxWidth:560, width:"100%" }}>
+
+          {/* Header */}
+          <div style={{ textAlign:"center", marginBottom:36 }}>
+            <div style={{ width:64, height:64, borderRadius:18, background:"linear-gradient(135deg,#96BF48,#5A8E00)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:30, margin:"0 auto 16px", boxShadow:"0 8px 32px #96bf4840" }}>🛒</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:C.text, letterSpacing:"-0.5px", marginBottom:6 }}>Connect your Shopify store</div>
+            <div style={{ fontSize:13, color:C.muted, lineHeight:1.6 }}>Sync your products, inventory, and pricing to Streamlive. Takes about 60 seconds.</div>
+          </div>
+
+          {/* Step progress */}
+          <div style={{ display:"flex", alignItems:"center", marginBottom:32 }}>
+            {STEPS.map((s, i) => {
+              const done    = connectStep > s.n;
+              const current = connectStep === s.n;
+              const sc      = "#96BF48";
+              return (
+                <React.Fragment key={s.n}>
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6, flex:1 }}>
+                    <div style={{ width:36, height:36, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:done?13:13,
+                      background:done?sc:current?`${sc}22`:C.surface2,
+                      border:`2px solid ${done||current?sc:C.border2}`,
+                      color:done?"#fff":current?sc:C.subtle, fontWeight:700, transition:"all .3s" }}>
+                      {done ? "✓" : s.icon}
+                    </div>
+                    <div style={{ fontSize:9, fontWeight:700, color:current?sc:done?sc:C.subtle, textTransform:"uppercase", letterSpacing:"0.07em", whiteSpace:"nowrap" }}>{s.label}</div>
+                  </div>
+                  {i < STEPS.length-1 && (
+                    <div style={{ flex:2, height:2, background:connectStep>s.n?sc:C.border2, transition:"background .4s", marginBottom:20, borderRadius:2 }}/>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          {/* STEP 1: Enter store URL */}
+          {connectStep === 1 && (
+            <div className="fade-up" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:18, padding:28 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:4 }}>What's your Shopify store URL?</div>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:20, lineHeight:1.6 }}>Find it in your Shopify admin — it looks like <span style={{ fontFamily:"'JetBrains Mono',monospace", color:"#96BF48" }}>yourstore.myshopify.com</span></div>
+
+              <div style={{ position:"relative", marginBottom:storeUrlError?8:20 }}>
+                <div style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", fontSize:11, color:C.muted, fontFamily:"'JetBrains Mono',monospace", pointerEvents:"none" }}>https://</div>
+                <input value={storeUrl} onChange={e=>{ setStoreUrl(e.target.value); setStoreUrlError(""); }}
+                  onKeyDown={e=>e.key==="Enter"&&validateStore()} placeholder="yourstore.myshopify.com"
+                  style={{ width:"100%", background:"#07070f", border:`1px solid ${storeUrlError?"#ef4444":C.border2}`, borderRadius:10, padding:"11px 14px 11px 74px", color:C.text, fontSize:13, fontFamily:"'JetBrains Mono',monospace", outline:"none", boxSizing:"border-box" }} />
+              </div>
+              {storeUrlError && <div style={{ fontSize:10, color:"#ef4444", marginBottom:16 }}>⚠ {storeUrlError}</div>}
+
+              <button onClick={validateStore}
+                style={{ width:"100%", background:"linear-gradient(135deg,#96BF48,#5A8E00)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"13px", borderRadius:11, cursor:"pointer" }}>
+                Continue →
+              </button>
+              <div style={{ marginTop:16, display:"flex", gap:16, justifyContent:"center" }}>
+                {[["🔒","Secure OAuth"],["⚡","Read-only sync"],["🔄","Auto inventory updates"]].map(([icon,label])=>(
+                  <div key={label} style={{ display:"flex", alignItems:"center", gap:5, fontSize:10, color:C.subtle }}><span>{icon}</span><span>{label}</span></div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Install & authorize */}
+          {connectStep === 2 && (
+            <div className="fade-up" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:18, padding:28 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:"#96BF48", background:"#96BF4812", border:"1px solid #96BF4833", padding:"3px 10px", borderRadius:6 }}>{storeUrl}</div>
+                <button onClick={()=>setConnectStep(1)} style={{ background:"none", border:"none", color:C.subtle, fontSize:11, cursor:"pointer" }}>✎ Edit</button>
+              </div>
+              <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:4 }}>Install the Streamlive app</div>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:20, lineHeight:1.6 }}>Install our Shopify app to authorize the connection. This grants read access to products, inventory, and orders.</div>
+
+              <div style={{ background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:12, padding:"16px 18px", marginBottom:20 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:12 }}>Streamlive will request access to:</div>
+                {[
+                  ["📦","Products & variants",  "Read product titles, SKUs, prices, and images"],
+                  ["📊","Inventory levels",      "Track real-time stock across all locations"],
+                  ["📋","Orders (read-only)",    "Sync order status and fulfillment data"],
+                  ["🏷️","Collections & tags",   "Mirror your Shopify catalog organization"],
+                ].map(([icon,title,desc])=>(
+                  <div key={title} style={{ display:"flex", gap:12, marginBottom:10, alignItems:"flex-start" }}>
+                    <div style={{ width:30, height:30, borderRadius:8, background:"#96BF4812", border:"1px solid #96BF4822", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, flexShrink:0 }}>{icon}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:1 }}>{title}</div>
+                      <div style={{ fontSize:10, color:C.muted }}>{desc}</div>
+                    </div>
+                    <span style={{ color:"#96BF48", fontSize:12, flexShrink:0 }}>✓</span>
+                  </div>
+                ))}
+                <div style={{ borderTop:`1px solid ${C.border}`, marginTop:4, paddingTop:10, fontSize:9, color:C.subtle }}>
+                  🔒 Read-only · Streamlive will never modify, delete, or publish Shopify data without your approval
+                </div>
+              </div>
+
+              {isAuthorizing ? (
+                <button disabled style={{ width:"100%", background:"#96BF4822", border:"1px solid #96BF4433", color:"#96BF48", fontSize:14, fontWeight:700, padding:"13px", borderRadius:11, cursor:"default", display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
+                  <div style={{ width:14, height:14, border:"2px solid #96BF4444", borderTop:"2px solid #96BF48", borderRadius:"50%", animation:"spin .7s linear infinite" }}/>
+                  Authorizing with Shopify…
+                </button>
+              ) : (
+                <button onClick={handleAuthorize}
+                  style={{ width:"100%", background:"linear-gradient(135deg,#96BF48,#5A8E00)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"13px", borderRadius:11, cursor:"pointer" }}>
+                  Install & Authorize on Shopify →
+                </button>
+              )}
+              <div style={{ marginTop:12, textAlign:"center", fontSize:10, color:C.subtle }}>You'll be briefly redirected to Shopify to confirm permissions</div>
+            </div>
+          )}
+
+          {/* STEP 3: Sync */}
+          {connectStep === 3 && (
+            <div className="fade-up" style={{ background:C.surface, border:"1px solid #96BF4844", borderRadius:18, padding:28 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
+                <div style={{ width:36, height:36, borderRadius:10, background:"#96BF4818", border:"1px solid #96BF4844", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>✓</div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#96BF48" }}>Shopify authorized</div>
+                  <div style={{ fontSize:10, color:C.muted }}>{storeUrl} · Connected as Store Owner</div>
+                </div>
+              </div>
+
+              <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:4 }}>Import your catalog</div>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:20, lineHeight:1.6 }}>
+                We found <span style={{ color:C.text, fontWeight:700 }}>247 products</span> across <span style={{ color:C.text, fontWeight:700 }}>12 collections</span> in your Shopify store.
+              </div>
+
+              <div style={{ background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:12, padding:"12px 16px", marginBottom:20 }}>
+                {[
+                  { name:"2023 Topps Chrome Hobby Box", sku:"TC23-HOB", price:"$189", inventory:12, img:"📦" },
+                  { name:"PSA 9 Graded Lot x3",          sku:"PSA9-L3",  price:"$220", inventory:6,  img:"🏆" },
+                  { name:"Refractor Lot x25 Mixed",       sku:"REF-MX25",price:"$49",  inventory:45, img:"💎" },
+                ].map((p, i, arr)=>(
+                  <div key={p.sku} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:i<arr.length-1?`1px solid #0d0d18`:"none" }}>
+                    <span style={{ fontSize:18 }}>{p.img}</span>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:11, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
+                      <div style={{ fontSize:9, fontFamily:"'JetBrains Mono',monospace", color:C.subtle }}>{p.sku}</div>
+                    </div>
+                    <div style={{ fontSize:11, fontFamily:"'JetBrains Mono',monospace", color:C.green, fontWeight:700 }}>{p.price}</div>
+                    <div style={{ fontSize:9, color:C.muted }}>{p.inventory} in stock</div>
+                  </div>
+                ))}
+                <div style={{ paddingTop:8, fontSize:9, color:C.subtle }}>+ 244 more products</div>
+              </div>
+
+              {isSyncing ? (
+                <div>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                    <span style={{ fontSize:11, color:C.muted }}>Importing products…</span>
+                    <span style={{ fontSize:11, fontFamily:"'JetBrains Mono',monospace", color:"#96BF48", fontWeight:700 }}>{syncProgress}%</span>
+                  </div>
+                  <div style={{ height:6, background:C.surface2, borderRadius:3, overflow:"hidden", marginBottom:10 }}>
+                    <div style={{ height:"100%", width:`${syncProgress}%`, background:"linear-gradient(90deg,#96BF48,#5A8E00)", borderRadius:3, transition:"width .35s ease" }}/>
+                  </div>
+                  <div style={{ fontSize:10, color:C.subtle, textAlign:"center" }}>
+                    {syncProgress<30?"Reading product catalog…":syncProgress<60?"Importing inventory levels…":syncProgress<90?"Syncing images & metadata…":"Finalizing…"}
+                  </div>
+                </div>
+              ) : (
+                <button onClick={handleSync}
+                  style={{ width:"100%", background:"linear-gradient(135deg,#96BF48,#5A8E00)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"13px", borderRadius:11, cursor:"pointer" }}>
+                  ⚡ Import 247 Products
+                </button>
+              )}
+            </div>
+          )}
+
+          <div style={{ textAlign:"center", marginTop:20, fontSize:10, color:C.subtle }}>
+            Your Shopify data is never stored on third-party servers · <span style={{ color:"#96BF48" }}>Shopify Partner Program</span> certified
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const filtered = products.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
