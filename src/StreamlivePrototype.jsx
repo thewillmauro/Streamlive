@@ -1764,7 +1764,12 @@ function TeamTab({ persona }) {
   const sendInvite = async () => {
     if (!inviteEmail.trim() || !inviteName.trim()) return;
     setSaving(true);
-    await new Promise(r => setTimeout(r, 1000));
+
+    // Generate a unique invite token
+    const token = "inv_" + Math.random().toString(36).slice(2,11) + Date.now().toString(36);
+    const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${token}`;
+    const now = new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+
     const newMember = {
       id:        Date.now(),
       name:      inviteName.trim(),
@@ -1772,8 +1777,83 @@ function TeamTab({ persona }) {
       role:      inviteRole,
       avatar:    inviteName.trim().split(" ").map(n=>n[0]).slice(0,2).join("").toUpperCase(),
       status:    "invited",
-      invitedAt: new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }),
+      invitedAt: now,
+      token,
     };
+
+    // Store the pending invite so the acceptance screen can look it up
+    try {
+      await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
+        token,
+        name:        newMember.name,
+        email:       newMember.email,
+        role:        newMember.role,
+        invitedBy:   persona.name,
+        workspace:   persona.shop,
+        invitedAt:   now,
+        status:      "pending",
+      }));
+    } catch(e) {}
+
+    // Use the Anthropic API to generate and "send" a real HTML invitation email
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `You are an email delivery system for Streamlive, a live-selling platform.
+Generate a professional HTML invitation email with these exact details:
+
+To: ${newMember.email}
+Invited person's name: ${newMember.name}
+Role: ${newMember.role}
+Workspace: ${persona.shop}
+Invited by: ${persona.name}
+Accept invite URL: ${inviteLink}
+
+Return ONLY a JSON object with these fields (no markdown, no explanation):
+{
+  "subject": "email subject line",
+  "previewText": "short preview text under 90 chars",
+  "bodyHtml": "complete HTML email body as a single-line escaped string",
+  "bodyText": "plain text version"
+}
+
+The email should:
+- Be dark-themed, professional, matching Streamlive's purple brand (#7c3aed)
+- Clearly state what Streamlive is (a live-selling platform dashboard)
+- Show the inviter's name and workspace
+- Display the role and what it means
+- Have a prominent CTA button linking to the accept URL
+- Include that the link expires in 7 days
+- Be welcoming and concise`
+          }],
+        }),
+      });
+
+      const data = await response.json();
+      const text = (data.content||[]).map(c=>c.text||"").join("");
+      let emailData = {};
+      try { emailData = JSON.parse(text.replace(/```json|```/g,"").trim()); } catch(e) {}
+
+      // Store the generated email content (so we can display it in the UI)
+      await window.storage.set(`strmlive:invite_email:${token}`, JSON.stringify({
+        to:      newMember.email,
+        subject: emailData.subject || `You've been invited to ${persona.shop} on Streamlive`,
+        preview: emailData.previewText || "",
+        html:    emailData.bodyHtml || "",
+        text:    emailData.bodyText || "",
+        sentAt:  now,
+      }));
+    } catch(e) {
+      // Email generation failed — invite link still works
+      console.warn("Email generation error:", e);
+    }
+
     await persistTeam([...teamMembers, newMember]);
     setSaving(false);
     setSaved(true);
@@ -1781,7 +1861,7 @@ function TeamTab({ persona }) {
       setSaved(false);
       setShowInviteModal(false);
       setInviteName(""); setInviteEmail(""); setInviteRole("Show Manager");
-    }, 1200);
+    }, 1500);
   };
 
   const removeMember = async (id) => {
@@ -1828,7 +1908,26 @@ function TeamTab({ persona }) {
               <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{m.name}</div>
               <div style={{ fontSize:11, color:C.muted }}>{m.email}</div>
               {m.status==="invited" && (
-                <div style={{ fontSize:9, color:C.amber, marginTop:2 }}>⏳ Invite sent {m.invitedAt} · pending acceptance</div>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:4, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:9, color:C.amber }}>⏳ Invite sent {m.invitedAt} · pending acceptance</span>
+                  <button
+                    onClick={async ()=>{
+                      try {
+                        const emailData = await window.storage.get(`strmlive:invite_email:${m.token}`);
+                        const inviteData = await window.storage.get(`strmlive:invite:${m.token}`);
+                        if (inviteData?.value) {
+                          const inv = JSON.parse(inviteData.value);
+                          const link = `${window.location.origin}${window.location.pathname}?invite=${m.token}`;
+                          await navigator.clipboard.writeText(link);
+                          alert(`Invite link copied!\n\n${link}\n\nShare this with ${m.name} to let them create their account.`);
+                        }
+                      } catch(e) { alert("Could not copy link"); }
+                    }}
+                    style={{ fontSize:9, fontWeight:700, color:C.blue, background:"#0f1e2e", border:"1px solid #3b82f633", padding:"2px 8px", borderRadius:5, cursor:"pointer" }}
+                  >
+                    Copy invite link
+                  </button>
+                </div>
               )}
             </div>
             {isOwner ? (
@@ -2676,8 +2775,319 @@ function ScreenSettings({ persona }) {
 }
 
 
+
+// ─── SCREEN: ACCEPT INVITE ────────────────────────────────────────────────────
+function ScreenAcceptInvite({ token }) {
+  const [step, setStep]         = useState("loading"); // loading | invalid | expired | form | creating | done
+  const [invite, setInvite]     = useState(null);
+  const [emailData, setEmailData] = useState(null);
+  const [displayName, setDisplayName] = useState("");
+  const [password, setPassword]   = useState("");
+  const [confirm, setConfirm]     = useState("");
+  const [showPass, setShowPass]   = useState(false);
+  const [error, setError]         = useState("");
+
+  // Password strength
+  const pwStrength = (() => {
+    if (!password) return { score:0, label:"", color:"#374151" };
+    let score = 0;
+    if (password.length >= 8)                     score++;
+    if (password.length >= 12)                    score++;
+    if (/[A-Z]/.test(password))                   score++;
+    if (/[0-9]/.test(password))                   score++;
+    if (/[^A-Za-z0-9]/.test(password))            score++;
+    const levels = [
+      { score:0, label:"",           color:"#374151" },
+      { score:1, label:"Weak",       color:"#ef4444" },
+      { score:2, label:"Fair",       color:"#f59e0b" },
+      { score:3, label:"Good",       color:"#3b82f6" },
+      { score:4, label:"Strong",     color:"#10b981" },
+      { score:5, label:"Very strong",color:"#10b981" },
+    ];
+    return levels[Math.min(score, 5)];
+  })();
+
+  const canSubmit = displayName.trim().length >= 2
+    && password.length >= 8
+    && password === confirm
+    && pwStrength.score >= 2;
+
+  // Load invite from storage on mount
+  useEffect(() => {
+    (async () => {
+      if (!token) { setStep("invalid"); return; }
+      try {
+        const result = await window.storage.get(`strmlive:invite:${token}`);
+        if (!result?.value) { setStep("invalid"); return; }
+        const inv = JSON.parse(result.value);
+        if (inv.status === "accepted") { setStep("already_accepted"); setInvite(inv); return; }
+        setInvite(inv);
+        setDisplayName(inv.name);
+        // Load email preview if available
+        try {
+          const emailResult = await window.storage.get(`strmlive:invite_email:${token}`);
+          if (emailResult?.value) setEmailData(JSON.parse(emailResult.value));
+        } catch(e) {}
+        setStep("form");
+      } catch(e) {
+        setStep("invalid");
+      }
+    })();
+  }, [token]);
+
+  const createAccount = async () => {
+    if (!canSubmit) return;
+    setError("");
+    setStep("creating");
+    await new Promise(r => setTimeout(r, 1800));
+
+    try {
+      // Store new user credentials (hashed representation — never store plaintext in real app)
+      const userId = "user_" + Date.now().toString(36);
+      const userData = {
+        id:          userId,
+        name:        displayName.trim(),
+        email:       invite.email,
+        role:        invite.role,
+        workspace:   invite.workspace,
+        invitedBy:   invite.invitedBy,
+        createdAt:   new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }),
+        avatar:      displayName.trim().split(" ").map(n=>n[0]).slice(0,2).join("").toUpperCase(),
+        // In production: password would be hashed server-side, never stored client-side
+        passwordSet: true,
+      };
+
+      await window.storage.set(`strmlive:user:${invite.email}`, JSON.stringify(userData));
+
+      // Mark invite as accepted
+      await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
+        ...invite,
+        status:     "accepted",
+        acceptedAt: new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }),
+        userId,
+      }));
+
+      // Update the team member record in the workspace owner's team list
+      try {
+        const teamResult = await window.storage.get("strmlive:team");
+        if (teamResult?.value) {
+          const team = JSON.parse(teamResult.value);
+          const updated = team.map(m =>
+            m.token === token ? { ...m, status:"active", userId, name:displayName.trim() } : m
+          );
+          await window.storage.set("strmlive:team", JSON.stringify(updated));
+        }
+      } catch(e) {}
+
+      setStep("done");
+    } catch(e) {
+      setStep("form");
+      setError("Something went wrong creating your account. Please try again.");
+    }
+  };
+
+  const ROLE_DESC = {
+    "Owner":              "Full access to everything",
+    "Admin":              "Manage shows, buyers, campaigns, and settings",
+    "Show Manager":       "Run live shows and manage orders",
+    "Campaign Manager":   "Create and send campaigns",
+    "Viewer":             "Read-only access to all sections",
+  };
+
+  // ── SCREENS ──────────────────────────────────────────────────────────────────
+  return (
+    <div style={{ minHeight:"100vh", background:"#07070f", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:24 }}>
+      <style>{GLOBAL_CSS}</style>
+
+      {/* LOGO */}
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:32 }}>
+        <div style={{ width:36, height:36, borderRadius:10, background:"linear-gradient(135deg,#7c3aed,#4f46e5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, fontWeight:900, color:"#fff" }}>S</div>
+        <span style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:"#f9fafb" }}>Streamlive</span>
+      </div>
+
+      {/* ── LOADING ── */}
+      {step==="loading" && (
+        <div style={{ textAlign:"center" }}>
+          <div style={{ width:32, height:32, border:"3px solid #2d1f5e", borderTop:"3px solid #7c3aed", borderRadius:"50%", animation:"spin 0.8s linear infinite", margin:"0 auto 16px" }} />
+          <div style={{ fontSize:13, color:"#6b7280" }}>Loading your invitation…</div>
+        </div>
+      )}
+
+      {/* ── INVALID ── */}
+      {step==="invalid" && (
+        <div style={{ background:"#0e0e1a", border:"1px solid #ef444433", borderRadius:18, padding:"32px 40px", maxWidth:440, width:"100%", textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>🔗</div>
+          <div style={{ fontSize:18, fontWeight:700, color:"#f9fafb", marginBottom:8 }}>Invite link not found</div>
+          <div style={{ fontSize:13, color:"#6b7280", lineHeight:1.7 }}>This invite link is invalid or has expired. Ask the workspace owner to send a new invitation.</div>
+        </div>
+      )}
+
+      {/* ── ALREADY ACCEPTED ── */}
+      {step==="already_accepted" && (
+        <div style={{ background:"#0e0e1a", border:"1px solid #10b98133", borderRadius:18, padding:"32px 40px", maxWidth:440, width:"100%", textAlign:"center" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>✅</div>
+          <div style={{ fontSize:18, fontWeight:700, color:"#f9fafb", marginBottom:8 }}>Already accepted</div>
+          <div style={{ fontSize:13, color:"#6b7280", lineHeight:1.7 }}>This invite has already been used. Log in to access <strong style={{ color:"#e5e7eb" }}>{invite?.workspace}</strong> on Streamlive.</div>
+          <button style={{ marginTop:20, background:"linear-gradient(135deg,#7c3aed,#4f46e5)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:9, cursor:"pointer" }}>
+            Go to Login
+          </button>
+        </div>
+      )}
+
+      {/* ── FORM ── */}
+      {step==="form" && invite && (
+        <div className="fade-up" style={{ background:"#0e0e1a", border:"1px solid #7c3aed44", borderRadius:18, padding:"32px 36px", maxWidth:480, width:"100%" }}>
+
+          {/* INVITE HEADER */}
+          <div style={{ background:"#2d1f5e22", border:"1px solid #7c3aed33", borderRadius:12, padding:"16px 18px", marginBottom:24, display:"flex", gap:14, alignItems:"flex-start" }}>
+            <div style={{ width:42, height:42, borderRadius:11, background:"linear-gradient(135deg,#7c3aed,#4f46e5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color:"#fff", flexShrink:0 }}>
+              {invite.workspace.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase()}
+            </div>
+            <div>
+              <div style={{ fontSize:13, color:"#9ca3af", marginBottom:3 }}>
+                <strong style={{ color:"#e5e7eb" }}>{invite.invitedBy}</strong> invited you to join
+              </div>
+              <div style={{ fontSize:17, fontWeight:700, color:"#f9fafb" }}>{invite.workspace}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:6 }}>
+                <span style={{ fontSize:10, fontWeight:700, color:"#7c3aed", background:"#2d1f5e", border:"1px solid #7c3aed33", padding:"2px 8px", borderRadius:5 }}>{invite.role}</span>
+                <span style={{ fontSize:10, color:"#6b7280" }}>{ROLE_DESC[invite.role]}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ fontSize:15, fontWeight:700, color:"#f9fafb", marginBottom:4 }}>Create your account</div>
+          <div style={{ fontSize:12, color:"#6b7280", marginBottom:22 }}>Your login email: <strong style={{ color:"#e5e7eb" }}>{invite.email}</strong></div>
+
+          {/* DISPLAY NAME */}
+          <div style={{ marginBottom:16 }}>
+            <div style={{ fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Display Name</div>
+            <input
+              value={displayName} onChange={e=>setDisplayName(e.target.value)}
+              placeholder="Your full name"
+              style={{ width:"100%", background:"#07070f", border:"1px solid #1f1f35", borderRadius:9, padding:"10px 14px", color:"#f9fafb", fontSize:13, outline:"none" }}
+            />
+          </div>
+
+          {/* PASSWORD */}
+          <div style={{ marginBottom:8 }}>
+            <div style={{ fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Password</div>
+            <div style={{ position:"relative" }}>
+              <input
+                value={password} onChange={e=>setPassword(e.target.value)}
+                type={showPass?"text":"password"}
+                placeholder="At least 8 characters"
+                style={{ width:"100%", background:"#07070f", border:`1px solid ${password&&pwStrength.score<2?"#ef444466":"#1f1f35"}`, borderRadius:9, padding:"10px 40px 10px 14px", color:"#f9fafb", fontSize:13, outline:"none" }}
+              />
+              <button onClick={()=>setShowPass(v=>!v)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", color:"#6b7280", cursor:"pointer", fontSize:13 }}>
+                {showPass?"🙈":"👁"}
+              </button>
+            </div>
+            {/* Strength bar */}
+            {password && (
+              <div style={{ marginTop:7 }}>
+                <div style={{ height:3, background:"#1f1f35", borderRadius:2, overflow:"hidden" }}>
+                  <div style={{ height:"100%", width:`${(pwStrength.score/5)*100}%`, background:pwStrength.color, borderRadius:2, transition:"width .3s, background .3s" }} />
+                </div>
+                <div style={{ fontSize:10, color:pwStrength.color, marginTop:4 }}>{pwStrength.label}</div>
+              </div>
+            )}
+          </div>
+
+          {/* CONFIRM */}
+          <div style={{ marginBottom:22 }}>
+            <div style={{ fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Confirm Password</div>
+            <input
+              value={confirm} onChange={e=>setConfirm(e.target.value)}
+              type={showPass?"text":"password"}
+              placeholder="Re-enter your password"
+              style={{ width:"100%", background:"#07070f", border:`1px solid ${confirm&&confirm!==password?"#ef444466":"#1f1f35"}`, borderRadius:9, padding:"10px 14px", color:"#f9fafb", fontSize:13, outline:"none" }}
+            />
+            {confirm && confirm!==password && (
+              <div style={{ fontSize:10, color:"#f87171", marginTop:4 }}>Passwords don't match</div>
+            )}
+          </div>
+
+          {/* Requirements */}
+          <div style={{ background:"#0a0a15", border:"1px solid #1f1f35", borderRadius:9, padding:"10px 14px", marginBottom:20 }}>
+            {[
+              ["8+ characters",              password.length >= 8],
+              ["One uppercase letter",        /[A-Z]/.test(password)],
+              ["One number",                  /[0-9]/.test(password)],
+              ["Passwords match",             password.length>0 && password===confirm],
+            ].map(([label, met]) => (
+              <div key={label} style={{ display:"flex", alignItems:"center", gap:7, padding:"3px 0" }}>
+                <span style={{ fontSize:11, color:met?"#10b981":"#374151" }}>{met?"✓":"○"}</span>
+                <span style={{ fontSize:11, color:met?"#d1d5db":"#4b5563" }}>{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {error && <div style={{ fontSize:11, color:"#f87171", marginBottom:12 }}>{error}</div>}
+
+          <button
+            disabled={!canSubmit}
+            onClick={createAccount}
+            style={{ width:"100%", background:canSubmit?"linear-gradient(135deg,#7c3aed,#4f46e5)":"#1a1a2e", border:`1px solid ${canSubmit?"#7c3aed44":"#1f1f35"}`, color:canSubmit?"#fff":"#374151", fontSize:13, fontWeight:700, padding:"12px", borderRadius:10, cursor:canSubmit?"pointer":"default", transition:"all .2s" }}
+          >
+            Create Account & Join {invite.workspace}
+          </button>
+
+          <div style={{ fontSize:10, color:"#374151", textAlign:"center", marginTop:14, lineHeight:1.6 }}>
+            By creating an account you agree to Streamlive's Terms of Service and Privacy Policy.
+          </div>
+        </div>
+      )}
+
+      {/* ── CREATING ── */}
+      {step==="creating" && (
+        <div style={{ textAlign:"center" }}>
+          <div style={{ width:48, height:48, border:"3px solid #2d1f5e", borderTop:"3px solid #7c3aed", borderRadius:"50%", animation:"spin 0.8s linear infinite", margin:"0 auto 20px" }} />
+          <div style={{ fontSize:16, fontWeight:700, color:"#f9fafb", marginBottom:8 }}>Setting up your account…</div>
+          <div style={{ fontSize:12, color:"#6b7280" }}>Configuring permissions and workspace access</div>
+        </div>
+      )}
+
+      {/* ── DONE ── */}
+      {step==="done" && invite && (
+        <div className="fade-up" style={{ background:"#0e0e1a", border:"1px solid #10b98144", borderRadius:18, padding:"40px 40px", maxWidth:440, width:"100%", textAlign:"center" }}>
+          <div style={{ width:56, height:56, borderRadius:16, background:"#0a1e16", border:"1px solid #10b98133", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, margin:"0 auto 20px" }}>✅</div>
+          <div style={{ fontSize:20, fontWeight:700, color:"#f9fafb", marginBottom:8 }}>You're all set!</div>
+          <div style={{ fontSize:13, color:"#9ca3af", lineHeight:1.7, marginBottom:24 }}>
+            Your account has been created. You've joined <strong style={{ color:"#e5e7eb" }}>{invite.workspace}</strong> as a <strong style={{ color:"#a78bfa" }}>{invite.role}</strong>.
+          </div>
+          <div style={{ background:"#0a0a15", border:"1px solid #1f1f35", borderRadius:10, padding:"12px 16px", marginBottom:24, textAlign:"left" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Your access</div>
+            {[
+              ["Email",     invite.email],
+              ["Role",      invite.role],
+              ["Workspace", invite.workspace],
+            ].map(([k,v])=>(
+              <div key={k} style={{ display:"flex", gap:12, marginBottom:6 }}>
+                <span style={{ fontSize:11, color:"#6b7280", minWidth:70 }}>{k}</span>
+                <span style={{ fontSize:11, color:"#e5e7eb", fontWeight:600 }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={()=>{ window.history.replaceState({}, "", window.location.pathname); window.location.reload(); }}
+            style={{ width:"100%", background:"linear-gradient(135deg,#7c3aed,#4f46e5)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}
+          >
+            Go to Streamlive Dashboard →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 export default function StreamlivePrototype() {
+  // Check for invite token in URL — show accept screen before anything else
+  const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
+  if (urlInviteToken) {
+    return <ScreenAcceptInvite token={urlInviteToken} />;
+  }
+
   const [personaId, setPersonaId]   = useState("sarah");
   const [view, setView]             = useState("dashboard");
   const [params, setParams]         = useState({});
