@@ -71,6 +71,7 @@ const PERSONAS = [
     buyerCount: 847,
     showCount: 94,
     subscriberCount: 1204,
+    manychat: { ttOptIns: 462, igOptIns: 199, thisWeek: { tt: 34, ig: 18 }, topKeyword: "BREAK" },
     slug: "cardvaultsc",
     bio: "Premier trading card seller on Whatnot. Weekly breaks every Thursday at 8PM EST.",
   },
@@ -87,6 +88,7 @@ const PERSONAS = [
     buyerCount: 501,
     showCount: 58,
     subscriberCount: 612,
+    manychat: { ttOptIns: 341, igOptIns: 0, thisWeek: { tt: 28, ig: 0 }, topKeyword: "DROP" },
     slug: "sneakerdroptr",
     bio: "Authenticated sneakers. TikTok Live every Saturday + Amazon drops.",
   },
@@ -103,6 +105,7 @@ const PERSONAS = [
     buyerCount: 44,
     showCount: 5,
     subscriberCount: 31,
+    manychat: { ttOptIns: 0, igOptIns: 0, thisWeek: { tt: 0, ig: 0 }, topKeyword: null },
     slug: "kingcomics",
     bio: "Silver age comics and key issues. New to live selling!",
   },
@@ -2767,47 +2770,146 @@ function CopyLinkCard({ slug }) {
 
 // ─── SCREEN: SUBSCRIBERS ─────────────────────────────────────────────────────
 function ScreenSubscribers({ persona }) {
+  const mc = persona.manychat || { ttOptIns:0, igOptIns:0, thisWeek:{tt:0,ig:0}, topKeyword:null };
+  const totalMC = mc.ttOptIns + mc.igOptIns;
+  const hasTT = persona.platforms?.includes("TT");
+  const hasIG = persona.platforms?.includes("IG");
+
   const subs = [
-    { name:"Marcus Webb", email:"m.webb@example.com", channel:"email+sms", joinedAt:"Jan 4, 2025",  opens:12 },
-    { name:"Priya Nair",  email:"priya@example.com",  channel:"email",     joinedAt:"Jan 14, 2025", opens:8  },
-    { name:"Devon Price", email:"dp@example.com",     channel:"sms",       joinedAt:"Feb 1, 2025",  opens:5  },
-    { name:"Amy Chen",    email:"amyc@example.com",   channel:"email",     joinedAt:"Feb 8, 2025",  opens:2  },
-    { name:"Jordan Mills",email:"jm@example.com",     channel:"email+sms", joinedAt:"Feb 12, 2025", opens:9  },
+    { name:"Marcus Webb",  email:"m.webb@example.com",  channels:["email","sms"],          joinedAt:"Jan 4, 2025",  opens:12 },
+    { name:"Priya Nair",   email:"priya@example.com",   channels:["email","tt_dm"],        joinedAt:"Jan 14, 2025", opens:8  },
+    { name:"Devon Price",  email:"dp@example.com",      channels:["sms"],                  joinedAt:"Feb 1, 2025",  opens:5  },
+    { name:"Amy Chen",     email:"amyc@example.com",    channels:["email","ig_dm"],        joinedAt:"Feb 8, 2025",  opens:2  },
+    { name:"Jordan Mills", email:"jm@example.com",      channels:["email","sms","tt_dm"],  joinedAt:"Feb 12, 2025", opens:9  },
   ];
+
+  const CHANNEL_META = {
+    email: { label:"EMAIL",  color:"#3b82f6", bg:"#0f1e2e" },
+    sms:   { label:"SMS",    color:"#a78bfa", bg:"#2d1f5e" },
+    tt_dm: { label:"TT DM",  color:"#69c9d0", bg:"#0d2828" },
+    ig_dm: { label:"IG DM",  color:"#e1306c", bg:"#2d1020" },
+  };
 
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+
+      {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
         <div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Subscribers</div>
-          <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{persona.subscriberCount} total subscribers opted in to messages</div>
+          <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>
+            {persona.subscriberCount} total · Opt-in page at strmlive.com/s/{persona.slug}
+          </div>
+        </div>
+        <button onClick={()=>navigator.clipboard?.writeText(`https://strmlive.com/s/${persona.slug}`)}
+          style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, fontWeight:600, padding:"7px 14px", borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
+          Copy opt-in link 🔗
+        </button>
+      </div>
+
+      {/* STAT CARDS — 4 cols */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
+        <StatCard label="Total Subscribers" value={persona.subscriberCount.toLocaleString()} sub="opted in to messages" color={C.green} />
+        <StatCard label="Email"             value={Math.round(persona.subscriberCount*0.48).toLocaleString()} sub="48% of list" color={C.blue} />
+        <StatCard label="SMS"               value={Math.round(persona.subscriberCount*0.31).toLocaleString()} sub="31% of list" color="#a78bfa" />
+        {/* ManyChat card */}
+        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:-20, right:-20, width:80, height:80, borderRadius:"50%", background:"#69c9d0", opacity:0.06, filter:"blur(20px)", pointerEvents:"none" }}/>
+          <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>ManyChat DMs</div>
+          <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:800, color:C.text, marginBottom:6 }}>
+            {totalMC > 0 ? totalMC.toLocaleString() : "—"}
+          </div>
+          {totalMC > 0 ? (
+            <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+              {hasTT && mc.ttOptIns > 0 && (
+                <span style={{ fontSize:8, fontWeight:700, color:"#69c9d0", background:"#0d2828", border:"1px solid #69c9d033", padding:"2px 7px", borderRadius:4 }}>🎵 TT {mc.ttOptIns.toLocaleString()}</span>
+              )}
+              {hasIG && mc.igOptIns > 0 && (
+                <span style={{ fontSize:8, fontWeight:700, color:"#e1306c", background:"#2d1020", border:"1px solid #e1306c33", padding:"2px 7px", borderRadius:4 }}>📸 IG {mc.igOptIns.toLocaleString()}</span>
+              )}
+            </div>
+          ) : (
+            <div style={{ fontSize:9, color:C.subtle }}>Connect TT or IG</div>
+          )}
         </div>
       </div>
 
-      {/* STATS */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:24 }}>
-        <StatCard label="Total Subscribers" value={persona.subscriberCount} sub="opted in to messages"       color={C.green}  />
-        <StatCard label="Email Only"         value={Math.round(persona.subscriberCount*0.48)} sub={`${48}% of list`}  color={C.blue}   />
-        <StatCard label="SMS Only"           value={Math.round(persona.subscriberCount*0.31)} sub={`${31}% of list`}  color="#a78bfa" />
-      </div>
+      {/* MANYCHAT BREAKDOWN */}
+      {totalMC > 0 && (
+        <div style={{ background:C.surface, border:"1px solid #1e2a2a", borderRadius:14, padding:"18px 22px", marginBottom:20 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+            <div style={{ width:32, height:32, borderRadius:9, background:"#69c9d014", border:"1px solid #69c9d033", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>⚡</div>
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text }}>ManyChat DM Opt-ins</div>
+              <div style={{ fontSize:10, color:C.muted }}>Keyword-triggered subscribers from TikTok & Instagram</div>
+            </div>
+            <div style={{ marginLeft:"auto", fontSize:10, color:C.muted }}>+{mc.thisWeek.tt + mc.thisWeek.ig} this week</div>
+          </div>
+
+          <div style={{ display:"grid", gridTemplateColumns:(hasTT && hasIG)?"1fr 1fr":"1fr", gap:12 }}>
+            {hasTT && (
+              <div style={{ background:"#0a1e1e", border:"1px solid #69c9d022", borderRadius:11, padding:"14px 16px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                  <span style={{ fontSize:15 }}>🎵</span>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#69c9d0" }}>TikTok DM</span>
+                  <span style={{ marginLeft:"auto", fontSize:8, fontWeight:700, color:"#69c9d0", background:"#69c9d018", border:"1px solid #69c9d033", padding:"2px 7px", borderRadius:4 }}>+{mc.thisWeek.tt} this week</span>
+                </div>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:26, fontWeight:800, color:C.text, marginBottom:4 }}>{mc.ttOptIns.toLocaleString()}</div>
+                <div style={{ fontSize:10, color:C.muted, marginBottom:mc.topKeyword?10:0 }}>opted-in via keyword DM</div>
+                {mc.topKeyword && (
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <span style={{ fontSize:9, color:C.subtle }}>Top keyword:</span>
+                    <span style={{ fontSize:9, fontWeight:800, color:"#69c9d0", background:"#69c9d014", border:"1px solid #69c9d033", padding:"2px 8px", borderRadius:4, letterSpacing:"0.05em" }}>{mc.topKeyword}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {hasIG && (
+              <div style={{ background:"#1e0c16", border:"1px solid #e1306c22", borderRadius:11, padding:"14px 16px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                  <span style={{ fontSize:15 }}>📸</span>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#e1306c" }}>Instagram DM</span>
+                  <span style={{ marginLeft:"auto", fontSize:8, fontWeight:700, color:"#e1306c", background:"#e1306c18", border:"1px solid #e1306c33", padding:"2px 7px", borderRadius:4 }}>+{mc.thisWeek.ig} this week</span>
+                </div>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:26, fontWeight:800, color:C.text, marginBottom:4 }}>{mc.igOptIns.toLocaleString()}</div>
+                <div style={{ fontSize:10, color:C.muted, marginBottom:mc.topKeyword?10:0 }}>opted-in via keyword DM</div>
+                {mc.topKeyword && (
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <span style={{ fontSize:9, color:C.subtle }}>Top keyword:</span>
+                    <span style={{ fontSize:9, fontWeight:800, color:"#e1306c", background:"#e1306c14", border:"1px solid #e1306c33", padding:"2px 8px", borderRadius:4, letterSpacing:"0.05em" }}>{mc.topKeyword}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop:12, fontSize:10, color:C.subtle }}>
+            Powered by <span style={{ fontWeight:700, color:"#69c9d0" }}>ManyChat</span> · Manage keywords in <span style={{ color:"#a78bfa" }}>Campaigns → DM Automations</span>
+          </div>
+        </div>
+      )}
 
       {/* OPT-IN LINK CARD */}
       <CopyLinkCard slug={persona.slug} />
 
       {/* SUBSCRIBER TABLE */}
-      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"1.5fr 1.5fr 0.8fr 0.8fr 0.5fr", padding:"10px 22px", borderBottom:`1px solid ${C.border}` }}>
-          {["Name","Email","Channel","Joined","Opens"].map(h=>(
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden", marginTop:20 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1.5fr 1.5fr 1fr 0.8fr 0.5fr", padding:"10px 22px", borderBottom:`1px solid ${C.border}` }}>
+          {["Name","Email","Channels","Joined","Opens"].map(h=>(
             <div key={h} style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700 }}>{h}</div>
           ))}
         </div>
         {subs.map((s,i)=>(
-          <div key={i} style={{ display:"grid", gridTemplateColumns:"1.5fr 1.5fr 0.8fr 0.8fr 0.5fr", padding:"12px 22px", borderBottom:i<subs.length-1?`1px solid #0d0d18`:"none", alignItems:"center" }}>
+          <div key={i} style={{ display:"grid", gridTemplateColumns:"1.5fr 1.5fr 1fr 0.8fr 0.5fr", padding:"12px 22px", borderBottom:i<subs.length-1?`1px solid #0d0d18`:"none", alignItems:"center" }}>
             <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{s.name}</div>
             <div style={{ fontSize:11, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>{s.email}</div>
-            <div style={{ display:"flex", gap:5 }}>
-              {s.channel.includes("email") && <span style={{ fontSize:9, fontWeight:700, color:C.blue, background:"#0f1e2e", border:`1px solid ${C.blue}44`, padding:"2px 6px", borderRadius:5 }}>EMAIL</span>}
-              {s.channel.includes("sms") && <span style={{ fontSize:9, fontWeight:700, color:"#a78bfa", background:"#2d1f5e", border:"1px solid #7c3aed44", padding:"2px 6px", borderRadius:5 }}>SMS</span>}
+            <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
+              {s.channels.map(ch => {
+                const cm = CHANNEL_META[ch];
+                return cm ? (
+                  <span key={ch} style={{ fontSize:8, fontWeight:700, color:cm.color, background:cm.bg, border:`1px solid ${cm.color}44`, padding:"2px 6px", borderRadius:4 }}>{cm.label}</span>
+                ) : null;
+              })}
             </div>
             <div style={{ fontSize:11, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>{s.joinedAt}</div>
             <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>{s.opens}</div>
@@ -2817,7 +2919,6 @@ function ScreenSubscribers({ persona }) {
     </div>
   );
 }
-
 // ─── SCREEN: SETTINGS ────────────────────────────────────────────────────────
 // ─── TEAM TAB COMPONENT ──────────────────────────────────────────────────────
 function TeamTab({ persona, openCheckout }) {
