@@ -290,14 +290,114 @@ const CHANNEL_META = {
 
 // ─── STRIPE PAYMENT LINKS ─────────────────────────────────────────────────────
 const STRIPE_LINKS = {
-  starter: 'https://buy.stripe.com/test_cNibJ377j60W9TS1rX0kE00',
-  growth:  'https://buy.stripe.com/test_7sYbJ363fblgfec9Yt0kE01',
-  pro:     'https://buy.stripe.com/test_00w5kF77j7504zyc6B0kE02',
+  starter:    'https://buy.stripe.com/test_7sY14pgHT60W0ji7Ql0kE03',
+  growth:     'https://buy.stripe.com/test_14AcN72R3ahc9TSdaF0kE04',
+  pro:        'https://buy.stripe.com/test_9B628tcrDfBw9TS8Up0kE05',
+  enterprise: 'https://buy.stripe.com/test_7sY8wRfDP7509TS1rX0kE06',
 };
 // Redirect URLs to set in Stripe Dashboard → Payment Links → After Payment:
-// Starter: https://strmlive.com/welcome?plan=starter
-// Growth:  https://strmlive.com/welcome?plan=growth
-// Pro:     https://strmlive.com/welcome?plan=pro
+// Starter:    https://strmlive.com/welcome?plan=starter
+// Growth:     https://strmlive.com/welcome?plan=growth
+// Pro:        https://strmlive.com/welcome?plan=pro
+// Enterprise: https://strmlive.com/welcome?plan=enterprise
+
+const PLAN_META = {
+  starter:    { price:"$79",  color:"#10b981", features:["Up to 2 live shows/month","Buyers CRM","Catalog management","Campaign tools","Subscriber list"] },
+  growth:     { price:"$199", color:"#7c3aed", features:["Everything in Starter","Analytics & AI insights","Loyalty program","Live Companion","SMS campaigns"] },
+  pro:        { price:"$399", color:"#f59e0b", features:["Everything in Growth","Production Suite","Camera & gimbal control","White-label reports","Priority support"] },
+  enterprise: { price:"$999", color:"#a78bfa", features:["Everything in Pro","Up to 12 seller accounts","Team management & roles","White-label branding","Dedicated account manager"] },
+};
+
+// ─── CHECKOUT MODAL ───────────────────────────────────────────────────────────
+// Branded interstitial shown before redirecting to Stripe — keeps UX native.
+function CheckoutModal({ plan, onClose }) {
+  const [countdown, setCountdown] = useState(null);
+  const meta = PLAN_META[plan] || {};
+  const link = STRIPE_LINKS[plan];
+
+  const handleCheckout = () => {
+    setCountdown(3);
+    let c = 3;
+    const t = setInterval(() => {
+      c--;
+      setCountdown(c);
+      if (c <= 0) {
+        clearInterval(t);
+        window.open(link, "_blank");
+        onClose();
+      }
+    }, 1000);
+  };
+
+  if (!plan || !link) return null;
+  const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+
+  return (
+    <div onClick={onClose}
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div onClick={e=>e.stopPropagation()} className="pop-in"
+        style={{ background:"#09090f", border:`1px solid ${meta.color}44`, borderRadius:20, padding:"32px", width:420, maxWidth:"94vw", position:"relative", overflow:"hidden" }}>
+
+        {/* Ambient glow */}
+        <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, borderRadius:"50%", background:meta.color, opacity:0.07, filter:"blur(60px)", pointerEvents:"none" }}/>
+
+        {/* Header */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:22 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <div style={{ width:40, height:40, borderRadius:11, background:`linear-gradient(135deg,${meta.color},${meta.color}99)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, fontWeight:900, color:"#fff" }}>S</div>
+            <div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text }}>Streamlive {planName}</div>
+              <div style={{ fontSize:11, color:meta.color, fontWeight:700 }}>{meta.price} / month</div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:C.muted, fontSize:18, cursor:"pointer", lineHeight:1, padding:"4px 6px" }}>✕</button>
+        </div>
+
+        {/* Feature list */}
+        <div style={{ background:`${meta.color}08`, border:`1px solid ${meta.color}22`, borderRadius:12, padding:"14px 16px", marginBottom:22 }}>
+          {(meta.features||[]).map((f,i) => (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:i<meta.features.length-1?9:0 }}>
+              <div style={{ width:16, height:16, borderRadius:4, background:`${meta.color}20`, border:`1px solid ${meta.color}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, color:meta.color, fontWeight:800, flexShrink:0 }}>✓</div>
+              <span style={{ fontSize:12, color:"#d1d5db" }}>{f}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Secure badge row */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:18 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:5, background:"#0f1a14", border:"1px solid #10b98133", borderRadius:6, padding:"4px 10px" }}>
+            <span style={{ fontSize:10 }}>🔒</span>
+            <span style={{ fontSize:9, fontWeight:700, color:"#10b981" }}>Secured by Stripe</span>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:5, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:6, padding:"4px 10px" }}>
+            <span style={{ fontSize:9, fontWeight:700, color:C.muted }}>Cancel anytime</span>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:5, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:6, padding:"4px 10px" }}>
+            <span style={{ fontSize:9, fontWeight:700, color:C.muted }}>No setup fee</span>
+          </div>
+        </div>
+
+        {/* CTA */}
+        {countdown === null ? (
+          <button onClick={handleCheckout}
+            style={{ width:"100%", background:`linear-gradient(135deg,${meta.color},${meta.color}bb)`, border:"none", color:"#fff", fontSize:14, fontWeight:800, padding:"14px", borderRadius:11, cursor:"pointer", letterSpacing:"0.01em" }}>
+            Continue to Checkout →
+          </button>
+        ) : (
+          <button disabled
+            style={{ width:"100%", background:`${meta.color}33`, border:`1px solid ${meta.color}44`, color:meta.color, fontSize:14, fontWeight:800, padding:"14px", borderRadius:11, cursor:"default", display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
+            <div style={{ width:14, height:14, border:`2px solid ${meta.color}44`, borderTop:`2px solid ${meta.color}`, borderRadius:"50%", animation:"spin .7s linear infinite" }}/>
+            Opening Stripe in {countdown}…
+          </button>
+        )}
+
+        <div style={{ marginTop:10, textAlign:"center", fontSize:10, color:C.subtle }}>
+          You'll be taken to Stripe's secure checkout page
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
 // ─── SHOPIFY CATALOG DATA ─────────────────────────────────────────────────────
@@ -2720,7 +2820,7 @@ function ScreenSubscribers({ persona }) {
 
 // ─── SCREEN: SETTINGS ────────────────────────────────────────────────────────
 // ─── TEAM TAB COMPONENT ──────────────────────────────────────────────────────
-function TeamTab({ persona }) {
+function TeamTab({ persona, openCheckout }) {
   const ROLES = ["Admin", "Producer", "Show Manager", "Campaign Manager", "Viewer"];
   const ROLE_META = {
     Owner:             { color: C.accent,   desc: "Full access to everything" },
@@ -3042,7 +3142,7 @@ function TeamTab({ persona }) {
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:11, fontWeight:700, color:"#f59e0b", marginBottom:3 }}>Producer requires Pro</div>
                     <div style={{ fontSize:10, color:"#7a6040", lineHeight:1.5 }}>Unlock camera control, OBS scene switching, device automation & the full Production Suite.</div>
-                    <button onClick={e=>{ e.stopPropagation(); setShowInviteModal(false); }}
+                    <button onClick={e=>{ e.stopPropagation(); setShowInviteModal(false); if(typeof openCheckout==="function") openCheckout("pro"); }}
                       style={{ marginTop:8, fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b44", padding:"5px 14px", borderRadius:6, cursor:"pointer" }}>
                       Upgrade to Pro →
                     </button>
@@ -3177,7 +3277,7 @@ function TeamTab({ persona }) {
   );
 }
 
-function ScreenSettings({ persona, initialTab }) {
+function ScreenSettings({ persona, initialTab, openCheckout }) {
   const [tab, setTab]           = useState(initialTab || "platforms");
   const [connections, setConnections] = useState({});
   const [modal, setModal]       = useState(null); // { type: "manychat"|"ig"|"tt"|"wn"|"am"|"email"|"sms" }
@@ -3864,9 +3964,9 @@ function ScreenSettings({ persona, initialTab }) {
               <div>
                 <div style={{ fontSize:10, color:persona.planColor, textTransform:"uppercase", letterSpacing:"0.09em", fontWeight:700, marginBottom:4 }}>Current Plan</div>
                 <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, textTransform:"capitalize" }}>{persona.plan}</div>
-                <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>${persona.plan==="starter"?49:persona.plan==="growth"?149:349}/month · Renews March 1</div>
+                <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>${persona.plan==="starter"?"$79":persona.plan==="growth"?"$199":persona.plan==="pro"?"$399":"$999"}/month · Renews March 1</div>
               </div>
-              <a href={STRIPE_LINKS[persona.plan]} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"8px 16px", borderRadius:8, cursor:"pointer", textDecoration:"none" }}>Manage Plan</a>
+              <button onClick={()=>openCheckout&&openCheckout(persona.plan)} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"8px 16px", borderRadius:8, cursor:"pointer" }}>Manage Plan</button>
             </div>
           </div>
           {persona.plan !== "pro" && (
@@ -3877,9 +3977,9 @@ function ScreenSettings({ persona, initialTab }) {
                   ? "Unlock real-time Live Companion, AI weekly briefings, and SMS campaigns."
                   : "Unlock advanced AI automation, white-label reports, and priority support."}
               </div>
-              <a href={STRIPE_LINKS[persona.plan==="starter"?"growth":"pro"]} target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", fontSize:12, fontWeight:700, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, padding:"9px 22px", borderRadius:9, textDecoration:"none" }}>
+              <button onClick={()=>openCheckout&&openCheckout(persona.plan==="starter"?"growth":"pro")} style={{ display:"inline-block", fontSize:12, fontWeight:700, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, padding:"9px 22px", borderRadius:9, border:"none", cursor:"pointer" }}>
                 Upgrade Now →
-              </a>
+              </button>
             </div>
           )}
         </div>
@@ -3887,7 +3987,7 @@ function ScreenSettings({ persona, initialTab }) {
 
       {/* ── TEAM TAB ── */}
       {tab==="team" && (
-        <TeamTab persona={persona} />
+        <TeamTab persona={persona} openCheckout={openCheckout} />
       )}
     </div>
   );
@@ -7294,7 +7394,7 @@ function ScreenWhiteLabel({ persona }) {
 
 
 // ─── SCREEN: UPGRADE WALL ─────────────────────────────────────────────────────
-function ScreenUpgrade({ feature, persona, navigate }) {
+function ScreenUpgrade({ feature, persona, navigate, openCheckout }) {
   const wall = UPGRADE_WALLS[feature];
   if (!wall) return null;
 
@@ -7349,7 +7449,7 @@ function ScreenUpgrade({ feature, persona, navigate }) {
           {/* CTA buttons */}
           <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
             <button
-              onClick={()=>{ window.open(STRIPE_LINKS[nextPlan]||"#","_blank"); }}
+              onClick={()=>openCheckout&&openCheckout(nextPlan)}
               style={{ background:`linear-gradient(135deg,${nextColor},${nextColor}cc)`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"12px 28px", borderRadius:10, cursor:"pointer" }}>
               Upgrade to {planName} — {planPrice}/mo →
             </button>
@@ -7711,6 +7811,7 @@ export default function StreamlivePrototype() {
   const [params, setParams]         = useState({});
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [notifications, setNotifications] = useState(3);
+  const [checkoutPlan, setCheckoutPlan] = useState(null); // plan string → opens CheckoutModal
 
   // Check for invite token in URL — render accept screen instead of app
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
@@ -7740,6 +7841,7 @@ export default function StreamlivePrototype() {
   return (
     <>
       <style>{GLOBAL_CSS}</style>
+      {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
       <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
 
         {/* ── DEMO BANNER ── */}
@@ -7931,10 +8033,10 @@ export default function StreamlivePrototype() {
                     <div style={{ fontSize:10, color:C.muted, marginBottom:8, lineHeight:1.5 }}>
                       {persona.plan === "starter" ? "Analytics, Loyalty & Production on Growth+" : "Production Suite on Pro+"}
                     </div>
-                    <a href={persona.plan==="starter" ? STRIPE_LINKS.growth : STRIPE_LINKS.pro} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"block", textAlign:"center", width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px", borderRadius:7, cursor:"pointer", textDecoration:"none" }}>
+                    <button onClick={()=>setCheckoutPlan(persona.plan==="starter"?"growth":"pro")}
+                      style={{ display:"block", textAlign:"center", width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px", borderRadius:7, cursor:"pointer" }}>
                       Upgrade →
-                    </a>
+                    </button>
                   </div>
                 )}
               </>
@@ -7961,13 +8063,13 @@ export default function StreamlivePrototype() {
                 {view==="team"           && <ScreenTeam             persona={persona} />}
                 {view==="billing"        && <ScreenBilling          persona={persona} />}
                 {view==="white-label"    && <ScreenWhiteLabel       persona={persona} />}
-                {view==="settings"       && <ScreenSettings         persona={persona} />}
+                {view==="settings"       && <ScreenSettings         persona={persona} openCheckout={setCheckoutPlan} />}
               </>
             ) : (
               <>
-                {view==="upgrade-analytics"  && <ScreenUpgrade feature="analytics"  persona={persona} navigate={navigate} />}
-                {view==="upgrade-loyalty"     && <ScreenUpgrade feature="loyalty"    persona={persona} navigate={navigate} />}
-                {view==="upgrade-production"  && <ScreenUpgrade feature="production" persona={persona} navigate={navigate} />}
+                {view==="upgrade-analytics"  && <ScreenUpgrade feature="analytics"  persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
+                {view==="upgrade-loyalty"     && <ScreenUpgrade feature="loyalty"    persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
+                {view==="upgrade-production"  && <ScreenUpgrade feature="production" persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
                 {view==="dashboard"    && <ScreenDashboard    persona={persona} buyers={buyers} navigate={navigate} />}
                 {view==="buyers"       && <ScreenBuyers        buyers={buyers} navigate={navigate} />}
                 {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
@@ -7977,7 +8079,7 @@ export default function StreamlivePrototype() {
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
-                {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} />}
+                {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} openCheckout={setCheckoutPlan} />}
                 {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} />}
                 {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} />}
                 {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} />}
