@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #06060e; }
+  body { background: #06060e; cursor: none; }
+  *:hover { cursor: none !important; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 99px; }
@@ -13,6 +14,11 @@ const GLOBAL_CSS = `
   @keyframes pulse    { 0%,100% { opacity:1 } 50% { opacity:.4 } }
   @keyframes spin     { to { transform:rotate(360deg) } }
   @keyframes pop      { 0% { transform:scale(.92); opacity:0 } 100% { transform:scale(1); opacity:1 } }
+  @keyframes livePulse {
+    0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.7; }
+    50%  { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
+    100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
+  }
   .fade-up  { animation: fadeUp  .3s ease both; }
   .slide-in { animation: slideIn .25s ease both; }
   .pop-in   { animation: pop     .2s ease both; }
@@ -8815,8 +8821,43 @@ export default function StreamlivePrototype() {
   const [params, setParams]         = useState({});
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [notifications, setNotifications] = useState(3);
-  const [checkoutPlan, setCheckoutPlan] = useState(null); // plan string → opens CheckoutModal
-  const [completedShows, setCompletedShows] = useState(SHOWS); // seeded with static shows, grows as user completes shows
+  const [checkoutPlan, setCheckoutPlan] = useState(null);
+  const [completedShows, setCompletedShows] = useState(SHOWS);
+
+  // ── Custom live-dot cursor ──────────────────────────────────────────────────
+  const [cursorPos,     setCursorPos]     = useState({ x: -100, y: -100 });
+  const [cursorClicked, setCursorClicked] = useState(false);
+  const [cursorVisible, setCursorVisible] = useState(false);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      setCursorPos({ x: e.clientX, y: e.clientY });
+      setCursorVisible(true);
+    };
+    const onDown = () => {
+      setCursorClicked(true);
+    };
+    const onUp = () => {
+      setTimeout(() => setCursorClicked(false), 400);
+    };
+    const onLeave = () => setCursorVisible(false);
+    const onEnter = () => setCursorVisible(true);
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseup", onUp);
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    document.documentElement.addEventListener("mouseenter", onEnter);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup", onUp);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      document.documentElement.removeEventListener("mouseenter", onEnter);
+    };
+  }, []);
+
+  const dotColor = cursorClicked ? "#10b981" : "#ef4444";
 
   // Check for invite token in URL — render accept screen instead of app
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
@@ -8846,6 +8887,30 @@ export default function StreamlivePrototype() {
   return (
     <>
       <style>{GLOBAL_CSS}</style>
+
+      {/* ── LIVE DOT CURSOR ── */}
+      {cursorVisible && (
+        <div style={{ position:"fixed", left:cursorPos.x, top:cursorPos.y, pointerEvents:"none", zIndex:99999 }}>
+          {/* Pulsing ring */}
+          <div style={{
+            position:"absolute", width:14, height:14, borderRadius:"50%",
+            background: dotColor,
+            transform:"translate(-50%,-50%)",
+            animation:"livePulse 1.2s ease-out infinite",
+            transition:"background 0.15s ease",
+          }}/>
+          {/* Solid core dot */}
+          <div style={{
+            position:"absolute", width:8, height:8, borderRadius:"50%",
+            background: dotColor,
+            transform:"translate(-50%,-50%)",
+            boxShadow:`0 0 ${cursorClicked ? "10px 3px" : "6px 2px"} ${dotColor}99`,
+            transition:"background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease",
+            transform: cursorClicked ? "translate(-50%,-50%) scale(1.4)" : "translate(-50%,-50%) scale(1)",
+          }}/>
+        </div>
+      )}
+
       {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
       <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
 
