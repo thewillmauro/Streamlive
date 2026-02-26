@@ -1147,12 +1147,13 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
 }
 
 // ─── SCREEN: SHOWS ────────────────────────────────────────────────────────────
-function ScreenShows({ navigate, persona }) {
+function ScreenShows({ navigate, persona, shows }) {
+  const allShows = shows || SHOWS;
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
       <div style={{ marginBottom:24 }}>
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Shows</div>
-        <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{SHOWS.length} shows recorded across all platforms</div>
+        <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{allShows.length} shows recorded across all platforms</div>
       </div>
 
       {/* LIVE COMPANION CTA */}
@@ -1171,7 +1172,7 @@ function ScreenShows({ navigate, persona }) {
 
       {/* SHOW CARDS */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-        {SHOWS.map(s=>{
+        {allShows.map(s=>{
           const pl = PLATFORMS[s.platform];
           return (
             <div key={s.id} onClick={()=>navigate("show-report", { showId:s.id })} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", cursor:"pointer", transition:"border-color .15s" }}
@@ -5697,7 +5698,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
             <button
               onClick={totalChanges > 0 ? processAll : () => { if (onShowComplete) onShowComplete(buildCompletedShow()); navigate("shows"); }}
               disabled={processing}
-              style={{ background:totalChanges>0?`linear-gradient(135deg,${C.green},#059669)`:"#1a1a2e", border:`1px solid ${totalChanges>0?C.green+"44":C.border}`, color:totalChanges>0?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer", minWidth:180 }}>
+              style={{ background: totalChanges > 0 ? `linear-gradient(135deg,${C.green},#059669)` : `linear-gradient(135deg,#a78bfa,#7c3aed)`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer", minWidth:180 }}>
               {processing ? "Processing…" : totalChanges > 0 ? `Process All Changes (${totalChanges})` : "Done — View Shows →"}
             </button>
           )}
@@ -9630,7 +9631,7 @@ export default function StreamlivePrototype() {
                 {view==="dashboard"    && <ScreenDashboard    persona={persona} buyers={buyers} navigate={navigate} shows={completedShows} />}
                 {view==="buyers"       && <ScreenBuyers        buyers={buyers} navigate={navigate} />}
                 {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
-                {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} />}
+                {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} shows={completedShows} />}
                 {view==="show-report"  && <ScreenShowReport    show={activeShow} allShows={completedShows} buyers={buyers} navigate={navigate} />}
                 {view==="live"         && <ScreenLive          buyers={buyers} navigate={navigate} params={params} />}
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
