@@ -4722,9 +4722,236 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
         <TeamTab persona={persona} openCheckout={openCheckout} />
       )}
 
-      {/* ── LIVE PIXEL TAB ── */}
-      {tab==="pixel" && (() => {
-        const pixelId = `lp_${persona.slug || "br"}_${persona.id || "x"}4f2a`;
+      {tab==="pixel" && <LivePixelTab persona={persona} />}
+    </div>
+  );
+}
+
+function LivePixelTab({ persona }) {
+  const pixelId = `lp_${persona.slug || "br"}_${persona.id || "x"}4f2a`;
+  const pixelSnippet =
+`<!-- Live Pixel by Streamlive -->
+<script>
+(function(w,d,s,l,i){
+  w[l]=w[l]||[];
+  var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s);
+  j.async=true;
+  j.src='https://cdn.streamlive.com/pixel/v1.js';
+  j.setAttribute('data-pixel-id',i);
+  f.parentNode.insertBefore(j,f);
+})(window,document,'script','_slq','${pixelId}');
+</script>
+<!-- End Live Pixel -->`;
+
+  const shopifySnippet =
+`{% comment %} Live Pixel — paste in theme.liquid before </head> {% endcomment %}
+<script>
+(function(w,d,s,l,i){
+  w[l]=w[l]||[];
+  var f=d.getElementsByTagName(s)[0],j=d.createElement(s);
+  j.async=true;j.src='https://cdn.streamlive.com/pixel/v1.js';
+  j.setAttribute('data-pixel-id',i);f.parentNode.insertBefore(j,f);
+})(window,document,'script','_slq','${pixelId}');
+</script>`;
+
+  const features = [
+    { icon:"🎯", label:"Session attribution",    desc:"Tracks the visitor from YouTube click → your site → checkout. No time-window guessing." },
+    { icon:"🔗", label:"Cross-session tracking", desc:"Buyer leaves and comes back 3 days later? Still attributed to the show that sent them." },
+    { icon:"👤", label:"Identity resolution",    desc:"Matches anonymous visitors to known Shopify customers when they check out." },
+    { icon:"📺", label:"Show-level attribution", desc:"Each show gets a unique fingerprint. Pixel knows exactly which stream the buyer came from." },
+    { icon:"⚡", label:"Real-time signals",      desc:"See live visitor counts on your site during a show — how many viewers clicked through." },
+    { icon:"🛡️", label:"First-party data",       desc:"Runs on your domain. No third-party cookies. GDPR/CCPA compliant by design." },
+  ];
+
+  const [copied, setCopied] = useState(null);
+  const copy = (text, key) => {
+    navigator.clipboard?.writeText(text).catch(()=>{});
+    setCopied(key);
+    setTimeout(()=>setCopied(null), 2000);
+  };
+  const [pixelInstalled, setPixelInstalled] = useState(false);
+  const [installTab, setInstallTab] = useState("shopify");
+
+  return (
+    <div className="fade-up" style={{ maxWidth:680 }}>
+
+      {/* Header */}
+      <div style={{ background:"linear-gradient(135deg,#1a0808,#0d0812)", border:"1px solid #f43f5e33", borderRadius:16, padding:"24px 28px", marginBottom:24, position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", right:24, top:24, width:80, height:80, borderRadius:"50%", background:"radial-gradient(circle,#f43f5e22,transparent 70%)", pointerEvents:"none" }} />
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+          <div style={{ width:38, height:38, borderRadius:11, background:"linear-gradient(135deg,#f43f5e,#7c3aed)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ width:10, height:10, borderRadius:"50%", background:"#fff", boxShadow:"0 0 8px #fff" }} />
+          </div>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:"#fff", letterSpacing:"-0.3px" }}>Live Pixel</div>
+            <div style={{ fontSize:11, color:"#f43f5e", fontWeight:600 }}>by Streamlive · First-party attribution</div>
+          </div>
+          {pixelInstalled
+            ? <span style={{ marginLeft:"auto", fontSize:10, fontWeight:700, color:C.green, background:"#10b98118", border:"1px solid #10b98133", padding:"4px 12px", borderRadius:99 }}>● Active</span>
+            : <span style={{ marginLeft:"auto", fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b33", padding:"4px 12px", borderRadius:99 }}>Not installed</span>
+          }
+        </div>
+        <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.7, maxWidth:500 }}>
+          A lightweight JavaScript snippet you install once on your website. Live Pixel tracks every visitor from the moment they arrive — whether from a YouTube chat link, a TikTok bio, or a DM campaign — and ties their purchase directly to the show that sent them. <span style={{ color:"#f43f5e", fontWeight:600 }}>No inference. No guessing. Direct attribution.</span>
+        </div>
+      </div>
+
+      {/* Features grid */}
+      <div style={{ marginBottom:24 }}>
+        <div style={{ fontSize:11, fontWeight:800, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>What Live Pixel does</div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          {features.map(f => (
+            <div key={f.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, padding:"12px 14px", display:"flex", gap:10 }}>
+              <span style={{ fontSize:18, flexShrink:0, marginTop:1 }}>{f.icon}</span>
+              <div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:3 }}>{f.label}</div>
+                <div style={{ fontSize:11, color:C.muted, lineHeight:1.5 }}>{f.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Attribution comparison */}
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:24 }}>
+        <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Attribution accuracy comparison</div>
+        {[
+          { method:"Live Pixel",    accuracy:99, color:"#f43f5e", note:"Direct session tracking. Buyer's path is recorded end-to-end." },
+          { method:"UTM Link",      accuracy:82, color:"#3b82f6", note:"100% accurate — but only for buyers who click your link." },
+          { method:"Time-Window",   accuracy:64, color:"#10b981", note:"Catches most buyers but also unrelated orders in the window." },
+          { method:"Manual Review", accuracy:55, color:"#f59e0b", note:"Reliable for what you confirm — but slow and incomplete." },
+        ].map(m => (
+          <div key={m.method} style={{ marginBottom:12 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+              <span style={{ fontSize:11, fontWeight:600, color:m.method==="Live Pixel"?m.color:C.text, display:"flex", alignItems:"center", gap:6 }}>
+                {m.method==="Live Pixel" && <span style={{ width:7, height:7, borderRadius:"50%", background:m.color, display:"inline-block", boxShadow:`0 0 6px ${m.color}` }} />}
+                {m.method}
+              </span>
+              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:m.color }}>{m.accuracy}%</span>
+            </div>
+            <div style={{ height:6, background:C.surface2, borderRadius:3, overflow:"hidden", marginBottom:4 }}>
+              <div style={{ width:`${m.accuracy}%`, height:"100%", background:m.color, borderRadius:3, boxShadow:m.method==="Live Pixel"?`0 0 8px ${m.color}66`:"none" }} />
+            </div>
+            <div style={{ fontSize:10, color:C.subtle, fontStyle:"italic" }}>{m.note}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pixel ID */}
+      <div style={{ background:C.surface, border:"1px solid #f43f5e33", borderRadius:14, padding:"18px 20px", marginBottom:24 }}>
+        <div style={{ fontSize:11, fontWeight:700, color:"#f43f5e", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Your Pixel ID</div>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <code style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.text, background:C.surface2, border:`1px solid ${C.border}`, padding:"10px 16px", borderRadius:9, flex:1, letterSpacing:"0.05em" }}>
+            {pixelId}
+          </code>
+          <button onClick={()=>copy(pixelId,"pid")} style={{ fontSize:11, fontWeight:700, color:copied==="pid"?C.green:"#a78bfa", background:copied==="pid"?"#10b98118":"#a78bfa18", border:`1px solid ${copied==="pid"?C.green+"44":"#a78bfa44"}`, padding:"10px 18px", borderRadius:9, cursor:"pointer", whiteSpace:"nowrap" }}>
+            {copied==="pid" ? "✓ Copied" : "Copy ID"}
+          </button>
+        </div>
+        <div style={{ fontSize:10, color:C.subtle, marginTop:8 }}>Unique to your Streamlive account. Keep it private.</div>
+      </div>
+
+      {/* Install instructions */}
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:24 }}>
+        <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Install Live Pixel</div>
+        <div style={{ display:"flex", gap:0, marginBottom:20, background:C.surface2, borderRadius:9, padding:3 }}>
+          {[["shopify","🛍 Shopify"],["html","</> HTML"],["gtm","📦 GTM"],["wordpress","🔵 WordPress"]].map(([k,l])=>(
+            <button key={k} onClick={()=>setInstallTab(k)} style={{ flex:1, background:installTab===k?"#a78bfa22":"transparent", border:`1px solid ${installTab===k?"#a78bfa44":"transparent"}`, color:installTab===k?"#a78bfa":C.muted, fontSize:11, fontWeight:installTab===k?700:400, padding:"7px 0", borderRadius:7, cursor:"pointer" }}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {installTab==="shopify" && (
+          <div>
+            <div style={{ fontSize:11, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
+              In Shopify admin go to <strong style={{ color:C.text }}>Online Store → Themes → Edit code</strong> and paste before the <code style={{ color:"#a78bfa" }}>&lt;/head&gt;</code> tag in <strong style={{ color:C.text }}>theme.liquid</strong>.
+            </div>
+            <div style={{ position:"relative" }}>
+              <pre style={{ background:"#060610", border:`1px solid ${C.border}`, borderRadius:10, padding:"16px", fontSize:11, color:"#a78bfa", fontFamily:"'JetBrains Mono',monospace", overflowX:"auto", lineHeight:1.8, margin:0, whiteSpace:"pre-wrap" }}>{shopifySnippet}</pre>
+              <button onClick={()=>copy(shopifySnippet,"shopify")} style={{ position:"absolute", top:10, right:10, fontSize:10, fontWeight:700, color:copied==="shopify"?C.green:"#a78bfa", background:copied==="shopify"?"#0a1e16":"#a78bfa18", border:`1px solid ${copied==="shopify"?C.green+"44":"#a78bfa44"}`, padding:"5px 12px", borderRadius:6, cursor:"pointer" }}>
+                {copied==="shopify" ? "✓ Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+        )}
+        {installTab==="html" && (
+          <div>
+            <div style={{ fontSize:11, color:C.muted, marginBottom:14, lineHeight:1.6 }}>Paste before the closing <code style={{ color:"#a78bfa" }}>&lt;/head&gt;</code> tag on every page.</div>
+            <div style={{ position:"relative" }}>
+              <pre style={{ background:"#060610", border:`1px solid ${C.border}`, borderRadius:10, padding:"16px", fontSize:11, color:"#a78bfa", fontFamily:"'JetBrains Mono',monospace", overflowX:"auto", lineHeight:1.8, margin:0, whiteSpace:"pre-wrap" }}>{pixelSnippet}</pre>
+              <button onClick={()=>copy(pixelSnippet,"html")} style={{ position:"absolute", top:10, right:10, fontSize:10, fontWeight:700, color:copied==="html"?C.green:"#a78bfa", background:copied==="html"?"#0a1e16":"#a78bfa18", border:`1px solid ${copied==="html"?C.green+"44":"#a78bfa44"}`, padding:"5px 12px", borderRadius:6, cursor:"pointer" }}>
+                {copied==="html" ? "✓ Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+        )}
+        {installTab==="gtm" && (
+          <div style={{ fontSize:11, color:C.muted, lineHeight:1.8 }}>
+            <div style={{ marginBottom:10 }}>Create a <strong style={{ color:C.text }}>Custom HTML tag</strong> in GTM, paste the snippet, set trigger to <strong style={{ color:C.text }}>All Pages</strong>, then publish.</div>
+            <div style={{ position:"relative", marginTop:14 }}>
+              <pre style={{ background:"#060610", border:`1px solid ${C.border}`, borderRadius:10, padding:"16px", fontSize:11, color:"#a78bfa", fontFamily:"'JetBrains Mono',monospace", overflowX:"auto", lineHeight:1.8, margin:0, whiteSpace:"pre-wrap" }}>{pixelSnippet}</pre>
+              <button onClick={()=>copy(pixelSnippet,"gtm")} style={{ position:"absolute", top:10, right:10, fontSize:10, fontWeight:700, color:copied==="gtm"?C.green:"#a78bfa", background:copied==="gtm"?"#0a1e16":"#a78bfa18", border:`1px solid ${copied==="gtm"?C.green+"44":"#a78bfa44"}`, padding:"5px 12px", borderRadius:6, cursor:"pointer" }}>
+                {copied==="gtm" ? "✓ Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+        )}
+        {installTab==="wordpress" && (
+          <div style={{ fontSize:11, color:C.muted, lineHeight:1.8 }}>
+            <div style={{ marginBottom:10 }}>Install the <strong style={{ color:C.text }}>Insert Headers and Footers</strong> plugin, paste the snippet in the Header section, then save.</div>
+            <div style={{ position:"relative", marginTop:14 }}>
+              <pre style={{ background:"#060610", border:`1px solid ${C.border}`, borderRadius:10, padding:"16px", fontSize:11, color:"#a78bfa", fontFamily:"'JetBrains Mono',monospace", overflowX:"auto", lineHeight:1.8, margin:0, whiteSpace:"pre-wrap" }}>{pixelSnippet}</pre>
+              <button onClick={()=>copy(pixelSnippet,"wp")} style={{ position:"absolute", top:10, right:10, fontSize:10, fontWeight:700, color:copied==="wp"?C.green:"#a78bfa", background:copied==="wp"?"#0a1e16":"#a78bfa18", border:`1px solid ${copied==="wp"?C.green+"44":"#a78bfa44"}`, padding:"5px 12px", borderRadius:6, cursor:"pointer" }}>
+                {copied==="wp" ? "✓ Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginTop:20, display:"flex", alignItems:"center", gap:12 }}>
+          <button onClick={()=>setPixelInstalled(true)} style={{ background:"linear-gradient(135deg,#f43f5e,#7c3aed)", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"10px 24px", borderRadius:9, cursor:"pointer" }}>
+            Verify Installation
+          </button>
+          {pixelInstalled && (
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:C.green, animation:"livePulse 1.2s ease-out infinite" }} />
+              <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Pixel detected — receiving data</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Data collected */}
+      <div style={{ background:"#0a1020", border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px" }}>
+        <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:12 }}>Data collected</div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+          {[
+            ["Session source","YouTube Live, TikTok, IG, DM campaigns, etc."],
+            ["Show ID","Which specific stream sent the visitor"],
+            ["Page views","Products viewed, time on site, scroll depth"],
+            ["Cart events","Add to cart, remove, abandon"],
+            ["Purchase event","Order ID, items, total — matched to Shopify"],
+            ["Buyer identity","Matched to Streamlive CRM profile on checkout"],
+          ].map(([k,v])=>(
+            <div key={k} style={{ display:"flex", gap:6 }}>
+              <div style={{ width:5, height:5, borderRadius:"50%", background:"#f43f5e", marginTop:5, flexShrink:0 }} />
+              <div>
+                <span style={{ fontSize:11, fontWeight:600, color:C.text }}>{k}</span>
+                <span style={{ fontSize:11, color:C.muted }}> — {v}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop:14, fontSize:10, color:C.subtle, lineHeight:1.6, paddingTop:12, borderTop:`1px solid ${C.border}` }}>
+          🛡️ Live Pixel is first-party only. No data is shared with third parties. Compliant with GDPR, CCPA, and ePrivacy Directive when paired with your site's consent banner.
+        </div>
+      </div>
+
+    </div>
+  );
+}
         const pixelSnippet =
 `<!-- Live Pixel by Streamlive -->
 <script>
@@ -4966,9 +5193,6 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
 
           </div>
         );
-      })()}
-    </div>
-  );
 }
 
 
