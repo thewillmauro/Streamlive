@@ -5392,14 +5392,15 @@ const LineChart = ({ data, color="#10b981", height=80 }) => {
   const max = Math.max(...data);
   const min = Math.min(...data);
   const range = max-min||1;
+  const W = 100; // viewBox width — scales to container
   const pts = data.map((v,i)=>{
-    const x = (i/(data.length-1))*100;
+    const x = (i/(data.length-1))*W;
     const y = height-((v-min)/range)*(height-10)-5;
     return `${x},${y}`;
   }).join(" ");
-  const area = `0,${height} ${pts} 100,${height}`;
+  const area = `0,${height} ${pts} ${W},${height}`;
   return (
-    <svg width="100%" height={height} style={{ overflow:"visible" }}>
+    <svg width="100%" height={height} viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" style={{ display:"block" }}>
       <defs>
         <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
@@ -5407,11 +5408,11 @@ const LineChart = ({ data, color="#10b981", height=80 }) => {
         </linearGradient>
       </defs>
       <polygon points={area} fill="url(#lineGrad)" />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
       {data.map((v,i)=>{
-        const x = (i/(data.length-1))*100;
+        const x = (i/(data.length-1))*W;
         const y = height-((v-min)/range)*(height-10)-5;
-        return <circle key={i} cx={`${x}%`} cy={y} r="3" fill={color} />;
+        return <circle key={i} cx={x} cy={y} r="1.5" fill={color} vectorEffect="non-scaling-stroke"/>;
       })}
     </svg>
   );
