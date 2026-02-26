@@ -845,21 +845,22 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
                   position:"relative", overflow:"hidden",
                   transition:"border-color .2s" }}>
                 {isJust && (
-                  <>
-                    {/* Subtle glow */}
-                    <div style={{ position:"absolute", top:-20, right:-20, width:80, height:80, borderRadius:"50%", background:C.green, opacity:0.07, filter:"blur(20px)", pointerEvents:"none" }}/>
-                    {/* Badge */}
-                    <div style={{ position:"absolute", top:8, right:8, display:"flex", alignItems:"center", gap:4, background:"#10b98120", border:"1px solid #10b98144", borderRadius:99, padding:"2px 8px" }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:C.green, animation:"pulse 1.5s infinite" }}/>
-                      <span style={{ fontSize:8, fontWeight:800, color:C.green, textTransform:"uppercase", letterSpacing:"0.07em" }}>Just Ended</span>
-                    </div>
-                  </>
+                  <div style={{ position:"absolute", top:-20, right:-20, width:80, height:80, borderRadius:"50%", background:C.green, opacity:0.07, filter:"blur(20px)", pointerEvents:"none" }}/>
                 )}
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                {/* Header row: platform pill + date + just ended badge */}
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8, gap:8 }}>
                   <PlatformPill code={s.platform} />
-                  <span style={{ fontSize:10, color:C.muted, fontFamily:"'JetBrains Mono',monospace", paddingRight: isJust ? 70 : 0 }}>{s.date}</span>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginLeft:"auto" }}>
+                    <span style={{ fontSize:10, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>{s.date}</span>
+                    {isJust && (
+                      <div style={{ display:"flex", alignItems:"center", gap:4, background:"#10b98120", border:"1px solid #10b98144", borderRadius:99, padding:"2px 8px", flexShrink:0 }}>
+                        <div style={{ width:6, height:6, borderRadius:"50%", background:C.green, animation:"pulse 1.5s infinite" }}/>
+                        <span style={{ fontSize:8, fontWeight:800, color:C.green, textTransform:"uppercase", letterSpacing:"0.07em" }}>Just Ended</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div style={{ fontSize:12, fontWeight: isJust ? 700 : 600, color: isJust ? C.text : C.text, marginBottom:6 }}>{s.title}</div>
+                <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:6 }}>{s.title}</div>
                 <div style={{ display:"flex", gap:14 }}>
                   <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.green }}>${s.gmv.toLocaleString()}</span><span style={{ fontSize:10, color:C.muted }}> GMV</span></div>
                   <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>{s.buyers}</span><span style={{ fontSize:10, color:C.muted }}> buyers</span></div>
