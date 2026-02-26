@@ -5313,6 +5313,7 @@ function ScreenCatalog({ persona, navigate }) {
 // ─── SCREEN: SHOW PLANNER ──────────────────────────────────────────────────────
 function ScreenShowPlanner({ navigate }) {
   const [step, setStep] = useState(1);
+  const [showName, setShowName] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState(["WN"]);
   const [selectedProducts, setSelectedProducts] = useState(
     UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
@@ -5345,7 +5346,12 @@ function ScreenShowPlanner({ navigate }) {
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text }}>Show Planner</div>
           <div style={{ marginLeft:"auto" }}><PlatformPill code={UPCOMING_SHOW.platform} /></div>
         </div>
-        <div style={{ fontSize:12, color:C.muted, marginBottom:14 }}>{UPCOMING_SHOW.title} · {UPCOMING_SHOW.date} at {UPCOMING_SHOW.time}</div>
+        <div style={{ fontSize:12, color:C.muted, marginBottom:14 }}>
+          {showName
+            ? <span><span style={{ color:C.text, fontWeight:600 }}>"{showName}"</span> · {UPCOMING_SHOW.date} at {UPCOMING_SHOW.time}</span>
+            : `${UPCOMING_SHOW.title} · ${UPCOMING_SHOW.date} at ${UPCOMING_SHOW.time}`
+          }
+        </div>
         <div style={{ display:"flex", gap:0 }}>
           {steps.map((s,i)=>(
             <div key={s} style={{ display:"flex", alignItems:"center" }}>
@@ -5363,6 +5369,23 @@ function ScreenShowPlanner({ navigate }) {
       <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
         {step===1 && (
           <div>
+            {/* Show Name */}
+            <div style={{ marginBottom:28 }}>
+              <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>What's the name of this show?</div>
+              <div style={{ fontSize:12, color:C.muted, marginBottom:12 }}>Used in your analytics, show history, and marketing campaigns.</div>
+              <input
+                value={showName}
+                onChange={e=>setShowName(e.target.value)}
+                placeholder="e.g. Spring Drop #12, Friday Night Flash Sale, New Arrivals Haul…"
+                style={{ width:"100%", maxWidth:520, background:C.surface, border:`1px solid ${showName?C.accent:C.border}`, borderRadius:10, padding:"12px 16px", fontSize:13, color:C.text, outline:"none", fontFamily:"inherit", boxSizing:"border-box", transition:"border-color .15s" }}
+              />
+              {showName && (
+                <div style={{ marginTop:8, fontSize:11, color:C.green, display:"flex", alignItems:"center", gap:5 }}>
+                  <span>✓</span><span style={{ fontWeight:600 }}>{showName}</span><span style={{ color:C.muted }}>— saved</span>
+                </div>
+              )}
+            </div>
+
             <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Where are you streaming today?</div>
             <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Select all platforms you'll go live on. You can multi-stream to multiple destinations at once.</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, maxWidth:560 }}>
@@ -5573,7 +5596,7 @@ function ScreenShowPlanner({ navigate }) {
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={()=>setStep(4)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
                 🔴 Go Live Now
               </button>
             </div>
@@ -5641,7 +5664,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
     })();
     return {
       id:      `sh_live_${Date.now()}`,
-      title:   `Live Show — ${dateStr}`,
+      title:   params?.showName ? params.showName : `Live Show — ${dateStr}`,
       date:    dateStr,
       platform,
       gmv:     finalGMV,
