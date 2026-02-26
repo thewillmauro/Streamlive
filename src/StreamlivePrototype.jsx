@@ -1336,11 +1336,12 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
             </div>
             <div style={{ display:"flex", gap:3, alignItems:"flex-end", height:90, marginBottom:6 }}>
               {gmvCurve.map((v, i) => {
-                const pct = Math.round(v / Math.max(...gmvCurve) * 100);
+                const maxV = Math.max(...gmvCurve);
+                const h = Math.max(Math.round(v / maxV * 90), 3);
                 const isPeak = i === peakIdx;
                 return (
-                  <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
-                    <div style={{ width:"100%", height:`${Math.max(pct, 3)}%`, background: isPeak ? C.green : `${C.accent}88`, borderRadius:"3px 3px 0 0", transition:"height .2s", boxShadow: isPeak ? `0 0 8px ${C.green}66` : "none" }} />
+                  <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                    <div style={{ width:"100%", height:h, background: isPeak ? C.green : `${C.accent}88`, borderRadius:"3px 3px 0 0", boxShadow: isPeak ? `0 0 8px ${C.green}66` : "none" }} />
                   </div>
                 );
               })}
