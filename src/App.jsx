@@ -1194,8 +1194,10 @@ const PLATFORM_META = {
 const DM_PLATFORMS = ["WN", "TT", "IG"];
 
 // ─── OPT-IN PAGE ──────────────────────────────────────────────────────────────
-function OptInPage({ slug }) {
+function OptInPage({ slug, connectedPlatforms }) {
   const seller = SELLER_PROFILES[slug];
+  // Use live connected platforms if provided, fall back to profile default
+  const activePlatforms = connectedPlatforms || seller?.platforms || [];
   const [step, setStep] = useState("form"); // form | success
   const [firstName, setFirstName] = useState("");
   const [email, setEmail]         = useState("");
@@ -1264,13 +1266,13 @@ function OptInPage({ slug }) {
             ))}
           </div>
           {/* ManyChat activation steps */}
-          {seller.platforms.filter(p=>PLATFORM_META[p]?.manychat).length > 0 && (
+          {activePlatforms.filter(p=>PLATFORM_META[p]?.manychat).length > 0 && (
             <div style={{ background:"#0d1a1f", border:"1px solid #1e3a2e", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
               <div style={{ fontSize:11, color:"#34d399", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>🔔 Activate your DM alerts</div>
               <div style={{ fontSize:12, color:"#9ca3af", marginBottom:14, lineHeight:1.6 }}>
                 To receive show alerts as a direct message, send <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0a1e16", border:"1px solid #34d39933", padding:"2px 8px", borderRadius:4, color:"#34d399", fontWeight:600 }}>JOIN</span> to {seller.name} on each platform:
               </div>
-              {seller.platforms.filter(p=>PLATFORM_META[p]?.manychat).map(p => {
+              {activePlatforms.filter(p=>PLATFORM_META[p]?.manychat).map(p => {
                 const pm = PLATFORM_META[p];
                 return (
                   <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"1px solid #1e1e3a" }}>
@@ -1328,7 +1330,7 @@ function OptInPage({ slug }) {
             <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:20, padding:"5px 14px", fontSize:12, color:"#9ca3af" }}>
               <span style={{ color:"#fff", fontWeight:700 }}>{seller.followers}</span> live followers
             </div>
-            {seller.platforms.map(p => (
+            {activePlatforms.map(p => (
               <div key={p} style={{ background:`${PLATFORM_META[p].color}15`, border:`1px solid ${PLATFORM_META[p].color}33`, borderRadius:20, padding:"5px 14px", fontSize:12, color:PLATFORM_META[p].color, fontWeight:600 }}>
                 {PLATFORM_META[p].label}
               </div>
@@ -1399,7 +1401,7 @@ function OptInPage({ slug }) {
 
             {/* Platform handles */}
             {(() => {
-              const dmPlatforms = seller.platforms.filter(p => DM_PLATFORMS.includes(p));
+              const dmPlatforms = activePlatforms.filter(p => DM_PLATFORMS.includes(p));
               if (dmPlatforms.length === 0) return null;
               return (
                 <div>
@@ -1501,6 +1503,16 @@ function OptInPage({ slug }) {
 }
 
 // ─── ROOT ROUTER ──────────────────────────────────────────────────────────────
+// ─── PERSONA PLATFORM CONFIG (mirrors StreamlivePrototype PERSONAS) ───────────
+// Source of truth for which platforms each account has connected.
+// When platforms change in Settings, update here to keep opt-in pages in sync.
+const PERSONA_PLATFORMS = {
+  bananarepublic: ["TT", "IG", "AM"],
+  kyliecosmetics: ["TT", "IG"],
+  tropicfeel:     ["IG", "AM"],
+  walmartlive:    ["WN", "TT", "AM", "IG"],
+};
+
 export default function App() {
   const route = useRoute()
   if (route === '/app')            return <StreamlivePrototype />
@@ -1508,7 +1520,7 @@ export default function App() {
   if (route === '/welcome')        return <Welcome />
   if (route.startsWith('/s/')) {
     const slug = route.split('/s/')[1]?.split('/')[0]
-    return <OptInPage slug={slug} />
+    return <OptInPage slug={slug} connectedPlatforms={PERSONA_PLATFORMS[slug]} />
   }
   return <Landing />
 }
