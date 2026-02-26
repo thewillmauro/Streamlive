@@ -60,150 +60,149 @@ const STATUS_META = {
 const PERSONAS = [
   {
     id: "sarah",
-    name: "Sarah Chen",
-    shop: "CardVaultSC",
-    email: "sarah@cardvault.co",
-    avatar: "SC",
+    name: "Jamie Ellis",
+    shop: "Banana Republic",
+    email: "jamie.ellis@bananarepublic.com",
+    avatar: "BR",
     plan: "pro",
     planColor: "#f59e0b",
-    category: "Trading Cards",
-    platforms: ["WN","TT","AM","IG"],
-    buyerCount: 847,
-    showCount: 94,
-    subscriberCount: 1204,
-    manychat: { ttOptIns: 462, igOptIns: 199, thisWeek: { tt: 34, ig: 18 }, topKeyword: "BREAK" },
-    slug: "cardvaultsc",
-    bio: "Premier trading card seller on Whatnot. Weekly breaks every Thursday at 8PM EST.",
+    category: "Apparel & Fashion",
+    platforms: ["TT","IG","AM"],
+    buyerCount: 1840,
+    showCount: 112,
+    subscriberCount: 3820,
+    manychat: { ttOptIns: 892, igOptIns: 641, thisWeek: { tt: 68, ig: 44 }, topKeyword: "STYLE" },
+    slug: "bananarepublic",
+    bio: "Banana Republic Live — seasonal collections, member exclusives, and live styling every week.",
   },
   {
     id: "tyler",
-    name: "Tyler Rhodes",
-    shop: "SneakerDropTR",
-    email: "tyler@snkr.haus",
-    avatar: "TR",
+    name: "Alyssa Kim",
+    shop: "Kylie Cosmetics",
+    email: "alyssa@kyliecosmetics.com",
+    avatar: "KC",
     plan: "growth",
     planColor: "#7c3aed",
-    category: "Sneakers",
-    platforms: ["TT","AM"],
-    buyerCount: 501,
-    showCount: 58,
-    subscriberCount: 612,
-    manychat: { ttOptIns: 341, igOptIns: 0, thisWeek: { tt: 28, ig: 0 }, topKeyword: "DROP" },
-    slug: "sneakerdroptr",
-    bio: "Authenticated sneakers. TikTok Live every Saturday + Amazon drops.",
+    category: "Beauty & Cosmetics",
+    platforms: ["TT","IG"],
+    buyerCount: 2140,
+    showCount: 74,
+    subscriberCount: 5890,
+    manychat: { ttOptIns: 1840, igOptIns: 1210, thisWeek: { tt: 142, ig: 98 }, topKeyword: "GLAM" },
+    slug: "kyliecosmetics",
+    bio: "Kylie Cosmetics official live channel. New shades, exclusive drops, and tutorials with the team.",
   },
   {
     id: "devon",
-    name: "Devon King",
-    shop: "KingComics",
-    email: "devon@kingcomics.shop",
-    avatar: "DK",
+    name: "Marc Pujol",
+    shop: "Tropicfeel",
+    email: "marc@tropicfeel.com",
+    avatar: "TF",
     plan: "starter",
     planColor: "#10b981",
-    category: "Comics",
-    platforms: ["WN"],
-    buyerCount: 44,
-    showCount: 5,
-    subscriberCount: 31,
-    manychat: { ttOptIns: 0, igOptIns: 0, thisWeek: { tt: 0, ig: 0 }, topKeyword: null },
-    slug: "kingcomics",
-    bio: "Silver age comics and key issues. New to live selling!",
+    category: "Travel Footwear & Gear",
+    platforms: ["IG","AM"],
+    buyerCount: 128,
+    showCount: 9,
+    subscriberCount: 214,
+    manychat: { ttOptIns: 0, igOptIns: 88, thisWeek: { tt: 0, ig: 12 }, topKeyword: "EXPLORE" },
+    slug: "tropicfeel",
+    bio: "Travel-ready footwear for every terrain. Building our live community one drop at a time.",
   },
   {
     id: "mia",
-    name: "Mia Torres",
-    shop: "LiveScale Agency",
-    email: "mia@livescale.io",
-    avatar: "MT",
+    name: "Rachel Nguyen",
+    shop: "Walmart Live",
+    email: "rachel.nguyen@walmart.com",
+    avatar: "WM",
     plan: "enterprise",
     planColor: "#a78bfa",
-    category: "Multi-Category",
+    category: "Multi-Category Retail",
     platforms: ["WN","TT","AM","IG"],
-    buyerCount: 4820,
-    showCount: 312,
-    subscriberCount: 8940,
-    slug: "livescale",
-    bio: "Live commerce agency managing 12 seller accounts across all major platforms.",
-    teamSize: 8,
+    buyerCount: 48200,
+    showCount: 1840,
+    subscriberCount: 124000,
+    slug: "walmartlive",
+    bio: "Walmart Live — powering live commerce for Walmart's brand partners across every category.",
+    teamSize: 12,
     sellerCount: 12,
     whiteLabel: true,
-    whiteLabelDomain: "app.livescale.io",
+    whiteLabelDomain: "live.walmart.com",
     managedSellers: [
-      { id:"s1",  name:"CardVaultSC",    owner:"Sarah Chen",    avatar:"SC", category:"Trading Cards", plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","TT","AM","IG"], gmv:48200, gmvPrev:41800, buyerCount:847,  showCount:8,  lastShow:"Feb 20", subscriberCount:1204, manager:"tm2", monthlyFee:399, alerts:[{type:"opportunity",text:"VIP segment due for re-engagement campaign"}] },
-      { id:"s2",  name:"SneakerDropTR",  owner:"Tyler Rhodes",  avatar:"TR", category:"Sneakers",      plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","AM"],           gmv:31400, gmvPrev:28900, buyerCount:501,  showCount:6,  lastShow:"Feb 18", subscriberCount:612,  manager:"tm3", monthlyFee:199, alerts:[] },
-      { id:"s3",  name:"VintageFindsLV", owner:"Lisa Park",     avatar:"LP", category:"Vintage",       plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","IG"],           gmv:22800, gmvPrev:24100, buyerCount:388,  showCount:5,  lastShow:"Feb 17", subscriberCount:890,  manager:"tm5", monthlyFee:399, alerts:[{type:"warning",text:"GMV down 5.4% vs last month — review show cadence"}] },
-      { id:"s4",  name:"KingComics",     owner:"Devon King",    avatar:"DK", category:"Comics",        plan:"starter", planColor:"#10b981", status:"active", platforms:["WN"],                 gmv:8400,  gmvPrev:7200,  buyerCount:44,   showCount:2,  lastShow:"Feb 14", subscriberCount:31,   manager:"tm2", monthlyFee:79,  alerts:[{type:"opportunity",text:"Ready to upgrade to Growth — show frequency increasing"}] },
-      { id:"s5",  name:"ToyBreaksPDX",   owner:"Ray Nguyen",    avatar:"RN", category:"Toys",          plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["WN","TT"],           gmv:19200, gmvPrev:17400, buyerCount:312,  showCount:7,  lastShow:"Feb 21", subscriberCount:544,  manager:"tm3", monthlyFee:199, alerts:[] },
-      { id:"s6",  name:"CoinVaultNYC",   owner:"Marco Reyes",   avatar:"MR", category:"Coins",         plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","AM"],           gmv:41000, gmvPrev:38200, buyerCount:620,  showCount:9,  lastShow:"Feb 22", subscriberCount:981,  manager:"tm2", monthlyFee:399, alerts:[] },
-      { id:"s7",  name:"SportsMemoATL",  owner:"Keisha Brown",  avatar:"KB", category:"Sports Mem.",   plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","IG"],           gmv:27600, gmvPrev:29100, buyerCount:445,  showCount:6,  lastShow:"Feb 19", subscriberCount:728,  manager:"tm5", monthlyFee:199, alerts:[{type:"warning",text:"GMV down 5.2% — two cancellations last month"}] },
-      { id:"s8",  name:"LuxWatchMIA",    owner:"Clara Voss",    avatar:"CV", category:"Luxury Watches",plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["WN","IG","AM"],      gmv:89400, gmvPrev:82100, buyerCount:1140, showCount:11, lastShow:"Feb 23", subscriberCount:2104, manager:"tm5", monthlyFee:399, alerts:[{type:"opportunity",text:"Top GMV account — candidate for dedicated account review"}] },
-      { id:"s9",  name:"ArtDropLA",      owner:"Finn Cole",     avatar:"FC", category:"Art Prints",    plan:"growth",  planColor:"#7c3aed", status:"paused", platforms:["IG","TT"],           gmv:15800, gmvPrev:18200, buyerCount:221,  showCount:0,  lastShow:"Jan 28", subscriberCount:390,  manager:"tm3", monthlyFee:199, alerts:[{type:"alert",text:"Account paused 26 days — check in with owner re: reactivation"}] },
-      { id:"s10", name:"TechFlipSEA",    owner:"Aisha Okafor",  avatar:"AO", category:"Electronics",   plan:"starter", planColor:"#10b981", status:"active", platforms:["WN","AM"],           gmv:12400, gmvPrev:10800, buyerCount:178,  showCount:4,  lastShow:"Feb 16", subscriberCount:203,  manager:"tm3", monthlyFee:79,  alerts:[{type:"opportunity",text:"Growing fast — consider Growth plan upgrade"}] },
-      { id:"s11", name:"JewelryLiveDFW", owner:"Sofia Cruz",    avatar:"SC", category:"Jewelry",       plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["WN","TT","IG"],      gmv:33600, gmvPrev:31000, buyerCount:512,  showCount:7,  lastShow:"Feb 20", subscriberCount:844,  manager:"tm2", monthlyFee:199, alerts:[] },
-      { id:"s12", name:"OutdoorDropDEN", owner:"Ben Trujillo",  avatar:"BT", category:"Outdoors",      plan:"starter", planColor:"#10b981", status:"active", platforms:["WN"],                 gmv:9800,  gmvPrev:9200,  buyerCount:134,  showCount:3,  lastShow:"Feb 13", subscriberCount:167,  manager:"tm6", monthlyFee:79,  alerts:[] },
+      { id:"s1",  name:"Banana Republic",    owner:"Jamie Ellis",    avatar:"BR", category:"Apparel",         plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","IG","AM"],      gmv:184200, gmvPrev:162800, buyerCount:1840, showCount:11, lastShow:"Feb 22", subscriberCount:3820, manager:"tm2", monthlyFee:399, alerts:[{type:"opportunity",text:"Spring collection launch — schedule a live event this week"}] },
+      { id:"s2",  name:"Kylie Cosmetics",    owner:"Alyssa Kim",     avatar:"KC", category:"Beauty",          plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","IG"],           gmv:98400,  gmvPrev:84100,  buyerCount:2140, showCount:8,  lastShow:"Feb 21", subscriberCount:5890, manager:"tm3", monthlyFee:199, alerts:[] },
+      { id:"s3",  name:"Anker Electronics",  owner:"Dan Lv",         avatar:"AE", category:"Electronics",     plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["AM","TT"],           gmv:142000, gmvPrev:138400, buyerCount:2880, showCount:14, lastShow:"Feb 23", subscriberCount:4210, manager:"tm5", monthlyFee:399, alerts:[] },
+      { id:"s4",  name:"Tropicfeel",         owner:"Marc Pujol",     avatar:"TF", category:"Travel Footwear", plan:"starter", planColor:"#10b981", status:"active", platforms:["IG","AM"],           gmv:28400,  gmvPrev:21800,  buyerCount:128,  showCount:3,  lastShow:"Feb 18", subscriberCount:214,  manager:"tm2", monthlyFee:79,  alerts:[{type:"opportunity",text:"GMV up 30% — ready to upgrade to Growth"}] },
+      { id:"s5",  name:"Better Homes",       owner:"Lisa Chen",      avatar:"BH", category:"Home & Garden",   plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","AM"],           gmv:76200,  gmvPrev:71400,  buyerCount:1240, showCount:9,  lastShow:"Feb 21", subscriberCount:2180, manager:"tm3", monthlyFee:199, alerts:[] },
+      { id:"s6",  name:"Mainstays Home",     owner:"Retail Ops",     avatar:"MH", category:"Home Basics",     plan:"starter", planColor:"#10b981", status:"active", platforms:["AM"],                gmv:31800,  gmvPrev:29200,  buyerCount:620,  showCount:6,  lastShow:"Feb 19", subscriberCount:840,  manager:"tm2", monthlyFee:79,  alerts:[] },
+      { id:"s7",  name:"Athletic Works",     owner:"Kevin Park",     avatar:"AW", category:"Activewear",      plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","IG"],           gmv:64400,  gmvPrev:68200,  buyerCount:980,  showCount:7,  lastShow:"Feb 20", subscriberCount:1640, manager:"tm5", monthlyFee:199, alerts:[{type:"warning",text:"GMV down 5.6% — review show content strategy"}] },
+      { id:"s8",  name:"Time and Tru",       owner:"Style Team",     avatar:"TT", category:"Women's Fashion", plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","IG","AM"],      gmv:218400, gmvPrev:194800, buyerCount:3140, showCount:16, lastShow:"Feb 23", subscriberCount:6820, manager:"tm5", monthlyFee:399, alerts:[{type:"opportunity",text:"Top GMV account — strong candidate for featured placement"}] },
+      { id:"s9",  name:"George Menswear",    owner:"Brand Ops",      avatar:"GM", category:"Men's Fashion",   plan:"growth",  planColor:"#7c3aed", status:"paused", platforms:["TT","AM"],           gmv:42100,  gmvPrev:51200,  buyerCount:640,  showCount:0,  lastShow:"Jan 31", subscriberCount:980,  manager:"tm3", monthlyFee:199, alerts:[{type:"alert",text:"Account paused 24 days — check in re: spring relaunch"}] },
+      { id:"s10", name:"LEGO at Walmart",    owner:"Dan Soren",      avatar:"LG", category:"Toys & Games",    plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","AM"],           gmv:164000, gmvPrev:148200, buyerCount:2640, showCount:12, lastShow:"Feb 22", subscriberCount:5100, manager:"tm3", monthlyFee:399, alerts:[{type:"opportunity",text:"New set drops this month — schedule a build-along live"}] },
+      { id:"s11", name:"Samsung at Walmart", owner:"Tech Commerce",  avatar:"SS", category:"Electronics",     plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","AM","IG"],      gmv:341000, gmvPrev:312400, buyerCount:4820, showCount:18, lastShow:"Feb 23", subscriberCount:9840, manager:"tm2", monthlyFee:399, alerts:[] },
+      { id:"s12", name:"BetterGoods",        owner:"Food & Bev",     avatar:"BG", category:"Grocery & Food",  plan:"starter", planColor:"#10b981", status:"active", platforms:["TT","AM"],           gmv:22800,  gmvPrev:19400,  buyerCount:410,  showCount:5,  lastShow:"Feb 20", subscriberCount:620,  manager:"tm6", monthlyFee:79,  alerts:[] },
     ],
   },
 ];
 
 // ─── BUYER DATA (per persona) ─────────────────────────────────────────────────
 const BUYERS_BY_PERSONA = {
-  sarah: [
-    { id:"b1",  name:"Marcus Webb",    handle:"@marcuswebb_cards", platform:"WN", spend:4820, orders:34, lastOrder:"2d ago",  category:"Trading Cards", status:"vip",     score:9.4, avatar:"MW", tags:["VIP","Cards Break"], email:"m.webb@example.com", phone:"+1-555-0101" },
-    { id:"b2",  name:"Priya Nair",     handle:"@priyasfinds",      platform:"WN", spend:3210, orders:22, lastOrder:"1d ago",  category:"Vintage",       status:"vip",     score:8.9, avatar:"PN", tags:["VIP"],               email:"priya@example.com",  phone:"+1-555-0102" },
-    { id:"b3",  name:"Devon Price",    handle:"@devonp",           platform:"TT", spend:2980, orders:19, lastOrder:"5d ago",  category:"Trading Cards", status:"vip",     score:8.1, avatar:"DP", tags:["VIP","Big Spender"], email:"dp@example.com",     phone:"+1-555-0103" },
-    { id:"b4",  name:"Amy Chen",       handle:"@amyc_live",        platform:"AM", spend:1740, orders:12, lastOrder:"32d ago", category:"Cards",         status:"risk",    score:5.2, avatar:"AC", tags:[],                    email:"amyc@example.com",   phone:"+1-555-0104" },
-    { id:"b5",  name:"Jordan Mills",   handle:"@jmills",           platform:"WN", spend:890,  orders:6,  lastOrder:"28d ago", category:"Trading Cards", status:"risk",    score:4.8, avatar:"JM", tags:[],                    email:"jm@example.com",     phone:"+1-555-0105" },
-    { id:"b6",  name:"Chris Olsen",    handle:"@colsen_cards",     platform:"WN", spend:640,  orders:4,  lastOrder:"3d ago",  category:"Trading Cards", status:"active",  score:6.1, avatar:"CO", tags:["New"],               email:"co@example.com",     phone:"+1-555-0106" },
-    { id:"b7",  name:"Leila Hassan",   handle:"@leilashop",        platform:"TT", spend:420,  orders:3,  lastOrder:"7d ago",  category:"Cards",         status:"active",  score:5.5, avatar:"LH", tags:[],                    email:"lh@example.com",     phone:"+1-555-0107" },
-    { id:"b8",  name:"Omar Rashid",    handle:"@omar_collector",   platform:"IG", spend:210,  orders:2,  lastOrder:"91d ago", category:"Vintage",       status:"dormant", score:2.1, avatar:"OR", tags:[],                    email:"or@example.com",     phone:"+1-555-0108" },
+  sarah: [  // Banana Republic
+    { id:"b1", name:"Olivia Bennett",   handle:"@oliviastyle",      platform:"IG", spend:6840, orders:48, lastOrder:"1d ago",  category:"Outerwear",    status:"vip",     score:9.6, avatar:"OB", tags:["VIP","Member"],      email:"o.bennett@example.com", phone:"+1-555-0101" },
+    { id:"b2", name:"Claire Fontaine",  handle:"@clairef_fashion",  platform:"TT", spend:4210, orders:31, lastOrder:"2d ago",  category:"Dresses",      status:"vip",     score:9.1, avatar:"CF", tags:["VIP"],               email:"cf@example.com",        phone:"+1-555-0102" },
+    { id:"b3", name:"Marcus Duval",     handle:"@marcusd",          platform:"AM", spend:3480, orders:24, lastOrder:"4d ago",  category:"Blazers",      status:"vip",     score:8.4, avatar:"MD", tags:["VIP","Big Spender"], email:"md@example.com",        phone:"+1-555-0103" },
+    { id:"b4", name:"Natalie Rhodes",   handle:"@nat_styled",       platform:"IG", spend:1920, orders:14, lastOrder:"29d ago", category:"Accessories",  status:"risk",    score:5.1, avatar:"NR", tags:[],                    email:"nr@example.com",        phone:"+1-555-0104" },
+    { id:"b5", name:"Tom Archer",       handle:"@tomarcher",        platform:"TT", spend:1240, orders:9,  lastOrder:"31d ago", category:"Trousers",     status:"risk",    score:4.6, avatar:"TA", tags:[],                    email:"ta@example.com",        phone:"+1-555-0105" },
+    { id:"b6", name:"Zoe Kim",          handle:"@zoekim_looks",     platform:"IG", spend:980,  orders:7,  lastOrder:"3d ago",  category:"Knitwear",     status:"active",  score:6.8, avatar:"ZK", tags:["New"],               email:"zk@example.com",        phone:"+1-555-0106" },
+    { id:"b7", name:"Ellie Hoffman",    handle:"@ellieh",           platform:"TT", spend:620,  orders:4,  lastOrder:"8d ago",  category:"Dresses",      status:"active",  score:5.9, avatar:"EH", tags:[],                    email:"eh@example.com",        phone:"+1-555-0107" },
+    { id:"b8", name:"James Weston",     handle:"@jwestonshops",     platform:"AM", spend:290,  orders:2,  lastOrder:"88d ago", category:"Outerwear",    status:"dormant", score:2.3, avatar:"JW", tags:[],                    email:"jw@example.com",        phone:"+1-555-0108" },
   ],
-  tyler: [
-    { id:"b1",  name:"Jess Park",      handle:"@jesspark_kicks",   platform:"TT", spend:6400, orders:28, lastOrder:"1d ago",  category:"Jordan",        status:"vip",     score:9.7, avatar:"JP", tags:["VIP","Jordan Head"], email:"jp@example.com",     phone:"+1-555-0201" },
-    { id:"b2",  name:"Leo Santos",     handle:"@leosneaks",        platform:"AM", spend:4100, orders:18, lastOrder:"3d ago",  category:"Yeezy",         status:"vip",     score:8.8, avatar:"LS", tags:["VIP"],               email:"ls@example.com",     phone:"+1-555-0202" },
-    { id:"b3",  name:"Hana Kim",       handle:"@hanakick",         platform:"TT", spend:2200, orders:11, lastOrder:"6d ago",  category:"Nike SB",       status:"active",  score:7.2, avatar:"HK", tags:[],                    email:"hk@example.com",     phone:"+1-555-0203" },
-    { id:"b4",  name:"Amara Osei",     handle:"@amara_kicks",      platform:"TT", spend:890,  orders:5,  lastOrder:"44d ago", category:"Jordan",        status:"risk",    score:4.1, avatar:"AO", tags:[],                    email:"ao@example.com",     phone:"+1-555-0204" },
-    { id:"b5",  name:"Raj Patel",      handle:"@rajcops",          platform:"AM", spend:460,  orders:3,  lastOrder:"9d ago",  category:"Nike",          status:"new",     score:5.8, avatar:"RP", tags:["New"],               email:"rp@example.com",     phone:"+1-555-0205" },
+  tyler: [  // Kylie Cosmetics
+    { id:"b1", name:"Sienna Lopez",     handle:"@siennaglam",       platform:"TT", spend:4820, orders:62, lastOrder:"1d ago",  category:"Lip",          status:"vip",     score:9.8, avatar:"SL", tags:["VIP","Lip Obsessed"], email:"sl@example.com",       phone:"+1-555-0201" },
+    { id:"b2", name:"Maya Patel",       handle:"@mayabeauty",       platform:"IG", spend:3640, orders:44, lastOrder:"2d ago",  category:"Face",         status:"vip",     score:9.2, avatar:"MP", tags:["VIP"],               email:"mp@example.com",       phone:"+1-555-0202" },
+    { id:"b3", name:"Jade Wu",          handle:"@jadewumakeup",     platform:"TT", spend:2190, orders:28, lastOrder:"5d ago",  category:"Eye",          status:"active",  score:7.6, avatar:"JW", tags:[],                    email:"jw@example.com",       phone:"+1-555-0203" },
+    { id:"b4", name:"Brianna Cole",     handle:"@bricole_beauty",   platform:"IG", spend:980,  orders:12, lastOrder:"41d ago", category:"Lip",          status:"risk",    score:4.4, avatar:"BC", tags:[],                    email:"bc@example.com",       phone:"+1-555-0204" },
+    { id:"b5", name:"Ava Torres",       handle:"@avatorres",        platform:"TT", spend:540,  orders:7,  lastOrder:"6d ago",  category:"Sets",         status:"new",     score:6.1, avatar:"AT", tags:["New"],               email:"at@example.com",       phone:"+1-555-0205" },
   ],
-  devon: [
-    { id:"b1",  name:"Alice Fox",      handle:"@alicereads",       platform:"WN", spend:1120, orders:8,  lastOrder:"1d ago",  category:"Silver Age",    status:"vip",     score:8.2, avatar:"AF", tags:["VIP"],               email:"af@example.com",     phone:"+1-555-0301" },
-    { id:"b2",  name:"Benny Cruz",     handle:"@bennybooks",       platform:"WN", spend:640,  orders:5,  lastOrder:"4d ago",  category:"Key Issues",    status:"active",  score:6.8, avatar:"BC", tags:[],                    email:"bc@example.com",     phone:"+1-555-0302" },
-    { id:"b3",  name:"Tom Walsh",      handle:"@tomcollects",      platform:"WN", spend:280,  orders:2,  lastOrder:"60d ago", category:"Bronze Age",    status:"risk",    score:3.4, avatar:"TW", tags:[],                    email:"tw@example.com",     phone:"+1-555-0303" },
+  devon: [  // Tropicfeel
+    { id:"b1", name:"Luca Martini",     handle:"@lucatravel",       platform:"IG", spend:1480, orders:6,  lastOrder:"2d ago",  category:"Shoes",        status:"vip",     score:8.8, avatar:"LM", tags:["VIP"],               email:"lm@example.com",       phone:"+1-555-0301" },
+    { id:"b2", name:"Sofia Reyes",      handle:"@sofiawanders",     platform:"AM", spend:890,  orders:4,  lastOrder:"5d ago",  category:"Bags",         status:"active",  score:7.2, avatar:"SR", tags:[],                    email:"sr@example.com",       phone:"+1-555-0302" },
+    { id:"b3", name:"Nils Bergman",     handle:"@nilsroams",        platform:"IG", spend:340,  orders:2,  lastOrder:"58d ago", category:"Accessories",  status:"risk",    score:3.8, avatar:"NB", tags:[],                    email:"nb@example.com",       phone:"+1-555-0303" },
   ],
-  mia: [
-    { id:"b1",  name:"Marcus Webb",    handle:"@marcuswebb_cards", platform:"WN", spend:12840, orders:91, lastOrder:"1d ago",  category:"Trading Cards", status:"vip",     score:9.8, avatar:"MW", tags:["VIP","Power Buyer"],  email:"m.webb@example.com",  phone:"+1-555-0401" },
-    { id:"b2",  name:"Jess Park",      handle:"@jesspark_kicks",   platform:"TT", spend:9600,  orders:64, lastOrder:"2d ago",  category:"Sneakers",      status:"vip",     score:9.6, avatar:"JP", tags:["VIP","Jordan Head"],  email:"jp@example.com",      phone:"+1-555-0402" },
-    { id:"b3",  name:"Priya Nair",     handle:"@priyasfinds",      platform:"WN", spend:7210,  orders:48, lastOrder:"1d ago",  category:"Vintage",       status:"vip",     score:9.2, avatar:"PN", tags:["VIP"],               email:"priya@example.com",   phone:"+1-555-0403" },
-    { id:"b4",  name:"Leo Santos",     handle:"@leosneaks",        platform:"AM", spend:6400,  orders:38, lastOrder:"3d ago",  category:"Sneakers",      status:"vip",     score:8.9, avatar:"LS", tags:["VIP","Multi-Seller"], email:"ls@example.com",      phone:"+1-555-0404" },
-    { id:"b5",  name:"Hana Kim",       handle:"@hanakick",         platform:"TT", spend:4800,  orders:29, lastOrder:"4d ago",  category:"Sneakers",      status:"vip",     score:8.6, avatar:"HK", tags:["VIP"],               email:"hk@example.com",      phone:"+1-555-0405" },
-    { id:"b6",  name:"Devon Price",    handle:"@devonp",           platform:"TT", spend:3900,  orders:24, lastOrder:"6d ago",  category:"Trading Cards", status:"active",  score:8.1, avatar:"DP", tags:["Big Spender"],       email:"dp@example.com",      phone:"+1-555-0406" },
-    { id:"b7",  name:"Amara Osei",     handle:"@amara_kicks",      platform:"TT", spend:2800,  orders:18, lastOrder:"8d ago",  category:"Sneakers",      status:"active",  score:7.4, avatar:"AO", tags:[],                    email:"ao@example.com",      phone:"+1-555-0407" },
-    { id:"b8",  name:"Alice Fox",      handle:"@alicereads",       platform:"WN", spend:2400,  orders:16, lastOrder:"5d ago",  category:"Comics",        status:"active",  score:7.2, avatar:"AF", tags:[],                    email:"af@example.com",      phone:"+1-555-0408" },
-    { id:"b9",  name:"Chris Olsen",    handle:"@colsen_cards",     platform:"WN", spend:1840,  orders:12, lastOrder:"11d ago", category:"Trading Cards", status:"active",  score:6.8, avatar:"CO", tags:[],                    email:"co@example.com",      phone:"+1-555-0409" },
-    { id:"b10", name:"Raj Patel",      handle:"@rajcops",          platform:"AM", spend:1200,  orders:8,  lastOrder:"14d ago", category:"Sneakers",      status:"active",  score:6.2, avatar:"RP", tags:[],                    email:"rp@example.com",      phone:"+1-555-0410" },
-    { id:"b11", name:"Amy Chen",       handle:"@amyc_live",        platform:"AM", spend:880,   orders:5,  lastOrder:"38d ago", category:"Vintage",       status:"risk",    score:4.8, avatar:"AC", tags:[],                    email:"amyc@example.com",    phone:"+1-555-0411" },
-    { id:"b12", name:"Jordan Mills",   handle:"@jmills",           platform:"WN", spend:640,   orders:4,  lastOrder:"31d ago", category:"Trading Cards", status:"risk",    score:4.2, avatar:"JM", tags:[],                    email:"jm@example.com",      phone:"+1-555-0412" },
+  mia: [  // Walmart Live
+    { id:"b1",  name:"Jennifer Walsh",  handle:"@jenwshops",        platform:"AM", spend:18400, orders:124, lastOrder:"1d ago",  category:"Electronics",  status:"vip",    score:9.8, avatar:"JW", tags:["VIP","Power Buyer"],  email:"jw@example.com",       phone:"+1-555-0401" },
+    { id:"b2",  name:"Carlos Mendez",   handle:"@carlom",           platform:"TT", spend:12800, orders:98,  lastOrder:"2d ago",  category:"Fashion",      status:"vip",    score:9.4, avatar:"CM", tags:["VIP","Multi-Brand"],  email:"cm@example.com",       phone:"+1-555-0402" },
+    { id:"b3",  name:"Rachel Kim",      handle:"@rachelklive",      platform:"IG", spend:9840,  orders:72,  lastOrder:"1d ago",  category:"Beauty",       status:"vip",    score:9.1, avatar:"RK", tags:["VIP"],               email:"rk@example.com",       phone:"+1-555-0403" },
+    { id:"b4",  name:"David Park",      handle:"@dpark_deals",      platform:"AM", spend:7200,  orders:54,  lastOrder:"3d ago",  category:"Home",         status:"vip",    score:8.8, avatar:"DP", tags:["VIP","Deal Hunter"], email:"dp@example.com",       phone:"+1-555-0404" },
+    { id:"b5",  name:"Amber Stone",     handle:"@amberstone",       platform:"TT", spend:5600,  orders:42,  lastOrder:"4d ago",  category:"Beauty",       status:"vip",    score:8.4, avatar:"AS", tags:["VIP"],               email:"as@example.com",       phone:"+1-555-0405" },
+    { id:"b6",  name:"Mike Torres",     handle:"@miket_shop",       platform:"AM", spend:3800,  orders:28,  lastOrder:"7d ago",  category:"Electronics",  status:"active", score:8.0, avatar:"MT", tags:["Big Spender"],       email:"mt@example.com",       phone:"+1-555-0406" },
+    { id:"b7",  name:"Lisa Chang",      handle:"@lisachang",        platform:"IG", spend:2640,  orders:20,  lastOrder:"9d ago",  category:"Fashion",      status:"active", score:7.3, avatar:"LC", tags:[],                    email:"lc@example.com",       phone:"+1-555-0407" },
+    { id:"b8",  name:"Rob Martinez",    handle:"@robm",             platform:"TT", spend:1980,  orders:14,  lastOrder:"6d ago",  category:"Toys",         status:"active", score:7.0, avatar:"RM", tags:[],                    email:"rm@example.com",       phone:"+1-555-0408" },
+    { id:"b9",  name:"Tanya Brown",     handle:"@tanyab",           platform:"AM", spend:1420,  orders:10,  lastOrder:"12d ago", category:"Home",         status:"active", score:6.6, avatar:"TB", tags:[],                    email:"tb@example.com",       phone:"+1-555-0409" },
+    { id:"b10", name:"Kevin Liu",       handle:"@kliu_shop",        platform:"TT", spend:980,   orders:7,   lastOrder:"15d ago", category:"Electronics",  status:"active", score:6.1, avatar:"KL", tags:[],                    email:"kl@example.com",       phone:"+1-555-0410" },
+    { id:"b11", name:"Sarah Odom",      handle:"@sarahodom",        platform:"AM", spend:640,   orders:4,   lastOrder:"36d ago", category:"Grocery",      status:"risk",   score:4.9, avatar:"SO", tags:[],                    email:"so@example.com",       phone:"+1-555-0411" },
+    { id:"b12", name:"Paul Grant",      handle:"@pgrant",           platform:"TT", spend:420,   orders:3,   lastOrder:"44d ago", category:"Fashion",      status:"risk",   score:4.2, avatar:"PG", tags:[],                    email:"pg@example.com",       phone:"+1-555-0412" },
   ],
 };
 
 // ─── SHOWS DATA ───────────────────────────────────────────────────────────────
 const SHOWS = [
-  { id:"sh1", title:"Thursday Night Break #94",  date:"Feb 20, 2025", platform:"WN", gmv:4820, buyers:38, repeatRate:68, duration:"2h 14m", aiDebrief:"Strong show — your regulars showed up. Marcus Webb dropped $640 in the last 30 min. Consider scheduling a Jordan-focused show next week based on buyer category interest signals.", topItem:"2023 Topps Chrome Hobby Box", newBuyers:8 },
-  { id:"sh2", title:"TikTok Weekend Drop #31",   date:"Feb 15, 2025", platform:"TT", gmv:3210, buyers:29, repeatRate:55, duration:"1h 48m", aiDebrief:"Good reach but lower repeat rate vs Whatnot. 14 first-time buyers. Your intro hook landed — 8 comments mentioning the packaging reveal.", topItem:"Refractor Lot x10", newBuyers:14 },
-  { id:"sh3", title:"Amazon Prime Flash Sale",   date:"Feb 10, 2025", platform:"AM", gmv:2100, buyers:21, repeatRate:43, duration:"1h 02m", aiDebrief:"Amazon buyers skew more transactional. 21 orders placed, 18 shipped same-day. Consider bundling with a Whatnot opt-in push to capture these buyers long-term.", topItem:"Graded PSA 9 Lot", newBuyers:18 },
-  { id:"sh4", title:"Thursday Night Break #93",  date:"Feb 13, 2025", platform:"WN", gmv:5100, buyers:42, repeatRate:72, duration:"2h 31m", aiDebrief:"Best show this month. 42 unique buyers, 72% repeat. VIP segment drove 61% of GMV.", topItem:"Vintage Wax Box", newBuyers:6 },
+  { id:"sh1", title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch — the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
+  { id:"sh2", title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach — 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
+  { id:"sh3", title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional — high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
+  { id:"sh4", title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
 ];
 
 // ─── CAMPAIGNS DATA ───────────────────────────────────────────────────────────
 const CAMPAIGNS = [
-  { id:"c1", name:"Thursday Break Reminder",       type:"email",  status:"sent",  sentAt:"Feb 19, 2025", recipients:842, opened:61, clicked:38, converted:22, gmv:1840 },
-  { id:"c2", name:"VIP Early Access — Feb",        type:"sms",    status:"sent",  sentAt:"Feb 14, 2025", recipients:124, opened:89, clicked:62, converted:41, gmv:3200 },
-  { id:"c3", name:"Win-Back: 30-Day Dormant",      type:"email",  status:"sent",  sentAt:"Feb 8, 2025",  recipients:203, opened:34, clicked:18, converted:9,  gmv:680  },
-  { id:"c4", name:"New Inventory Drop Alert",      type:"sms",    status:"draft", sentAt:null,           recipients:0,   opened:0,  clicked:0,  converted:0,  gmv:0    },
-  { id:"c5", name:"IG Keyword: DM BREAK",          type:"ig_dm",  status:"sent",  sentAt:"Feb 17, 2025", recipients:531, opened:94, clicked:71, converted:38, gmv:2840 },
-  { id:"c6", name:"TikTok Show Announcement",      type:"tt_dm",  status:"sent",  sentAt:"Feb 12, 2025", recipients:289, opened:88, clicked:64, converted:19, gmv:1140 },
-  { id:"c7", name:"Whatnot Show Notification",     type:"wn_dm",  status:"sent",  sentAt:"Feb 10, 2025", recipients:406, opened:79, clicked:52, converted:28, gmv:1960 },
-  { id:"c8", name:"Amazon Order Follow-Up",        type:"am_msg", status:"sent",  sentAt:"Feb 6, 2025",  recipients:88,  opened:62, clicked:0,  converted:0,  gmv:0    },
-  { id:"c9", name:"IG: Mystery Box Drop",          type:"ig_dm",  status:"draft", sentAt:null,           recipients:0,   opened:0,  clicked:0,  converted:0,  gmv:0    },
+  { id:"c1", name:"Spring Launch Reminder",          type:"email",  status:"sent",  sentAt:"Feb 21, 2025", recipients:3420, opened:64, clicked:41, converted:28, gmv:8840  },
+  { id:"c2", name:"VIP Members Early Access",        type:"sms",    status:"sent",  sentAt:"Feb 19, 2025", recipients:480,  opened:91, clicked:68, converted:52, gmv:12600 },
+  { id:"c3", name:"Win-Back: 30-Day Inactive",       type:"email",  status:"sent",  sentAt:"Feb 8, 2025",  recipients:820,  opened:36, clicked:19, converted:11, gmv:2140  },
+  { id:"c4", name:"New Arrivals Drop Alert",         type:"sms",    status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
+  { id:"c5", name:"IG Keyword: DM STYLE",            type:"ig_dm",  status:"sent",  sentAt:"Feb 20, 2025", recipients:1840, opened:96, clicked:74, converted:44, gmv:9820  },
+  { id:"c6", name:"TikTok Drop Announcement",        type:"tt_dm",  status:"sent",  sentAt:"Feb 15, 2025", recipients:1120, opened:89, clicked:66, converted:31, gmv:5640  },
+  { id:"c7", name:"Amazon Deal Notification",        type:"am_msg", status:"sent",  sentAt:"Feb 11, 2025", recipients:640,  opened:71, clicked:48, converted:24, gmv:3980  },
+  { id:"c8", name:"IG: Bundle Drop Teaser",          type:"ig_dm",  status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
 ];
 
 
@@ -214,61 +213,61 @@ const KEYWORD_AUTOMATIONS = [
     status: "active",
     platforms: ["TT", "IG"],
     keywords: [
-      { word: "JOIN",      optIns: 180, thisWeek: 12 },
-      { word: "SUBSCRIBE", optIns: 43,  thisWeek: 6  },
-      { word: "IN",        optIns: 28,  thisWeek: 3  },
+      { word: "JOIN",      optIns: 312, thisWeek: 28 },
+      { word: "SUBSCRIBE", optIns: 94,  thisWeek: 11 },
+      { word: "IN",        optIns: 58,  thisWeek: 7  },
     ],
-    reply: "Hey {first_name}! 🎉 You're officially on the {shop_name} VIP list. You'll get first access to breaks, exclusive drops, and show alerts. Stay tuned!",
+    reply: "Hey {first_name}! 🎉 You're officially on the {shop_name} insider list. You'll get first access to new collections, live drops, and member-only offers. Stay tuned!",
     goal: "list_growth",
     createdAt: "Jan 10, 2025",
-    totalOptIns: 251,
-    byPlatform: { TT: 148, IG: 103 },
+    totalOptIns: 464,
+    byPlatform: { TT: 268, IG: 196 },
   },
   {
     id: "ka2",
-    name: "Thursday Break Hype",
+    name: "Spring Launch Hype",
     status: "active",
     platforms: ["TT", "IG"],
     keywords: [
-      { word: "BREAK", optIns: 94, thisWeek: 22 },
-      { word: "CARDS", optIns: 31, thisWeek: 8  },
+      { word: "STYLE",  optIns: 284, thisWeek: 68 },
+      { word: "SPRING", optIns: 142, thisWeek: 44 },
     ],
-    reply: "You're locked in for Thursday's break! 📦 I'll DM you 1 hour before we go live with the direct link. See you there!",
+    reply: "You're in for the Spring Collection launch! 🌸 I'll DM you 1 hour before we go live with the direct link and a members-only discount. See you there!",
     goal: "event",
     createdAt: "Feb 1, 2025",
-    totalOptIns: 125,
-    byPlatform: { TT: 88, IG: 37 },
+    totalOptIns: 426,
+    byPlatform: { TT: 248, IG: 178 },
   },
   {
     id: "ka3",
-    name: "VIP Flash Deals",
-    status: "paused",
+    name: "VIP Member Access",
+    status: "active",
     platforms: ["IG"],
     keywords: [
-      { word: "VIP",   optIns: 67, thisWeek: 0 },
-      { word: "DEALS", optIns: 19, thisWeek: 0 },
+      { word: "VIP",    optIns: 198, thisWeek: 22 },
+      { word: "MEMBER", optIns: 86,  thisWeek: 14 },
     ],
-    reply: "Welcome to the VIP list 👑 You'll get exclusive deals and early access before anyone else. Watch your DMs — your first offer is coming soon!",
+    reply: "Welcome to the VIP list 👑 You'll get member-early access to every collection drop before it goes public. Watch your DMs — your welcome offer lands tomorrow.",
     goal: "vip_access",
     createdAt: "Jan 28, 2025",
-    totalOptIns: 86,
-    byPlatform: { TT: 0, IG: 86 },
+    totalOptIns: 284,
+    byPlatform: { TT: 0, IG: 284 },
   },
   {
     id: "ka4",
-    name: "Mystery Box Drop",
+    name: "Bundle Drop Campaign",
     status: "active",
     platforms: ["TT"],
     keywords: [
-      { word: "MYSTERY", optIns: 112, thisWeek: 34 },
-      { word: "BOX",     optIns: 58,  thisWeek: 18 },
-      { word: "SURPRISE",optIns: 29,  thisWeek: 11 },
+      { word: "BUNDLE",  optIns: 188, thisWeek: 58 },
+      { word: "DEAL",    optIns: 94,  thisWeek: 32 },
+      { word: "SET",     optIns: 62,  thisWeek: 18 },
     ],
-    reply: "You're in for the Mystery Box drop! 🎁 Limited stock — I'll DM you the link the second it goes live. Get ready!",
+    reply: "You're in for the bundle drop! 🎁 Limited stock goes live tonight — I'll DM you the direct link the moment it's live. First 50 orders get free shipping!",
     goal: "product_drop",
     createdAt: "Feb 10, 2025",
-    totalOptIns: 199,
-    byPlatform: { TT: 199, IG: 0 },
+    totalOptIns: 344,
+    byPlatform: { TT: 344, IG: 0 },
   },
 ];
 
@@ -405,16 +404,32 @@ function CheckoutModal({ plan, onClose }) {
 
 // ─── SHOPIFY CATALOG DATA ─────────────────────────────────────────────────────
 const PRODUCTS = [
-  { id:"p1",  name:"2023 Topps Chrome Hobby Box",       sku:"TC23-HOB",  price:189, cost:112, inventory:12, category:"Sealed Wax",     image:"📦", platforms:["WN","TT","AM"],    showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:34, avgPerShow:3.2 },
-  { id:"p2",  name:"Bowman Chrome Prospect Lot x10",    sku:"BC-PROS10", price:64,  cost:38,  inventory:28, category:"Lots",           image:"🃏", platforms:["WN","TT"],         showReady:true,  shopifyId:"sh_002", aiScore:8.8, soldLast30:28, avgPerShow:4.1 },
-  { id:"p3",  name:"PSA 9 Graded Lot x3",               sku:"PSA9-L3",   price:220, cost:148, inventory:6,  category:"Graded",         image:"🏆", platforms:["WN","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:19, avgPerShow:2.8 },
-  { id:"p4",  name:"Vintage Wax Box 1987 Topps",        sku:"VWB-87T",   price:340, cost:194, inventory:3,  category:"Vintage",        image:"✨", platforms:["WN"],              showReady:true,  shopifyId:"sh_004", aiScore:7.6, soldLast30:8,  avgPerShow:1.2 },
-  { id:"p5",  name:"Refractor Lot x25 Mixed",           sku:"REF-MX25",  price:49,  cost:27,  inventory:45, category:"Lots",           image:"💎", platforms:["WN","TT","AM","IG"],showReady:false, shopifyId:"sh_005", aiScore:8.2, soldLast30:41, avgPerShow:5.6 },
-  { id:"p6",  name:"Jordan RC Reprint Set",             sku:"MJ-RC-SET",  price:89,  cost:41,  inventory:15, category:"Singles",        image:"🐐", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_006", aiScore:9.7, soldLast30:22, avgPerShow:3.8 },
-  { id:"p7",  name:"2024 Prizm Draft Football Blaster", sku:"PZ24-BLT",  price:39,  cost:23,  inventory:30, category:"Sealed Wax",     image:"🏈", platforms:["WN","TT","AM"],    showReady:false, shopifyId:"sh_007", aiScore:7.1, soldLast30:15, avgPerShow:2.1 },
-  { id:"p8",  name:"Mystery Box — Card Collector",      sku:"MYS-CC-01", price:29,  cost:13,  inventory:50, category:"Mystery",        image:"🎁", platforms:["WN","TT","IG"],    showReady:true,  shopifyId:"sh_008", aiScore:8.5, soldLast30:63, avgPerShow:7.2 },
-  { id:"p9",  name:"1952 Topps Commons Lot",            sku:"52T-COM",   price:125, cost:90,  inventory:8,  category:"Vintage",        image:"📜", platforms:["WN","AM"],         showReady:false, shopifyId:"sh_009", aiScore:6.8, soldLast30:5,  avgPerShow:0.8 },
-  { id:"p10", name:"Luka Doncic Rookie Lot x5",         sku:"LUKA-RC5",  price:149, cost:96,  inventory:10, category:"Singles",        image:"⭐", platforms:["WN","TT","AM","IG"],showReady:true,  shopifyId:"sh_010", aiScore:9.6, soldLast30:31, avgPerShow:4.4 },
+  // ── Banana Republic (Pro) — Apparel & Fashion ───────────────────────────────
+  { id:"p1",  name:"Merino Wool Blazer",               sku:"BR-BLZ-001", price:228, cost:82,  inventory:48,  category:"Blazers",      image:"🧥", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:62,  avgPerShow:5.8 },
+  { id:"p2",  name:"Italian Linen Trousers",            sku:"BR-TRS-002", price:148, cost:51,  inventory:84,  category:"Bottoms",      image:"👖", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_002", aiScore:8.9, soldLast30:88,  avgPerShow:7.2 },
+  { id:"p3",  name:"Leather Crossbody Bag",             sku:"BR-BAG-003", price:198, cost:74,  inventory:36,  category:"Accessories",  image:"👜", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:44,  avgPerShow:3.9 },
+  { id:"p4",  name:"Silk Wrap Midi Dress",              sku:"BR-DRS-004", price:268, cost:96,  inventory:22,  category:"Dresses",      image:"👗", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_004", aiScore:9.6, soldLast30:38,  avgPerShow:4.1 },
+  { id:"p5",  name:"Cashmere Crewneck Sweater",         sku:"BR-KNT-005", price:188, cost:68,  inventory:60,  category:"Knitwear",     image:"🧶", platforms:["TT","IG","AM"],    showReady:false, shopifyId:"sh_005", aiScore:8.4, soldLast30:52,  avgPerShow:5.0 },
+  { id:"p6",  name:"Slim Chino Shorts",                 sku:"BR-SHT-006", price:80,  cost:28,  inventory:120, category:"Bottoms",      image:"🩳", platforms:["TT","AM"],         showReady:true,  shopifyId:"sh_006", aiScore:7.8, soldLast30:94,  avgPerShow:8.4 },
+  { id:"p7",  name:"Suede Chelsea Boots",               sku:"BR-BOO-007", price:298, cost:108, inventory:18,  category:"Footwear",     image:"👢", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_007", aiScore:8.2, soldLast30:28,  avgPerShow:2.6 },
+  { id:"p8",  name:"Spring Style Bundle (3pc)",         sku:"BR-BND-008", price:148, cost:48,  inventory:30,  category:"Bundles",      image:"🎁", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_008", aiScore:9.2, soldLast30:71,  avgPerShow:6.8 },
+  { id:"p9",  name:"Tailored Wool Overcoat",            sku:"BR-OVR-009", price:498, cost:182, inventory:12,  category:"Outerwear",    image:"🧣", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_009", aiScore:7.4, soldLast30:14,  avgPerShow:1.4 },
+  { id:"p10", name:"Linen Button-Down Shirt",           sku:"BR-SHR-010", price:98,  cost:34,  inventory:96,  category:"Tops",         image:"👔", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_010", aiScore:8.7, soldLast30:108, avgPerShow:9.1 },
+
+  // ── Kylie Cosmetics (Growth) — Beauty ──────────────────────────────────────
+  { id:"p11", name:"Matte Lip Kit — Ruby",              sku:"KC-LIP-001", price:29,  cost:7,   inventory:840, category:"Lip",          image:"💄", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_011", aiScore:9.8, soldLast30:482, avgPerShow:48.2 },
+  { id:"p12", name:"Kyshadow Palette — Bronze",         sku:"KC-EYE-002", price:45,  cost:11,  inventory:420, category:"Eye",          image:"✨", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_012", aiScore:9.4, soldLast30:314, avgPerShow:31.4 },
+  { id:"p13", name:"Skin Tint SPF 30",                  sku:"KC-FAC-003", price:38,  cost:9,   inventory:560, category:"Face",         image:"🌟", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_013", aiScore:9.2, soldLast30:268, avgPerShow:26.8 },
+  { id:"p14", name:"Gloss Drip — Clear",                sku:"KC-GLS-004", price:16,  cost:4,   inventory:1200,category:"Lip",          image:"💋", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_014", aiScore:8.8, soldLast30:620, avgPerShow:62.0 },
+  { id:"p15", name:"Holiday Collection Set (6pc)",      sku:"KC-SET-005", price:89,  cost:22,  inventory:180, category:"Sets",         image:"🎀", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_015", aiScore:9.6, soldLast30:188, avgPerShow:18.8 },
+  { id:"p16", name:"Pressed Blush — Peach Sorbet",      sku:"KC-BLH-006", price:24,  cost:6,   inventory:680, category:"Face",         image:"🍑", platforms:["TT","IG"],         showReady:false, shopifyId:"sh_016", aiScore:8.6, soldLast30:244, avgPerShow:24.4 },
+  { id:"p17", name:"Kylighter Highlighter Stick",       sku:"KC-HGL-007", price:21,  cost:5,   inventory:740, category:"Face",         image:"💫", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_017", aiScore:8.4, soldLast30:312, avgPerShow:31.2 },
+
+  // ── Tropicfeel (Starter) — Travel Footwear & Gear ──────────────────────────
+  { id:"p18", name:"Canyon All-Terrain Sneaker",        sku:"TF-SNK-001", price:148, cost:58,  inventory:84,  category:"Shoes",        image:"👟", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_018", aiScore:8.4, soldLast30:24,  avgPerShow:3.2 },
+  { id:"p19", name:"Shell Travel Backpack 26L",         sku:"TF-BAG-001", price:178, cost:68,  inventory:42,  category:"Bags",         image:"🎒", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_019", aiScore:8.0, soldLast30:14,  avgPerShow:2.4 },
+  { id:"p20", name:"Nest 2-in-1 Sandal",                sku:"TF-SND-001", price:118, cost:44,  inventory:62,  category:"Shoes",        image:"🩴", platforms:["IG"],              showReady:true,  shopifyId:"sh_020", aiScore:7.6, soldLast30:18,  avgPerShow:2.8 },
+  { id:"p21", name:"Tropicfeel Starter Bundle",         sku:"TF-BND-001", price:228, cost:82,  inventory:24,  category:"Bundles",      image:"🌴", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_021", aiScore:7.2, soldLast30:8,   avgPerShow:1.4 },
 ];
 
 // ─── PLATFORM FEES (from Shopify seller context) ─────────────────────────────
@@ -523,15 +538,15 @@ const PLAN_FEATURES = {
 
 // ─── ENTERPRISE TEAM ──────────────────────────────────────────────────────────
 const ENTERPRISE_TEAM = [
-  { id:"tm1", name:"Mia Torres",   role:"Owner",   email:"mia@livescale.io",    avatar:"MT", color:"#a78bfa", lastActive:"Online now",  assignedSellers:["all"],                                          permissions:["all"] },
-  { id:"tm2", name:"Jake Chen",    role:"Manager", email:"jake@livescale.io",   avatar:"JC", color:"#7c3aed", lastActive:"2h ago",       assignedSellers:["s1","s4","s6","s11"],                           permissions:["view","edit","campaigns","buyers","shows"] },
-  { id:"tm3", name:"Priya Singh",  role:"Manager", email:"priya@livescale.io",  avatar:"PS", color:"#10b981", lastActive:"1h ago",       assignedSellers:["s2","s5","s9","s10"],                           permissions:["view","edit","campaigns","buyers","shows"] },
-  { id:"tm4", name:"Marcus Lee",   role:"Analyst", email:"marcus@livescale.io", avatar:"ML", color:"#f59e0b", lastActive:"4h ago",       assignedSellers:["all"],                                          permissions:["view","analytics"] },
-  { id:"tm5", name:"Devon Walsh",  role:"Manager", email:"devon@livescale.io",  avatar:"DW", color:"#ec4899", lastActive:"30m ago",      assignedSellers:["s3","s7","s8"],                                 permissions:["view","edit","campaigns","buyers","shows"] },
-  { id:"tm6", name:"Amy Torres",   role:"Support", email:"amy@livescale.io",    avatar:"AT", color:"#3b82f6", lastActive:"Yesterday",    assignedSellers:["s1","s2","s3","s4","s5","s6"],                  permissions:["view","buyers"] },
-  { id:"tm7", name:"Chris Park",   role:"Support", email:"chris@livescale.io",  avatar:"CP", color:"#f43f5e", lastActive:"3h ago",       assignedSellers:["s7","s8","s9","s10","s11","s12"],               permissions:["view","buyers"] },
-  { id:"tm8", name:"Sam Rivera",   role:"Analyst",  email:"sam@livescale.io",    avatar:"SR", color:"#a78bfa", lastActive:"1d ago",   assignedSellers:["all"],                                          permissions:["view","analytics"] },
-  { id:"tm9", name:"Jordan Reed",  role:"Producer", email:"jordan@livescale.io", avatar:"JR", color:"#06b6d4", lastActive:"Online now", assignedSellers:["s1","s2","s6","s8","s11"], permissions:["shows","production","catalog","live"] },
+  { id:"tm1",  name:"Rachel Nguyen",  role:"Owner",    email:"rachel@walmart.com",   avatar:"RN", color:"#a78bfa", lastActive:"Online now", assignedSellers:["all"],                         permissions:["all"] },
+  { id:"tm2",  name:"Jake Chen",      role:"Manager",  email:"jake@walmart.com",     avatar:"JC", color:"#7c3aed", lastActive:"2h ago",      assignedSellers:["s1","s4","s6","s11"],          permissions:["view","edit","campaigns","buyers","shows"] },
+  { id:"tm3",  name:"Priya Singh",    role:"Manager",  email:"priya@walmart.com",    avatar:"PS", color:"#10b981", lastActive:"1h ago",      assignedSellers:["s2","s5","s9","s10"],          permissions:["view","edit","campaigns","buyers","shows"] },
+  { id:"tm4",  name:"Marcus Lee",     role:"Analyst",  email:"marcus@walmart.com",   avatar:"ML", color:"#f59e0b", lastActive:"4h ago",      assignedSellers:["all"],                         permissions:["view","analytics"] },
+  { id:"tm5",  name:"Devon Walsh",    role:"Manager",  email:"devon@walmart.com",    avatar:"DW", color:"#ec4899", lastActive:"30m ago",     assignedSellers:["s3","s7","s8"],               permissions:["view","edit","campaigns","buyers","shows"] },
+  { id:"tm6",  name:"Amy Torres",     role:"Support",  email:"amy@walmart.com",      avatar:"AT", color:"#3b82f6", lastActive:"Yesterday",   assignedSellers:["s1","s2","s3","s4","s5","s6"], permissions:["view","buyers"] },
+  { id:"tm7",  name:"Chris Park",     role:"Support",  email:"chris@walmart.com",    avatar:"CP", color:"#f43f5e", lastActive:"3h ago",      assignedSellers:["s7","s8","s9","s10","s11","s12"], permissions:["view","buyers"] },
+  { id:"tm8",  name:"Sam Rivera",     role:"Analyst",  email:"sam@walmart.com",      avatar:"SR", color:"#a78bfa", lastActive:"1d ago",      assignedSellers:["all"],                         permissions:["view","analytics"] },
+  { id:"tm9",  name:"Jordan Reed",    role:"Producer", email:"jordan@walmart.com",   avatar:"JR", color:"#06b6d4", lastActive:"Online now",  assignedSellers:["s1","s2","s8","s10","s11"],   permissions:["shows","production","catalog","live"] },
 ];
 
 // ─── ENTERPRISE NAV ───────────────────────────────────────────────────────────
@@ -937,11 +952,11 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
   const st = STATUS_META[buyer.status];
 
   const timeline = [
-    { date:"Feb 20, 2025", event:"Placed order #34 — 2023 Topps Chrome", amount:320 },
+    { date:"Feb 20, 2025", event:"Placed order #34 — Silk Wrap Midi Dress", amount:268 },
     { date:"Feb 15, 2025", event:"Placed order #33 — Bowman Chrome Prospect", amount:185 },
     { date:"Feb 10, 2025", event:"Subscribed to show reminders via SMS", amount:null },
-    { date:"Feb 1,  2025", event:"Placed order #32 — Vintage Wax Box", amount:640 },
-    { date:"Jan 24, 2025", event:"Placed order #31 — PSA 9 Lot x3", amount:420 },
+    { date:"Feb 1,  2025", event:"Placed order #32 — Spring Style Bundle (3pc)", amount:148 },
+    { date:"Jan 24, 2025", event:"Placed order #31 — Merino Wool Blazer", amount:228 },
   ];
 
   return (
@@ -2376,7 +2391,7 @@ function KeywordAutomationsTab({ persona }) {
                         <div style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
                           <div style={{ width:26, height:26, borderRadius:"50%", background:`${C.accent}22`, border:`1px solid ${C.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:C.accent, flexShrink:0, marginTop:1 }}>S</div>
                           <div style={{ background:C.surface2, borderRadius:"3px 10px 10px 10px", padding:"10px 13px", fontSize:12, color:C.text, lineHeight:1.6 }}>
-                            {a.reply.replace("{first_name}","Alex").replace("{shop_name}","CardVaultSC")}
+                            {a.reply.replace("{first_name}","Alex").replace("{shop_name}","Banana Republic")}
                           </div>
                         </div>
                       </div>
@@ -2449,7 +2464,7 @@ function AutomationBuilder({ initial, onSave, onClose }) {
     onSave({ name, platforms, keywords:keywordList, reply, goal, status:initial?.status||"active" });
   };
 
-  const preview = reply.replace(/\{first_name\}/g,"Alex").replace(/\{shop_name\}/g,"CardVaultSC");
+  const preview = reply.replace(/\{first_name\}/g,"Alex").replace(/\{shop_name\}/g,"Banana Republic");
 
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.8)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }} onClick={onClose}>
@@ -4752,9 +4767,9 @@ function ScreenCatalog({ persona, navigate }) {
 
               <div style={{ background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:12, padding:"12px 16px", marginBottom:20 }}>
                 {[
-                  { name:"2023 Topps Chrome Hobby Box", sku:"TC23-HOB", price:"$189", inventory:12, img:"📦" },
-                  { name:"PSA 9 Graded Lot x3",          sku:"PSA9-L3",  price:"$220", inventory:6,  img:"🏆" },
-                  { name:"Refractor Lot x25 Mixed",       sku:"REF-MX25",price:"$49",  inventory:45, img:"💎" },
+                  { name:"Merino Wool Blazer",           sku:"BR-BLZ-001", price:"$228", inventory:48, img:"🧥" },
+                  { name:"Silk Wrap Midi Dress",          sku:"BR-DRS-004", price:"$268", inventory:22, img:"👗" },
+                  { name:"Spring Style Bundle (3pc)",     sku:"BR-BND-008", price:"$148", inventory:30, img:"🎁" },
                 ].map((p, i, arr)=>(
                   <div key={p.sku} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:i<arr.length-1?`1px solid #0d0d18`:"none" }}>
                     <span style={{ fontSize:18 }}>{p.img}</span>
@@ -5070,7 +5085,7 @@ function ScreenShowPlanner({ navigate }) {
               <div>
                 <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}33`, borderRadius:14, padding:"16px 18px", marginBottom:14 }}>
                   <div style={{ fontSize:10, fontWeight:700, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>✦ AI Show Strategy</div>
-                  <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65 }}>Opening with the Mystery Box is your highest-converting cold opener — it drives 7.2 units/show on average. Following with Luka RC creates urgency early while buyers are most engaged.</div>
+                  <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65 }}>Opening with the Spring Style Bundle drives the highest bundle attachment — 6.8 units/show on average. Following with the Silk Wrap Dress creates urgency early while live viewers are most engaged.</div>
                 </div>
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
                   <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>Projected Performance</div>
@@ -5934,7 +5949,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   icon:"🏆",
                   color:"#a78bfa",
                   title:"3 high-AI-score products underperformed last show",
-                  insight:`Mystery Box (AI: 8.5), Luka Doncic RC Lot (AI: 9.6), and Jordan RC Reprint (AI: 9.7) all have AI scores above 9.0 but weren't featured in your last 2 shows. Historically, featuring 2+ top-AI-score products per show increases average GMV by $${Math.round(totalGMV/SHOWS.length*0.18).toLocaleString()}. Consider opening your next show with these items.`,
+                  insight:`Silk Wrap Midi Dress (AI: 9.6), Leather Crossbody Bag (AI: 9.1), and Merino Wool Blazer (AI: 9.4) all have AI scores above 9.0 but weren't featured in your last 2 shows. Historically, featuring 2+ top-AI-score products per show increases average GMV by $${Math.round(totalGMV/SHOWS.length*0.18).toLocaleString()}. Consider opening your next show with these items.`,
                   action:"Add to Show Planner",
                   impact:`+$${Math.round(totalGMV/SHOWS.length*0.18).toLocaleString()} est. GMV per show`,
                   confidence:88,
