@@ -1740,15 +1740,15 @@ function ScreenLive({ buyers, navigate, params }) {
       </div>
 
       {/* ── MAIN BODY ── */}
-      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
+      <div style={{ flex:1, display:"flex", overflow:"hidden", minHeight:0 }}>
 
         {/* ── BUYER FEED ── */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", borderRight:`1px solid ${C.border}` }}>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", borderRight:`1px solid ${C.border}`, minHeight:0 }}>
           <div style={{ padding:"10px 16px", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Quick lookup — search any buyer…"
               style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 12px", color:C.text, fontSize:12, outline:"none" }} />
           </div>
-          <div style={{ overflowY:"auto", flex:1 }}>
+          <div style={{ overflowY:"auto", flex:1, minHeight:0 }}>
             {filtered.map((b,i)=>{
               const pl   = PLATFORMS[b.platform];
               const st   = STATUS_META[b.status];
@@ -1799,7 +1799,7 @@ function ScreenLive({ buyers, navigate, params }) {
         </div>
 
         {/* ── RIGHT PANEL — BUYER CONTEXT ── */}
-        <div style={{ width:320, display:"flex", flexDirection:"column", background:"#050508", flexShrink:0 }}>
+        <div style={{ width:320, display:"flex", flexDirection:"column", background:"#050508", flexShrink:0, minHeight:0, overflow:"hidden" }}>
 
           {selectedBuyer ? (
             <>
