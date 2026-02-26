@@ -5,7 +5,7 @@ const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #06060e; }
-  *, *:hover, *:focus, *:active { cursor: none !important; }
+  *, *:focus, *:active { cursor: none !important; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 99px; }
@@ -48,10 +48,11 @@ const C = {
 
 // ─── PLATFORM META ────────────────────────────────────────────────────────────
 const PLATFORMS = {
-  WN: { label:"Whatnot",     color:"#7c3aed", short:"WN" },
-  TT: { label:"TikTok Shop", color:"#f43f5e", short:"TT" },
-  AM: { label:"Amazon Live", color:"#f59e0b", short:"AM" },
-  IG: { label:"Instagram",   color:"#ec4899", short:"IG" },
+  WN: { label:"Whatnot",       color:"#7c3aed", short:"WN" },
+  TT: { label:"TikTok Shop",   color:"#f43f5e", short:"TT" },
+  AM: { label:"Amazon Live",   color:"#f59e0b", short:"AM" },
+  IG: { label:"Instagram",     color:"#ec4899", short:"IG" },
+  YT: { label:"YouTube Live",  color:"#ff0000", short:"YT", shopifyAttribution:true },
 };
 
 const STATUS_META = {
@@ -73,12 +74,7 @@ const PERSONAS = [
     plan: "pro",
     planColor: "#f59e0b",
     category: "Apparel & Fashion",
-    platforms: ["TT","IG","AM"],
-    buyerCount: 1840,
-    showCount: 112,
-    subscriberCount: 3820,
-    manychat: { ttOptIns: 892, igOptIns: 641, thisWeek: { tt: 68, ig: 44 }, topKeyword: "STYLE" },
-    slug: "bananarepublic",
+    platforms: ["TT","IG","AM","YT"],
     bio: "Banana Republic Live — seasonal collections, member exclusives, and live styling every week.",
   },
   {
@@ -162,6 +158,11 @@ const BUYERS_BY_PERSONA = {
     { id:"b6", name:"Zoe Kim",          handle:"@zoekim_looks",     platform:"IG", spend:980,  orders:7,  lastOrder:"3d ago",  category:"Knitwear",     status:"active",  score:6.8, avatar:"ZK", tags:["New"],               email:"zk@example.com",        phone:"+1-555-0106" },
     { id:"b7", name:"Ellie Hoffman",    handle:"@ellieh",           platform:"TT", spend:620,  orders:4,  lastOrder:"8d ago",  category:"Dresses",      status:"active",  score:5.9, avatar:"EH", tags:[],                    email:"eh@example.com",        phone:"+1-555-0107" },
     { id:"b8", name:"James Weston",     handle:"@jwestonshops",     platform:"AM", spend:290,  orders:2,  lastOrder:"88d ago", category:"Outerwear",    status:"dormant", score:2.3, avatar:"JW", tags:[],                    email:"jw@example.com",        phone:"+1-555-0108" },
+    // YouTube buyers — sourced from Shopify, attributed to YouTube shows
+    { id:"b9",  name:"Ryan Callahan",   handle:"youtube/ryancall",  platform:"YT", spend:456,  orders:2,  lastOrder:"18d ago", category:"Blazers",      status:"new",     score:6.2, avatar:"RC", tags:["New","YouTube"],     email:"rcallahan@gmail.com",   phone:"+1-555-0109", shopifyCustomerId:"cust_sh_4821", ytAttribution:"time-window" },
+    { id:"b10", name:"Sarah Mitchell",  handle:"youtube/smitch",    platform:"YT", spend:228,  orders:1,  lastOrder:"18d ago", category:"Blazers",      status:"new",     score:5.8, avatar:"SM", tags:["New","YouTube"],     email:"sarah.m@gmail.com",     phone:"+1-555-0110", shopifyCustomerId:"cust_sh_4822", ytAttribution:"utm-link" },
+    { id:"b11", name:"Derek Huang",     handle:"youtube/dhuang",    platform:"YT", spend:376,  orders:2,  lastOrder:"18d ago", category:"Trousers",     status:"new",     score:6.4, avatar:"DH", tags:["New","YouTube"],     email:"dhuang91@gmail.com",    phone:"+1-555-0111", shopifyCustomerId:"cust_sh_4823", ytAttribution:"utm-link" },
+    { id:"b12", name:"Priya Sharma",    handle:"youtube/priya_s",   platform:"YT", spend:148,  orders:1,  lastOrder:"18d ago", category:"Trousers",     status:"new",     score:5.4, avatar:"PS", tags:["New","YouTube"],     email:"priya.s@gmail.com",     phone:"+1-555-0112", shopifyCustomerId:"cust_sh_4824", ytAttribution:"manual" },
   ],
   tyler: [  // Kylie Cosmetics
     { id:"b1", name:"Sienna Lopez",     handle:"@siennaglam",       platform:"TT", spend:4820, orders:62, lastOrder:"1d ago",  category:"Lip",          status:"vip",     score:9.8, avatar:"SL", tags:["VIP","Lip Obsessed"], email:"sl@example.com",       phone:"+1-555-0201" },
@@ -197,6 +198,9 @@ const SHOWS = [
   { id:"sh2", title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach — 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
   { id:"sh3", title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional — high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
   { id:"sh4", title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
+  { id:"sh5", title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show — strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution. Live Pixel captured 14 buyers end-to-end. 12 orders matched via UTM link. 6 via time-window. 6 manually reconciled. Consider longer dwell on hero products — YouTube viewers research more before buying.", topItem:"Merino Wool Blazer", newBuyers:38,
+    ytAttribution: { method:"mixed", pixel:{ orders:14, confidence:"verified", sessionsCaptured:284 }, timeWindow:{ orders:12, confidence:"high", windowMins:15 }, utm:{ orders:6, link:"strmlive.com/yt/br-2025-02-08", clicks:284 }, manual:{ orders:6, pending:2 }, shopifyOrders:38, unattributed:0 }
+  },
 ];
 
 // ─── CAMPAIGNS DATA ───────────────────────────────────────────────────────────
@@ -411,16 +415,16 @@ function CheckoutModal({ plan, onClose }) {
 // ─── SHOPIFY CATALOG DATA ─────────────────────────────────────────────────────
 const PRODUCTS = [
   // ── Banana Republic (Pro) — Apparel & Fashion ───────────────────────────────
-  { id:"p1",  name:"Merino Wool Blazer",               sku:"BR-BLZ-001", price:228, cost:82,  inventory:48,  category:"Blazers",      image:"🧥", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:62,  avgPerShow:5.8 },
-  { id:"p2",  name:"Italian Linen Trousers",            sku:"BR-TRS-002", price:148, cost:51,  inventory:84,  category:"Bottoms",      image:"👖", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_002", aiScore:8.9, soldLast30:88,  avgPerShow:7.2 },
+  { id:"p1",  name:"Merino Wool Blazer",               sku:"BR-BLZ-001", price:228, cost:82,  inventory:48,  category:"Blazers",      image:"🧥", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:62,  avgPerShow:5.8 },
+  { id:"p2",  name:"Italian Linen Trousers",            sku:"BR-TRS-002", price:148, cost:51,  inventory:84,  category:"Bottoms",      image:"👖", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_002", aiScore:8.9, soldLast30:88,  avgPerShow:7.2 },
   { id:"p3",  name:"Leather Crossbody Bag",             sku:"BR-BAG-003", price:198, cost:74,  inventory:36,  category:"Accessories",  image:"👜", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:44,  avgPerShow:3.9 },
-  { id:"p4",  name:"Silk Wrap Midi Dress",              sku:"BR-DRS-004", price:268, cost:96,  inventory:22,  category:"Dresses",      image:"👗", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_004", aiScore:9.6, soldLast30:38,  avgPerShow:4.1 },
+  { id:"p4",  name:"Silk Wrap Midi Dress",              sku:"BR-DRS-004", price:268, cost:96,  inventory:22,  category:"Dresses",      image:"👗", platforms:["TT","IG","YT"],    showReady:true,  shopifyId:"sh_004", aiScore:9.6, soldLast30:38,  avgPerShow:4.1 },
   { id:"p5",  name:"Cashmere Crewneck Sweater",         sku:"BR-KNT-005", price:188, cost:68,  inventory:60,  category:"Knitwear",     image:"🧶", platforms:["TT","IG","AM"],    showReady:false, shopifyId:"sh_005", aiScore:8.4, soldLast30:52,  avgPerShow:5.0 },
   { id:"p6",  name:"Slim Chino Shorts",                 sku:"BR-SHT-006", price:80,  cost:28,  inventory:120, category:"Bottoms",      image:"🩳", platforms:["TT","AM"],         showReady:true,  shopifyId:"sh_006", aiScore:7.8, soldLast30:94,  avgPerShow:8.4 },
   { id:"p7",  name:"Suede Chelsea Boots",               sku:"BR-BOO-007", price:298, cost:108, inventory:18,  category:"Footwear",     image:"👢", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_007", aiScore:8.2, soldLast30:28,  avgPerShow:2.6 },
-  { id:"p8",  name:"Spring Style Bundle (3pc)",         sku:"BR-BND-008", price:148, cost:48,  inventory:30,  category:"Bundles",      image:"🎁", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_008", aiScore:9.2, soldLast30:71,  avgPerShow:6.8 },
+  { id:"p8",  name:"Spring Style Bundle (3pc)",         sku:"BR-BND-008", price:148, cost:48,  inventory:30,  category:"Bundles",      image:"🎁", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_008", aiScore:9.2, soldLast30:71,  avgPerShow:6.8 },
   { id:"p9",  name:"Tailored Wool Overcoat",            sku:"BR-OVR-009", price:498, cost:182, inventory:12,  category:"Outerwear",    image:"🧣", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_009", aiScore:7.4, soldLast30:14,  avgPerShow:1.4 },
-  { id:"p10", name:"Linen Button-Down Shirt",           sku:"BR-SHR-010", price:98,  cost:34,  inventory:96,  category:"Tops",         image:"👔", platforms:["TT","IG","AM"],    showReady:true,  shopifyId:"sh_010", aiScore:8.7, soldLast30:108, avgPerShow:9.1 },
+  { id:"p10", name:"Linen Button-Down Shirt",           sku:"BR-SHR-010", price:98,  cost:34,  inventory:96,  category:"Tops",         image:"👔", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_010", aiScore:8.7, soldLast30:108, avgPerShow:9.1 },
 
   // ── Kylie Cosmetics (Growth) — Beauty ──────────────────────────────────────
   { id:"p11", name:"Matte Lip Kit — Ruby",              sku:"KC-LIP-001", price:29,  cost:7,   inventory:840, category:"Lip",          image:"💄", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_011", aiScore:9.8, soldLast30:482, avgPerShow:48.2 },
@@ -445,6 +449,7 @@ const PLATFORM_FEES = {
   TT: 0.05,   // TikTok Shop: 5% referral fee
   AM: 0.15,   // Amazon: ~15% referral fee (varies by category)
   IG: 0.05,   // Instagram Shops: 5% selling fee
+  YT: 0.00,   // YouTube Live: 0% — fulfilled via Shopify directly
 };
 
 // Default minimum acceptable margin (seller can override in Settings)
@@ -978,9 +983,20 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
             <div style={{ fontSize:16, fontWeight:700, color:C.text }}>{buyer.name}</div>
             <div style={{ fontSize:12, color:C.muted }}>{buyer.handle}</div>
           </div>
-          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+          <div style={{ display:"flex", gap:8, marginBottom:10, flexWrap:"wrap" }}>
             <PlatformPill code={buyer.platform} />
             <Badge label={st.label} bg={st.bg} text={st.text} />
+            {buyer.ytAttribution && (
+              <span style={{ fontSize:9, fontWeight:700, color:"#ff6b6b", background:"#ff000018", border:"1px solid #ff000033", padding:"2px 8px", borderRadius:5, display:"flex", alignItems:"center", gap:4 }}>
+                <span>▶</span>
+                <span>Shopify · {buyer.ytAttribution === "utm-link" ? "UTM link" : buyer.ytAttribution === "time-window" ? "Time-window" : "Manual"}</span>
+              </span>
+            )}
+            {buyer.shopifyCustomerId && (
+              <span style={{ fontSize:9, color:C.subtle, background:C.surface2, border:`1px solid ${C.border}`, padding:"2px 8px", borderRadius:5, fontFamily:"'JetBrains Mono',monospace" }}>
+                {buyer.shopifyCustomerId}
+              </span>
+            )}
           </div>
 
           {/* QUICK DM BUTTONS */}
@@ -1242,7 +1258,7 @@ function ScreenShowReport({ show, allShows, buyers, navigate }) {
   const generateAI = async () => {
     setAiLoading(true);
     setAiText("");
-    const prompt = `You are a live commerce analyst for a trading card seller on ${show.platform === "WN" ? "Whatnot" : show.platform === "TT" ? "TikTok Shop" : show.platform === "AM" ? "Amazon Live" : "Instagram Shopping"}.
+    const prompt = `You are a live commerce analyst for a trading card seller on ${show.platform === "WN" ? "Whatnot" : show.platform === "TT" ? "TikTok Shop" : show.platform === "AM" ? "Amazon Live" : show.platform === "YT" ? "YouTube Live" : "Instagram Shopping"}.
 
 Analyze this show performance and write a sharp, specific debrief (4-6 sentences, no bullet points, conversational but data-driven):
 
@@ -1327,6 +1343,63 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
             </div>
           ))}
         </div>
+
+        {/* ── YOUTUBE ATTRIBUTION BREAKDOWN ── */}
+        {show.platform === "YT" && show.ytAttribution && (() => {
+          const yta = show.ytAttribution;
+          const total = yta.shopifyOrders;
+          const methods = [
+            { label:"Live Pixel",    color:"#f43f5e", orders:yta.pixel?.orders || 0,      pct:Math.round((yta.pixel?.orders||0)/total*100),      detail:`${yta.pixel?.sessionsCaptured||0} sessions tracked · verified`, icon:"●" },
+            { label:"UTM Link",      color:"#3b82f6", orders:yta.utm.orders,              pct:Math.round(yta.utm.orders/total*100),              detail:`${yta.utm.clicks} link clicks · 100% confidence`, icon:"🔗" },
+            { label:"Time-Window",   color:"#10b981", orders:yta.timeWindow.orders,       pct:Math.round(yta.timeWindow.orders/total*100),       detail:`±${yta.timeWindow.windowMins} min window · ${yta.timeWindow.confidence} confidence`, icon:"⏱" },
+            { label:"Manual Review", color:"#f59e0b", orders:yta.manual.orders,           pct:Math.round(yta.manual.orders/total*100),           detail:`${yta.manual.pending > 0 ? yta.manual.pending + " still pending" : "All confirmed"}`, icon:"✓" },
+          ].filter(m => m.orders > 0);
+          return (
+            <div style={{ background:"#0d0812", border:"1px solid #ff000033", borderRadius:14, padding:"18px 20px", marginBottom:16 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+                <div style={{ width:28, height:28, borderRadius:8, background:"#ff000018", border:"1px solid #ff000033", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13 }}>▶</div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#ff6b6b" }}>YouTube Attribution</div>
+                  <div style={{ fontSize:10, color:C.muted }}>Shopify-powered · {total} orders attributed across 3 methods</div>
+                </div>
+                {yta.unattributed > 0 && (
+                  <div style={{ marginLeft:"auto", fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b33", padding:"4px 10px", borderRadius:7 }}>
+                    {"⚠"} {yta.unattributed} unattributed
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:16 }}>
+                {methods.map(m => (
+                  <div key={m.label} style={{ background:C.surface, border:`1px solid ${m.color}33`, borderLeft:`3px solid ${m.color}`, borderRadius:10, padding:"12px 14px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+                      <span style={{ fontSize:14 }}>{m.icon}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:C.text }}>{m.label}</span>
+                    </div>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:800, color:m.color, marginBottom:3 }}>{m.orders}</div>
+                    <div style={{ fontSize:9, color:C.muted, marginBottom:8 }}>orders · {m.pct}% of total</div>
+                    <div style={{ height:3, background:C.surface2, borderRadius:2, overflow:"hidden" }}>
+                      <div style={{ width:`${m.pct}%`, height:"100%", background:m.color, borderRadius:2 }} />
+                    </div>
+                    <div style={{ fontSize:9, color:C.subtle, marginTop:6, fontStyle:"italic" }}>{m.detail}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display:"flex", gap:16, padding:"10px 14px", background:"#ffffff04", border:`1px solid ${C.border2}`, borderRadius:9 }}>
+                <div style={{ fontSize:10, color:C.muted, flex:1 }}>
+                  <span style={{ color:C.text, fontWeight:600 }}>How it works: </span>
+                  All three methods run in parallel. UTM orders are attributed first (100% confidence), then time-window catches the rest, then you manually confirm any remainders in Order Review.
+                </div>
+                {yta.unattributed > 0 && (
+                  <button style={{ fontSize:11, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b33", padding:"6px 14px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                    {"Review "}{yta.unattributed}{" Unattributed →"}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── TWO COLUMNS: GMV curve + Buyer segments ── */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16, marginBottom:16 }}>
@@ -4003,6 +4076,16 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       authType: "spapi",
       connectWith: () => connect("am", { account: persona.shop + " Amazon Store", marketplaceId, scopes: ["Order Sync", "Buyer Messages", "Reports"] }),
     },
+    yt: {
+      label: "YouTube Live",
+      icon: "▶️",
+      color: "#ff0000",
+      bg: "#2a0a0a",
+      description: "YouTube Data API — live stream management, chat, viewer metrics. Buyer purchase data sourced from your connected Shopify store using 3-method attribution.",
+      authType: "oauth",
+      scopes: ["youtube.readonly", "youtube.force-ssl"],
+      connectWith: () => connect("yt", { account: persona.shop + " on YouTube", subscribers: "12.4K", scopes: ["Live Stream Mgmt", "Chat & Viewers", "Analytics", "Shopify Attribution"] }),
+    },
     sms: {
       label: "SMS (Twilio)",
       icon: "💬",
@@ -4028,12 +4111,13 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
     },
   };
 
-  const PLATFORM_LIST = ["WN","TT","AM","IG"];
+  const PLATFORM_LIST = ["WN","TT","AM","IG","YT"];
   const platformData = {
     WN: { accountType:"Seller",              note:"Orders, buyers, inventory + real-time webhooks" },
     TT: { accountType:"Seller Account",      note:"Requires TikTok Seller Account" },
     AM: { accountType:"Brand Registry / Influencer", note:"Post-show order sync via SP-API — ~24h delay" },
     IG: { accountType:"Business or Creator", note:"Audience insights + DM automation (Pro)" },
+    YT: { accountType:"YouTube Channel",     note:"Live stream management via YouTube Data API · Buyer data via Shopify · 3 attribution methods" },
   };
 
   // ── Connected status card ─────────────────────────────────────────────────
@@ -4430,9 +4514,9 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
 
       {/* TABS */}
       <div style={{ display:"flex", gap:0, marginBottom:24, borderBottom:`1px solid ${C.border}` }}>
-        {["platforms","messaging","profile","billing","team"].map(t=>(
-          <button key={t} onClick={()=>setTab(t)} style={{ background:"none", border:"none", borderBottom:`2px solid ${tab===t?C.accent:"transparent"}`, color:tab===t?"#a78bfa":C.muted, fontSize:12, fontWeight:tab===t?700:400, padding:"0 16px 12px", cursor:"pointer", textTransform:"capitalize" }}>
-            {t}
+        {["platforms","messaging","profile","billing","team","pixel"].map(t=>(
+          <button key={t} onClick={()=>setTab(t)} style={{ background:"none", border:"none", borderBottom:`2px solid ${tab===t?C.accent:"transparent"}`, color:tab===t?"#a78bfa":C.muted, fontSize:12, fontWeight:tab===t?700:400, padding:"0 16px 12px", cursor:"pointer", textTransform:"capitalize", display:"flex", alignItems:"center", gap:5 }}>
+            {t === "pixel" ? <><span style={{ color:tab===t?"#f43f5e":C.muted, fontSize:10 }}>●</span> Live Pixel</> : t}
           </button>
         ))}
       </div>
@@ -4463,13 +4547,66 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
               </div>
             );
           })}
+
+          {/* ── YOUTUBE ATTRIBUTION SETTINGS ─────────────────────────── */}
+          {platforms.find(p=>p.id==="YT")?.connected && (
+            <div style={{ marginTop:28 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                <div style={{ width:5, height:5, borderRadius:"50%", background:"#ff0000" }} />
+                <span style={{ fontSize:11, fontWeight:800, color:"#ff0000", textTransform:"uppercase", letterSpacing:"0.1em" }}>YouTube Attribution</span>
+              </div>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:16, lineHeight:1.6 }}>
+                YouTube doesn't expose buyer purchase data via API. Streamlive uses three complementary methods to attribute Shopify orders to your YouTube shows. All three run automatically — they're layered so every order gets captured.
+              </div>
+
+              {[
+                {
+                  num:"01", label:"Time-Window Attribution", color:"#10b981",
+                  desc:"Shopify orders placed within a configurable window around your stream are automatically tagged to the show. Confidence is highest when your audience isn't buying on other channels at the same time.",
+                  badge:"Automatic",
+                  detail:"Default window: ±15 min before/after stream. Adjust per show in Show Planner.",
+                },
+                {
+                  num:"02", label:"UTM Link Attribution", color:"#3b82f6",
+                  desc:"A unique tracking link is generated for every YouTube show. Pin it in your live chat — any Shopify order from that link is attributed with 100% confidence regardless of timing.",
+                  badge:"100% Confidence",
+                  detail:"Link format: strmlive.com/yt/[shop]-[date]. Generated automatically in Show Planner.",
+                },
+                {
+                  num:"03", label:"Post-Show Reconciliation", color:"#f59e0b",
+                  desc:"Unattributed Shopify orders from your stream window appear in Order Review after each show. Confirm or dismiss each one — your call gives the final attribution.",
+                  badge:"Manual confirm",
+                  detail:"Appears in Order Review tab after every YouTube show. Takes ~2 min.",
+                },
+              ].map(m => (
+                <div key={m.num} style={{ background:C.surface, border:`1px solid ${m.color}33`, borderLeft:`3px solid ${m.color}`, borderRadius:10, padding:"14px 18px", marginBottom:10 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:m.color, fontWeight:700 }}>{m.num}</span>
+                    <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{m.label}</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:m.color, background:`${m.color}18`, border:`1px solid ${m.color}33`, padding:"2px 8px", borderRadius:5, marginLeft:"auto" }}>{m.badge}</span>
+                  </div>
+                  <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.6, marginBottom:6 }}>{m.desc}</div>
+                  <div style={{ fontSize:10, color:C.subtle, fontStyle:"italic" }}>{m.detail}</div>
+                </div>
+              ))}
+
+              <div style={{ background:"#0a1020", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 16px", marginTop:4 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Attribution Window</div>
+                <div style={{ display:"flex", gap:8 }}>
+                  {["10 min","15 min","20 min","30 min"].map((w,i) => (
+                    <button key={w} onClick={()=>{}} style={{ flex:1, background:i===1?"#1a1a3a":C.surface, border:`1px solid ${i===1?C.accent:C.border}`, color:i===1?"#a78bfa":C.muted, fontSize:11, fontWeight:i===1?700:400, padding:"7px 0", borderRadius:7, cursor:"pointer" }}>{w}</button>
+                  ))}
+                </div>
+                <div style={{ fontSize:10, color:C.subtle, marginTop:8 }}>Orders placed within this window before/after your stream end time are eligible for time-window attribution.</div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* ── MESSAGING TAB ── */}
       {tab==="messaging" && (
         <div className="fade-up" style={{ maxWidth:680 }}>
-
           {/* CONNECTION STATUS OVERVIEW */}
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
             {Object.keys(INTEGRATIONS).map(type=>{
@@ -4584,6 +4721,252 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       {tab==="team" && (
         <TeamTab persona={persona} openCheckout={openCheckout} />
       )}
+
+      {/* ── LIVE PIXEL TAB ── */}
+      {tab==="pixel" && (() => {
+        const pixelId = `lp_${persona.slug || "br"}_${persona.id || "x"}4f2a`;
+        const pixelSnippet =
+`<!-- Live Pixel by Streamlive -->
+<script>
+(function(w,d,s,l,i){
+  w[l]=w[l]||[];
+  var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s);
+  j.async=true;
+  j.src='https://cdn.streamlive.com/pixel/v1.js';
+  j.setAttribute('data-pixel-id',i);
+  f.parentNode.insertBefore(j,f);
+})(window,document,'script','_slq','${pixelId}');
+</script>
+<!-- End Live Pixel -->`;
+
+        const shopifySnippet =
+`{% comment %} Live Pixel — paste in theme.liquid before </head> {% endcomment %}
+<script>
+(function(w,d,s,l,i){
+  w[l]=w[l]||[];
+  var f=d.getElementsByTagName(s)[0],j=d.createElement(s);
+  j.async=true;j.src='https://cdn.streamlive.com/pixel/v1.js';
+  j.setAttribute('data-pixel-id',i);f.parentNode.insertBefore(j,f);
+})(window,document,'script','_slq','${pixelId}');
+</script>`;
+
+        const features = [
+          { icon:"🎯", label:"Session attribution",    desc:"Tracks the visitor from YouTube click → your site → checkout. No time-window guessing." },
+          { icon:"🔗", label:"Cross-session tracking", desc:"Buyer leaves and comes back 3 days later? Still attributed to the show that sent them." },
+          { icon:"👤", label:"Identity resolution",    desc:"Matches anonymous visitors to known Shopify customers when they check out." },
+          { icon:"📺", label:"Show-level attribution", desc:"Each show gets a unique fingerprint. Pixel knows exactly which stream the buyer came from." },
+          { icon:"⚡", label:"Real-time signals",      desc:"See live visitor counts on your site during a show — how many viewers clicked through." },
+          { icon:"🛡️", label:"First-party data",       desc:"Runs on your domain. No third-party cookies. GDPR/CCPA compliant by design." },
+        ];
+
+        const [copied, setCopied] = React.useState(null);
+        const copy = (text, key) => {
+          navigator.clipboard?.writeText(text).catch(()=>{});
+          setCopied(key);
+          setTimeout(()=>setCopied(null), 2000);
+        };
+
+        const [pixelInstalled, setPixelInstalled] = React.useState(false);
+        const [installTab, setInstallTab] = React.useState("shopify");
+
+        return (
+          <div className="fade-up" style={{ maxWidth:680 }}>
+
+            {/* Header */}
+            <div style={{ background:"linear-gradient(135deg,#1a0808,#0d0812)", border:"1px solid #f43f5e33", borderRadius:16, padding:"24px 28px", marginBottom:24, position:"relative", overflow:"hidden" }}>
+              <div style={{ position:"absolute", right:24, top:24, width:80, height:80, borderRadius:"50%", background:"radial-gradient(circle,#f43f5e22,transparent 70%)", pointerEvents:"none" }} />
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+                <div style={{ width:38, height:38, borderRadius:11, background:"linear-gradient(135deg,#f43f5e,#7c3aed)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ width:10, height:10, borderRadius:"50%", background:"#fff", boxShadow:"0 0 8px #fff" }} />
+                </div>
+                <div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:"#fff", letterSpacing:"-0.3px" }}>Live Pixel</div>
+                  <div style={{ fontSize:11, color:"#f43f5e", fontWeight:600 }}>by Streamlive · First-party attribution</div>
+                </div>
+                {pixelInstalled
+                  ? <span style={{ marginLeft:"auto", fontSize:10, fontWeight:700, color:C.green, background:"#10b98118", border:"1px solid #10b98133", padding:"4px 12px", borderRadius:99 }}>● Active</span>
+                  : <span style={{ marginLeft:"auto", fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b33", padding:"4px 12px", borderRadius:99 }}>Not installed</span>
+                }
+              </div>
+              <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.7, maxWidth:500 }}>
+                A lightweight JavaScript snippet you install once on your website. Live Pixel tracks every visitor from the moment they arrive — whether from a YouTube chat link, a TikTok bio, or a DM campaign — and ties their purchase directly to the show that sent them. <span style={{ color:"#f43f5e", fontWeight:600 }}>No inference. No guessing. Direct attribution.</span>
+              </div>
+            </div>
+
+            {/* Why it's more accurate */}
+            <div style={{ marginBottom:24 }}>
+              <div style={{ fontSize:11, fontWeight:800, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>What Live Pixel does</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                {features.map(f => (
+                  <div key={f.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, padding:"12px 14px", display:"flex", gap:10 }}>
+                    <span style={{ fontSize:18, flexShrink:0, marginTop:1 }}>{f.icon}</span>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:3 }}>{f.label}</div>
+                      <div style={{ fontSize:11, color:C.muted, lineHeight:1.5 }}>{f.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Attribution comparison */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:24 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Attribution accuracy comparison</div>
+              {[
+                { method:"Live Pixel",         accuracy:99, color:"#f43f5e", note:"Direct session tracking. Buyer's path is recorded end-to-end." },
+                { method:"UTM Link",           accuracy:82, color:"#3b82f6", note:"100% accurate — but only for buyers who click your link." },
+                { method:"Time-Window",        accuracy:64, color:"#10b981", note:"Catches most buyers but also unrelated orders in the window." },
+                { method:"Manual Review",      accuracy:55, color:"#f59e0b", note:"Reliable for what you confirm — but slow and incomplete." },
+              ].map(m => (
+                <div key={m.method} style={{ marginBottom:12 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                    <span style={{ fontSize:11, fontWeight:600, color:m.method==="Live Pixel"?m.color:C.text, display:"flex", alignItems:"center", gap:6 }}>
+                      {m.method==="Live Pixel" && <span style={{ width:7, height:7, borderRadius:"50%", background:m.color, display:"inline-block", boxShadow:`0 0 6px ${m.color}` }} />}
+                      {m.method}
+                    </span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:m.color }}>{m.accuracy}%</span>
+                  </div>
+                  <div style={{ height:6, background:C.surface2, borderRadius:3, overflow:"hidden", marginBottom:4 }}>
+                    <div style={{ width:`${m.accuracy}%`, height:"100%", background:m.color, borderRadius:3, transition:"width 1s ease", boxShadow:m.method==="Live Pixel"?`0 0 8px ${m.color}66`:"none" }} />
+                  </div>
+                  <div style={{ fontSize:10, color:C.subtle, fontStyle:"italic" }}>{m.note}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Your Pixel ID */}
+            <div style={{ background:C.surface, border:"1px solid #f43f5e33", borderRadius:14, padding:"18px 20px", marginBottom:24 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:"#f43f5e", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Your Pixel ID</div>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <code style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.text, background:C.surface2, border:`1px solid ${C.border}`, padding:"10px 16px", borderRadius:9, flex:1, letterSpacing:"0.05em" }}>
+                  {pixelId}
+                </code>
+                <button onClick={()=>copy(pixelId,"pid")} style={{ fontSize:11, fontWeight:700, color:copied==="pid"?C.green:"#a78bfa", background:copied==="pid"?"#10b98118":"#a78bfa18", border:`1px solid ${copied==="pid"?C.green+"44":"#a78bfa44"}`, padding:"10px 18px", borderRadius:9, cursor:"pointer", whiteSpace:"nowrap", transition:"all .2s" }}>
+                  {copied==="pid" ? "✓ Copied" : "Copy ID"}
+                </button>
+              </div>
+              <div style={{ fontSize:10, color:C.subtle, marginTop:8 }}>This ID is unique to your Streamlive account. Keep it private — it identifies your pixel data.</div>
+            </div>
+
+            {/* Install instructions */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:24 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Install Live Pixel</div>
+
+              {/* Platform tabs */}
+              <div style={{ display:"flex", gap:0, marginBottom:20, background:C.surface2, borderRadius:9, padding:3 }}>
+                {[["shopify","🛍 Shopify"],["html","</> HTML"],["gtm","📦 Google Tag Manager"],["wordpress","🔵 WordPress"]].map(([k,l])=>(
+                  <button key={k} onClick={()=>setInstallTab(k)} style={{ flex:1, background:installTab===k?"#a78bfa22":"transparent", border:`1px solid ${installTab===k?"#a78bfa44":"transparent"}`, color:installTab===k?"#a78bfa":C.muted, fontSize:11, fontWeight:installTab===k?700:400, padding:"7px 0", borderRadius:7, cursor:"pointer", transition:"all .15s" }}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+
+              {installTab==="shopify" && (
+                <div>
+                  <div style={{ fontSize:11, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
+                    In your Shopify admin, go to <strong style={{ color:C.text }}>Online Store → Themes → Edit code</strong> and paste this snippet just before the <code style={{ color:"#a78bfa" }}>&lt;/head&gt;</code> tag in <strong style={{ color:C.text }}>theme.liquid</strong>.
+                  </div>
+                  <div style={{ position:"relative" }}>
+                    <pre style={{ background:"#060610", border:`1px solid ${C.border}`, borderRadius:10, padding:"16px", fontSize:11, color:"#a78bfa", fontFamily:"'JetBrains Mono',monospace", overflowX:"auto", lineHeight:1.8, margin:0, whiteSpace:"pre-wrap" }}>
+                      {shopifySnippet}
+                    </pre>
+                    <button onClick={()=>copy(shopifySnippet,"shopify")} style={{ position:"absolute", top:10, right:10, fontSize:10, fontWeight:700, color:copied==="shopify"?C.green:"#a78bfa", background:copied==="shopify"?"#0a1e16":"#a78bfa18", border:`1px solid ${copied==="shopify"?C.green+"44":"#a78bfa44"}`, padding:"5px 12px", borderRadius:6, cursor:"pointer", transition:"all .2s" }}>
+                      {copied==="shopify" ? "✓ Copied" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {installTab==="html" && (
+                <div>
+                  <div style={{ fontSize:11, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
+                    Paste this snippet before the closing <code style={{ color:"#a78bfa" }}>&lt;/head&gt;</code> tag on every page of your website.
+                  </div>
+                  <div style={{ position:"relative" }}>
+                    <pre style={{ background:"#060610", border:`1px solid ${C.border}`, borderRadius:10, padding:"16px", fontSize:11, color:"#a78bfa", fontFamily:"'JetBrains Mono',monospace", overflowX:"auto", lineHeight:1.8, margin:0, whiteSpace:"pre-wrap" }}>
+                      {pixelSnippet}
+                    </pre>
+                    <button onClick={()=>copy(pixelSnippet,"html")} style={{ position:"absolute", top:10, right:10, fontSize:10, fontWeight:700, color:copied==="html"?C.green:"#a78bfa", background:copied==="html"?"#0a1e16":"#a78bfa18", border:`1px solid ${copied==="html"?C.green+"44":"#a78bfa44"}`, padding:"5px 12px", borderRadius:6, cursor:"pointer", transition:"all .2s" }}>
+                      {copied==="html" ? "✓ Copied" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {installTab==="gtm" && (
+                <div style={{ fontSize:11, color:C.muted, lineHeight:1.8 }}>
+                  <div style={{ marginBottom:10 }}>In Google Tag Manager, create a new <strong style={{ color:C.text }}>Custom HTML tag</strong> and paste the HTML snippet. Set the trigger to <strong style={{ color:C.text }}>All Pages</strong>.</div>
+                  <ol style={{ paddingLeft:16, color:C.muted }}>
+                    {["Open GTM → Tags → New","Choose tag type: Custom HTML","Paste the HTML snippet below","Trigger: All Pages","Save → Submit → Publish"].map((s,i)=>(
+                      <li key={i} style={{ marginBottom:6 }}><span style={{ color:C.text, fontWeight:600 }}>{s}</span></li>
+                    ))}
+                  </ol>
+                  <div style={{ position:"relative", marginTop:14 }}>
+                    <pre style={{ background:"#060610", border:`1px solid ${C.border}`, borderRadius:10, padding:"16px", fontSize:11, color:"#a78bfa", fontFamily:"'JetBrains Mono',monospace", overflowX:"auto", lineHeight:1.8, margin:0, whiteSpace:"pre-wrap" }}>
+                      {pixelSnippet}
+                    </pre>
+                    <button onClick={()=>copy(pixelSnippet,"gtm")} style={{ position:"absolute", top:10, right:10, fontSize:10, fontWeight:700, color:copied==="gtm"?C.green:"#a78bfa", background:copied==="gtm"?"#0a1e16":"#a78bfa18", border:`1px solid ${copied==="gtm"?C.green+"44":"#a78bfa44"}`, padding:"5px 12px", borderRadius:6, cursor:"pointer" }}>
+                      {copied==="gtm" ? "✓ Copied" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {installTab==="wordpress" && (
+                <div style={{ fontSize:11, color:C.muted, lineHeight:1.8 }}>
+                  <div style={{ marginBottom:10 }}>Install the <strong style={{ color:C.text }}>Insert Headers and Footers</strong> plugin, then paste the snippet into the <strong style={{ color:C.text }}>Header</strong> section.</div>
+                  <ol style={{ paddingLeft:16 }}>
+                    {["Install plugin: Insert Headers and Footers","Go to Settings → Insert Headers and Footers","Paste snippet into the Header box","Save"].map((s,i)=>(
+                      <li key={i} style={{ marginBottom:6 }}><span style={{ color:C.text, fontWeight:600 }}>{s}</span></li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {/* Verify button */}
+              <div style={{ marginTop:20, display:"flex", alignItems:"center", gap:12 }}>
+                <button onClick={()=>setPixelInstalled(true)} style={{ background:`linear-gradient(135deg,#f43f5e,#7c3aed)`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"10px 24px", borderRadius:9, cursor:"pointer" }}>
+                  Verify Installation
+                </button>
+                {pixelInstalled && (
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <div style={{ width:8, height:8, borderRadius:"50%", background:C.green, animation:"livePulse 1.2s ease-out infinite" }} />
+                    <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Pixel detected — receiving data</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* What data it collects */}
+            <div style={{ background:"#0a1020", border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:12 }}>Data collected</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                {[
+                  ["Session source","YouTube Live, TikTok, IG, DM campaigns, etc."],
+                  ["Show ID","Which specific stream sent the visitor"],
+                  ["Page views","Products viewed, time on site, scroll depth"],
+                  ["Cart events","Add to cart, remove, abandon"],
+                  ["Purchase event","Order ID, items, total — matched to Shopify"],
+                  ["Buyer identity","Matched to Streamlive CRM profile on checkout"],
+                ].map(([k,v])=>(
+                  <div key={k} style={{ display:"flex", gap:6 }}>
+                    <div style={{ width:5, height:5, borderRadius:"50%", background:"#f43f5e", marginTop:5, flexShrink:0 }} />
+                    <div>
+                      <span style={{ fontSize:11, fontWeight:600, color:C.text }}>{k}</span>
+                      <span style={{ fontSize:11, color:C.muted }}> — {v}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop:14, fontSize:10, color:C.subtle, lineHeight:1.6, paddingTop:12, borderTop:`1px solid ${C.border}` }}>
+                🛡️ Live Pixel is first-party only. No data is shared with third parties. All events are associated with your Pixel ID and stored in your Streamlive account. Compliant with GDPR, CCPA, and ePrivacy Directive when paired with your site's consent banner.
+              </div>
+            </div>
+
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -5005,10 +5388,11 @@ function ScreenShowPlanner({ navigate }) {
             <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Select all platforms you'll go live on. You can multi-stream to multiple destinations at once.</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, maxWidth:560 }}>
               {[
-                { id:"WN", name:"Whatnot",     color:"#7c3aed", desc:"Live auction & buy-now",    icon:"◈" },
-                { id:"TT", name:"TikTok Live", color:"#f43f5e", desc:"Short-form + live shopping", icon:"♦" },
-                { id:"IG", name:"Instagram",   color:"#ec4899", desc:"Stories & live video",        icon:"●" },
-                { id:"AM", name:"Amazon Live", color:"#f59e0b", desc:"Product demos & shoppable",   icon:"◆" },
+                { id:"WN", name:"Whatnot",       color:"#7c3aed", desc:"Live auction & buy-now",       icon:"◈" },
+                { id:"TT", name:"TikTok Live",   color:"#f43f5e", desc:"Short-form + live shopping",   icon:"♦" },
+                { id:"IG", name:"Instagram",     color:"#ec4899", desc:"Stories & live video",          icon:"●" },
+                { id:"AM", name:"Amazon Live",   color:"#f59e0b", desc:"Product demos & shoppable",     icon:"◆" },
+                { id:"YT", name:"YouTube Live",  color:"#ff0000", desc:"Long-form · Shopify attribution", icon:"▶" },
               ].map(pl => {
                 const active = selectedPlatforms.includes(pl.id);
                 return (
@@ -5028,6 +5412,43 @@ function ScreenShowPlanner({ navigate }) {
                 <span style={{ color:C.green, fontSize:13 }}>✦</span>
                 <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Multi-stream enabled</span>
                 <span style={{ fontSize:12, color:C.muted }}>— streaming to {selectedPlatforms.length} platforms simultaneously</span>
+              </div>
+            )}
+
+            {/* YouTube Attribution Panel */}
+            {selectedPlatforms.includes("YT") && (
+              <div style={{ marginTop:16, background:"#1a0808", border:"1px solid #ff000033", borderRadius:12, padding:"16px 18px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                  <span style={{ fontSize:13 }}>▶</span>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#ff6b6b" }}>YouTube Attribution Active</span>
+                  <span style={{ fontSize:9, color:"#ff0000", background:"#ff000018", border:"1px solid #ff000033", padding:"2px 7px", borderRadius:5, marginLeft:"auto" }}>Shopify-powered</span>
+                </div>
+                <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.6, marginBottom:14 }}>
+                  YouTube doesn't expose buyer data via API — Streamlive uses 3 methods to attribute your Shopify orders to this show.
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                  {[
+                    { label:"Time-window (±15 min)", color:"#10b981", status:"Auto — on" },
+                    { label:"UTM Link for live chat",  color:"#3b82f6", status:"Generated below" },
+                    { label:"Post-show reconciliation", color:"#f59e0b", status:"In Order Review" },
+                  ].map(m => (
+                    <div key={m.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:m.color, flexShrink:0 }} />
+                      <span style={{ fontSize:11, color:C.text, flex:1 }}>{m.label}</span>
+                      <span style={{ fontSize:10, color:m.color, fontWeight:600 }}>{m.status}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop:14, background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:8, padding:"10px 14px" }}>
+                  <div style={{ fontSize:10, color:C.muted, marginBottom:6 }}>📌 Pin this link in your YouTube live chat</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <code style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:"#3b82f6", flex:1 }}>
+                      strmlive.com/yt/br-{new Date().toISOString().slice(0,10)}
+                    </code>
+                    <button style={{ fontSize:10, fontWeight:700, color:"#3b82f6", background:"#0f1e2e", border:"1px solid #3b82f633", padding:"5px 12px", borderRadius:6, cursor:"pointer", flexShrink:0 }}>Copy</button>
+                  </div>
+                  <div style={{ fontSize:10, color:C.subtle, marginTop:6 }}>Orders from this link = 100% confidence attribution, no time window needed</div>
+                </div>
               </div>
             )}
             <div style={{ marginTop:24, display:"flex", justifyContent:"flex-end" }}>
@@ -5191,6 +5612,17 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
   const [processing, setProcessing] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
 
+  // YouTube post-show reconciliation state
+  const isYTShow = params?.platform === "YT" || (liveBuyers.length > 0 && liveBuyers[0]?.platform === "YT");
+  const [ytReconcile, setYtReconcile] = useState(isYTShow ? [
+    { id:"ytord_1", name:"Sarah M.",    email:"sarah.m@gmail.com",    product:"Merino Wool Blazer",    amount:228, time:"2:14pm", confidence:"medium", status:"pending" },
+    { id:"ytord_2", name:"James K.",    email:"jk2891@outlook.com",   product:"Italian Linen Trousers", amount:148, time:"2:31pm", confidence:"low",    status:"pending" },
+  ] : []);
+  const confirmYT  = (id) => setYtReconcile(r => r.map(o => o.id===id ? {...o, status:"confirmed"} : o));
+  const dismissYT  = (id) => setYtReconcile(r => r.map(o => o.id===id ? {...o, status:"dismissed"} : o));
+  const pendingYT  = ytReconcile.filter(o => o.status==="pending");
+
+
   const fmt = (s) => `${String(Math.floor(s/3600)).padStart(2,"0")}:${String(Math.floor((s%3600)/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 
   const orders = liveBuyers.map(b=>{
@@ -5306,6 +5738,58 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
         </div>
       </div>
       <div style={{ flex:1, overflowY:"auto", padding:"16px 28px" }}>
+
+        {/* ── YOUTUBE RECONCILIATION PANEL ── */}
+        {isYTShow && ytReconcile.length > 0 && (
+          <div style={{ background:"#0d0812", border:"1px solid #ff000033", borderRadius:14, padding:"16px 20px", marginBottom:20 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
+              <div style={{ width:26, height:26, borderRadius:7, background:"#ff000018", border:"1px solid #ff000033", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12 }}>▶</div>
+              <div style={{ flex:1 }}>
+                <span style={{ fontSize:13, fontWeight:700, color:"#ff6b6b" }}>YouTube Order Reconciliation</span>
+                <span style={{ fontSize:10, color:C.muted, marginLeft:8 }}>Method 3 of 3 — manual confirm</span>
+              </div>
+              {pendingYT.length > 0
+                ? <span style={{ fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b33", padding:"3px 10px", borderRadius:99 }}>{pendingYT.length} pending</span>
+                : <span style={{ fontSize:10, fontWeight:700, color:C.green, background:"#10b98118", border:"1px solid #10b98133", padding:"3px 10px", borderRadius:99 }}>✓ All resolved</span>
+              }
+            </div>
+            <div style={{ fontSize:11, color:C.muted, marginBottom:14, lineHeight:1.5 }}>
+              These Shopify orders weren't captured by time-window or UTM attribution. Confirm to attribute them to this show, or dismiss if they're unrelated.
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {ytReconcile.map(order => (
+                <div key={order.id} style={{ background:C.surface, border:`1px solid ${order.status==="confirmed"?C.green+"44":order.status==="dismissed"?"#ef444433":C.border}`, borderRadius:10, padding:"12px 16px", display:"flex", alignItems:"center", gap:14, opacity:order.status!=="pending"?0.6:1 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                      <span style={{ fontSize:12, fontWeight:700, color:C.text }}>{order.name}</span>
+                      <span style={{ fontSize:9, color:C.muted }}>{order.email}</span>
+                      <span style={{ fontSize:9, fontWeight:600, color:order.confidence==="medium"?"#f59e0b":"#9ca3af", background:order.confidence==="medium"?"#f59e0b18":"#1a1a2e", border:`1px solid ${order.confidence==="medium"?"#f59e0b33":"#2a2a4a"}`, padding:"1px 6px", borderRadius:4, marginLeft:"auto" }}>
+                        {order.confidence} confidence
+                      </span>
+                    </div>
+                    <div style={{ fontSize:11, color:C.muted }}>{order.product} · <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.green, fontWeight:700 }}>${order.amount}</span> · placed at {order.time}</div>
+                  </div>
+                  {order.status === "pending" ? (
+                    <div style={{ display:"flex", gap:6 }}>
+                      <button onClick={()=>confirmYT(order.id)} style={{ fontSize:11, fontWeight:700, color:"#fff", background:`linear-gradient(135deg,${C.green},#059669)`, border:"none", padding:"6px 14px", borderRadius:7, cursor:"pointer" }}>✓ Confirm</button>
+                      <button onClick={()=>dismissYT(order.id)} style={{ fontSize:11, fontWeight:600, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"6px 14px", borderRadius:7, cursor:"pointer" }}>Dismiss</button>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize:11, fontWeight:700, color:order.status==="confirmed"?C.green:"#ef4444" }}>
+                      {order.status==="confirmed" ? "✓ Attributed" : "✕ Dismissed"}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+            {ytReconcile.filter(o=>o.status==="confirmed").length > 0 && (
+              <div style={{ marginTop:12, fontSize:11, color:C.green, padding:"8px 12px", background:"#10b98110", border:"1px solid #10b98133", borderRadius:8 }}>
+                ✓ {ytReconcile.filter(o=>o.status==="confirmed").length} order{ytReconcile.filter(o=>o.status==="confirmed").length!==1?"s":""} confirmed · +${ytReconcile.filter(o=>o.status==="confirmed").reduce((a,o)=>a+o.amount,0).toLocaleString()} added to show GMV
+              </div>
+            )}
+          </div>
+        )}
+
         {[...orders.filter(o=>o.hasChanges), ...orders.filter(o=>!o.hasChanges)].map((order,i)=>{
           const { buyer:b, discount, items, note, tier, hasChanges } = order;
           const pl = PLATFORMS[b.platform];
@@ -7585,7 +8069,7 @@ function ScreenSellerDetail({ persona, params, navigate }) {
             {recentShows.length===0 ? (
               <div style={{ textAlign:"center", padding:"40px", color:C.muted, fontSize:13 }}>No shows recorded yet</div>
             ) : recentShows.map((show,i)=>{
-              const pc={WN:"#7c3aed",TT:"#f43f5e",AM:"#f59e0b",IG:"#ec4899"}[show.platform]||C.muted;
+              const pc={WN:"#7c3aed",TT:"#f43f5e",AM:"#f59e0b",IG:"#ec4899",YT:"#ff0000"}[show.platform]||C.muted;
               return (
                 <div key={i} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
                   <div style={{ width:36, height:36, borderRadius:9, background:`${pc}18`, border:`1px solid ${pc}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, flexShrink:0 }}>◈</div>
@@ -8905,41 +9389,6 @@ export default function StreamlivePrototype() {
   const [checkoutPlan, setCheckoutPlan] = useState(null);
   const [completedShows, setCompletedShows] = useState(SHOWS);
 
-  // ── Custom live-dot cursor ──────────────────────────────────────────────────
-  const [cursorPos,     setCursorPos]     = useState({ x: -100, y: -100 });
-  const [cursorClicked, setCursorClicked] = useState(false);
-  const [cursorVisible, setCursorVisible] = useState(false);
-
-  useEffect(() => {
-    const onMove = (e) => {
-      setCursorPos({ x: e.clientX, y: e.clientY });
-      setCursorVisible(true);
-    };
-    const onDown = () => {
-      setCursorClicked(true);
-    };
-    const onUp = () => {
-      setTimeout(() => setCursorClicked(false), 400);
-    };
-    const onLeave = () => setCursorVisible(false);
-    const onEnter = () => setCursorVisible(true);
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("mouseup", onUp);
-    document.documentElement.addEventListener("mouseleave", onLeave);
-    document.documentElement.addEventListener("mouseenter", onEnter);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("mouseup", onUp);
-      document.documentElement.removeEventListener("mouseleave", onLeave);
-      document.documentElement.removeEventListener("mouseenter", onEnter);
-    };
-  }, []);
-
-  const dotColor = cursorClicked ? "#10b981" : "#ef4444";
-
   // Check for invite token in URL — render accept screen instead of app
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
   if (urlInviteToken) {
@@ -8968,29 +9417,6 @@ export default function StreamlivePrototype() {
   return (
     <>
       <style>{GLOBAL_CSS}</style>
-
-      {/* ── LIVE DOT CURSOR ── */}
-      {cursorVisible && (
-        <div style={{ position:"fixed", left:cursorPos.x, top:cursorPos.y, pointerEvents:"none", zIndex:99999 }}>
-          {/* Pulsing ring */}
-          <div style={{
-            position:"absolute", width:14, height:14, borderRadius:"50%",
-            background: dotColor,
-            transform:"translate(-50%,-50%)",
-            animation:"livePulse 1.2s ease-out infinite",
-            transition:"background 0.15s ease",
-          }}/>
-          {/* Solid core dot */}
-          <div style={{
-            position:"absolute", width:8, height:8, borderRadius:"50%",
-            background: dotColor,
-            transform:"translate(-50%,-50%)",
-            boxShadow:`0 0 ${cursorClicked ? "10px 3px" : "6px 2px"} ${dotColor}99`,
-            transition:"background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease",
-            transform: cursorClicked ? "translate(-50%,-50%) scale(1.4)" : "translate(-50%,-50%) scale(1)",
-          }}/>
-        </div>
-      )}
 
       {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
       <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
