@@ -122,14 +122,20 @@ const PLANS = {
 
 const GLOBAL_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #06060e; color: #e2e8f0; font-family: 'DM Sans', sans-serif; }
+  html, body { background: #06060e; color: #e2e8f0; font-family: 'DM Sans', sans-serif; cursor: none; }
+  *:hover { cursor: none !important; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 4px; }
-  @keyframes float   { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-12px) } }
-  @keyframes fadeUp  { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-  @keyframes pop     { 0% { transform:scale(.85);opacity:0 } 60% { transform:scale(1.06) } 100% { transform:scale(1);opacity:1 } }
-  @keyframes pulse   { 0%,100% { opacity:1 } 50% { opacity:.35 } }
-  @keyframes shimmer { 0% { background-position:-200% 0 } 100% { background-position:200% 0 } }
+  @keyframes float     { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-12px) } }
+  @keyframes fadeUp    { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+  @keyframes pop       { 0% { transform:scale(.85);opacity:0 } 60% { transform:scale(1.06) } 100% { transform:scale(1);opacity:1 } }
+  @keyframes pulse     { 0%,100% { opacity:1 } 50% { opacity:.35 } }
+  @keyframes shimmer   { 0% { background-position:-200% 0 } 100% { background-position:200% 0 } }
+  @keyframes livePulse {
+    0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.7; }
+    50%  { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
+    100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
+  }
   .fade-a0 { animation: fadeUp .55s ease both; }
   .fade-a1 { animation: fadeUp .55s .08s ease both; }
   .fade-a2 { animation: fadeUp .55s .16s ease both; }
@@ -181,6 +187,31 @@ function Landing() {
   const [billingCycle, setBillingCycle] = useState('monthly')
   const [faqOpen, setFaqOpen] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  // ── Live-dot cursor ──────────────────────────────────────────────────────────
+  const [cursorPos,     setCursorPos]     = useState({ x: -100, y: -100 })
+  const [cursorClicked, setCursorClicked] = useState(false)
+  const [cursorVisible, setCursorVisible] = useState(false)
+  useEffect(() => {
+    const onMove  = (e) => { setCursorPos({ x: e.clientX, y: e.clientY }); setCursorVisible(true) }
+    const onDown  = ()  => setCursorClicked(true)
+    const onUp    = ()  => setTimeout(() => setCursorClicked(false), 400)
+    const onLeave = ()  => setCursorVisible(false)
+    const onEnter = ()  => setCursorVisible(true)
+    window.addEventListener('mousemove',  onMove)
+    window.addEventListener('mousedown',  onDown)
+    window.addEventListener('mouseup',    onUp)
+    document.documentElement.addEventListener('mouseleave', onLeave)
+    document.documentElement.addEventListener('mouseenter', onEnter)
+    return () => {
+      window.removeEventListener('mousemove',  onMove)
+      window.removeEventListener('mousedown',  onDown)
+      window.removeEventListener('mouseup',    onUp)
+      document.documentElement.removeEventListener('mouseleave', onLeave)
+      document.documentElement.removeEventListener('mouseenter', onEnter)
+    }
+  }, [])
+  const dotColor = cursorClicked ? '#10b981' : '#ef4444'
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
 
   const handleSubmit = async () => {
@@ -359,6 +390,26 @@ function Landing() {
     <>
       <style>{FONT}</style><style>{GLOBAL_CSS}</style>
       <style>{MOBILE_CSS}</style>
+
+      {/* ── LIVE DOT CURSOR ── */}
+      {cursorVisible && (
+        <div style={{ position:'fixed', left:cursorPos.x, top:cursorPos.y, pointerEvents:'none', zIndex:99999 }}>
+          <div style={{
+            position:'absolute', width:14, height:14, borderRadius:'50%',
+            background: dotColor,
+            transform:'translate(-50%,-50%)',
+            animation:'livePulse 1.2s ease-out infinite',
+            transition:'background 0.15s ease',
+          }}/>
+          <div style={{
+            position:'absolute', width:8, height:8, borderRadius:'50%',
+            background: dotColor,
+            transform: cursorClicked ? 'translate(-50%,-50%) scale(1.4)' : 'translate(-50%,-50%) scale(1)',
+            boxShadow:`0 0 ${cursorClicked ? '10px 3px' : '6px 2px'} ${dotColor}99`,
+            transition:'background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease',
+          }}/>
+        </div>
+      )}
       <style>{`
         .section-label { font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#a78bfa; margin-bottom:14px; display:block; }
         .gradient-text { background:linear-gradient(135deg,#7c3aed,#a78bfa 50%,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
