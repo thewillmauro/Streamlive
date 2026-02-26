@@ -122,8 +122,8 @@ const PLANS = {
 
 const GLOBAL_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #06060e; color: #e2e8f0; font-family: 'DM Sans', sans-serif; cursor: none; }
-  *:hover { cursor: none !important; }
+  html, body { background: #06060e; color: #e2e8f0; font-family: 'DM Sans', sans-serif; }
+  *, *:hover, *:focus, *:active { cursor: none !important; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 4px; }
   @keyframes float     { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-12px) } }
