@@ -1619,13 +1619,13 @@ function ScreenLive({ buyers, navigate, params }) {
   const selectedPlatforms = params?.selectedPlatforms || ["WN"];
   // Per-platform viewer counts (seeded differently per platform)
   const [platformViewers, setPlatformViewers] = useState(() => {
-    const seeds = { WN:234, TT:891, IG:312, AM:156 };
+    const seeds = { WN:234, TT:891, IG:312, AM:156, YT:4200 };
     return Object.fromEntries(selectedPlatforms.map(p=>[p, seeds[p]||200]));
   });
   const [liveBuyers, setLiveBuyers]   = useState(buyers.slice(0,3));
   const [elapsed, setElapsed]         = useState(0);
   const [viewerCount, setViewerCount] = useState(
-    selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156}; return a+(s[p]||200);},0)
+    selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156,YT:4200}; return a+(s[p]||200);},0)
   );
   const [gmv, setGmv]                 = useState(1420);
   const [search, setSearch]           = useState("");
@@ -1713,8 +1713,8 @@ function ScreenLive({ buyers, navigate, params }) {
         {/* Per-platform live badges */}
         <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
           {selectedPlatforms.map(pid=>{
-            const pc={WN:"#7c3aed",TT:"#f43f5e",IG:"#ec4899",AM:"#f59e0b"};
-            const pn={WN:"Whatnot",TT:"TikTok",IG:"Instagram",AM:"Amazon"};
+            const pc={WN:"#7c3aed",TT:"#f43f5e",IG:"#ec4899",AM:"#f59e0b",YT:"#ff0000"};
+            const pn={WN:"Whatnot",TT:"TikTok",IG:"Instagram",AM:"Amazon",YT:"YouTube"};
             const col=pc[pid]||"#7c3aed";
             const viewers=platformViewers[pid]||0;
             return (
