@@ -606,11 +606,12 @@ function StatCard({ label, value, sub, color="#7c3aed", mono=true }) {
 }
 
 // ─── SCREEN: DASHBOARD ────────────────────────────────────────────────────────
-function ScreenDashboard({ persona, buyers, navigate }) {
+function ScreenDashboard({ persona, buyers, navigate, shows }) {
+  const recentShows = shows || SHOWS;
   const vip     = buyers.filter(b=>b.status==="vip").length;
   const atRisk  = buyers.filter(b=>b.status==="risk").length;
   const dormant = buyers.filter(b=>b.status==="dormant").length;
-  const totalGMV = SHOWS.reduce((a,s)=>a+s.gmv,0);
+  const totalGMV = recentShows.reduce((a,s)=>a+s.gmv,0);
 
   // ── ENTERPRISE DASHBOARD ───────────────────────────────────────────────────
   if (persona.plan === "enterprise") {
@@ -807,20 +808,40 @@ function ScreenDashboard({ persona, buyers, navigate }) {
           <button onClick={()=>navigate("shows")} style={{ fontSize:11, color:C.accent, background:"none", border:"none", cursor:"pointer", padding:0 }}>View all →</button>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
-          {SHOWS.slice(0,4).map(s=>{
-            const pl = PLATFORMS[s.platform];
+          {recentShows.slice(0,4).map((s,idx)=>{
+            const pl     = PLATFORMS[s.platform];
+            const isJust = s.isNew && idx === 0;
             return (
-              <div key={s.id} onClick={()=>navigate("show-report", { showId:s.id })} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 14px", cursor:"pointer" }}>
+              <div key={s.id} onClick={()=>navigate("show-report", { showId:s.id })}
+                style={{ background: isJust ? `${C.green}0d` : C.surface2,
+                  border: `1px solid ${isJust ? C.green+"55" : C.border}`,
+                  borderRadius:10, padding:"12px 14px", cursor:"pointer",
+                  position:"relative", overflow:"hidden",
+                  transition:"border-color .2s" }}>
+                {isJust && (
+                  <>
+                    {/* Subtle glow */}
+                    <div style={{ position:"absolute", top:-20, right:-20, width:80, height:80, borderRadius:"50%", background:C.green, opacity:0.07, filter:"blur(20px)", pointerEvents:"none" }}/>
+                    {/* Badge */}
+                    <div style={{ position:"absolute", top:8, right:8, display:"flex", alignItems:"center", gap:4, background:"#10b98120", border:"1px solid #10b98144", borderRadius:99, padding:"2px 8px" }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:C.green, animation:"pulse 1.5s infinite" }}/>
+                      <span style={{ fontSize:8, fontWeight:800, color:C.green, textTransform:"uppercase", letterSpacing:"0.07em" }}>Just Ended</span>
+                    </div>
+                  </>
+                )}
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                   <PlatformPill code={s.platform} />
-                  <span style={{ fontSize:10, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>{s.date}</span>
+                  <span style={{ fontSize:10, color:C.muted, fontFamily:"'JetBrains Mono',monospace", paddingRight: isJust ? 70 : 0 }}>{s.date}</span>
                 </div>
-                <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:6 }}>{s.title}</div>
+                <div style={{ fontSize:12, fontWeight: isJust ? 700 : 600, color: isJust ? C.text : C.text, marginBottom:6 }}>{s.title}</div>
                 <div style={{ display:"flex", gap:14 }}>
                   <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.green }}>${s.gmv.toLocaleString()}</span><span style={{ fontSize:10, color:C.muted }}> GMV</span></div>
                   <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>{s.buyers}</span><span style={{ fontSize:10, color:C.muted }}> buyers</span></div>
                   <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:"#a78bfa" }}>{s.repeatRate}%</span><span style={{ fontSize:10, color:C.muted }}> repeat</span></div>
                 </div>
+                {isJust && s.duration && (
+                  <div style={{ marginTop:8, fontSize:9, color:C.green, fontWeight:600 }}>⏱ {s.duration} · {s.newBuyers} new buyer{s.newBuyers!==1?"s":""}</div>
+                )}
               </div>
             );
           })}
@@ -4847,7 +4868,7 @@ function ScreenShowPlanner({ navigate }) {
 }
 
 // ─── SCREEN: ORDER REVIEW ──────────────────────────────────────────────────────
-function ScreenOrderReview({ params, navigate }) {
+function ScreenOrderReview({ params, navigate, onShowComplete }) {
   const { liveBuyers=[], buyerNotes={}, buyerDiscounts={}, buyerPerks={}, buyerItems={}, gmv=0, elapsed=0 } = params || {};
   const [processed, setProcessed] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -4870,7 +4891,50 @@ function ScreenOrderReview({ params, navigate }) {
 
   const totalChanges  = orders.filter(o=>o.hasChanges).length;
   const totalAddedGMV = orders.reduce((a,o)=>a+o.addedGMV,0);
-  const processAll = () => { setProcessing(true); setTimeout(()=>{ setProcessing(false); setProcessed(true); }, 2200); };
+
+  const buildCompletedShow = () => {
+    const now      = new Date();
+    const dateStr  = now.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+    const platforms= [...new Set(liveBuyers.map(b=>b.platform).filter(Boolean))];
+    const platform = platforms[0] || "WN";
+    const newBuyers= liveBuyers.filter(b=>b.status==="new").length;
+    const repeatBuyers = liveBuyers.filter(b=>b.status!=="new").length;
+    const repeatRate = liveBuyers.length > 0 ? Math.round(repeatBuyers / liveBuyers.length * 100) : 0;
+    const finalGMV = gmv + totalAddedGMV;
+    const durationSecs = elapsed;
+    const hrs  = Math.floor(durationSecs/3600);
+    const mins = Math.floor((durationSecs%3600)/60);
+    const durationStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    const topItemId = (() => {
+      const counts = {};
+      Object.values(buyerItems).flat().forEach(id => { counts[id]=(counts[id]||0)+1; });
+      const topId = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+      return PRODUCTS.find(p=>p.id===topId)?.name || (PRODUCTS.find(p=>p.showReady)?.name || "—");
+    })();
+    return {
+      id:      `sh_live_${Date.now()}`,
+      title:   `Live Show — ${dateStr}`,
+      date:    dateStr,
+      platform,
+      gmv:     finalGMV,
+      buyers:  liveBuyers.length,
+      repeatRate,
+      duration: durationStr,
+      newBuyers,
+      topItem: topItemId,
+      aiDebrief: `Show completed — ${liveBuyers.length} buyers, $${finalGMV.toLocaleString()} GMV, ${totalChanges} order${totalChanges!==1?"s":""} processed.`,
+      isNew:   true,
+    };
+  };
+
+  const processAll = () => {
+    setProcessing(true);
+    setTimeout(() => {
+      setProcessing(false);
+      setProcessed(true);
+      if (onShowComplete) onShowComplete(buildCompletedShow());
+    }, 2200);
+  };
 
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden", position:"relative" }}>
@@ -8430,6 +8494,7 @@ export default function StreamlivePrototype() {
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [notifications, setNotifications] = useState(3);
   const [checkoutPlan, setCheckoutPlan] = useState(null); // plan string → opens CheckoutModal
+  const [completedShows, setCompletedShows] = useState(SHOWS); // seeded with static shows, grows as user completes shows
 
   // Check for invite token in URL — render accept screen instead of app
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
@@ -8688,7 +8753,7 @@ export default function StreamlivePrototype() {
                 {view==="upgrade-analytics"  && <ScreenUpgrade feature="analytics"  persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
                 {view==="upgrade-loyalty"     && <ScreenUpgrade feature="loyalty"    persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
                 {view==="upgrade-production"  && <ScreenUpgrade feature="production" persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
-                {view==="dashboard"    && <ScreenDashboard    persona={persona} buyers={buyers} navigate={navigate} />}
+                {view==="dashboard"    && <ScreenDashboard    persona={persona} buyers={buyers} navigate={navigate} shows={completedShows} />}
                 {view==="buyers"       && <ScreenBuyers        buyers={buyers} navigate={navigate} />}
                 {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
                 {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} />}
@@ -8698,7 +8763,7 @@ export default function StreamlivePrototype() {
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
                 {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} openCheckout={setCheckoutPlan} />}
-                {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} />}
+                {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} onShowComplete={(show)=>setCompletedShows(prev=>[show,...prev])} />}
                 {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} />}
                 {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} />}
                 {view==="loyalty"      && <ScreenLoyalty       buyers={buyers} navigate={navigate} persona={persona} />}
