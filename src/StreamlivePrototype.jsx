@@ -1170,55 +1170,350 @@ function ScreenShows({ navigate, persona }) {
 }
 
 // ─── SCREEN: SHOW REPORT ─────────────────────────────────────────────────────
-function ScreenShowReport({ show, navigate }) {
+function ScreenShowReport({ show, allShows, buyers, navigate }) {
   if (!show) return <div style={{ padding:40, color:C.muted }}>Show not found.</div>;
+
   const pl = PLATFORMS[show.platform];
 
+  // ── AI debrief state ───────────────────────────────────────────────────────
+  const [aiText,       setAiText]       = useState("");
+  const [aiLoading,    setAiLoading]    = useState(false);
+  const [aiGenerated,  setAiGenerated]  = useState(false);
+
+  // ── Derived data ───────────────────────────────────────────────────────────
+  const shows        = allShows || SHOWS;
+  const showIdx      = shows.findIndex(s => s.id === show.id);
+  const prevShow     = showIdx >= 0 ? shows[showIdx + 1] : null;
+  const gmvChange    = prevShow ? Math.round((show.gmv - prevShow.gmv) / prevShow.gmv * 100) : null;
+  const buyerChange  = prevShow ? Math.round((show.buyers - prevShow.buyers) / prevShow.buyers * 100) : null;
+  const repeatChange = prevShow ? (show.repeatRate - prevShow.repeatRate) : null;
+
+  // Buyer segments for this show
+  const showBuyers   = buyers ? buyers.slice(0, show.buyers) : [];
+  const vipCount     = showBuyers.filter(b => b.status === "vip").length;
+  const newCount     = show.newBuyers || showBuyers.filter(b => b.status === "new").length;
+  const repeatCount  = Math.max(0, show.buyers - newCount);
+  const vipGMV       = Math.round(show.gmv * 0.61);
+  const repeatGMV    = Math.round(show.gmv * 0.28);
+  const newGMV       = Math.round(show.gmv * 0.11);
+
+  // Simulated GMV by 30-min interval (scaled to show.gmv)
+  const rawCurve     = [4,9,18,34,62,98,140,176,210,198,172,144,110,82,58,38,22,12,6];
+  const curveSum     = rawCurve.reduce((a,v)=>a+v,0);
+  const gmvCurve     = rawCurve.map(v => Math.round(v/curveSum * show.gmv));
+  const peakIdx      = gmvCurve.indexOf(Math.max(...gmvCurve));
+  const peakLabel    = `${30 * peakIdx}m`;
+
+  // Product performance (seeded from PRODUCTS + show data)
+  const topProducts  = PRODUCTS.filter(p => p.showReady).slice(0, 5).map((p, i) => ({
+    ...p,
+    unitsSold: [8, 5, 4, 3, 2][i] || 1,
+    revenue:   Math.round([8,5,4,3,2][i] * p.price),
+    margin:    p.cost ? Math.round((p.price - p.cost) / p.price * 100) : null,
+  }));
+
+  // Platform context
+  const platformFee = PLATFORM_FEES[show.platform] || 0;
+  const netRevenue  = Math.round(show.gmv * (1 - platformFee));
+  const platformCut = Math.round(show.gmv * platformFee);
+
+  // ── Generate AI debrief ────────────────────────────────────────────────────
+  const generateAI = async () => {
+    setAiLoading(true);
+    setAiText("");
+    const prompt = `You are a live commerce analyst for a trading card seller on ${show.platform === "WN" ? "Whatnot" : show.platform === "TT" ? "TikTok Shop" : show.platform === "AM" ? "Amazon Live" : "Instagram Shopping"}.
+
+Analyze this show performance and write a sharp, specific debrief (4-6 sentences, no bullet points, conversational but data-driven):
+
+Show: "${show.title}"
+Date: ${show.date}  |  Duration: ${show.duration || "N/A"}
+GMV: $${show.gmv.toLocaleString()}  |  Buyers: ${show.buyers}  |  New buyers: ${newCount}
+Repeat rate: ${show.repeatRate}%  |  Top item: ${show.topItem}
+Net revenue after ${Math.round(platformFee*100)}% platform fee: $${netRevenue.toLocaleString()}
+${prevShow ? `vs. previous show: GMV ${gmvChange > 0 ? "+" : ""}${gmvChange}%, buyers ${buyerChange > 0 ? "+" : ""}${buyerChange}%, repeat rate ${repeatChange > 0 ? "+" : ""}${repeatChange}pp` : ""}
+VIP buyers: ${vipCount} (drove ~61% of GMV)
+
+Cover: what went well, any red flags, what to do differently next show. Be specific and direct. No fluff.`;
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+      const data = await res.json();
+      const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+      setAiText(text);
+      setAiGenerated(true);
+    } catch (e) {
+      setAiText("Unable to generate insights right now. Check your connection and try again.");
+    }
+    setAiLoading(false);
+  };
+
+  const ChangeChip = ({ val, suffix = "%" }) => {
+    if (val === null) return null;
+    const pos = val >= 0;
+    return (
+      <span style={{ fontSize:9, fontWeight:700, color: pos ? C.green : "#ef4444", background: pos ? "#10b98115" : "#ef444415", border:`1px solid ${pos ? "#10b98133" : "#ef444433"}`, padding:"2px 6px", borderRadius:99, marginLeft:6 }}>
+        {pos ? "+" : ""}{val}{suffix}
+      </span>
+    );
+  };
+
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
-      <button onClick={()=>navigate("shows")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", marginBottom:20, padding:0 }}>← Back to shows</button>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
 
-      <div style={{ display:"flex", alignItems:"flex-start", gap:16, marginBottom:24 }}>
-        <div style={{ flex:1 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+      {/* ── STICKY HEADER ── */}
+      <div style={{ padding:"14px 28px 14px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <button onClick={()=>navigate("shows")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center", gap:4 }}>← Shows</button>
+            <div style={{ width:1, height:14, background:C.border }}/>
             <PlatformPill code={show.platform} />
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.muted }}>{show.date} · {show.duration}</span>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.muted }}>{show.date}{show.duration ? ` · ${show.duration}` : ""}</span>
+            {show.isNew && (
+              <span style={{ fontSize:8, fontWeight:800, color:C.green, background:"#10b98118", border:"1px solid #10b98133", padding:"2px 8px", borderRadius:99, textTransform:"uppercase", letterSpacing:"0.07em" }}>Latest Show</span>
+            )}
           </div>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.4px" }}>{show.title}</div>
+          <button onClick={()=>navigate("analytics")} style={{ fontSize:11, color:"#a78bfa", background:"#a78bfa10", border:"1px solid #a78bfa33", padding:"5px 12px", borderRadius:7, cursor:"pointer", fontWeight:600 }}>
+            ✦ All Analytics →
+          </button>
         </div>
+        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:19, fontWeight:800, color:C.text, letterSpacing:"-0.4px", marginTop:8 }}>{show.title}</div>
       </div>
 
-      {/* KPI ROW */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
-        <StatCard label="GMV"            value={`$${show.gmv.toLocaleString()}`}  sub="gross merchandise value"  color={C.green}    />
-        <StatCard label="Unique Buyers"  value={show.buyers}                       sub={`${show.newBuyers} first-time`}  color={pl?.color}  />
-        <StatCard label="Repeat Rate"    value={`${show.repeatRate}%`}             sub="returned from past shows"  color="#a78bfa"    />
-        <StatCard label="Top Item"       value={show.topItem}                      sub="most ordered"              color={C.amber} mono={false} />
-      </div>
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 28px" }}>
 
-      {/* AI DEBRIEF */}
-      <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}33`, borderRadius:14, padding:"18px 22px", marginBottom:20 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-          <div style={{ width:22, height:22, borderRadius:6, background:`${C.accent}22`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:C.accent }}>✦</div>
-          <span style={{ fontSize:12, fontWeight:700, color:C.text }}>AI Show Debrief</span>
+        {/* ── KPI ROW ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:10, marginBottom:20 }}>
+          {[
+            { label:"GMV",         value:`$${show.gmv.toLocaleString()}`, sub: gmvChange !== null ? <ChangeChip val={gmvChange} /> : "gross rev",   color:C.green   },
+            { label:"Net Revenue", value:`$${netRevenue.toLocaleString()}`, sub:`after ${Math.round(platformFee*100)}% fee`, color:"#10b981"         },
+            { label:"Buyers",      value:show.buyers,  sub: buyerChange !== null ? <ChangeChip val={buyerChange} /> : "unique",  color:pl?.color || C.accent },
+            { label:"New Buyers",  value:newCount,     sub:`${Math.round(newCount/show.buyers*100)}% of show`,                   color:"#a78bfa"    },
+            { label:"Repeat Rate", value:`${show.repeatRate}%`, sub: repeatChange !== null ? <ChangeChip val={repeatChange} suffix="pp" /> : "returned buyers", color:show.repeatRate >= 65 ? C.green : show.repeatRate >= 50 ? C.amber : "#ef4444" },
+            { label:"Avg Order",   value:`$${Math.round(show.gmv / Math.max(1,show.buyers))}`, sub:"per buyer", color:C.text },
+          ].map(k => (
+            <div key={k.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"12px 14px" }}>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:800, color:k.color, marginBottom:3 }}>{k.value}</div>
+              <div style={{ fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:2 }}>{k.label}</div>
+              <div style={{ fontSize:9, color:C.subtle, display:"flex", alignItems:"center" }}>{k.sub}</div>
+            </div>
+          ))}
         </div>
-        <div style={{ fontSize:13, color:"#9ca3af", lineHeight:1.7 }}>{show.aiDebrief}</div>
-      </div>
 
-      {/* GMV BAR CHART */}
-      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 22px" }}>
-        <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>GMV by Hour</div>
-        <div style={{ display:"flex", gap:6, alignItems:"flex-end", height:100 }}>
-          {[12,45,88,124,210,320,290,180,140,98,64,42,28].map((v,i)=>{
-            const pct = Math.round(v/320*100);
-            return (
-              <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-                <div style={{ width:"100%", height:`${pct}%`, background:`${C.accent}99`, borderRadius:"3px 3px 0 0", minHeight:2 }} />
-                <div style={{ fontSize:8, color:C.subtle, fontFamily:"'JetBrains Mono',monospace" }}>{i+1}h</div>
+        {/* ── TWO COLUMNS: GMV curve + Buyer segments ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16, marginBottom:16 }}>
+
+          {/* GMV over time */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text }}>GMV Over Time</div>
+                <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>30-min intervals · peak at {peakLabel}</div>
               </div>
-            );
-          })}
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:800, color:C.green }}>${show.gmv.toLocaleString()}</div>
+            </div>
+            <div style={{ display:"flex", gap:3, alignItems:"flex-end", height:90, marginBottom:6 }}>
+              {gmvCurve.map((v, i) => {
+                const pct = Math.round(v / Math.max(...gmvCurve) * 100);
+                const isPeak = i === peakIdx;
+                return (
+                  <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+                    <div style={{ width:"100%", height:`${Math.max(pct, 3)}%`, background: isPeak ? C.green : `${C.accent}88`, borderRadius:"3px 3px 0 0", transition:"height .2s", boxShadow: isPeak ? `0 0 8px ${C.green}66` : "none" }} />
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:8, color:C.subtle }}>
+              <span>0m</span><span>30m</span><span>1h</span><span>1.5h</span><span>2h+</span>
+            </div>
+            {/* Platform fee callout */}
+            <div style={{ marginTop:14, display:"flex", gap:8, padding:"8px 12px", background:"#ffffff05", border:`1px solid ${C.border2}`, borderRadius:8 }}>
+              <div style={{ flex:1, textAlign:"center" }}>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.green }}>${netRevenue.toLocaleString()}</div>
+                <div style={{ fontSize:9, color:C.muted }}>Your net revenue</div>
+              </div>
+              <div style={{ width:1, background:C.border }}/>
+              <div style={{ flex:1, textAlign:"center" }}>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:"#ef444488" }}>${platformCut.toLocaleString()}</div>
+                <div style={{ fontSize:9, color:C.muted }}>{show.platform} fee ({Math.round(platformFee*100)}%)</div>
+              </div>
+              <div style={{ width:1, background:C.border }}/>
+              <div style={{ flex:1, textAlign:"center" }}>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>${show.gmv.toLocaleString()}</div>
+                <div style={{ fontSize:9, color:C.muted }}>Gross GMV</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Buyer segments */}
+          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Buyer Segments</div>
+            <div style={{ fontSize:10, color:C.muted, marginBottom:16 }}>{show.buyers} total · GMV attribution</div>
+
+            {[
+              { label:"VIP",        count:vipCount,    gmv:vipGMV,   color:"#7c3aed", icon:"👑" },
+              { label:"Returning",  count:repeatCount-vipCount, gmv:repeatGMV, color:"#a78bfa", icon:"🔄" },
+              { label:"New",        count:newCount,    gmv:newGMV,   color:C.green,   icon:"✨" },
+            ].map(seg => (
+              <div key={seg.label} style={{ marginBottom:12 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                  <span style={{ fontSize:11, color:C.text, display:"flex", alignItems:"center", gap:5 }}>
+                    <span>{seg.icon}</span>
+                    <span style={{ fontWeight:600 }}>{seg.label}</span>
+                    <span style={{ fontSize:9, color:C.muted }}>({Math.max(0,seg.count)})</span>
+                  </span>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:seg.color }}>${seg.gmv.toLocaleString()}</span>
+                </div>
+                <div style={{ height:5, background:C.surface2, borderRadius:3, overflow:"hidden" }}>
+                  <div style={{ width:`${Math.round(seg.gmv/show.gmv*100)}%`, height:"100%", background:seg.color, borderRadius:3 }} />
+                </div>
+                <div style={{ fontSize:8, color:C.subtle, marginTop:2 }}>{Math.round(seg.gmv/show.gmv*100)}% of GMV</div>
+              </div>
+            ))}
+
+            {/* Comparison to prev show */}
+            {prevShow && (
+              <div style={{ marginTop:16, paddingTop:14, borderTop:`1px solid ${C.border}` }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, marginBottom:10, textTransform:"uppercase", letterSpacing:"0.06em" }}>vs. Previous Show</div>
+                {[
+                  { label:"GMV",         curr:`$${show.gmv.toLocaleString()}`,   prev:`$${prevShow.gmv.toLocaleString()}`,   chg:gmvChange },
+                  { label:"Buyers",      curr:show.buyers,                        prev:prevShow.buyers,                       chg:buyerChange },
+                  { label:"Repeat Rate", curr:`${show.repeatRate}%`,              prev:`${prevShow.repeatRate}%`,             chg:repeatChange, suffix:"pp" },
+                ].map(row => (
+                  <div key={row.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                    <span style={{ fontSize:10, color:C.muted }}>{row.label}</span>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <span style={{ fontSize:9, color:C.subtle, textDecoration:"line-through", fontFamily:"'JetBrains Mono',monospace" }}>{row.prev}</span>
+                      <span style={{ fontSize:10, fontWeight:700, color:C.text, fontFamily:"'JetBrains Mono',monospace" }}>{row.curr}</span>
+                      <ChangeChip val={row.chg} suffix={row.suffix || "%"} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* ── TOP PRODUCTS ── */}
+        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:16 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text }}>Product Performance</div>
+              <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>Units sold · Revenue · Margin</div>
+            </div>
+            <span style={{ fontSize:10, color:C.muted }}>Top item: <span style={{ color:C.text, fontWeight:600 }}>{show.topItem}</span></span>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1.6fr 0.8fr 0.8fr 0.8fr 1fr", gap:0 }}>
+            {["Product","Units","Revenue","Margin","Rev. bar"].map(h => (
+              <div key={h} style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", paddingBottom:10 }}>{h}</div>
+            ))}
+            {topProducts.map((p, i) => {
+              const revPct = Math.round(p.revenue / topProducts[0].revenue * 100);
+              const mc = p.margin ? marginColor(p.margin / 100) : C.muted;
+              return [
+                <div key={`n${i}`} style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 0", borderTop:`1px solid ${C.border}` }}>
+                  <span style={{ fontSize:15 }}>{p.image}</span>
+                  <div>
+                    <div style={{ fontSize:11, fontWeight:600, color:C.text }}>{p.name}</div>
+                    <div style={{ fontSize:9, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>{p.sku}</div>
+                  </div>
+                </div>,
+                <div key={`u${i}`} style={{ padding:"9px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.text }}>{p.unitsSold}</span>
+                </div>,
+                <div key={`r${i}`} style={{ padding:"9px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.green }}>${p.revenue.toLocaleString()}</span>
+                </div>,
+                <div key={`m${i}`} style={{ padding:"9px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                  {p.margin ? <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:mc }}>{p.margin}%</span> : <span style={{ fontSize:9, color:C.subtle }}>—</span>}
+                </div>,
+                <div key={`b${i}`} style={{ padding:"9px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center", paddingRight:8 }}>
+                  <div style={{ flex:1, height:5, background:C.surface2, borderRadius:3, overflow:"hidden" }}>
+                    <div style={{ width:`${revPct}%`, height:"100%", background:C.accent, borderRadius:3 }} />
+                  </div>
+                </div>,
+              ];
+            })}
+          </div>
+        </div>
+
+        {/* ── AI DEBRIEF ── */}
+        <div style={{ background:"linear-gradient(135deg,#2d1f5e14,#1a103018)", border:`1px solid ${C.accent}44`, borderRadius:14, padding:"20px 22px" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:32, height:32, borderRadius:9, background:`${C.accent}22`, border:`1px solid ${C.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>✦</div>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text }}>AI Show Debrief</div>
+                <div style={{ fontSize:10, color:C.muted }}>Powered by Claude · Generated from your real show data</div>
+              </div>
+            </div>
+            {!aiGenerated && (
+              <button onClick={generateAI} disabled={aiLoading}
+                style={{ background: aiLoading ? C.surface2 : `linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color: aiLoading ? C.muted : "#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor: aiLoading ? "default" : "pointer", display:"flex", alignItems:"center", gap:8 }}>
+                {aiLoading ? (
+                  <><div style={{ width:12, height:12, border:"2px solid #ffffff33", borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin .7s linear infinite" }}/> Generating…</>
+                ) : "✦ Generate Insights"}
+              </button>
+            )}
+            {aiGenerated && (
+              <button onClick={generateAI} style={{ background:"none", border:`1px solid ${C.border2}`, color:C.muted, fontSize:11, padding:"6px 12px", borderRadius:7, cursor:"pointer" }}>↺ Regenerate</button>
+            )}
+          </div>
+
+          {/* Static fallback debrief always visible */}
+          {!aiGenerated && !aiLoading && (
+            <div style={{ fontSize:13, color:"#9ca3af", lineHeight:1.75 }}>{show.aiDebrief || "Click 'Generate Insights' for a full AI-powered analysis of this show."}</div>
+          )}
+
+          {/* Loading shimmer */}
+          {aiLoading && (
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {[100,90,95,70].map((w,i) => (
+                <div key={i} style={{ height:12, width:`${w}%`, background:`${C.accent}22`, borderRadius:6, animation:"pulse 1.5s ease-in-out infinite", animationDelay:`${i*0.15}s` }} />
+              ))}
+            </div>
+          )}
+
+          {/* AI response */}
+          {aiGenerated && aiText && (
+            <div style={{ fontSize:13, color:"#c4b5fd", lineHeight:1.8 }}>{aiText}</div>
+          )}
+
+          {/* Action prompts */}
+          {aiGenerated && (
+            <div style={{ marginTop:16, display:"flex", gap:8, flexWrap:"wrap" }}>
+              {["What should I sell next show?","How do I improve repeat rate?","Which buyers need follow-up?","Suggest a campaign based on this show"].map(q => (
+                <button key={q} onClick={async () => {
+                  setAiLoading(true);
+                  setAiText("");
+                  setAiGenerated(false);
+                  try {
+                    const res = await fetch("https://api.anthropic.com/v1/messages", {
+                      method:"POST", headers:{"Content-Type":"application/json"},
+                      body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000,
+                        messages:[{ role:"user", content:`Context: Show "${show.title}", GMV $${show.gmv}, ${show.buyers} buyers, ${show.repeatRate}% repeat rate, top item: ${show.topItem}.\n\nQuestion: ${q}` }] })
+                    });
+                    const d = await res.json();
+                    const t = (d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+                    setAiText(t); setAiGenerated(true);
+                  } catch(e) { setAiText("Error fetching response."); setAiGenerated(true); }
+                  setAiLoading(false);
+                }}
+                  style={{ fontSize:10, fontWeight:600, color:"#a78bfa", background:"#a78bfa10", border:"1px solid #a78bfa33", padding:"5px 12px", borderRadius:99, cursor:"pointer" }}>
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
@@ -5158,7 +5453,7 @@ const KPI = ({ label, value, sub, color="#7c3aed", trend }) => (
 );
 
 // ─── SCREEN: ANALYTICS ────────────────────────────────────────────────────────
-function ScreenAnalytics({ buyers, persona }) {
+function ScreenAnalytics({ buyers, persona, navigate }) {
   const [tab, setTab]           = useState("overview");
   const [aiExpanded, setAiExpanded] = useState(null);
   const [dateRange, setDateRange]   = useState("30d");
@@ -5530,8 +5825,8 @@ function ScreenAnalytics({ buyers, persona }) {
             {/* Show performance table */}
             <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:20 }}>
               <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Show-by-Show Performance</div>
-              <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr 1fr", gap:0 }}>
-                {["Show","Platform","Date","GMV","Buyers","Repeat Rate","New Buyers"].map(h=>(
+              <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr 1fr 80px", gap:0 }}>
+                {["Show","Platform","Date","GMV","Buyers","Repeat Rate","New Buyers",""].map(h=>(
                   <div key={h} style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", padding:"0 0 10px" }}>{h}</div>
                 ))}
                 {[...SHOWS].sort((a,b)=>new Date(b.date)-new Date(a.date)).map((s,i)=>[
@@ -5544,6 +5839,9 @@ function ScreenAnalytics({ buyers, persona }) {
                     <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:s.repeatRate>=65?C.green:s.repeatRate>=50?"#f59e0b":"#ef4444" }}>{s.repeatRate}%</span>
                   </div>,
                   <div key={`n${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:"#a78bfa", display:"flex", alignItems:"center" }}>{s.newBuyers}</div>,
+                  <div key={`v${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
+                    <button onClick={()=>navigate&&navigate("show-report",{showId:s.id})} style={{ fontSize:10, fontWeight:600, color:C.accent, background:`${C.accent}10`, border:`1px solid ${C.accent}33`, padding:"3px 10px", borderRadius:6, cursor:"pointer", whiteSpace:"nowrap" }}>View →</button>
+                  </div>,
                 ])}
               </div>
             </div>
@@ -8512,7 +8810,7 @@ export default function StreamlivePrototype() {
   };
 
   const activeBuyer = params.buyerId ? buyers.find(b=>b.id===params.buyerId) : null;
-  const activeShow  = params.showId  ? SHOWS.find(s=>s.id===params.showId)    : null;
+  const activeShow  = params.showId  ? (completedShows.find(s=>s.id===params.showId) || SHOWS.find(s=>s.id===params.showId)) : null;
 
   const isEnterprise = persona.plan === "enterprise";
 
@@ -8757,7 +9055,7 @@ export default function StreamlivePrototype() {
                 {view==="buyers"       && <ScreenBuyers        buyers={buyers} navigate={navigate} />}
                 {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
                 {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} />}
-                {view==="show-report"  && <ScreenShowReport    show={activeShow} navigate={navigate} />}
+                {view==="show-report"  && <ScreenShowReport    show={activeShow} allShows={completedShows} buyers={buyers} navigate={navigate} />}
                 {view==="live"         && <ScreenLive          buyers={buyers} navigate={navigate} params={params} />}
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
@@ -8768,7 +9066,7 @@ export default function StreamlivePrototype() {
                 {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} />}
                 {view==="loyalty"      && <ScreenLoyalty       buyers={buyers} navigate={navigate} persona={persona} />}
                 {view==="production"   && <ScreenProduction    persona={persona} navigate={navigate} />}
-                {view==="analytics"    && <ScreenAnalytics     buyers={buyers} persona={persona} />}
+                {view==="analytics"    && <ScreenAnalytics     buyers={buyers} persona={persona} navigate={navigate} />}
               </>
             )}
           </div>
