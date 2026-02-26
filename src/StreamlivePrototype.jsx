@@ -931,7 +931,7 @@ function ScreenBuyers({ buyers, navigate }) {
                   <div style={{ fontSize:11, color:C.muted }}>{b.handle}</div>
                 </div>
               </div>
-              <div style={{ alignSelf:"center" }}><PlatformPill code={b.platform} /></div>
+              <div style={{ alignSelf:"center", display:"flex" }}><PlatformPill code={b.platform} /></div>
               <div style={{ alignSelf:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>${b.spend.toLocaleString()}</div>
               <div style={{ alignSelf:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"#9ca3af" }}>{b.orders}</div>
               <div style={{ alignSelf:"center", fontSize:12, color:C.muted }}>{b.lastOrder}</div>
