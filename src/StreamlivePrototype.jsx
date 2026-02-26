@@ -405,17 +405,66 @@ function CheckoutModal({ plan, onClose }) {
 
 // ─── SHOPIFY CATALOG DATA ─────────────────────────────────────────────────────
 const PRODUCTS = [
-  { id:"p1",  name:"2023 Topps Chrome Hobby Box",       sku:"TC23-HOB",  price:189, inventory:12, category:"Sealed Wax",     image:"📦", platforms:["WN","TT","AM"],    showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:34, avgPerShow:3.2 },
-  { id:"p2",  name:"Bowman Chrome Prospect Lot x10",    sku:"BC-PROS10", price:64,  inventory:28, category:"Lots",           image:"🃏", platforms:["WN","TT"],         showReady:true,  shopifyId:"sh_002", aiScore:8.8, soldLast30:28, avgPerShow:4.1 },
-  { id:"p3",  name:"PSA 9 Graded Lot x3",               sku:"PSA9-L3",   price:220, inventory:6,  category:"Graded",         image:"🏆", platforms:["WN","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:19, avgPerShow:2.8 },
-  { id:"p4",  name:"Vintage Wax Box 1987 Topps",        sku:"VWB-87T",   price:340, inventory:3,  category:"Vintage",        image:"✨", platforms:["WN"],              showReady:true,  shopifyId:"sh_004", aiScore:7.6, soldLast30:8,  avgPerShow:1.2 },
-  { id:"p5",  name:"Refractor Lot x25 Mixed",           sku:"REF-MX25",  price:49,  inventory:45, category:"Lots",           image:"💎", platforms:["WN","TT","AM","IG"],showReady:false, shopifyId:"sh_005", aiScore:8.2, soldLast30:41, avgPerShow:5.6 },
-  { id:"p6",  name:"Jordan RC Reprint Set",             sku:"MJ-RC-SET",  price:89,  inventory:15, category:"Singles",        image:"🐐", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_006", aiScore:9.7, soldLast30:22, avgPerShow:3.8 },
-  { id:"p7",  name:"2024 Prizm Draft Football Blaster", sku:"PZ24-BLT",  price:39,  inventory:30, category:"Sealed Wax",     image:"🏈", platforms:["WN","TT","AM"],    showReady:false, shopifyId:"sh_007", aiScore:7.1, soldLast30:15, avgPerShow:2.1 },
-  { id:"p8",  name:"Mystery Box — Card Collector",      sku:"MYS-CC-01", price:29,  inventory:50, category:"Mystery",        image:"🎁", platforms:["WN","TT","IG"],    showReady:true,  shopifyId:"sh_008", aiScore:8.5, soldLast30:63, avgPerShow:7.2 },
-  { id:"p9",  name:"1952 Topps Commons Lot",            sku:"52T-COM",   price:125, inventory:8,  category:"Vintage",        image:"📜", platforms:["WN","AM"],         showReady:false, shopifyId:"sh_009", aiScore:6.8, soldLast30:5,  avgPerShow:0.8 },
-  { id:"p10", name:"Luka Doncic Rookie Lot x5",         sku:"LUKA-RC5",  price:149, inventory:10, category:"Singles",        image:"⭐", platforms:["WN","TT","AM","IG"],showReady:true,  shopifyId:"sh_010", aiScore:9.6, soldLast30:31, avgPerShow:4.4 },
+  { id:"p1",  name:"2023 Topps Chrome Hobby Box",       sku:"TC23-HOB",  price:189, cost:112, inventory:12, category:"Sealed Wax",     image:"📦", platforms:["WN","TT","AM"],    showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:34, avgPerShow:3.2 },
+  { id:"p2",  name:"Bowman Chrome Prospect Lot x10",    sku:"BC-PROS10", price:64,  cost:38,  inventory:28, category:"Lots",           image:"🃏", platforms:["WN","TT"],         showReady:true,  shopifyId:"sh_002", aiScore:8.8, soldLast30:28, avgPerShow:4.1 },
+  { id:"p3",  name:"PSA 9 Graded Lot x3",               sku:"PSA9-L3",   price:220, cost:148, inventory:6,  category:"Graded",         image:"🏆", platforms:["WN","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:19, avgPerShow:2.8 },
+  { id:"p4",  name:"Vintage Wax Box 1987 Topps",        sku:"VWB-87T",   price:340, cost:194, inventory:3,  category:"Vintage",        image:"✨", platforms:["WN"],              showReady:true,  shopifyId:"sh_004", aiScore:7.6, soldLast30:8,  avgPerShow:1.2 },
+  { id:"p5",  name:"Refractor Lot x25 Mixed",           sku:"REF-MX25",  price:49,  cost:27,  inventory:45, category:"Lots",           image:"💎", platforms:["WN","TT","AM","IG"],showReady:false, shopifyId:"sh_005", aiScore:8.2, soldLast30:41, avgPerShow:5.6 },
+  { id:"p6",  name:"Jordan RC Reprint Set",             sku:"MJ-RC-SET",  price:89,  cost:41,  inventory:15, category:"Singles",        image:"🐐", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_006", aiScore:9.7, soldLast30:22, avgPerShow:3.8 },
+  { id:"p7",  name:"2024 Prizm Draft Football Blaster", sku:"PZ24-BLT",  price:39,  cost:23,  inventory:30, category:"Sealed Wax",     image:"🏈", platforms:["WN","TT","AM"],    showReady:false, shopifyId:"sh_007", aiScore:7.1, soldLast30:15, avgPerShow:2.1 },
+  { id:"p8",  name:"Mystery Box — Card Collector",      sku:"MYS-CC-01", price:29,  cost:13,  inventory:50, category:"Mystery",        image:"🎁", platforms:["WN","TT","IG"],    showReady:true,  shopifyId:"sh_008", aiScore:8.5, soldLast30:63, avgPerShow:7.2 },
+  { id:"p9",  name:"1952 Topps Commons Lot",            sku:"52T-COM",   price:125, cost:90,  inventory:8,  category:"Vintage",        image:"📜", platforms:["WN","AM"],         showReady:false, shopifyId:"sh_009", aiScore:6.8, soldLast30:5,  avgPerShow:0.8 },
+  { id:"p10", name:"Luka Doncic Rookie Lot x5",         sku:"LUKA-RC5",  price:149, cost:96,  inventory:10, category:"Singles",        image:"⭐", platforms:["WN","TT","AM","IG"],showReady:true,  shopifyId:"sh_010", aiScore:9.6, soldLast30:31, avgPerShow:4.4 },
 ];
+
+// ─── PLATFORM FEES (from Shopify seller context) ─────────────────────────────
+// Source: each platform's published seller fee schedule
+const PLATFORM_FEES = {
+  WN: 0.08,   // Whatnot: 8% transaction fee
+  TT: 0.05,   // TikTok Shop: 5% referral fee
+  AM: 0.15,   // Amazon: ~15% referral fee (varies by category)
+  IG: 0.05,   // Instagram Shops: 5% selling fee
+};
+
+// Default minimum acceptable margin (seller can override in Settings)
+const DEFAULT_MIN_MARGIN = 0.15; // 15%
+
+// ── Profit helpers ────────────────────────────────────────────────────────────
+// All calculations from Shopify's inventory_item.cost + product.price
+//   grossMargin    = (price - cost) / price
+//   netRevenue     = price * (1 - discPct) * (1 - platformFee)
+//   netProfit      = netRevenue - cost
+//   netMargin      = netProfit / (price * (1-discPct))   ← on discounted price
+//   maxSafeDisc    = 1 - cost / (price * (1-fee-minMargin))
+const calcProfit = (price, cost, discPct, platformKey) => {
+  const fee       = PLATFORM_FEES[platformKey] || 0;
+  const discPrice = price * (1 - discPct / 100);
+  const netRev    = discPrice * (1 - fee);
+  const profit    = netRev - cost;
+  const margin    = discPrice > 0 ? profit / discPrice : 0;
+  return { discPrice, netRev, profit, margin, fee };
+};
+
+const calcMaxSafeDisc = (price, cost, platformKey, minMargin = DEFAULT_MIN_MARGIN) => {
+  const fee = PLATFORM_FEES[platformKey] || 0;
+  const denom = price * (1 - fee - minMargin);
+  if (denom <= 0) return 0;
+  return Math.max(0, Math.floor((1 - cost / denom) * 100));
+};
+
+const marginColor = (margin) => {
+  if (margin >= 0.30) return "#10b981";  // green  — healthy
+  if (margin >= 0.15) return "#f59e0b";  // amber  — caution
+  if (margin >= 0)    return "#ef4444";  // red    — below min
+  return "#7f1d1d";                       // dark   — selling at a loss
+};
+
+const marginLabel = (margin) => {
+  if (margin >= 0.30) return "Healthy";
+  if (margin >= 0.15) return "Caution";
+  if (margin >= 0)    return "Below min";
+  return "At a loss";
+};
 
 // ─── LOYALTY TIERS ────────────────────────────────────────────────────────────
 const LOYALTY_TIERS = [
@@ -1527,77 +1576,184 @@ function ScreenLive({ buyers, navigate, params }) {
                   </div>
                 )}
 
-                {/* DISCOUNT */}
-                {rightTab==="discount" && (
-                  <div>
-                    <div style={{ fontSize:10, color:C.muted, marginBottom:16 }}>Apply a discount to <strong style={{ color:C.text }}>{selectedBuyer.name}</strong>'s current order</div>
+                {/* DISCOUNT + PROFIT GUARD */}
+                {rightTab==="discount" && (() => {
+                  // ── Determine products in this buyer's cart ──────────────────
+                  const cartProductIds = buyerItems[selectedBuyer.id] || [];
+                  const cartProducts   = PRODUCTS.filter(p => cartProductIds.includes(p.id));
+                  // If cart is empty, use the first show-ready product as a preview
+                  const guardProducts  = cartProducts.length > 0 ? cartProducts : PRODUCTS.filter(p=>p.showReady).slice(0,1);
+                  const activePlatform = selectedPlatforms[0] || "WN";
+                  const fee            = PLATFORM_FEES[activePlatform] || 0;
 
-                    {/* Quick select */}
-                    <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Quick Select</div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:7, marginBottom:16 }}>
-                      {[5,10,15,20,25,30,40,50].map(pct=>(
-                        <button
-                          key={pct}
-                          onClick={()=>setBuyerDiscounts(prev=>({...prev,[selectedBuyer.id]:pct}))}
-                          style={{ background:currentDiscount===pct?C.green:C.surface, border:`1px solid ${currentDiscount===pct?C.green:C.border}`, color:currentDiscount===pct?"#fff":C.text, fontSize:12, fontWeight:700, padding:"9px 4px", borderRadius:8, cursor:"pointer", transition:"all .15s" }}
-                        >
-                          {pct}%
-                        </button>
-                      ))}
-                    </div>
+                  // ── Per-order profit at current discount ─────────────────────
+                  const orderStats = guardProducts.map(p => {
+                    const cp = calcProfit(p.price, p.cost || 0, currentDiscount, activePlatform);
+                    return { ...p, ...cp };
+                  });
+                  const hasCost    = guardProducts.every(p => p.cost && p.cost > 0);
+                  const avgMargin  = hasCost && orderStats.length > 0
+                    ? orderStats.reduce((a,p) => a + p.margin, 0) / orderStats.length : null;
+                  const maxSafeDiscs = hasCost
+                    ? guardProducts.map(p => calcMaxSafeDisc(p.price, p.cost||0, activePlatform))
+                    : [];
+                  const maxSafeDisc = maxSafeDiscs.length > 0 ? Math.min(...maxSafeDiscs) : 100;
+                  const isSafe      = currentDiscount <= maxSafeDisc;
+                  const isAtLoss    = avgMargin !== null && avgMargin < 0;
+                  const isBelowMin  = avgMargin !== null && avgMargin >= 0 && avgMargin < DEFAULT_MIN_MARGIN;
+                  const mc          = hasCost && avgMargin !== null ? marginColor(avgMargin) : C.muted;
+                  const ml          = hasCost && avgMargin !== null ? marginLabel(avgMargin) : "—";
 
-                    {/* Custom input */}
-                    <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Custom Amount</div>
-                    <div style={{ display:"flex", gap:8, marginBottom:16 }}>
-                      <input
-                        type="number" min={0} max={100}
-                        value={currentDiscount||""}
-                        onChange={e=>setBuyerDiscounts(prev=>({...prev,[selectedBuyer.id]:Number(e.target.value)}))}
-                        placeholder="0"
-                        style={{ flex:1, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:14, fontWeight:700, outline:"none", textAlign:"center", fontFamily:"'JetBrains Mono',monospace" }}
-                      />
-                      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", width:40, fontSize:18, color:C.muted }}>%</div>
-                    </div>
+                  return (
+                    <div>
+                      {/* ── PROFIT GUARD PANEL ─────────────────────────────── */}
+                      {hasCost ? (
+                        <div style={{ background: isAtLoss?"#1a0808":isBelowMin?"#1a1100":"#071410", border:`1px solid ${mc}44`, borderRadius:12, padding:"12px 14px", marginBottom:14 }}>
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                              <span style={{ fontSize:14 }}>{isAtLoss?"🚨":isBelowMin?"⚠️":"🛡️"}</span>
+                              <div>
+                                <div style={{ fontSize:11, fontWeight:700, color:mc }}>Profit Guard</div>
+                                <div style={{ fontSize:9, color:C.muted }}>Via Shopify cost data · {activePlatform} {(fee*100).toFixed(0)}% fee</div>
+                              </div>
+                            </div>
+                            <div style={{ textAlign:"right" }}>
+                              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:800, color:mc }}>
+                                {avgMargin !== null ? `${(avgMargin*100).toFixed(1)}%` : "—"}
+                              </div>
+                              <div style={{ fontSize:8, fontWeight:700, color:mc, textTransform:"uppercase", letterSpacing:"0.06em" }}>{ml}</div>
+                            </div>
+                          </div>
 
-                    {/* Reason tag */}
-                    <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Reason</div>
-                    <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:16 }}>
-                      {["VIP loyalty","New buyer","At-risk win-back","Show special","Apology"].map(r=>{
-                        const isActive = currentPerks["discountReason"]===r;
-                        return (
-                          <button key={r} onClick={()=>setBuyerPerks(prev=>({...prev,[selectedBuyer.id]:{...(prev[selectedBuyer.id]||{}),discountReason:r}}))}
-                            style={{ fontSize:10, fontWeight:isActive?700:400, color:isActive?"#fff":C.muted, background:isActive?C.accent:C.surface, border:`1px solid ${isActive?C.accent:C.border}`, padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>
-                            {r}
-                          </button>
-                        );
-                      })}
-                    </div>
+                          {/* Margin bar */}
+                          <div style={{ height:5, background:C.surface2, borderRadius:3, overflow:"hidden", marginBottom:6, position:"relative" }}>
+                            {/* Min margin threshold marker */}
+                            <div style={{ position:"absolute", left:`${DEFAULT_MIN_MARGIN*100}%`, top:0, bottom:0, width:2, background:"#f59e0b", zIndex:2, borderRadius:1 }}/>
+                            {avgMargin !== null && (
+                              <div style={{ height:"100%", width:`${Math.max(0,Math.min(100,avgMargin*100))}%`, background:mc, borderRadius:3, transition:"width .25s ease" }}/>
+                            )}
+                          </div>
+                          <div style={{ display:"flex", justifyContent:"space-between", fontSize:8, color:C.subtle, marginBottom:10 }}>
+                            <span>0% (loss)</span>
+                            <span style={{ color:"#f59e0b" }}>▲ {(DEFAULT_MIN_MARGIN*100).toFixed(0)}% min</span>
+                            <span>100%</span>
+                          </div>
 
-                    {currentDiscount > 0 && (
-                      <div style={{ background:"#0a1e16", border:"1px solid #10b98133", borderRadius:10, padding:"12px 14px", marginBottom:12 }}>
-                        <div style={{ fontSize:11, color:C.muted, marginBottom:4 }}>Order summary with discount</div>
-                        <div style={{ display:"flex", justifyContent:"space-between" }}>
-                          <span style={{ fontSize:12, color:C.muted }}>Lifetime avg order</span>
-                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:C.muted, textDecoration:"line-through" }}>${Math.round(selectedBuyer.spend/selectedBuyer.orders)}</span>
+                          {/* Per-product breakdown */}
+                          {orderStats.map(p => (
+                            <div key={p.id} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5, padding:"6px 8px", background:"#ffffff08", borderRadius:7 }}>
+                              <span style={{ fontSize:12 }}>{p.image}</span>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ fontSize:9, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
+                                <div style={{ fontSize:8, color:C.muted }}>
+                                  Cost <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.text }}>${p.cost}</span>
+                                  {" · "}Net <span style={{ fontFamily:"'JetBrains Mono',monospace", color:marginColor(p.margin) }}>${p.profit.toFixed(0)}</span>
+                                </div>
+                              </div>
+                              <div style={{ textAlign:"right", flexShrink:0 }}>
+                                <div style={{ fontSize:10, fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:marginColor(p.margin) }}>
+                                  {(p.margin*100).toFixed(1)}%
+                                </div>
+                                <div style={{ fontSize:8, color:C.muted, textDecoration:"line-through" }}>${p.price}</div>
+                                <div style={{ fontSize:8, color:C.green }}>→ ${p.discPrice.toFixed(0)}</div>
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Safe discount callout */}
+                          {currentDiscount === 0 && (
+                            <div style={{ fontSize:9, color:C.muted, marginTop:6, padding:"5px 8px", background:"#ffffff06", borderRadius:6 }}>
+                              Max safe discount: <span style={{ color:"#10b981", fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>{maxSafeDisc}%</span>
+                              <span style={{ color:C.subtle }}> (keeps {(DEFAULT_MIN_MARGIN*100).toFixed(0)}% margin after {activePlatform} fee)</span>
+                            </div>
+                          )}
+                          {isAtLoss && (
+                            <div style={{ fontSize:10, fontWeight:700, color:"#ef4444", background:"#ef444415", border:"1px solid #ef444433", borderRadius:7, padding:"7px 10px", marginTop:8 }}>
+                              🚨 Selling at a loss — cost exceeds net revenue at this discount
+                            </div>
+                          )}
+                          {isBelowMin && !isAtLoss && (
+                            <div style={{ fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b12", border:"1px solid #f59e0b33", borderRadius:7, padding:"7px 10px", marginTop:8 }}>
+                              ⚠ Below minimum margin — consider max {maxSafeDisc}% discount instead
+                            </div>
+                          )}
                         </div>
-                        <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
-                          <span style={{ fontSize:12, fontWeight:700, color:C.text }}>After {currentDiscount}% discount</span>
-                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.green }}>${Math.round(selectedBuyer.spend/selectedBuyer.orders*(1-currentDiscount/100))}</span>
+                      ) : (
+                        <div style={{ background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:10, padding:"10px 12px", marginBottom:14, display:"flex", gap:8, alignItems:"center" }}>
+                          <span style={{ fontSize:13 }}>📊</span>
+                          <div style={{ fontSize:10, color:C.muted }}>Add products to cart to see <span style={{ color:C.text }}>profit guard</span> — connects to Shopify cost data</div>
                         </div>
+                      )}
+
+                      {/* ── DISCOUNT CONTROLS ──────────────────────────────── */}
+                      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>
+                        Quick Select
+                        {hasCost && <span style={{ color:"#10b981", fontSize:8, fontWeight:700, marginLeft:6, textTransform:"none" }}>green = safe · amber = caution · red = below min</span>}
                       </div>
-                    )}
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6, marginBottom:14 }}>
+                        {[5,10,15,20,25,30,40,50].map(pct => {
+                          const isSelected = currentDiscount === pct;
+                          let btnColor = C.muted;
+                          let btnBg    = C.surface;
+                          let btnBorder= C.border;
+                          if (hasCost) {
+                            const testMargins = guardProducts.map(p => calcProfit(p.price, p.cost||0, pct, activePlatform).margin);
+                            const worstMargin = Math.min(...testMargins);
+                            btnColor  = marginColor(worstMargin);
+                            btnBg     = isSelected ? btnColor : `${btnColor}12`;
+                            btnBorder = `${btnColor}${isSelected?"":"55"}`;
+                          }
+                          return (
+                            <button key={pct} onClick={()=>setBuyerDiscounts(prev=>({...prev,[selectedBuyer.id]:pct}))}
+                              style={{ background:isSelected?btnColor:btnBg, border:`1px solid ${btnBorder}`, color:isSelected?"#fff":hasCost?btnColor:C.text, fontSize:12, fontWeight:700, padding:"8px 4px", borderRadius:8, cursor:"pointer", transition:"all .15s" }}>
+                              {pct}%
+                            </button>
+                          );
+                        })}
+                      </div>
 
-                    <button onClick={applyDiscount} style={{ width:"100%", background:savedFeedback==="discount"?C.green:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px", borderRadius:9, cursor:"pointer", transition:"background .2s" }}>
-                      {savedFeedback==="discount" ? "✓ Discount Applied!" : currentDiscount > 0 ? `Apply ${currentDiscount}% Discount` : "Set a Discount First"}
-                    </button>
+                      {/* Custom amount */}
+                      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Custom Amount</div>
+                      <div style={{ display:"flex", gap:8, marginBottom:14 }}>
+                        <input type="number" min={0} max={100}
+                          value={currentDiscount||""}
+                          onChange={e=>setBuyerDiscounts(prev=>({...prev,[selectedBuyer.id]:Math.min(100,Number(e.target.value))}))}
+                          placeholder="0"
+                          style={{ flex:1, background:C.surface2, border:`1px solid ${hasCost&&!isSafe?"#ef444466":C.border2}`, borderRadius:8, padding:"9px 12px", color:hasCost&&!isSafe?"#ef4444":C.text, fontSize:14, fontWeight:700, outline:"none", textAlign:"center", fontFamily:"'JetBrains Mono',monospace" }}
+                        />
+                        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, fontSize:16, color:C.muted }}>%</div>
+                      </div>
 
-                    {currentDiscount > 0 && (
-                      <button onClick={()=>setBuyerDiscounts(prev=>({...prev,[selectedBuyer.id]:0}))} style={{ width:"100%", marginTop:6, background:"none", border:`1px solid ${C.border}`, color:C.muted, fontSize:11, fontWeight:600, padding:"7px", borderRadius:8, cursor:"pointer" }}>
-                        Clear Discount
+                      {/* Reason */}
+                      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Reason</div>
+                      <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:14 }}>
+                        {["VIP loyalty","New buyer","At-risk win-back","Show special","Apology"].map(r => {
+                          const isActive = currentPerks["discountReason"]===r;
+                          return (
+                            <button key={r} onClick={()=>setBuyerPerks(prev=>({...prev,[selectedBuyer.id]:{...(prev[selectedBuyer.id]||{}),discountReason:r}}))}
+                              style={{ fontSize:10, fontWeight:isActive?700:400, color:isActive?"#fff":C.muted, background:isActive?C.accent:C.surface, border:`1px solid ${isActive?C.accent:C.border}`, padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>
+                              {r}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Apply button */}
+                      <button onClick={applyDiscount}
+                        style={{ width:"100%", background: savedFeedback==="discount" ? C.green : isAtLoss ? "#7f1d1d" : isBelowMin ? "#92400e" : `linear-gradient(135deg,${C.accent},${C.accent2})`,
+                          border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px", borderRadius:9, cursor:"pointer", transition:"background .2s" }}>
+                        {savedFeedback==="discount" ? "✓ Discount Applied!" : currentDiscount > 0 ? `Apply ${currentDiscount}% Discount` : "Set a Discount First"}
                       </button>
-                    )}
-                  </div>
-                )}
+
+                      {currentDiscount > 0 && (
+                        <button onClick={()=>setBuyerDiscounts(prev=>({...prev,[selectedBuyer.id]:0}))}
+                          style={{ width:"100%", marginTop:6, background:"none", border:`1px solid ${C.border}`, color:C.muted, fontSize:11, fontWeight:600, padding:"7px", borderRadius:8, cursor:"pointer" }}>
+                          Clear Discount
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
 
               </div>
             </>
@@ -4416,7 +4572,25 @@ function ScreenCatalog({ persona, navigate }) {
                   <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:C.green }}>{p.soldLast30}</div>
                   <div style={{ fontSize:9, color:C.muted }}>sold/30d</div>
                 </div>
+                {p.cost && (
+                  <div>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:marginColor((p.price-p.cost)/p.price) }}>
+                      {Math.round((p.price-p.cost)/p.price*100)}%
+                    </div>
+                    <div style={{ fontSize:9, color:C.muted }}>margin</div>
+                  </div>
+                )}
               </div>
+              {/* Cost + max safe discount strip */}
+              {p.cost && (
+                <div style={{ display:"flex", gap:6, alignItems:"center", marginBottom:10, padding:"5px 8px", background:"#ffffff05", border:`1px solid ${C.border2}`, borderRadius:7 }}>
+                  <span style={{ fontSize:9, color:C.subtle }}>Cost <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.muted }}>${p.cost}</span></span>
+                  <div style={{ width:1, height:10, background:C.border }}/>
+                  <span style={{ fontSize:9, color:C.subtle }}>Max safe disc <span style={{ fontFamily:"'JetBrains Mono',monospace", color:"#10b981", fontWeight:700 }}>{calcMaxSafeDisc(p.price,p.cost,"WN")}%</span></span>
+                  <div style={{ width:1, height:10, background:C.border }}/>
+                  <span style={{ fontSize:9, color:C.subtle }}>Break-even <span style={{ fontFamily:"'JetBrains Mono',monospace", color:C.muted }}>${p.cost}</span></span>
+                </div>
+              )}
               <div style={{ display:"flex", gap:4, marginBottom:12, flexWrap:"wrap" }}>
                 {p.platforms.map(pl=><PlatformPill key={pl} code={pl} />)}
               </div>
