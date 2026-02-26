@@ -4,8 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #06060e; cursor: none; }
-  *:hover { cursor: none !important; }
+  body { background: #06060e; }
+  *, *:hover, *:focus, *:active { cursor: none !important; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 99px; }
@@ -6744,8 +6744,13 @@ function ScreenProduction({ persona, navigate }) {
 
 // ─── SCREEN: LOYALTY HUB ─────────────────────────────────────────────────────
 function ScreenLoyalty({ buyers, navigate, persona }) {
-  const [tab, setTab]     = useState("overview");
-  const [search, setSearch] = useState("");
+  const [tab, setTab]         = useState("overview");
+  const [search, setSearch]   = useState("");
+  const [awardModal, setAwardModal] = useState(false);
+  const [awardBuyer, setAwardBuyer] = useState("");
+  const [awardAmount, setAwardAmount] = useState("100");
+  const [awardReason, setAwardReason] = useState("manual");
+  const [awardDone, setAwardDone]   = useState(false);
 
   // Enrich buyers with loyalty data
   const enriched = buyers.map(b => ({
@@ -6780,7 +6785,7 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Loyalty Hub</div>
             <div style={{ fontSize:12, color:C.muted, marginTop:3 }}>{enriched.length} members across {LOYALTY_TIERS.length} tiers</div>
           </div>
-          <button style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
+          <button onClick={() => { setAwardDone(false); setAwardBuyer(""); setAwardAmount("100"); setAwardModal(true); }} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
             + Award Points
           </button>
         </div>
@@ -6983,6 +6988,82 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
               );
             })
           }
+        </div>
+      )}
+
+      {/* ── AWARD POINTS MODAL ── */}
+      {awardModal && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.72)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }}
+          onClick={e => { if (e.target === e.currentTarget) setAwardModal(false); }}>
+          <div style={{ background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:16, padding:"28px 28px 24px", width:400, boxShadow:"0 24px 80px rgba(0,0,0,0.6)" }}>
+            {awardDone ? (
+              <div style={{ textAlign:"center", padding:"16px 0" }}>
+                <div style={{ fontSize:36, marginBottom:12 }}>✅</div>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:800, color:C.text, marginBottom:6 }}>Points Awarded!</div>
+                <div style={{ fontSize:13, color:C.muted, marginBottom:24 }}>
+                  <strong style={{ color:C.green }}>+{awardAmount} pts</strong> added to {enriched.find(b=>b.id===awardBuyer)?.name || "buyer"}'s balance.
+                </div>
+                <button onClick={() => setAwardModal(false)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:9, cursor:"pointer" }}>
+                  Done
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:C.text }}>Award Points</div>
+                  <button onClick={() => setAwardModal(false)} style={{ background:"none", border:"none", color:C.muted, fontSize:18, cursor:"pointer", lineHeight:1, padding:"2px 6px" }}>✕</button>
+                </div>
+
+                {/* Buyer selector */}
+                <div style={{ marginBottom:16 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:7 }}>Buyer</div>
+                  <select value={awardBuyer} onChange={e => setAwardBuyer(e.target.value)}
+                    style={{ width:"100%", background:C.surface, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color: awardBuyer ? C.text : C.muted, fontSize:13 }}>
+                    <option value="">Select a buyer…</option>
+                    {enriched.map(b => (
+                      <option key={b.id} value={b.id}>{b.name} — {b.loyalty.points.toLocaleString()} pts ({b.loyalty.tier})</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Points amount */}
+                <div style={{ marginBottom:16 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:7 }}>Points to Award</div>
+                  <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+                    {["50","100","250","500"].map(amt => (
+                      <button key={amt} onClick={() => setAwardAmount(amt)}
+                        style={{ flex:1, background: awardAmount===amt ? `${C.accent}22` : C.surface, border:`1px solid ${awardAmount===amt ? C.accent : C.border2}`, color: awardAmount===amt ? C.accent : C.muted, fontSize:12, fontWeight:700, padding:"8px 0", borderRadius:8, cursor:"pointer" }}>
+                        +{amt}
+                      </button>
+                    ))}
+                  </div>
+                  <input type="number" value={awardAmount} onChange={e => setAwardAmount(e.target.value)} placeholder="Custom amount"
+                    style={{ width:"100%", background:C.surface, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13 }} />
+                </div>
+
+                {/* Reason */}
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:7 }}>Reason</div>
+                  <select value={awardReason} onChange={e => setAwardReason(e.target.value)}
+                    style={{ width:"100%", background:C.surface, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13 }}>
+                    <option value="manual">Manual award</option>
+                    <option value="show">Show attendance bonus</option>
+                    <option value="purchase">Purchase bonus</option>
+                    <option value="referral">Referral reward</option>
+                    <option value="birthday">Birthday gift</option>
+                    <option value="winback">Win-back offer</option>
+                  </select>
+                </div>
+
+                <button
+                  disabled={!awardBuyer || !awardAmount || parseInt(awardAmount) <= 0}
+                  onClick={() => setAwardDone(true)}
+                  style={{ width:"100%", background: (!awardBuyer || !awardAmount) ? C.border2 : `linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color: (!awardBuyer || !awardAmount) ? C.muted : "#fff", fontSize:14, fontWeight:700, padding:"13px", borderRadius:10, cursor: (!awardBuyer || !awardAmount) ? "default" : "pointer", transition:"all .15s" }}>
+                  Award {awardAmount ? `+${parseInt(awardAmount).toLocaleString()} pts` : "Points"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
