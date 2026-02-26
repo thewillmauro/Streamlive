@@ -131,11 +131,7 @@ const GLOBAL_CSS = `
   @keyframes pop       { 0% { transform:scale(.85);opacity:0 } 60% { transform:scale(1.06) } 100% { transform:scale(1);opacity:1 } }
   @keyframes pulse     { 0%,100% { opacity:1 } 50% { opacity:.35 } }
   @keyframes shimmer   { 0% { background-position:-200% 0 } 100% { background-position:200% 0 } }
-  @keyframes livePulse {
-    0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.7; }
-    50%  { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
-    100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
-  }
+
   .fade-a0 { animation: fadeUp .55s ease both; }
   .fade-a1 { animation: fadeUp .55s .08s ease both; }
   .fade-a2 { animation: fadeUp .55s .16s ease both; }
@@ -188,30 +184,6 @@ function Landing() {
   const [faqOpen, setFaqOpen] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // ── Live-dot cursor ──────────────────────────────────────────────────────────
-  const [cursorPos,     setCursorPos]     = useState({ x: -100, y: -100 })
-  const [cursorClicked, setCursorClicked] = useState(false)
-  const [cursorVisible, setCursorVisible] = useState(false)
-  useEffect(() => {
-    const onMove  = (e) => { setCursorPos({ x: e.clientX, y: e.clientY }); setCursorVisible(true) }
-    const onDown  = ()  => setCursorClicked(true)
-    const onUp    = ()  => setTimeout(() => setCursorClicked(false), 400)
-    const onLeave = ()  => setCursorVisible(false)
-    const onEnter = ()  => setCursorVisible(true)
-    window.addEventListener('mousemove',  onMove)
-    window.addEventListener('mousedown',  onDown)
-    window.addEventListener('mouseup',    onUp)
-    document.documentElement.addEventListener('mouseleave', onLeave)
-    document.documentElement.addEventListener('mouseenter', onEnter)
-    return () => {
-      window.removeEventListener('mousemove',  onMove)
-      window.removeEventListener('mousedown',  onDown)
-      window.removeEventListener('mouseup',    onUp)
-      document.documentElement.removeEventListener('mouseleave', onLeave)
-      document.documentElement.removeEventListener('mouseenter', onEnter)
-    }
-  }, [])
-  const dotColor = cursorClicked ? '#10b981' : '#ef4444'
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
 
   const handleSubmit = async () => {
@@ -390,26 +362,6 @@ function Landing() {
     <>
       <style>{FONT}</style><style>{GLOBAL_CSS}</style>
       <style>{MOBILE_CSS}</style>
-
-      {/* ── LIVE DOT CURSOR ── */}
-      {cursorVisible && (
-        <div style={{ position:'fixed', left:cursorPos.x, top:cursorPos.y, pointerEvents:'none', zIndex:99999 }}>
-          <div style={{
-            position:'absolute', width:14, height:14, borderRadius:'50%',
-            background: dotColor,
-            transform:'translate(-50%,-50%)',
-            animation:'livePulse 1.2s ease-out infinite',
-            transition:'background 0.15s ease',
-          }}/>
-          <div style={{
-            position:'absolute', width:8, height:8, borderRadius:'50%',
-            background: dotColor,
-            transform: cursorClicked ? 'translate(-50%,-50%) scale(1.4)' : 'translate(-50%,-50%) scale(1)',
-            boxShadow:`0 0 ${cursorClicked ? '10px 3px' : '6px 2px'} ${dotColor}99`,
-            transition:'background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease',
-          }}/>
-        </div>
-      )}
       <style>{`
         .section-label { font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#a78bfa; margin-bottom:14px; display:block; }
         .gradient-text { background:linear-gradient(135deg,#7c3aed,#a78bfa 50%,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
@@ -1504,8 +1456,6 @@ function OptInPage({ slug, connectedPlatforms }) {
 
 // ─── ROOT ROUTER ──────────────────────────────────────────────────────────────
 // ─── PERSONA PLATFORM CONFIG (mirrors StreamlivePrototype PERSONAS) ───────────
-// Source of truth for which platforms each account has connected.
-// When platforms change in Settings, update here to keep opt-in pages in sync.
 const PERSONA_PLATFORMS = {
   bananarepublic: ["TT", "IG", "AM"],
   kyliecosmetics: ["TT", "IG"],
@@ -1513,14 +1463,122 @@ const PERSONA_PLATFORMS = {
   walmartlive:    ["WN", "TT", "AM", "IG"],
 };
 
+// ─── LIVE DOT CURSOR (shared across all routes) ───────────────────────────────
+function LiveCursor() {
+  const [pos,     setPos]     = useState({ x: -100, y: -100 });
+  const [clicked, setClicked] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Strip cursor from any element that has it inline — runs on mount + DOM changes
+    const stripCursors = (root = document.body) => {
+      root.querySelectorAll('*').forEach(el => {
+        if (el.style.cursor) el.style.cursor = '';
+      });
+    };
+
+    // Inject stylesheet cursor:none as a fallback layer
+    const styleEl = document.createElement('style');
+    styleEl.id = 'live-cursor-hide';
+    styleEl.textContent = `
+      html, body, * { cursor: none !important; }
+      html, body, *:hover, *:focus, *:active { cursor: none !important; }
+    `;
+    document.head.appendChild(styleEl);
+
+    // Strip existing inline cursors immediately
+    stripCursors();
+
+    // Watch for new elements added by React renders
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType === 1) {
+            if (node.style?.cursor) node.style.cursor = '';
+            node.querySelectorAll?.('*')?.forEach(el => {
+              if (el.style.cursor) el.style.cursor = '';
+            });
+          }
+        });
+        // Also catch attribute changes (React updating style prop)
+        if (m.type === 'attributes' && m.attributeName === 'style') {
+          if (m.target.style?.cursor) m.target.style.cursor = '';
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style'],
+    });
+
+    const onMove  = (e) => { setPos({ x: e.clientX, y: e.clientY }); setVisible(true); };
+    const onDown  = ()  => setClicked(true);
+    const onUp    = ()  => setTimeout(() => setClicked(false), 400);
+    const onLeave = ()  => setVisible(false);
+    const onEnter = ()  => setVisible(true);
+
+    window.addEventListener('mousemove',  onMove);
+    window.addEventListener('mousedown',  onDown);
+    window.addEventListener('mouseup',    onUp);
+    document.documentElement.addEventListener('mouseleave', onLeave);
+    document.documentElement.addEventListener('mouseenter', onEnter);
+
+    return () => {
+      observer.disconnect();
+      if (document.head.contains(styleEl)) document.head.removeChild(styleEl);
+      window.removeEventListener('mousemove',  onMove);
+      window.removeEventListener('mousedown',  onDown);
+      window.removeEventListener('mouseup',    onUp);
+      document.documentElement.removeEventListener('mouseleave', onLeave);
+      document.documentElement.removeEventListener('mouseenter', onEnter);
+    };
+  }, []);
+
+  const color = clicked ? '#10b981' : '#ef4444';
+  if (!visible) return null;
+
+  return (
+    <div style={{ position:'fixed', left:pos.x, top:pos.y, pointerEvents:'none', zIndex:999999 }}>
+      {/* Pulse ring */}
+      <div style={{
+        position:'absolute', width:14, height:14, borderRadius:'50%',
+        background: color,
+        transform:'translate(-50%,-50%)',
+        animation:'livePulse 1.2s ease-out infinite',
+        transition:'background 0.15s ease',
+      }}/>
+      {/* Solid core */}
+      <div style={{
+        position:'absolute', width:8, height:8, borderRadius:'50%',
+        background: color,
+        transform: clicked ? 'translate(-50%,-50%) scale(1.4)' : 'translate(-50%,-50%) scale(1)',
+        boxShadow: `0 0 ${clicked ? '10px 3px' : '6px 2px'} ${color}99`,
+        transition:'background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease',
+      }}/>
+    </div>
+  );
+}
+
 export default function App() {
   const route = useRoute()
-  if (route === '/app')            return <StreamlivePrototype />
-  if (route === '/checkout')       return <Checkout />
-  if (route === '/welcome')        return <Welcome />
-  if (route.startsWith('/s/')) {
-    const slug = route.split('/s/')[1]?.split('/')[0]
-    return <OptInPage slug={slug} connectedPlatforms={PERSONA_PLATFORMS[slug]} />
-  }
-  return <Landing />
+  return (
+    <>
+      <style>{`
+        @keyframes livePulse {
+          0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.7; }
+          50%  { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
+          100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
+        }
+      `}</style>
+      <LiveCursor />
+      {route === '/app'         ? <StreamlivePrototype /> :
+       route === '/checkout'    ? <Checkout /> :
+       route === '/welcome'     ? <Welcome /> :
+       route.startsWith('/s/')  ? <OptInPage slug={route.split('/s/')[1]?.split('/')[0]} connectedPlatforms={PERSONA_PLATFORMS[route.split('/s/')[1]?.split('/')[0]]} /> :
+       <Landing />}
+    </>
+  );
 }
