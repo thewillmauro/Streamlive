@@ -5694,9 +5694,11 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
             <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>Review all changes before processing.</div>
           </div>
           {!processed && (
-            <button onClick={processAll} disabled={processing||totalChanges===0}
-              style={{ background:totalChanges>0?`linear-gradient(135deg,${C.green},#059669)`:"#1a1a2e", border:`1px solid ${totalChanges>0?C.green+"44":C.border}`, color:totalChanges>0?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:totalChanges>0?"pointer":"default", minWidth:180 }}>
-              {processing ? "Processing…" : `Process All Changes (${totalChanges})`}
+            <button
+              onClick={totalChanges > 0 ? processAll : () => { if (onShowComplete) onShowComplete(buildCompletedShow()); navigate("shows"); }}
+              disabled={processing}
+              style={{ background:totalChanges>0?`linear-gradient(135deg,${C.green},#059669)`:"#1a1a2e", border:`1px solid ${totalChanges>0?C.green+"44":C.border}`, color:totalChanges>0?"#fff":C.muted, fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer", minWidth:180 }}>
+              {processing ? "Processing…" : totalChanges > 0 ? `Process All Changes (${totalChanges})` : "Done — View Shows →"}
             </button>
           )}
           {processed && <div style={{ display:"flex", alignItems:"center", gap:8, background:"#0a1e16", border:"1px solid #10b98144", borderRadius:10, padding:"10px 18px" }}><span style={{ fontSize:14, color:C.green }}>✓</span><span style={{ fontSize:13, fontWeight:700, color:C.green }}>All changes processed!</span></div>}
