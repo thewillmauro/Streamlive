@@ -879,7 +879,6 @@ function Landing() {
         </footer>
 
       </div>
-    </>
       {/* ── DEMO EMAIL GATE MODAL ── */}
       {demoModal && (
         <div onClick={e=>{ if(e.target===e.currentTarget) setDemoModal(false); }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.85)', backdropFilter:'blur(12px)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
@@ -950,6 +949,7 @@ function Landing() {
           </div>
         </div>
       )}
+    </>
   )
 }
 
@@ -1463,12 +1463,17 @@ const LIVE_SHOP_DATA = {
 function LiveShopPage({ shopSlug, showSlug }) {
   const seller    = SELLER_PROFILES[shopSlug];
 
-  // Resolve show data: check pre-keyed shows first, then fall back to
-  // the store's default product list so any generated show slug works.
+  // Resolve seller first — everything else depends on it
+  const resolvedSeller = seller || (shopSlug && shopSlug !== "shop" ? {
+    name: shopSlug.replace(/-/g," ").replace(/\b\w/g, c=>c.toUpperCase()),
+    avatar: shopSlug.slice(0,2).toUpperCase(),
+    color: "#7c3aed",
+    category: "Live Commerce",
+  } : null);
+
   const shopData  = LIVE_SHOP_DATA[shopSlug];
   const exactShow = shopData?.shows?.[showSlug];
 
-  // Build a fallback show from the store's default product list
   const fallbackShow = resolvedSeller ? {
     name: showSlug
       ? showSlug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
@@ -1481,6 +1486,12 @@ function LiveShopPage({ shopSlug, showSlug }) {
 
   const showData   = exactShow || fallbackShow;
   const shopDomain = `${shopSlug}.myshopify.com`;
+  const accent     = resolvedSeller?.color || "#7c3aed";
+
+  const FONT_CSS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');`;
+
+  const shopifyUrl = (p) =>
+    `https://${shopDomain}${p.url}?ref=streamlive_live&show=${showSlug}&utm_source=streamlive&utm_medium=live_shop`;
 
   const [activeIdx, setActiveIdx]   = useState(0);
   const [pulsed,    setPulsed]      = useState(false);
@@ -1494,21 +1505,6 @@ function LiveShopPage({ shopSlug, showSlug }) {
     }, 45000);
     return () => clearInterval(t);
   }, [showData]);
-
-  const accent = resolvedSeller?.color || "#7c3aed";
-  const shopifyUrl = (p) =>
-    `https://${shopDomain}${p.url}?ref=streamlive_live&show=${showSlug}&utm_source=streamlive&utm_medium=live_shop`;
-
-  const FONT_CSS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');`;
-
-  // Build a generic seller profile if the slug isn't in our demo set
-  // (this covers real production stores not yet in SELLER_PROFILES)
-  const resolvedSeller = seller || (shopSlug && shopSlug !== "shop" ? {
-    name: shopSlug.replace(/-/g," ").replace(/\b\w/g, c=>c.toUpperCase()),
-    avatar: shopSlug.slice(0,2).toUpperCase(),
-    color: "#7c3aed",
-    category: "Live Commerce",
-  } : null);
 
   if (!resolvedSeller) {
     return (
