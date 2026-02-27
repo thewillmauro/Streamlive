@@ -1626,14 +1626,14 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
 function ScreenLiveShop({ navigate, params }) {
-  const runOrder  = params?.runOrder  || PRODUCTS.slice(0,5);
-  const showName  = params?.showName  || "Live Show";
-  const persona   = params?.persona   || { shop:"Our Store", slug:"shop" };
-  const shopDomain= params?.shopDomain|| `${persona.slug || "shop"}.myshopify.com`;
+  const runOrder   = params?.runOrder  || PRODUCTS.slice(0,5);
+  const showName   = params?.showName  || "Live Show";
+  const persona    = params?.persona   || { shop:"Our Store", slug:"shop" };
+  const shopDomain = params?.shopDomain|| `${persona.slug || "shop"}.myshopify.com`;
   const [activeIdx, setActiveIdx] = useState(0);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied]       = useState(false);
 
-  // Simulated "currently selling" cycles through products every 45s
+  // Simulate "currently selling" cycling every 45s
   useEffect(() => {
     const t = setInterval(() => setActiveIdx(i => (i + 1) % Math.max(runOrder.length, 1)), 45000);
     return () => clearInterval(t);
@@ -1644,180 +1644,228 @@ function ScreenLiveShop({ navigate, params }) {
   const copyLink = () => {
     navigator.clipboard?.writeText(`https://${liveUrl}`).catch(()=>{});
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   };
+
+  const shopifyUrl = (p) =>
+    `https://${shopDomain}/products/${p.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}?ref=streamlive_live&show_id=sh5&utm_source=streamlive`;
 
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden", background:C.bg }}>
-      {/* Header */}
-      <div style={{ background:"#06060e", borderBottom:`1px solid ${C.border}`, padding:"14px 20px", display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-        <button onClick={()=>navigate("live", params)} style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", gap:4, padding:0 }}>
+
+      {/* ── HEADER ── */}
+      <div style={{ background:"#06060e", borderBottom:`1px solid ${C.border}`, padding:"12px 20px", display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
+        <button onClick={()=>navigate("live", params)} style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", gap:4, padding:0, flexShrink:0 }}>
           ← Back to Live
         </button>
         <div style={{ flex:1 }}/>
-        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <div style={{ width:7, height:7, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
-          <span style={{ fontSize:11, fontWeight:700, color:"#ef4444" }}>LIVE</span>
+        {/* Copy link widget — same style as opt-in link */}
+        <div className="liveshop-header-url" style={{ alignItems:"center", background:"#07070f", border:`1px solid ${copied?"#10b98155":"#1e1e3a"}`, borderRadius:9, overflow:"hidden", transition:"border-color .2s" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 10px 6px 10px", borderRight:`1px solid ${copied?"#10b98122":"#1a1a2e"}` }}>
+            <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#4b5563" }}>{liveUrl}</span>
+          </div>
+          <button onClick={copyLink} style={{ padding:"6px 12px", background:copied?"#0a1e16":"transparent", border:"none", cursor:"pointer", transition:"background .15s" }}>
+            <span style={{ fontSize:10, fontWeight:700, color:copied?"#10b981":"#a78bfa", whiteSpace:"nowrap" }}>
+              {copied ? "✓ Copied!" : "Copy link 🔗"}
+            </span>
+          </button>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:6, background:"#1a0808", border:"1px solid #ef444433", borderRadius:7, padding:"5px 10px", flexShrink:0 }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+          <span style={{ fontSize:10, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE</span>
         </div>
       </div>
 
-      <div style={{ flex:1, overflowY:"auto", padding:"0" }}>
-        {/* Two-panel layout: phone preview + editor */}
-        <div style={{ display:"grid", gridTemplateColumns:"320px 1fr", gap:0, height:"100%" }}>
+      {/* ── BODY: two-column on desktop, stacked on narrow ── */}
+      <style>{`
+        .liveshop-grid { display:grid; grid-template-columns:300px 1fr; min-height:100%; }
+        .liveshop-left { border-right:1px solid #14142a; }
+        .liveshop-header-url { display:flex; }
+        @media (max-width:700px) {
+          .liveshop-grid { grid-template-columns:1fr; }
+          .liveshop-left { border-right:none; border-bottom:1px solid #14142a; }
+          .liveshop-header-url { display:none; }
+        }
+      `}</style>
+      <div style={{ flex:1, overflowY:"auto" }}>
+        <div className="liveshop-grid">
 
-          {/* ── LEFT: Phone preview of the buyer-facing page ── */}
-          <div style={{ borderRight:`1px solid ${C.border}`, padding:"24px 20px", display:"flex", flexDirection:"column", gap:0, background:"#07070f" }}>
-            <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:16 }}>
-              Buyer View — strmlive.com/live/{persona.slug || "shop"}
+          {/* ── LEFT PANEL: phone mockup + copy link ── */}
+          <div className="liveshop-left" style={{ padding:"24px 18px", background:"#07070f", display:"flex", flexDirection:"column" }}>
+            <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>
+              Buyer Preview
             </div>
-            {/* Phone frame */}
-            <div style={{ background:"#111", borderRadius:28, border:"2px solid #2a2a3a", padding:"20px 16px 24px", boxShadow:"0 20px 60px rgba(0,0,0,.5)", position:"relative", overflow:"hidden" }}>
-              {/* Status bar */}
-              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14, padding:"0 4px" }}>
-                <span style={{ fontSize:9, color:"#6b7280" }}>9:41</span>
-                <span style={{ fontSize:9, color:"#6b7280" }}>●●●</span>
-              </div>
 
-              {/* Live badge + show name */}
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:5, background:"#1a0808", border:"1px solid #ef444444", borderRadius:99, padding:"4px 10px" }}>
+            {/* Phone shell */}
+            <div style={{ background:"#0d0d1a", borderRadius:26, border:"2px solid #252535", padding:"18px 14px 22px", boxShadow:"0 24px 64px rgba(0,0,0,.6)", position:"relative", overflow:"hidden" }}>
+              {/* Notch */}
+              <div style={{ width:60, height:6, background:"#252535", borderRadius:3, margin:"0 auto 14px" }}/>
+
+              {/* Shop name + LIVE */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+                <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>{persona.shop}</span>
+                <div style={{ display:"flex", alignItems:"center", gap:4, background:"#1a0808", border:"1px solid #ef444433", borderRadius:99, padding:"3px 8px" }}>
                   <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
-                  <span style={{ fontSize:9, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE</span>
+                  <span style={{ fontSize:8, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE</span>
                 </div>
-                <span style={{ fontSize:11, fontWeight:700, color:"#fff", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{showName}</span>
               </div>
 
-              {/* Currently selling card */}
-              {runOrder[activeIdx] && (
-                <div style={{ background:"linear-gradient(135deg,#10b98118,#059669 08)", border:"1px solid #10b98144", borderRadius:14, padding:"12px 14px", marginBottom:12 }}>
-                  <div style={{ fontSize:8, fontWeight:800, color:"#10b981", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:6 }}>
-                    🔴 Now Selling
-                  </div>
-                  <div style={{ fontSize:14, fontWeight:800, color:"#fff", marginBottom:4 }}>{runOrder[activeIdx].image} {runOrder[activeIdx].name}</div>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:"#10b981" }}>${runOrder[activeIdx].price}</span>
-                    <span style={{ fontSize:9, color:"#6b7280" }}>{runOrder[activeIdx].inventory} left</span>
-                  </div>
-                  {/* Big CTA */}
-                  <div style={{ marginTop:10, background:"#10b981", borderRadius:10, padding:"10px", textAlign:"center", cursor:"pointer" }}>
-                    <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>Shop Now →</span>
-                  </div>
-                </div>
-              )}
+              <div style={{ fontSize:10, color:"#6b7280", marginBottom:10, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{showName}</div>
 
-              {/* Full run order */}
-              <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>
+              {/* Now Selling hero card */}
+              {runOrder[activeIdx] && (() => {
+                const p = runOrder[activeIdx];
+                return (
+                  <div style={{ background:"linear-gradient(160deg,#0f2a1a,#061508)", border:"1px solid #10b98155", borderRadius:16, padding:"14px", marginBottom:12 }}>
+                    <div style={{ fontSize:7, fontWeight:800, color:"#10b981", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8, display:"flex", alignItems:"center", gap:4 }}>
+                      <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/> Now Selling
+                    </div>
+                    <div style={{ fontSize:22, marginBottom:6 }}>{p.image}</div>
+                    <div style={{ fontSize:12, fontWeight:800, color:"#fff", lineHeight:1.3, marginBottom:6 }}>{p.name}</div>
+                    <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:800, color:"#10b981" }}>${p.price}</span>
+                      <span style={{ fontSize:9, color:"#4b5563" }}>{p.inventory} left</span>
+                    </div>
+                    {/* Buy Now CTA */}
+                    <div style={{ background:"linear-gradient(135deg,#10b981,#059669)", borderRadius:10, padding:"10px 14px", textAlign:"center", cursor:"pointer", boxShadow:"0 4px 16px #10b98133" }}>
+                      <span style={{ fontSize:13, fontWeight:800, color:"#fff", letterSpacing:"0.01em" }}>Buy Now →</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Product lineup */}
+              <div style={{ fontSize:8, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:7 }}>
                 Show Lineup
               </div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                 {runOrder.map((p, i) => {
-                  const isActive  = i === activeIdx;
-                  const isSold    = i < activeIdx;
+                  const isActive = i === activeIdx;
+                  const isSold   = i < activeIdx;
                   return (
-                    <div key={p.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px", background:isActive?"#10b98112":isSold?"transparent":"#0d0d1e", border:`1px solid ${isActive?"#10b98144":isSold?"transparent":"#1e1e3a"}`, borderRadius:10, opacity:isSold?0.4:1, transition:"all .3s" }}>
-                      <span style={{ fontSize:9, fontWeight:800, color:isActive?"#10b981":"#374151", width:14, textAlign:"center" }}>{i+1}</span>
-                      <span style={{ fontSize:13 }}>{p.image}</span>
+                    <div key={p.id} style={{ display:"flex", alignItems:"center", gap:7, padding:"7px 9px", background:isActive?"#10b98112":isSold?"transparent":"#0d0d1e", border:`1px solid ${isActive?"#10b98144":isSold?"transparent":"#1a1a2e"}`, borderRadius:9, opacity:isSold?0.35:1, transition:"all .3s" }}>
+                      <span style={{ fontSize:8, fontWeight:800, color:isActive?"#10b981":"#374151", width:12, textAlign:"center", flexShrink:0 }}>{i+1}</span>
+                      <span style={{ fontSize:12, flexShrink:0 }}>{p.image}</span>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:10, fontWeight:isActive?700:400, color:isActive?"#fff":"#9ca3af", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
-                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:isActive?"#10b981":"#4b5563" }}>${p.price}</div>
+                        <div style={{ fontSize:9, fontWeight:isActive?700:400, color:isActive?"#e5e7eb":"#6b7280", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
+                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, color:isActive?"#10b981":"#374151" }}>${p.price}</div>
                       </div>
-                      {isActive && (
-                        <div style={{ width:32, background:"#10b981", borderRadius:6, padding:"3px 0", textAlign:"center" }}>
-                          <span style={{ fontSize:8, fontWeight:700, color:"#fff" }}>→</span>
-                        </div>
-                      )}
-                      {isSold && <span style={{ fontSize:8, color:"#374151" }}>✓</span>}
+                      {isActive && <div style={{ width:20, height:20, borderRadius:5, background:"#10b981", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><span style={{ fontSize:8, color:"#fff" }}>→</span></div>}
+                      {isSold   && <span style={{ fontSize:8, color:"#374151", flexShrink:0 }}>✓</span>}
                     </div>
                   );
                 })}
               </div>
 
-              {/* Footer */}
-              <div style={{ marginTop:14, textAlign:"center" }}>
-                <span style={{ fontSize:9, color:"#374151" }}>Powered by </span>
-                <span style={{ fontSize:9, fontWeight:700, color:"#7c3aed" }}>Streamlive</span>
+              <div style={{ marginTop:12, textAlign:"center" }}>
+                <span style={{ fontSize:8, color:"#2a2a3a" }}>Powered by </span>
+                <span style={{ fontSize:8, fontWeight:700, color:"#4b3a7c" }}>Streamlive</span>
               </div>
             </div>
 
-            {/* Copy link */}
-            <button onClick={copyLink} style={{ marginTop:16, display:"flex", alignItems:"center", justifyContent:"center", gap:8, background:copied?"#0a1e16":C.surface, border:`1px solid ${copied?"#10b98166":C.border}`, borderRadius:10, padding:"10px 16px", cursor:"pointer", transition:"all .2s" }}>
-              <span style={{ fontSize:12 }}>{copied ? "✓" : "🔗"}</span>
-              <span style={{ fontSize:11, fontWeight:700, color:copied?"#10b981":C.text }}>{copied ? "Link copied!" : `Copy live shop link`}</span>
+            {/* Copy link button below phone */}
+            <button onClick={copyLink} style={{ marginTop:14, display:"flex", alignItems:"center", justifyContent:"center", gap:7, background:copied?"#0a1e16":C.surface, border:`1px solid ${copied?"#10b98166":C.border}`, borderRadius:10, padding:"10px 14px", cursor:"pointer", transition:"all .2s" }}>
+              <span style={{ fontSize:13 }}>{copied ? "✓" : "🔗"}</span>
+              <span style={{ fontSize:11, fontWeight:700, color:copied?"#10b981":C.text }}>
+                {copied ? "Copied to clipboard!" : "Copy buyer link"}
+              </span>
             </button>
+            <div style={{ marginTop:6, textAlign:"center", fontSize:9, color:C.subtle, fontFamily:"'JetBrains Mono',monospace" }}>{liveUrl}</div>
           </div>
 
-          {/* ── RIGHT: Product management for this live session ── */}
+          {/* ── RIGHT PANEL: product list for this session ── */}
           <div style={{ padding:"24px 28px", overflowY:"auto" }}>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, marginBottom:4 }}>Live Shop Page</div>
-            <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>
-              Products appear in show order. Deeplinks go directly to the Shopify PDP for {persona.shop}.
+            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>
+              Products listed in show order. Each "Buy Now" button deeplinks directly to the Shopify product page for {persona.shop} — tracking the order back to this show.
             </div>
 
-            {/* Product cards — reorderable visually */}
             {runOrder.map((p, i) => {
               const isActive = i === activeIdx;
-              const shopifyUrl = `https://${shopDomain}/products/${p.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}?ref=streamlive_live&show_id=sh5`;
+              const isSold   = i < activeIdx;
+              const url      = shopifyUrl(p);
               return (
-                <div key={p.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", background:isActive?`${C.green}10`:C.surface, border:`1px solid ${isActive?C.green+"44":C.border}`, borderRadius:14, marginBottom:10, transition:"all .3s" }}>
-                  {/* Position */}
-                  <div style={{ width:28, height:28, borderRadius:8, background:isActive?"#10b98122":"#1e1e3a", border:`1px solid ${isActive?"#10b98144":"#2a2a3a"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:800, color:isActive?C.green:C.muted }}>{i+1}</span>
+                <div key={p.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", background:isActive?`${C.green}0e`:isSold?"#07070f":C.surface, border:`1px solid ${isActive?C.green+"44":isSold?"#0d0d0d":C.border}`, borderRadius:14, marginBottom:10, opacity:isSold?0.45:1, transition:"all .3s" }}>
+
+                  {/* Number */}
+                  <div style={{ width:30, height:30, borderRadius:9, background:isActive?"#10b98118":isSold?"transparent":"#1a1a2e", border:`1px solid ${isActive?"#10b98144":isSold?"transparent":"#252535"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    {isSold
+                      ? <span style={{ fontSize:10, color:"#374151" }}>✓</span>
+                      : <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:800, color:isActive?C.green:C.muted }}>{i+1}</span>
+                    }
                   </div>
+
                   {/* Emoji */}
-                  <span style={{ fontSize:22, flexShrink:0 }}>{p.image}</span>
+                  <span style={{ fontSize:24, flexShrink:0 }}>{p.image}</span>
+
                   {/* Info */}
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
-                      <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{p.name}</span>
-                      {isActive && (
-                        <span style={{ fontSize:8, fontWeight:800, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:99, letterSpacing:"0.06em" }}>SELLING NOW</span>
-                      )}
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:3 }}>
+                      <span style={{ fontSize:13, fontWeight:700, color:isSold?"#4b5563":C.text }}>{p.name}</span>
+                      {isActive && <span style={{ fontSize:8, fontWeight:800, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:99, letterSpacing:"0.06em" }}>SELLING NOW</span>}
+                      {isSold   && <span style={{ fontSize:8, fontWeight:700, color:"#374151", background:"#0d0d0d", border:"1px solid #1a1a1a", padding:"2px 7px", borderRadius:99 }}>SOLD</span>}
                     </div>
-                    <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:C.green }}>${p.price}</span>
+                    <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:isSold?"#374151":C.green }}>${p.price}</span>
                       <span style={{ fontSize:10, color:C.muted }}>{p.inventory} in stock</span>
-                      <span style={{ fontSize:10, color:C.muted }}>SKU: {p.sku}</span>
+                      <span style={{ fontSize:10, color:"#2a2a3a" }}>SKU: {p.sku}</span>
                     </div>
-                    {/* Shopify deeplink */}
-                    <div style={{ marginTop:5, display:"flex", alignItems:"center", gap:6 }}>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#4b5563", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:280 }}>
-                        {shopifyUrl.replace("https://","")}
+                    {/* Deeplink URL — subtle, desktop only */}
+                    <div style={{ marginTop:4 }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, color:"#252535", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block", maxWidth:320 }}>
+                        {url.replace("https://","")}
                       </span>
                     </div>
                   </div>
-                  {/* Open Shopify PDP button */}
+
+                  {/* Buy Now button */}
                   <button
-                    onClick={()=> window.open(shopifyUrl, "_blank")}
-                    style={{ flexShrink:0, display:"flex", alignItems:"center", gap:6, background:"#0d1e0d", border:"1px solid #10b98133", borderRadius:8, padding:"7px 12px", cursor:"pointer", transition:"all .15s" }}
+                    onClick={()=> !isSold && window.open(url, "_blank")}
+                    disabled={isSold}
+                    style={{
+                      flexShrink:0,
+                      padding: isActive ? "10px 20px" : "8px 16px",
+                      background: isSold ? "#0d0d0d" : isActive ? "linear-gradient(135deg,#10b981,#059669)" : "#10b98114",
+                      border: `1px solid ${isSold?"#1a1a1a":isActive?"transparent":"#10b98133"}`,
+                      borderRadius:10,
+                      cursor: isSold ? "default" : "pointer",
+                      transition:"all .2s",
+                      boxShadow: isActive ? "0 4px 16px #10b98122" : "none",
+                    }}
                   >
-                    <span style={{ fontSize:10, fontWeight:700, color:"#10b981" }}>Shopify PDP ↗</span>
+                    <span style={{ fontSize: isActive ? 12 : 11, fontWeight:700, color: isSold?"#374151":isActive?"#fff":"#10b981", whiteSpace:"nowrap" }}>
+                      {isSold ? "Sold" : "Buy Now →"}
+                    </span>
                   </button>
                 </div>
               );
             })}
 
-            {/* Deeplink format info */}
-            <div style={{ marginTop:8, background:"#0d0d1e", border:"1px solid #1e1e3a", borderRadius:12, padding:"16px 18px" }}>
-              <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:8 }}>Deeplink Parameters</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+            {/* Tracking info footer */}
+            <div style={{ marginTop:4, background:"#09090f", border:"1px solid #14142a", borderRadius:12, padding:"14px 18px" }}>
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, marginBottom:8 }}>Every "Buy Now" tap is tracked back to this show</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
                 {[
-                  { param:"ref=streamlive_live", desc:"Identifies traffic from your Live Pixel" },
-                  { param:"show_id=sh5",         desc:"Ties purchases back to this show" },
-                  { param:"utm_source=streamlive",desc:"Shows in Shopify Analytics as Streamlive" },
+                  { param:"ref=streamlive_live", desc:"Live Pixel attribution" },
+                  { param:"show_id=sh5",         desc:"Show-level reporting" },
+                  { param:"utm_source=streamlive",desc:"Shopify Analytics" },
                 ].map(row=>(
-                  <div key={row.param} style={{ display:"flex", gap:10 }}>
-                    <code style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #7c3aed22", padding:"2px 8px", borderRadius:5, whiteSpace:"nowrap" }}>{row.param}</code>
-                    <span style={{ fontSize:10, color:C.muted }}>{row.desc}</span>
+                  <div key={row.param} style={{ display:"flex", alignItems:"center", gap:6, background:"#0d0d1e", border:"1px solid #1e1e3a", borderRadius:6, padding:"4px 9px" }}>
+                    <code style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#7c3aed" }}>{row.param}</code>
+                    <span style={{ fontSize:9, color:"#374151" }}>{row.desc}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
   );
 }
+
 
 // ─── SCREEN: LIVE COMPANION ───────────────────────────────────────────────────
 function ScreenLive({ buyers, navigate, params }) {
@@ -1965,12 +2013,30 @@ function ScreenLive({ buyers, navigate, params }) {
           <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.green }}>${gmv.toLocaleString()}</span><span style={{ fontSize:11, color:C.muted }}> GMV</span></div>
           <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:"#a78bfa" }}>{orderCount}</span><span style={{ fontSize:11, color:C.muted }}> orders</span></div>
         </div>
-        <div style={{ marginLeft:"auto" }}>
-          <button onClick={()=>navigate("live-shop",{...params, runOrder, showName, persona:params?.persona})} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#10b981", background:"#0a1e1618", border:"1px solid #10b98133", padding:"6px 12px", borderRadius:7, cursor:"pointer" }}>
-            <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
-            Live Shop
-          </button>
-          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount})} style={{ fontSize:11, color:"#ef4444", background:"#2d08081a", border:"1px solid #ef444433", padding:"6px 14px", borderRadius:7, cursor:"pointer" }}>■ End Show</button>
+        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:8 }}>
+          {/* Live Shop link widget */}
+          <div style={{ display:"flex", alignItems:"center", background:"#07070f", border:"1px solid #10b98133", borderRadius:9, overflow:"hidden" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px 5px 8px", borderRight:"1px solid #10b98122" }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
+              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#6b7280", userSelect:"none", whiteSpace:"nowrap" }}>{liveShopUrl}</span>
+            </div>
+            <button
+              onClick={()=>{ navigator.clipboard?.writeText(`https://${liveShopUrl}`).catch(()=>{}); setSavedFeedback("link_copied"); setTimeout(()=>setSavedFeedback(null),2000); }}
+              style={{ padding:"5px 10px", background:savedFeedback==="link_copied"?"#0a1e16":"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:4, transition:"background .15s" }}
+            >
+              {savedFeedback==="link_copied"
+                ? <span style={{ fontSize:10, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>✓ Copied</span>
+                : <span style={{ fontSize:10, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>Copy 🔗</span>
+              }
+            </button>
+            <button
+              onClick={()=>navigate("live-shop",{...params, runOrder, showName, persona:params?.persona})}
+              style={{ padding:"5px 10px", background:"#10b98118", border:"none", borderLeft:"1px solid #10b98122", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}
+            >
+              <span style={{ fontSize:10, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>Preview ↗</span>
+            </button>
+          </div>
+          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount})} style={{ fontSize:11, color:"#ef4444", background:"#2d08081a", border:"1px solid #ef444433", padding:"6px 14px", borderRadius:7, cursor:"pointer", whiteSpace:"nowrap" }}>■ End Show</button>
         </div>
       </div>
 
