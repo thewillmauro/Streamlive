@@ -1293,6 +1293,15 @@ const DM_PLATFORMS = ["WN", "TT", "IG"];
 
 const LIVE_SHOP_DATA = {
   bananarepublic: {
+    defaultProducts: [
+      { id:"p4",  name:"Silk Wrap Midi Dress",        image:"👗", price:268, inventory:22,  url:"/products/silk-wrap-midi-dress"     },
+      { id:"p1",  name:"Merino Wool Blazer",          image:"🧥", price:228, inventory:48,  url:"/products/merino-wool-blazer"       },
+      { id:"p8",  name:"Spring Style Bundle (3pc)",   image:"🎁", price:148, inventory:30,  url:"/products/spring-style-bundle-3pc"  },
+      { id:"p10", name:"Linen Button-Down Shirt",     image:"👔", price:98,  inventory:96,  url:"/products/linen-button-down-shirt"  },
+      { id:"p2",  name:"Italian Linen Trousers",      image:"👖", price:148, inventory:84,  url:"/products/italian-linen-trousers"   },
+      { id:"p6",  name:"Slim Chino Shorts",           image:"🩳", price:80,  inventory:120, url:"/products/slim-chino-shorts"        },
+      { id:"p3",  name:"Leather Crossbody Bag",       image:"👜", price:198, inventory:36,  url:"/products/leather-crossbody-bag"    },
+    ],
     shows: {
       "friday-night-flash-sale": {
         name: "Friday Night Flash Sale",
@@ -1322,6 +1331,14 @@ const LIVE_SHOP_DATA = {
     },
   },
   kyliecosmetics: {
+    defaultProducts: [
+      { id:"p11", name:"Matte Lip Kit Ruby",           image:"💄", price:29,  inventory:840,  url:"/products/matte-lip-kit-ruby"       },
+      { id:"p15", name:"Holiday Collection Set (6pc)", image:"🎀", price:89,  inventory:180,  url:"/products/holiday-collection-set"   },
+      { id:"p12", name:"Kyshadow Palette Bronze",      image:"✨", price:45,  inventory:420,  url:"/products/kyshadow-palette-bronze"  },
+      { id:"p13", name:"Skin Tint SPF 30",             image:"🌟", price:38,  inventory:560,  url:"/products/skin-tint-spf-30"         },
+      { id:"p14", name:"Gloss Drip Clear",             image:"💋", price:16,  inventory:1200, url:"/products/gloss-drip-clear"         },
+      { id:"p17", name:"Kylighter Highlighter Stick",  image:"💫", price:21,  inventory:740,  url:"/products/kylighter-highlighter"    },
+    ],
     shows: {
       "new-shade-drop-live": {
         name: "New Shade Drop — Live",
@@ -1336,20 +1353,53 @@ const LIVE_SHOP_DATA = {
       },
     },
   },
+  tropicfeel: {
+    defaultProducts: [
+      { id:"p18", name:"Canyon All-Terrain Sneaker",  image:"👟", price:148, inventory:84, url:"/products/canyon-all-terrain-sneaker" },
+      { id:"p19", name:"Shell Travel Backpack 26L",   image:"🎒", price:178, inventory:42, url:"/products/shell-travel-backpack-26l"  },
+      { id:"p20", name:"Nest 2-in-1 Sandal",          image:"🩴", price:118, inventory:62, url:"/products/nest-2-in-1-sandal"         },
+      { id:"p21", name:"Tropicfeel Starter Bundle",   image:"🌴", price:228, inventory:24, url:"/products/tropicfeel-starter-bundle"  },
+    ],
+    shows: {},
+  },
+  walmartlive: {
+    defaultProducts: [
+      { id:"w1",  name:"Flash Deal Bundle",           image:"⚡", price:49,  inventory:200, url:"/products/flash-deal-bundle"    },
+      { id:"w2",  name:"Home Essentials Kit",         image:"🏠", price:89,  inventory:150, url:"/products/home-essentials-kit"  },
+      { id:"w3",  name:"Fashion Basics Set",          image:"👚", price:38,  inventory:300, url:"/products/fashion-basics-set"   },
+      { id:"w4",  name:"Beauty Starter Pack",         image:"💅", price:34,  inventory:180, url:"/products/beauty-starter-pack"  },
+    ],
+    shows: {},
+  },
 };
 
 function LiveShopPage({ shopSlug, showSlug }) {
   const seller    = SELLER_PROFILES[shopSlug];
-  const shopData  = LIVE_SHOP_DATA[shopSlug];
-  const showData  = shopData?.shows?.[showSlug];
 
+  // Resolve show data: check pre-keyed shows first, then fall back to
+  // the store's default product list so any generated show slug works.
+  const shopData  = LIVE_SHOP_DATA[shopSlug];
+  const exactShow = shopData?.shows?.[showSlug];
+
+  // Build a fallback show from the store's default product list
+  const fallbackShow = resolvedSeller ? {
+    name: showSlug
+      ? showSlug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+      : "Live Show",
+    platforms: PERSONA_PLATFORMS[shopSlug] || ["TT","IG"],
+    products: (shopData?.defaultProducts || Object.values(LIVE_SHOP_DATA)
+      .flatMap(s => Object.values(s.shows || {}))
+      .find(s => true)?.products || []).slice(0, 8),
+  } : null;
+
+  const showData   = exactShow || fallbackShow;
   const shopDomain = `${shopSlug}.myshopify.com`;
+
   const [activeIdx, setActiveIdx]   = useState(0);
   const [pulsed,    setPulsed]      = useState(false);
 
-  // Cycle the "Now Selling" card every 45s to simulate the live show moving forward
   useEffect(() => {
-    if (!showData) return;
+    if (!showData?.products?.length) return;
     const t = setInterval(() => {
       setActiveIdx(i => (i + 1) % showData.products.length);
       setPulsed(true);
@@ -1358,33 +1408,33 @@ function LiveShopPage({ shopSlug, showSlug }) {
     return () => clearInterval(t);
   }, [showData]);
 
-  const accent = seller?.color || "#7c3aed";
+  const accent = resolvedSeller?.color || "#7c3aed";
   const shopifyUrl = (p) =>
     `https://${shopDomain}${p.url}?ref=streamlive_live&show=${showSlug}&utm_source=streamlive&utm_medium=live_shop`;
 
   const FONT_CSS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');`;
 
-  // 404 state
-  if (!seller || !showData) {
+  // Build a generic seller profile if the slug isn't in our demo set
+  // (this covers real production stores not yet in SELLER_PROFILES)
+  const resolvedSeller = seller || (shopSlug && shopSlug !== "shop" ? {
+    name: shopSlug.replace(/-/g," ").replace(/\b\w/g, c=>c.toUpperCase()),
+    avatar: shopSlug.slice(0,2).toUpperCase(),
+    color: "#7c3aed",
+    category: "Live Commerce",
+  } : null);
+
+  if (!resolvedSeller) {
     return (
       <div style={{ minHeight:"100vh", background:"#06060e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:24 }}>
         <style>{FONT_CSS}</style>
         <div style={{ textAlign:"center" }}>
           <div style={{ fontSize:56, marginBottom:20 }}>📭</div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:"#fff", marginBottom:8 }}>
-            {!seller ? "Store not found" : "Show has ended"}
+            Link not found
           </div>
           <div style={{ fontSize:14, color:"#6b7280", marginBottom:28, maxWidth:300, lineHeight:1.6 }}>
-            {!seller
-              ? "This live shop link doesn't match any store we know about."
-              : "This show is no longer live. Check the store page for upcoming shows."
-            }
+            This live shop link appears to be invalid or has expired.
           </div>
-          {seller && (
-            <a href={`/s/${shopSlug}`} style={{ display:"inline-flex", alignItems:"center", gap:6, background:`${accent}15`, border:`1px solid ${accent}44`, color:accent, fontSize:13, fontWeight:700, padding:"10px 20px", borderRadius:10, textDecoration:"none" }}>
-              Visit {seller.name} →
-            </a>
-          )}
           <div style={{ marginTop:16 }}>
             <a href="/" style={{ fontSize:12, color:"#374151", textDecoration:"none" }}>← Back to Streamlive</a>
           </div>
@@ -1419,10 +1469,10 @@ function LiveShopPage({ shopSlug, showSlug }) {
       <div style={{ position:"sticky", top:0, zIndex:50, background:"#06060eee", backdropFilter:"blur(16px)", borderBottom:"1px solid #14142a", padding:"12px 20px", display:"flex", alignItems:"center", gap:12 }}>
         {/* Store identity */}
         <div style={{ width:32, height:32, borderRadius:9, background:`${accent}20`, border:`1px solid ${accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:800, color:accent, flexShrink:0 }}>
-          {seller.avatar}
+          {resolvedSeller.avatar}
         </div>
         <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:13, fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{seller.name}</div>
+          <div style={{ fontSize:13, fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{resolvedSeller.name}</div>
           <div style={{ fontSize:10, color:"#4b5563", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{showData.name}</div>
         </div>
         {/* Live pill */}
@@ -1672,7 +1722,7 @@ function OptInPage({ slug, connectedPlatforms }) {
         <div style={{ maxWidth:560, margin:"0 auto", textAlign:"center" }}>
           {/* Avatar */}
           <div style={{ width:72, height:72, borderRadius:"50%", background:`${accentRgb}22`, border:`2px solid ${accentRgb}55`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:accentRgb }}>
-            {seller.avatar}
+            {resolvedSeller.avatar}
           </div>
           <div style={{ fontSize:11, fontWeight:700, color:accentRgb, textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:8 }}>{seller.category}</div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", marginBottom:12, lineHeight:1.2 }}>

@@ -1625,10 +1625,10 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
-function ScreenLiveShop({ navigate, params }) {
+function ScreenLiveShop({ navigate, params, persona: personaProp }) {
   const runOrder   = params?.runOrder  || PRODUCTS.slice(0,5);
   const showName   = params?.showName  || "Live Show";
-  const persona    = params?.persona   || { shop:"Our Store", slug:"shop" };
+  const persona    = params?.persona   || personaProp || { shop:"Our Store", slug:"shop" };
   const shopDomain = params?.shopDomain|| `${persona.slug || "shop"}.myshopify.com`;
   const [activeIdx, setActiveIdx] = useState(0);
   const [copied, setCopied]       = useState(false);
@@ -1869,7 +1869,7 @@ function ScreenLiveShop({ navigate, params }) {
 
 
 // ─── SCREEN: LIVE COMPANION ───────────────────────────────────────────────────
-function ScreenLive({ buyers, navigate, params }) {
+function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
   const selectedPlatforms = params?.selectedPlatforms || ["WN"];
   // Per-platform viewer counts (seeded differently per platform)
   const [platformViewers, setPlatformViewers] = useState(() => {
@@ -1900,7 +1900,7 @@ function ScreenLive({ buyers, navigate, params }) {
   // Build the live shop link whenever showName/persona changes
   const showName     = params?.showName   || "Live Show";
   const runOrder     = params?.runOrder   || PRODUCTS.slice(0,5);
-  const personaSlug  = params?.persona?.slug || "shop";
+  const personaSlug  = params?.persona?.slug || personaProp?.slug || "shop";
   const showSlug     = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveShopUrl  = `strmlive.com/live/${personaSlug}/${showSlug}`;
 
@@ -5712,7 +5712,7 @@ function ScreenCatalog({ persona, navigate }) {
 }
 
 // ─── SCREEN: SHOW PLANNER ──────────────────────────────────────────────────────
-function ScreenShowPlanner({ navigate }) {
+function ScreenShowPlanner({ navigate, persona }) {
   const [step, setStep] = useState(1);
   const [showName, setShowName] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState(["WN"]);
@@ -5998,7 +5998,7 @@ function ScreenShowPlanner({ navigate }) {
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={()=>setStep(4)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
                 🔴 Go Live Now
               </button>
             </div>
@@ -10060,15 +10060,15 @@ export default function StreamlivePrototype() {
                 {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
                 {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} shows={completedShows} />}
                 {view==="show-report"  && <ScreenShowReport    show={activeShow} allShows={completedShows} buyers={buyers} navigate={navigate} />}
-                {view==="live"         && <ScreenLive          buyers={buyers} navigate={navigate} params={params} />}
-                {view==="live-shop"    && <ScreenLiveShop     navigate={navigate} params={params} />}
+                {view==="live"         && <ScreenLive          buyers={buyers} navigate={navigate} params={params} persona={persona} />}
+                {view==="live-shop"    && <ScreenLiveShop     navigate={navigate} params={params} persona={persona} />}
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
                 {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} openCheckout={setCheckoutPlan} />}
                 {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} onShowComplete={(show)=>setCompletedShows(prev=>[show,...prev])} />}
                 {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} />}
-                {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} />}
+                {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} persona={persona} />}
                 {view==="loyalty"      && <ScreenLoyalty       buyers={buyers} navigate={navigate} persona={persona} />}
                 {view==="production"   && <ScreenProduction    persona={persona} navigate={navigate} />}
                 {view==="analytics"    && <ScreenAnalytics     buyers={buyers} persona={persona} navigate={navigate} />}
