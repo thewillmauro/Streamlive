@@ -1629,7 +1629,8 @@ function ScreenLive({ buyers, navigate, params }) {
   const [viewerCount, setViewerCount] = useState(
     selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156,YT:4200}; return a+(s[p]||200);},0)
   );
-  const [gmv, setGmv]                 = useState(1420);
+  const [gmv, setGmv]                 = useState(0);
+  const [orderCount, setOrderCount]   = useState(0);
   const [search, setSearch]           = useState("");
   const [selectedId, setSelectedId]   = useState(buyers[0]?.id || null);
   const [rightTab, setRightTab]       = useState("notes");
@@ -1651,13 +1652,18 @@ function ScreenLive({ buyers, navigate, params }) {
         return next;
       });
       setViewerCount(v=>Math.max(180, v + Math.floor((Math.random()-0.4)*8)));
-      setGmv(g=>g + Math.floor(Math.random()*40));
+      // New order comes in ~30% of ticks
       if (Math.random() > 0.7) {
         setLiveBuyers(prev => {
           const remaining = buyers.filter(b=>!prev.find(p=>p.id===b.id));
-          // When all buyers shown, cycle back through with a new timestamp-based id
           const pool = remaining.length > 0 ? remaining : buyers;
-          const newest = { ...pool[Math.floor(Math.random()*pool.length)], id: pool[0].id + "_" + Date.now() };
+          const base = pool[Math.floor(Math.random()*pool.length)];
+          const newest = { ...base, id: base.id + "_" + Date.now() };
+          // Order value: realistic per-item amount based on buyer's avg order value
+          const avgOrder = Math.round(base.spend / Math.max(base.orders, 1));
+          const orderValue = Math.max(25, avgOrder + Math.floor((Math.random()-0.3)*avgOrder*0.5));
+          setGmv(g => g + orderValue);
+          setOrderCount(c => c + 1);
           return [newest, ...prev];
         });
       }
@@ -1733,10 +1739,10 @@ function ScreenLive({ buyers, navigate, params }) {
         {/* GMV + buyers */}
         <div style={{ display:"flex", gap:16 }}>
           <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.green }}>${gmv.toLocaleString()}</span><span style={{ fontSize:11, color:C.muted }}> GMV</span></div>
-          <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:"#a78bfa" }}>{liveBuyers.length}</span><span style={{ fontSize:11, color:C.muted }}> buyers</span></div>
+          <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:"#a78bfa" }}>{orderCount}</span><span style={{ fontSize:11, color:C.muted }}> orders</span></div>
         </div>
         <div style={{ marginLeft:"auto" }}>
-          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed})} style={{ fontSize:11, color:"#ef4444", background:"#2d08081a", border:"1px solid #ef444433", padding:"6px 14px", borderRadius:7, cursor:"pointer" }}>■ End Show</button>
+          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount})} style={{ fontSize:11, color:"#ef4444", background:"#2d08081a", border:"1px solid #ef444433", padding:"6px 14px", borderRadius:7, cursor:"pointer" }}>■ End Show</button>
         </div>
       </div>
 
