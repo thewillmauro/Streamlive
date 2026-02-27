@@ -1623,6 +1623,202 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
   );
 }
 
+
+// ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
+function ScreenLiveShop({ navigate, params }) {
+  const runOrder  = params?.runOrder  || PRODUCTS.slice(0,5);
+  const showName  = params?.showName  || "Live Show";
+  const persona   = params?.persona   || { shop:"Our Store", slug:"shop" };
+  const shopDomain= params?.shopDomain|| `${persona.slug || "shop"}.myshopify.com`;
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  // Simulated "currently selling" cycles through products every 45s
+  useEffect(() => {
+    const t = setInterval(() => setActiveIdx(i => (i + 1) % Math.max(runOrder.length, 1)), 45000);
+    return () => clearInterval(t);
+  }, [runOrder.length]);
+
+  const liveUrl = `strmlive.com/live/${persona.slug || "shop"}`;
+
+  const copyLink = () => {
+    navigator.clipboard?.writeText(`https://${liveUrl}`).catch(()=>{});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden", background:C.bg }}>
+      {/* Header */}
+      <div style={{ background:"#06060e", borderBottom:`1px solid ${C.border}`, padding:"14px 20px", display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
+        <button onClick={()=>navigate("live", params)} style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", gap:4, padding:0 }}>
+          ← Back to Live
+        </button>
+        <div style={{ flex:1 }}/>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <div style={{ width:7, height:7, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+          <span style={{ fontSize:11, fontWeight:700, color:"#ef4444" }}>LIVE</span>
+        </div>
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"0" }}>
+        {/* Two-panel layout: phone preview + editor */}
+        <div style={{ display:"grid", gridTemplateColumns:"320px 1fr", gap:0, height:"100%" }}>
+
+          {/* ── LEFT: Phone preview of the buyer-facing page ── */}
+          <div style={{ borderRight:`1px solid ${C.border}`, padding:"24px 20px", display:"flex", flexDirection:"column", gap:0, background:"#07070f" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:16 }}>
+              Buyer View — strmlive.com/live/{persona.slug || "shop"}
+            </div>
+            {/* Phone frame */}
+            <div style={{ background:"#111", borderRadius:28, border:"2px solid #2a2a3a", padding:"20px 16px 24px", boxShadow:"0 20px 60px rgba(0,0,0,.5)", position:"relative", overflow:"hidden" }}>
+              {/* Status bar */}
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14, padding:"0 4px" }}>
+                <span style={{ fontSize:9, color:"#6b7280" }}>9:41</span>
+                <span style={{ fontSize:9, color:"#6b7280" }}>●●●</span>
+              </div>
+
+              {/* Live badge + show name */}
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:5, background:"#1a0808", border:"1px solid #ef444444", borderRadius:99, padding:"4px 10px" }}>
+                  <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+                  <span style={{ fontSize:9, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE</span>
+                </div>
+                <span style={{ fontSize:11, fontWeight:700, color:"#fff", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{showName}</span>
+              </div>
+
+              {/* Currently selling card */}
+              {runOrder[activeIdx] && (
+                <div style={{ background:"linear-gradient(135deg,#10b98118,#059669 08)", border:"1px solid #10b98144", borderRadius:14, padding:"12px 14px", marginBottom:12 }}>
+                  <div style={{ fontSize:8, fontWeight:800, color:"#10b981", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:6 }}>
+                    🔴 Now Selling
+                  </div>
+                  <div style={{ fontSize:14, fontWeight:800, color:"#fff", marginBottom:4 }}>{runOrder[activeIdx].image} {runOrder[activeIdx].name}</div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:700, color:"#10b981" }}>${runOrder[activeIdx].price}</span>
+                    <span style={{ fontSize:9, color:"#6b7280" }}>{runOrder[activeIdx].inventory} left</span>
+                  </div>
+                  {/* Big CTA */}
+                  <div style={{ marginTop:10, background:"#10b981", borderRadius:10, padding:"10px", textAlign:"center", cursor:"pointer" }}>
+                    <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>Shop Now →</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Full run order */}
+              <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>
+                Show Lineup
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                {runOrder.map((p, i) => {
+                  const isActive  = i === activeIdx;
+                  const isSold    = i < activeIdx;
+                  return (
+                    <div key={p.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px", background:isActive?"#10b98112":isSold?"transparent":"#0d0d1e", border:`1px solid ${isActive?"#10b98144":isSold?"transparent":"#1e1e3a"}`, borderRadius:10, opacity:isSold?0.4:1, transition:"all .3s" }}>
+                      <span style={{ fontSize:9, fontWeight:800, color:isActive?"#10b981":"#374151", width:14, textAlign:"center" }}>{i+1}</span>
+                      <span style={{ fontSize:13 }}>{p.image}</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:10, fontWeight:isActive?700:400, color:isActive?"#fff":"#9ca3af", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
+                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:isActive?"#10b981":"#4b5563" }}>${p.price}</div>
+                      </div>
+                      {isActive && (
+                        <div style={{ width:32, background:"#10b981", borderRadius:6, padding:"3px 0", textAlign:"center" }}>
+                          <span style={{ fontSize:8, fontWeight:700, color:"#fff" }}>→</span>
+                        </div>
+                      )}
+                      {isSold && <span style={{ fontSize:8, color:"#374151" }}>✓</span>}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div style={{ marginTop:14, textAlign:"center" }}>
+                <span style={{ fontSize:9, color:"#374151" }}>Powered by </span>
+                <span style={{ fontSize:9, fontWeight:700, color:"#7c3aed" }}>Streamlive</span>
+              </div>
+            </div>
+
+            {/* Copy link */}
+            <button onClick={copyLink} style={{ marginTop:16, display:"flex", alignItems:"center", justifyContent:"center", gap:8, background:copied?"#0a1e16":C.surface, border:`1px solid ${copied?"#10b98166":C.border}`, borderRadius:10, padding:"10px 16px", cursor:"pointer", transition:"all .2s" }}>
+              <span style={{ fontSize:12 }}>{copied ? "✓" : "🔗"}</span>
+              <span style={{ fontSize:11, fontWeight:700, color:copied?"#10b981":C.text }}>{copied ? "Link copied!" : `Copy live shop link`}</span>
+            </button>
+          </div>
+
+          {/* ── RIGHT: Product management for this live session ── */}
+          <div style={{ padding:"24px 28px", overflowY:"auto" }}>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, marginBottom:4 }}>Live Shop Page</div>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>
+              Products appear in show order. Deeplinks go directly to the Shopify PDP for {persona.shop}.
+            </div>
+
+            {/* Product cards — reorderable visually */}
+            {runOrder.map((p, i) => {
+              const isActive = i === activeIdx;
+              const shopifyUrl = `https://${shopDomain}/products/${p.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}?ref=streamlive_live&show_id=sh5`;
+              return (
+                <div key={p.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", background:isActive?`${C.green}10`:C.surface, border:`1px solid ${isActive?C.green+"44":C.border}`, borderRadius:14, marginBottom:10, transition:"all .3s" }}>
+                  {/* Position */}
+                  <div style={{ width:28, height:28, borderRadius:8, background:isActive?"#10b98122":"#1e1e3a", border:`1px solid ${isActive?"#10b98144":"#2a2a3a"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:800, color:isActive?C.green:C.muted }}>{i+1}</span>
+                  </div>
+                  {/* Emoji */}
+                  <span style={{ fontSize:22, flexShrink:0 }}>{p.image}</span>
+                  {/* Info */}
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                      <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{p.name}</span>
+                      {isActive && (
+                        <span style={{ fontSize:8, fontWeight:800, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:99, letterSpacing:"0.06em" }}>SELLING NOW</span>
+                      )}
+                    </div>
+                    <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:C.green }}>${p.price}</span>
+                      <span style={{ fontSize:10, color:C.muted }}>{p.inventory} in stock</span>
+                      <span style={{ fontSize:10, color:C.muted }}>SKU: {p.sku}</span>
+                    </div>
+                    {/* Shopify deeplink */}
+                    <div style={{ marginTop:5, display:"flex", alignItems:"center", gap:6 }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#4b5563", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:280 }}>
+                        {shopifyUrl.replace("https://","")}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Open Shopify PDP button */}
+                  <button
+                    onClick={()=> window.open(shopifyUrl, "_blank")}
+                    style={{ flexShrink:0, display:"flex", alignItems:"center", gap:6, background:"#0d1e0d", border:"1px solid #10b98133", borderRadius:8, padding:"7px 12px", cursor:"pointer", transition:"all .15s" }}
+                  >
+                    <span style={{ fontSize:10, fontWeight:700, color:"#10b981" }}>Shopify PDP ↗</span>
+                  </button>
+                </div>
+              );
+            })}
+
+            {/* Deeplink format info */}
+            <div style={{ marginTop:8, background:"#0d0d1e", border:"1px solid #1e1e3a", borderRadius:12, padding:"16px 18px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:8 }}>Deeplink Parameters</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                {[
+                  { param:"ref=streamlive_live", desc:"Identifies traffic from your Live Pixel" },
+                  { param:"show_id=sh5",         desc:"Ties purchases back to this show" },
+                  { param:"utm_source=streamlive",desc:"Shows in Shopify Analytics as Streamlive" },
+                ].map(row=>(
+                  <div key={row.param} style={{ display:"flex", gap:10 }}>
+                    <code style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #7c3aed22", padding:"2px 8px", borderRadius:5, whiteSpace:"nowrap" }}>{row.param}</code>
+                    <span style={{ fontSize:10, color:C.muted }}>{row.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── SCREEN: LIVE COMPANION ───────────────────────────────────────────────────
 function ScreenLive({ buyers, navigate, params }) {
   const selectedPlatforms = params?.selectedPlatforms || ["WN"];
@@ -1648,6 +1844,27 @@ function ScreenLive({ buyers, navigate, params }) {
   const [buyerPerks,    setBuyerPerks]    = useState({});
   const [buyerItems,    setBuyerItems]    = useState({});
   const [savedFeedback, setSavedFeedback] = useState(null);
+  const [msgChannel,    setMsgChannel]    = useState("sms");
+  const [msgText,       setMsgText]       = useState("");
+  const [msgSent,       setMsgSent]       = useState(false);
+
+  // Build the live shop link whenever showName/persona changes
+  const showName     = params?.showName   || "Live Show";
+  const runOrder     = params?.runOrder   || PRODUCTS.slice(0,5);
+  const personaSlug  = params?.persona?.slug || "shop";
+  const liveShopUrl  = `strmlive.com/live/${personaSlug}`;
+
+  // Default message templates per channel
+  const MSG_TEMPLATES = {
+    sms:   `Hey! We're live right now selling ${runOrder[0]?.name || "new items"} and more. Shop the full lineup here: https://${liveShopUrl}`,
+    ig_dm: `Hey! We're going live right now 🔴 Check out what we're selling: https://${liveShopUrl}`,
+    tt_dm: `We're LIVE right now! Shop the full lineup at: https://${liveShopUrl} 🎵`,
+  };
+
+  const sendMessage = () => {
+    setMsgSent(true);
+    setTimeout(() => setMsgSent(false), 3000);
+  };
 
   // Auto-select the newest buyer as they flash in
   useEffect(()=>{
@@ -1749,6 +1966,10 @@ function ScreenLive({ buyers, navigate, params }) {
           <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:"#a78bfa" }}>{orderCount}</span><span style={{ fontSize:11, color:C.muted }}> orders</span></div>
         </div>
         <div style={{ marginLeft:"auto" }}>
+          <button onClick={()=>navigate("live-shop",{...params, runOrder, showName, persona:params?.persona})} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#10b981", background:"#0a1e1618", border:"1px solid #10b98133", padding:"6px 12px", borderRadius:7, cursor:"pointer" }}>
+            <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+            Live Shop
+          </button>
           <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount})} style={{ fontSize:11, color:"#ef4444", background:"#2d08081a", border:"1px solid #ef444433", padding:"6px 14px", borderRadius:7, cursor:"pointer" }}>■ End Show</button>
         </div>
       </div>
@@ -1862,6 +2083,7 @@ function ScreenLive({ buyers, navigate, params }) {
               <div style={{ display:"flex", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
                 {[
                   { id:"notes",    label:"Notes"    },
+                  { id:"message",  label:"Message"  },
                   { id:"perks",    label:"Perks"    },
                   { id:"items",    label:"Add Items" },
                   { id:"discount", label:"Discount"  },
@@ -1890,28 +2112,6 @@ function ScreenLive({ buyers, navigate, params }) {
                       {savedFeedback==="note" ? "✓ Note Saved!" : "Save Note"}
                     </button>
 
-                    {/* QUICK DM */}
-                    <div style={{ marginTop:14, paddingTop:14, borderTop:`1px solid ${C.border}` }}>
-                      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Quick DM</div>
-                      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                        {[
-                          { code:"ig_dm", label:"IG", color:CHANNEL_META.ig_dm.color, bg:CHANNEL_META.ig_dm.bg, icon:"📸", available:true  },
-                          { code:"tt_dm", label:"TT", color:CHANNEL_META.tt_dm.color, bg:CHANNEL_META.tt_dm.bg, icon:"🎵", available:true  },
-                          { code:"wn_dm", label:"WN", color:CHANNEL_META.wn_dm.color, bg:CHANNEL_META.wn_dm.bg, icon:"🔔", available:false },
-                          { code:"sms",   label:"SMS",color:CHANNEL_META.sms.color,   bg:CHANNEL_META.sms.bg,   icon:"💬", available:true  },
-                        ].map(ch=>(
-                          <button key={ch.code} disabled={!ch.available} onClick={()=>setSavedFeedback("dm_"+ch.code)} style={{ display:"flex", alignItems:"center", gap:4, fontSize:10, fontWeight:700, color:ch.available?ch.color:C.subtle, background:ch.available?ch.bg:C.surface2, border:`1px solid ${ch.available?ch.color+"44":C.border}`, padding:"5px 10px", borderRadius:7, cursor:ch.available?"pointer":"not-allowed", opacity:ch.available?1:0.4 }}>
-                            {ch.icon} {ch.label}
-                          </button>
-                        ))}
-                      </div>
-                      {savedFeedback?.startsWith("dm_") && (
-                        <div style={{ marginTop:8, fontSize:11, color:C.green }}>✓ DM sent via {savedFeedback.replace("dm_","").toUpperCase()}</div>
-                      )}
-                      <div style={{ marginTop:6, fontSize:9, color:C.subtle, lineHeight:1.5 }}>
-                        Sends current note as a DM to {selectedBuyer?.name?.split(" ")[0]} on the selected channel
-                      </div>
-                    </div>
 
                     {/* Past notes from buyer profile */}
                     {(LOYALTY_BUYERS[selectedBuyer.id]?.history||[]).length > 0 && (
@@ -1925,6 +2125,94 @@ function ScreenLive({ buyers, navigate, params }) {
                         ))}
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* MESSAGE */}
+                {rightTab==="message" && (
+                  <div>
+                    <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>
+                      Send a direct message to <strong style={{ color:C.text }}>{selectedBuyer?.name?.split(" ")[0]}</strong> with a link to the live shop page
+                    </div>
+
+                    {/* Channel selector */}
+                    <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>Send Via</div>
+                    <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+                      {[
+                        { code:"sms",   label:"SMS",       icon:"💬", color:CHANNEL_META.sms.color,   bg:CHANNEL_META.sms.bg   },
+                        { code:"ig_dm", label:"Instagram", icon:"📸", color:CHANNEL_META.ig_dm.color, bg:CHANNEL_META.ig_dm.bg },
+                        { code:"tt_dm", label:"TikTok",    icon:"🎵", color:CHANNEL_META.tt_dm.color, bg:CHANNEL_META.tt_dm.bg },
+                      ].map(ch=>(
+                        <button
+                          key={ch.code}
+                          onClick={()=>{ setMsgChannel(ch.code); setMsgText(MSG_TEMPLATES[ch.code] || ""); setMsgSent(false); }}
+                          style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4, padding:"8px 4px", background:msgChannel===ch.code?ch.bg:C.surface, border:`1px solid ${msgChannel===ch.code?ch.color+"66":C.border}`, borderRadius:9, cursor:"pointer", transition:"all .12s" }}
+                        >
+                          <span style={{ fontSize:14 }}>{ch.icon}</span>
+                          <span style={{ fontSize:9, fontWeight:700, color:msgChannel===ch.code?ch.color:C.muted }}>{ch.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Live shop link preview */}
+                    <div style={{ background:"#0a0a18", border:"1px solid #10b98133", borderRadius:10, padding:"10px 12px", marginBottom:12 }}>
+                      <div style={{ fontSize:9, fontWeight:700, color:"#10b981", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:4 }}>Live Shop Link</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#a78bfa" }}>{liveShopUrl}</span>
+                        <button
+                          onClick={()=>navigate("live-shop", {...params, persona:params?.persona})}
+                          style={{ marginLeft:"auto", fontSize:9, fontWeight:700, color:C.muted, background:"none", border:"none", cursor:"pointer", whiteSpace:"nowrap" }}
+                        >
+                          Preview ↗
+                        </button>
+                      </div>
+                      {/* Mini product lineup */}
+                      <div style={{ marginTop:8, display:"flex", flexDirection:"column", gap:4 }}>
+                        {runOrder.slice(0,4).map((p,i)=>(
+                          <div key={p.id} style={{ display:"flex", alignItems:"center", gap:7, padding:"5px 7px", background:"#0d0d1e", borderRadius:7 }}>
+                            <span style={{ fontSize:9, fontWeight:700, color:"#374151", width:10 }}>{i+1}</span>
+                            <span style={{ fontSize:11 }}>{p.image}</span>
+                            <span style={{ fontSize:10, color:"#9ca3af", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</span>
+                            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.green }}>${p.price}</span>
+                          </div>
+                        ))}
+                        {runOrder.length > 4 && (
+                          <div style={{ fontSize:9, color:C.subtle, textAlign:"center", padding:"3px 0" }}>+{runOrder.length - 4} more products</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Message composer */}
+                    <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:6 }}>Message</div>
+                    <textarea
+                      rows={5}
+                      value={msgText || MSG_TEMPLATES[msgChannel] || ""}
+                      onChange={e=>setMsgText(e.target.value)}
+                      placeholder="Type your message..."
+                      style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:11, outline:"none", resize:"none", fontFamily:"'DM Sans',sans-serif", lineHeight:1.6, boxSizing:"border-box" }}
+                    />
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:4, marginBottom:10 }}>
+                      <span style={{ fontSize:9, color:C.subtle }}>{(msgText || MSG_TEMPLATES[msgChannel] || "").length} chars</span>
+                      <button
+                        onClick={()=>setMsgText(MSG_TEMPLATES[msgChannel] || "")}
+                        style={{ fontSize:9, color:C.muted, background:"none", border:"none", cursor:"pointer" }}
+                      >
+                        Reset template
+                      </button>
+                    </div>
+
+                    {/* Send button */}
+                    <button
+                      onClick={sendMessage}
+                      style={{ width:"100%", padding:"10px", background:msgSent?"#0a1e16":`linear-gradient(135deg,${CHANNEL_META[msgChannel]?.color || C.accent},${CHANNEL_META[msgChannel]?.color || C.accent}cc)`, border:`1px solid ${msgSent?"#10b98166":CHANNEL_META[msgChannel]?.color+"44" || C.border}`, borderRadius:9, color:msgSent?"#10b981":"#fff", fontSize:12, fontWeight:700, cursor:"pointer", transition:"all .2s" }}
+                    >
+                      {msgSent ? `✓ Message sent via ${CHANNEL_META[msgChannel]?.label}` : `Send via ${CHANNEL_META[msgChannel]?.label} →`}
+                    </button>
+
+                    <div style={{ marginTop:8, fontSize:9, color:C.subtle, lineHeight:1.5 }}>
+                      {msgChannel==="sms" ? `Sends to ${selectedBuyer?.name?.split(" ")[0]}'s phone number on file` : `Sends to ${selectedBuyer?.name?.split(" ")[0]}'s ${CHANNEL_META[msgChannel]?.label} via ManyChat`}
+                    </div>
                   </div>
                 )}
 
@@ -9506,6 +9794,7 @@ export default function StreamlivePrototype() {
              view==="show-report"   ? `Shows / ${activeShow?.title||"Report"}` :
              view==="composer"      ? "Campaigns / New" :
              view==="live"          ? "Shows / Live Companion" :
+             view==="live-shop"     ? "Shows / Live Shop Page" :
              view==="show-planner"  ? "Shows / Show Planner" :
              view==="order-review"  ? "Shows / Order Review" :
              view==="catalog"       ? "Catalog" :
@@ -9674,6 +9963,7 @@ export default function StreamlivePrototype() {
                 {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} shows={completedShows} />}
                 {view==="show-report"  && <ScreenShowReport    show={activeShow} allShows={completedShows} buyers={buyers} navigate={navigate} />}
                 {view==="live"         && <ScreenLive          buyers={buyers} navigate={navigate} params={params} />}
+                {view==="live-shop"    && <ScreenLiveShop     navigate={navigate} params={params} />}
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
