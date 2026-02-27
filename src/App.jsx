@@ -220,7 +220,7 @@ function Landing() {
 
   const openDemo = () => {
     // If already captured email this session, go straight through
-    if (sessionStorage.getItem('sl_demo_access')) { openDemo(); return; }
+    if (sessionStorage.getItem('sl_demo_access')) { navigate('/app'); return; }
     setDemoModal(true);
   }
 
@@ -229,7 +229,7 @@ function Landing() {
     try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate' }) }) } catch(e) {}
     sessionStorage.setItem('sl_demo_access', '1');
     setDemoEmailSent(true);
-    setTimeout(() => { setDemoModal(false); openDemo(); }, 1200);
+    setTimeout(() => { setDemoModal(false); navigate('/app'); }, 1200);
   }
 
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
