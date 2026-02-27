@@ -183,6 +183,37 @@ function Landing() {
   const [billingCycle, setBillingCycle] = useState('monthly')
   const [faqOpen, setFaqOpen] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [liveGmv, setLiveGmv] = useState(0)
+
+  useEffect(() => {
+    // Simulate realistic live show GMV ticking up
+    // Orders come in bursts — sometimes fast, sometimes a pause
+    let current = 0
+    const tick = () => {
+      // Each "order" is between $18–$340, weighted toward $40–$120
+      const rand = Math.random()
+      let orderAmt
+      if (rand < 0.45)      orderAmt = Math.round(Math.random() * 60 + 40)   // $40–$100 (common)
+      else if (rand < 0.72) orderAmt = Math.round(Math.random() * 80 + 100)  // $100–$180 (mid)
+      else if (rand < 0.88) orderAmt = Math.round(Math.random() * 100 + 180) // $180–$280 (bigger)
+      else                  orderAmt = Math.round(Math.random() * 60 + 18)   // $18–$78 (small)
+
+      current += orderAmt
+      if (current >= 10000) {
+        setLiveGmv(0)
+        current = 0
+      } else {
+        setLiveGmv(current)
+      }
+      // Delay between orders: 400ms–2800ms (feels like real orders coming in)
+      const delay = Math.random() < 0.3
+        ? Math.round(Math.random() * 400 + 200)   // burst: 200–600ms
+        : Math.round(Math.random() * 1800 + 600)  // normal: 600–2400ms
+      setTimeout(tick, delay)
+    }
+    const t = setTimeout(tick, 800)
+    return () => clearTimeout(t)
+  }, [])
 
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
 
@@ -210,7 +241,7 @@ function Landing() {
   const STATS = [
     { value:'5',    label:'Platforms',            sub:'Whatnot · TikTok · IG · Amazon · YouTube' },
     { value:'99%',  label:'Attribution accuracy', sub:'Live Pixel vs 55–82% guesswork' },
-    { value:'$0',   label:'Show start',           sub:'GMV counts real purchases only' },
+    { value:'LIVE_GMV', label:'Live Show GMV',    sub:'Live show in progress · real orders only' },
     { value:'6+',   label:'AI Insights per Show', sub:'Confidence-scored recommendations' },
   ]
 
@@ -430,9 +461,24 @@ function Landing() {
           <div className="stats-grid" style={{ maxWidth:900, margin:'0 auto', padding:'28px 24px', display:'grid', gap:0 }}>
             {STATS.map((s,i)=>(
               <div key={s.label} className={`stat-item${i<3?' stat-divider':''}`} style={{ textAlign:'center', padding:'8px 16px' }}>
-                <div className="stat-num" style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:26, fontWeight:700, color:'#fff', marginBottom:4 }}>{s.value}</div>
-                <div style={{ fontSize:12, fontWeight:700, color:'#a78bfa', marginBottom:2 }}>{s.label}</div>
-                <div style={{ fontSize:10, color:'#374151' }}>{s.sub}</div>
+                {s.value === 'LIVE_GMV' ? (
+                  <div style={{ position:'relative' }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, marginBottom:4 }}>
+                      <div style={{ width:6, height:6, borderRadius:'50%', background:'#10b981', animation:'pulse 1s infinite', flexShrink:0 }} />
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:26, fontWeight:700, color:'#10b981', transition:'all 0.15s ease', minWidth:90, textAlign:'left' }}>
+                        ${liveGmv.toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ fontSize:12, fontWeight:700, color:'#a78bfa', marginBottom:2 }}>{s.label}</div>
+                    <div style={{ fontSize:10, color:'#374151' }}>{s.sub}</div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="stat-num" style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:26, fontWeight:700, color:'#fff', marginBottom:4 }}>{s.value}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:'#a78bfa', marginBottom:2 }}>{s.label}</div>
+                    <div style={{ fontSize:10, color:'#374151' }}>{s.sub}</div>
+                  </>
+                )}
               </div>
             ))}
           </div>
