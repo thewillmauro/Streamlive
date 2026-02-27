@@ -1178,7 +1178,7 @@ function RoadmapPage() {
       items:[
         {title:'Shopify live sync', desc:'Real-time inventory deduction during shows. When a buyer claims an item, stock drops instantly on Shopify — no more overselling.'},
         {title:'Show templates', desc:'Save your best-performing show structure as a reusable template. Platform mix, run order strategy, perk assignments — all saved and reapplied in seconds.'},
-        {title:'Buyer segments', desc:'Create saved segments: VIPs who haven't bought in 60 days, buyers who watch but never purchase, high-spenders. Target them directly in campaigns.'},
+        {title:'Buyer segments', desc:"Create saved segments: VIPs who haven't bought in 60 days, buyers who watch but never purchase, high-spenders. Target them directly in campaigns."},
         {title:'Live co-hosting', desc:'Invite a second seller or brand account into your live session. Both streams stay synced; both buyer CRMs update.'},
       ]
     },
@@ -1240,10 +1240,10 @@ function RoadmapPage() {
 // ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
 function AboutPage() {
   const values = [
-    {icon:'◉', label:'Sellers first', desc:'Every decision starts with one question: does this make a seller's show better? Not a nice-to-have — does it actually move GMV or reduce friction during a live show.'},
+    {icon:'◉', label:'Sellers first', desc:"Every decision starts with one question: does this make a seller's show better? Not a nice-to-have — does it actually move GMV or reduce friction during a live show."},
     {icon:'◈', label:'Attribution without compromise', desc:'Live commerce has a $0 attribution problem. Everyone tracks clicks. Nobody tracks what happened in the stream. We built a first-party pixel that follows the full path from stream to purchase — no cookies, no guessing.'},
-    {icon:'◆', label:'One tool, all platforms', desc:'A seller shouldn't need five dashboards to understand their business. We built one source of truth for buyer data, analytics, and live operations — regardless of whether you sell on TikTok, Whatnot, Amazon, Instagram, or YouTube.'},
-    {icon:'✦', label:'Transparency in how we build', desc:'Our roadmap is public. Our changelog is honest. When we ship something broken, we say so. Founding members know exactly what stage we're at.'},
+    {icon:'◆', label:'One tool, all platforms', desc:"A seller shouldn't need five dashboards to understand their business. We built one source of truth for buyer data, analytics, and live operations — regardless of whether you sell on TikTok, Whatnot, Amazon, Instagram, or YouTube."},
+    {icon:'✦', label:'Transparency in how we build', desc:"Our roadmap is public. Our changelog is honest. When we ship something broken, we say so. Founding members know exactly what stage we're at."},
   ]
   return (
     <PageShell>
@@ -1295,13 +1295,13 @@ function BlogPage() {
     {
       slug:'attribution', date:'February 12, 2026', tag:'Product', tagColor:'#7c3aed', readTime:'6 min',
       title:'The $0 attribution problem in live commerce',
-      summary:'You run a 3-hour show, drive $12,000 in sales, then your analytics says it came from "direct." Here's how we built a first-party pixel that actually solves this.',
+      summary:"You run a 3-hour show, drive $12,000 in sales, then your analytics says it came from \"direct.\" Here's how we built a first-party pixel that actually solves this.",
       body:[
         {h:''},
-        {p:'When we started talking to live sellers, one complaint came up in almost every conversation: "I have no idea what's actually working."'},
+        {p:"When we started talking to live sellers, one complaint came up in almost every conversation: \"I have no idea what's actually working.\""},
         {p:'They were running shows on TikTok, Whatnot, and Amazon simultaneously — sometimes driving $10,000–$20,000 in a single three-hour show. But Shopify analytics showed "direct" traffic. No channel. No source. No show.'},
         {h:'Why live commerce breaks traditional attribution'},
-        {p:'Traditional attribution is built around a click. Someone sees an ad, clicks a link, lands on a product page, buys. The click is the tracking event. Live commerce doesn't work that way.'},
+        {p:"Traditional attribution is built around a click. Someone sees an ad, clicks a link, lands on a product page, buys. The click is the tracking event. Live commerce doesn't work that way."},
         {p:'A buyer watches a stream for 45 minutes. The seller mentions a product. The buyer opens a new tab, searches the store, and buys. Or they wait until after the show ends. Or they click a chat link with no UTM parameters. The click — if it exists at all — is invisible to your analytics stack.'},
         {h:'What we built instead'},
         {p:'The Streamlive Live Pixel is a first-party script on your Shopify store. When a live show starts, the Pixel creates a session token tied to that show ID. Every visitor during the show window gets the token in their browser.'},
@@ -1312,34 +1312,34 @@ function BlogPage() {
     {
       slug:'buyer-data', date:'January 28, 2026', tag:'Strategy', tagColor:'#10b981', readTime:'8 min',
       title:'Why your buyer data is your biggest live commerce advantage',
-      summary:'Most sellers treat every show like a fresh start. The sellers doing seven figures treat each show as a data collection opportunity. Here's the difference.',
+      summary:"Most sellers treat every show like a fresh start. The sellers doing seven figures treat each show as a data collection opportunity. Here's the difference.",
       body:[
         {h:''},
-        {p:'There's a pattern with the top-performing live sellers on our platform. They don't treat shows as isolated events. They treat each show as a data collection opportunity.'},
-        {p:'After 10 shows, they know which of their 200 buyers purchases every week. They know who hasn't been seen in 45 days. They know who consistently spends over $200 and who's a one-time buyer. They know which buyers watch on TikTok but buy on the website.'},
+        {p:"There's a pattern with the top-performing live sellers on our platform. They don't treat shows as isolated events. They treat each show as a data collection opportunity."},
+        {p:"After 10 shows, they know which of their 200 buyers purchases every week. They know who hasn't been seen in 45 days. They know who consistently spends over $200 and who's a one-time buyer. They know which buyers watch on TikTok but buy on the website."},
         {h:'The compounding advantage'},
         {p:'Buyer data compounds. A seller with 500 buyers in their CRM — with real purchase history, platform handles, and loyalty tiers — has a fundamentally different business than a seller with 500 TikTok followers.'},
         {p:'The unified CRM in Streamlive is built around this idea. Every buyer across every platform gets a single profile. Every purchase, every show appearance, every opt-in flows in automatically. You always know who your best buyers are, which platform they prefer, and when you last saw them.'},
         {h:'What you can do with it'},
-        {p:'Segment your VIP buyers and DM them before a show. Build a re-engagement campaign for buyers who haven't purchased in 60 days. Send a birthday discount to every buyer in their birthday month. Create a waitlist for popular products and notify the most likely buyers first.'},
-        {p:'None of this requires a marketing team. It requires data, and the tools to act on it. That's what we built.'},
+        {p:"Segment your VIP buyers and DM them before a show. Build a re-engagement campaign for buyers who haven't purchased in 60 days. Send a birthday discount to every buyer in their birthday month. Create a waitlist for popular products and notify the most likely buyers first."},
+        {p:"None of this requires a marketing team. It requires data, and the tools to act on it. That's what we built."},
       ]
     },
     {
       slug:'five-platforms', date:'January 14, 2026', tag:'Guide', tagColor:'#f59e0b', readTime:'10 min',
       title:'How to run a 5-platform live show without losing your mind',
-      summary:'Going live on Whatnot, TikTok, Instagram, Amazon, and YouTube simultaneously sounds chaotic. Here's the system top multi-platform sellers use to make it manageable.',
+      summary:"Going live on Whatnot, TikTok, Instagram, Amazon, and YouTube simultaneously sounds chaotic. Here's the system top multi-platform sellers use to make it manageable.",
       body:[
         {h:''},
-        {p:'The case for streaming across all five platforms is straightforward: you're already producing the content, and every platform has a different audience. Going live only on TikTok means the buyers who only watch Whatnot never see your show.'},
+        {p:"The case for streaming across all five platforms is straightforward: you're already producing the content, and every platform has a different audience. Going live only on TikTok means the buyers who only watch Whatnot never see your show."},
         {p:'The counterargument is equally clear: managing five live chats, five sets of questions, and five comment feeds while running a show is operationally impossible for a solo seller.'},
         {h:'Separate the production from the distribution'},
         {p:'The sellers who do this well have separated their production infrastructure from their distribution infrastructure. The show — the camera feed, product presentation, the lighting — runs once. The distribution layer handles all five platforms.'},
-        {p:'OBS handles the multi-platform stream routing. Streamlive's Production Suite controls camera feeds, scene switching, and lighting presets from a single interface, without touching OBS during the show.'},
-        {p:'The Live Companion aggregates buyer activity across all five platforms into one feed. You're not watching five chats. You're watching one buyer feed sorted by who just bought, who just joined, and who your VIPs are.'},
+        {p:"OBS handles the multi-platform stream routing. Streamlive's Production Suite controls camera feeds, scene switching, and lighting presets from a single interface, without touching OBS during the show."},
+        {p:"The Live Companion aggregates buyer activity across all five platforms into one feed. You're not watching five chats. You're watching one buyer feed sorted by who just bought, who just joined, and who your VIPs are."},
         {h:'The setup'},
         {p:'Run OBS on a dedicated machine. Connect your streaming keys for all five platforms. Connect Streamlive to all five platform APIs so buyer data flows in real time. Start your show from the Show Planner, which pushes your run order into the Live Companion automatically.'},
-        {p:'Your GMV counter tracks only verified purchases. Your run order keeps you on script. You don't need to watch five feeds. You need to watch one.'},
+        {p:"Your GMV counter tracks only verified purchases. Your run order keeps you on script. You don't need to watch five feeds. You need to watch one."},
       ]
     },
   ]
