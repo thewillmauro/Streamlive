@@ -75,6 +75,11 @@ const PERSONAS = [
     planColor: "#f59e0b",
     category: "Apparel & Fashion",
     platforms: ["TT","IG","AM","YT"],
+    buyerCount: 1840,
+    showCount: 42,
+    subscriberCount: 3820,
+    manychat: { ttOptIns: 1240, igOptIns: 860, thisWeek: { tt: 94, ig: 61 }, topKeyword: "STYLE" },
+    slug: "bananarepublic",
     bio: "Banana Republic Live — seasonal collections, member exclusives, and live styling every week.",
   },
   {
