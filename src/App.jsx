@@ -34,7 +34,7 @@ const PLANS = {
     headline:"You're in. Let's import your buyers.",
     subline:"Your Streamlive account is active. Connect your first platform and we'll import your buyers immediately.",
     features:[
-      'Buyer CRM — all platforms unified',
+      'Buyer CRM: all platforms unified',
       'Email campaigns (1,000/month)',
       'Show performance reports',
       'Opt-in landing page (strmlive.com/s/yourshop)',
@@ -57,7 +57,7 @@ const PLANS = {
       'Everything in Starter',
       'Real-time Live Companion during shows',
       'Analytics dashboard (Revenue, Audience, Shows)',
-      'AI Insights — 6 weekly business recommendations',
+      'AI Insights: 6 weekly business recommendations',
       'SMS campaigns (5,000/month)',
       'Instagram & all 4 platform sync',
       'Loyalty Hub (all 4 tiers incl. VIP)',
@@ -74,10 +74,10 @@ const PLANS = {
     id:'pro', name:'Pro', price:399, color:'#f59e0b', bg:'#2e1f0a22', border:'#f59e0b33',
     emoji:'⚡', tagline:'For power sellers at full scale',
     headline:"Pro activated. You're operating at full power.",
-    subline:'Every feature unlocked — Production suite, full AI, multi-platform at scale.',
+    subline:'Every feature unlocked. Production suite, full AI, and multi-platform at scale.',
     features:[
       'Everything in Growth',
-      'Production suite — Sony FX3/FX6, multi-camera & OBS control',
+      'Production suite: Sony FX3/FX6, multi-camera and OBS control',
       'OBS scene switcher via WebSocket',
       'Lighting control (Elgato, Aputure, Godox)',
       'Production automation rules',
@@ -100,12 +100,12 @@ const PLANS = {
     subline:'White label, dedicated support, custom integrations, and unlimited scale.',
     features:[
       'Everything in Pro',
-      'White label — your brand, your domain',
+      'White label: your brand, your domain',
       'Unlimited team seats with role permissions',
       'Dedicated account manager',
       'Custom SDK & API integrations',
       'SSO (Single Sign-On)',
-      'SLA — 99.9% uptime guarantee',
+      'SLA: 99.9% uptime guarantee',
       'Custom analytics & data exports',
       'Unlimited SMS campaigns',
       'Multi-seller network management',
@@ -165,7 +165,7 @@ function Nav({ currentPlan }) {
         {p && (
           <div style={{ display:'flex', alignItems:'center', gap:6, background:`${p.color}12`, border:`1px solid ${p.color}33`, borderRadius:6, padding:'4px 12px' }}>
             <div style={{ width:5, height:5, borderRadius:'50%', background:p.color, animation:'pulse 2s infinite' }} />
-            <span style={{ fontSize:10, fontWeight:700, color:p.color, textTransform:'uppercase', letterSpacing:'0.07em' }}>{p.name} — ${p.price}/mo</span>
+            <span style={{ fontSize:10, fontWeight:700, color:p.color, textTransform:'uppercase', letterSpacing:'0.07em' }}>{p.name} at ${p.price}/mo</span>
           </div>
         )}
         <button onClick={()=>navigate('/app')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>
@@ -224,18 +224,18 @@ function Landing() {
   }
 
   const FEATURES = [
-    { icon:'◉', color:'#7c3aed', label:'Buyer CRM',             desc:'Every buyer across every platform, unified. Spend history, churn risk scores, VIP flags, and platform handles — all in one view, updated in real time.' },
-    { icon:'◈', color:'#10b981', label:'Live Companion',         desc:'Your command center during shows. Real-time buyer feed, accurate per-order GMV tracking, full purchase history, loyalty tier, notes, discounts, and VIP alerts — starts fresh at $0 every show, counts only real purchases.' },
+    { icon:'◉', color:'#7c3aed', label:'Buyer CRM',             desc:'Every buyer across every platform, unified. Spend history, churn risk scores, VIP flags, and platform handles. All in one view, updated in real time.' },
+    { icon:'◈', color:'#10b981', label:'Live Companion',         desc:'Your command center during shows. Real-time buyer feed, accurate per-order GMV tracking, full purchase history, loyalty tier, notes, discounts, and VIP alerts. Starts fresh at $0 every show and counts only real purchases.' },
     { icon:'◑', color:'#f59e0b', label:'Analytics',              desc:'Revenue trends, audience health, platform comparison, LTV distribution, and 6 weekly AI-generated recommendations with confidence scores after every show.' },
-    { icon:'⬛', color:'#a78bfa', label:'Production Suite',       desc:'Control Sony FX3/FX6 camera feeds, Elgato, Aputure, and Godox lights, and OBS scenes — all from one interface. Switch feeds, set lighting presets, and manage your broadcast without leaving the app.' },
+    { icon:'⬛', color:'#a78bfa', label:'Production Suite',       desc:'Control Sony FX3/FX6 camera feeds, Elgato, Aputure, and Godox lights, and OBS scenes, all from one interface. Switch feeds, set lighting presets, and manage your broadcast without leaving the app.' },
     { icon:'◆', color:'#ec4899', label:'Campaigns',              desc:'Email, SMS, and ManyChat DM campaigns. TikTok and Instagram keyword automations that trigger instant opt-ins when fans comment.' },
     { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',            desc:'4-tier loyalty program (Bronze → VIP) with points, perks, early access, and birthday rewards. Buyers level up automatically across every platform.' },
     { icon:'●', color:'#3b82f6', label:'Opt-in Pages',           desc:'Branded landing pages at strmlive.com/s/yourshop. Collect email, phone, and platform handles. TCPA-compliant consent built in.' },
-    { icon:'◧', color:'#10b981', label:'Show Planner',           desc:'Name your show, pick your platforms, set AI-ranked product run orders and perks — then go live. Your show name is required and flows automatically from planner through Live Companion, Order Review, and Show History so every report is exactly what you called it.' },
-    { icon:'🔴', color:'#ff0000', label:'YouTube Live',           desc:'Stream to YouTube alongside your other platforms simultaneously. Live Pixel tracks viewers from stream to site to purchase with 99% attribution accuracy — no guessing.' },
-    { icon:'◎', color:'#f59e0b', label:'Live Pixel Attribution', desc:'First-party pixel installed on your Shopify store. Every viewer who buys is tracked end-to-end — session ID, order ID, show ID — no third-party cookies needed.' },
-    { icon:'✦', color:'#a78bfa', label:'AI Insights',            desc:'Intelligent business analysis: VIP opportunities, at-risk buyer alerts, product performance gaps, and show timing optimization — all confidence-scored and delivered after every show.' },
-    { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync',   desc:'Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live. Stream to all five simultaneously. Show cards in your history display every platform you were live on — so you always know exactly where each show reached your audience.' },
+    { icon:'◧', color:'#10b981', label:'Show Planner',           desc:'Name your show, pick your platforms, set AI-ranked product run orders and perks, then go live. Your show name is required and flows automatically from planner through Live Companion, Order Review, and Show History so every report is exactly what you called it.' },
+    { icon:'🔴', color:'#ff0000', label:'YouTube Live',           desc:'Stream to YouTube alongside your other platforms simultaneously. Live Pixel tracks viewers from stream to site to purchase with 99% attribution accuracy. No guessing.' },
+    { icon:'◎', color:'#f59e0b', label:'Live Pixel Attribution', desc:'First-party pixel installed on your Shopify store. Every viewer who buys is tracked end-to-end: session ID, order ID, and show ID. No third-party cookies needed.' },
+    { icon:'✦', color:'#a78bfa', label:'AI Insights',            desc:'Intelligent business analysis: VIP opportunities, at-risk buyer alerts, product performance gaps, and show timing optimization. All confidence-scored and delivered after every show.' },
+    { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync',   desc:'Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live. Stream to all five simultaneously. Show cards in your history display every platform you were live on, so you always know exactly where each show reached.' },
   ]
 
   const STATS = [
@@ -249,7 +249,7 @@ function Landing() {
     {
       tag:'PLAN THE SHOW',
       headline:"Name it. Build it.\nLaunch it.",
-      desc:"Before you go live, the Show Planner walks you through everything. Name your show — it flows through to your Live Companion, Order Review, and Show History as a real title, not a timestamp. Pick every platform you're streaming to. Add products and let the AI rank them by conversion score so your best performers open and close the show. Configure perks for your live audience: first-order discounts, bundle unlocks, VIP early access. Everything is set before you hit Go Live.",
+      desc:"Before you go live, the Show Planner walks you through everything. Name your show and it flows through to your Live Companion, Order Review, and Show History as a real title, not a timestamp. Pick every platform you're streaming to. Add products and let the AI rank them by conversion score so your best performers open and close the show. Configure perks for your live audience: first-order discounts, bundle unlocks, VIP early access. Everything is set before you hit Go Live.",
       color:'#7c3aed',
       stats:[{ label:'AI product ranking', value:'✓' },{ label:'Show perks', value:'✓' },{ label:'Multi-platform', value:'5' }],
       side:'left',
@@ -257,7 +257,7 @@ function Landing() {
     {
       tag:'BEFORE THE SHOW',
       headline:"Broadcast-quality setup.\nOne interface.",
-      desc:"The Production Suite connects your cameras, lighting, and streaming software into one control panel. Switch between Sony FX3 and FX6 camera feeds via Sony Camera Remote SDK. Control Elgato, Aputure, and Godox lighting rigs — set intensity, color temperature, and scene presets with a tap. Manage OBS scenes via WebSocket: switch camera angles, overlays, and layouts without leaving Streamlive. Build automation rules so when a product goes live, your lighting and OBS scene update automatically.",
+      desc:"The Production Suite connects your cameras, lighting, and streaming software into one control panel. Switch between Sony FX3 and FX6 camera feeds via Sony Camera Remote SDK. Control Elgato, Aputure, and Godox lighting rigs. Set intensity, color temperature, and scene presets with a tap. Manage OBS scenes via WebSocket: switch camera angles, overlays, and layouts without leaving Streamlive. Build automation rules so when a product goes live, your lighting and OBS scene update automatically.",
       color:'#f59e0b',
       stats:[{ label:'Camera feeds', value:'Multi' },{ label:'Lighting brands', value:'3' },{ label:'OBS control', value:'Live' }],
       side:'right',
@@ -265,7 +265,7 @@ function Landing() {
     {
       tag:'DURING THE SHOW',
       headline:"Stream everywhere.\nAttribute every sale.",
-      desc:"The Live Companion is your real-time command center across all 5 platforms simultaneously. See live viewer counts pulse on Whatnot, TikTok, Instagram, Amazon, and YouTube. Every order that comes in — from any platform — appears instantly in your buyer feed with their full history, loyalty tier, and notes. GMV starts at $0 and ticks up only on real purchases, so every number you see is earned. YouTube viewers are tracked by Live Pixel: a first-party snippet that follows each viewer from stream to purchase with 99% accuracy.",
+      desc:"The Live Companion is your real-time command center across all 5 platforms simultaneously. See live viewer counts pulse on Whatnot, TikTok, Instagram, Amazon, and YouTube. Every order that comes in from any platform appears instantly in your buyer feed with their full history, loyalty tier, and notes. GMV starts at $0 and ticks up only on real purchases, so every number you see is earned. YouTube viewers are tracked by Live Pixel: a first-party snippet that follows each viewer from stream to purchase with 99% accuracy.",
       color:'#10b981',
       stats:[{ label:'Platforms live', value:'5' },{ label:'Attribution', value:'99%' },{ label:'Buyer lookup', value:'< 1s' }],
       side:'left',
@@ -273,7 +273,7 @@ function Landing() {
     {
       tag:'AFTER THE SHOW',
       headline:"Intelligent insights.\nEvery single show.",
-      desc:"After every show, Streamlive analyzes your performance and surfaces 6 prioritized recommendations with confidence scores. Which buyers are about to churn. Which products underperformed vs their projected score. Why Thursday shows outperform by $900. What your YouTube audience converts at vs TikTok. Each insight links directly to the action that addresses it — a targeted campaign, a win-back flow, a product adjustment for next time.",
+      desc:"After every show, Streamlive analyzes your performance and surfaces 6 prioritized recommendations with confidence scores. Which buyers are about to churn. Which products underperformed vs their projected score. Why Thursday shows outperform by $900. What your YouTube audience converts at vs TikTok. Each insight links directly to the action that addresses it: a targeted campaign, a win-back flow, or a product adjustment for next time.",
       color:'#a78bfa',
       stats:[{ label:'Insights/show', value:'6+' },{ label:'Avg confidence', value:'83%' },{ label:'Data sources', value:'5' }],
       side:'right',
@@ -281,12 +281,12 @@ function Landing() {
   ]
 
   const FAQS = [
-    { q:'How does YouTube Live attribution work?', a:"YouTube doesn't expose buyer data directly, so Streamlive uses Live Pixel — a lightweight JavaScript snippet you install on your Shopify store. When a viewer clicks from your stream to your site, Live Pixel assigns a session ID that follows them through checkout. Orders are matched to your show with 99% accuracy, compared to 55–64% via time-window guessing or 82% via UTM links." },
-    { q:'What platforms do you support?', a:'Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. You can stream to all five simultaneously from the Show Planner, and manage buyers from all platforms in one unified CRM. Your Show History cards display every platform you were live on for each show — so multi-stream shows show all platform badges, not just one.' },
-    { q:'How does buyer importing work?', a:"Connect your Whatnot, TikTok, Instagram, or Amazon account and we pull your entire buyer history — names, handles, spend, orders — automatically. It takes under 2 minutes and your data is live immediately. YouTube buyers are attributed via Live Pixel after your first show." },
-    { q:'Do I need a separate OBS license for Production?', a:"No. OBS is free and open source. Streamlive connects to OBS via its official WebSocket v5 API. You install OBS once and Streamlive controls it. Sony Camera Remote SDK access requires a developer registration with Sony — we walk you through the setup." },
-    { q:"What's the difference between Growth and Pro?", a:'Growth gives you the full CRM, Live Companion across all 5 platforms, Analytics, Loyalty Hub, ManyChat automation, and AI Insights — everything you need to run and grow your shows. Pro adds the Production suite (multi-camera, lighting, and OBS control), higher SMS volume, multi-shop TikTok support, and cross-platform buyer identity matching.' },
-    { q:'Can I white label this for my clients?', a:'Yes — Enterprise plan includes white labeling under your domain, custom branding, and multi-seller network management. Ideal for agencies running shows for multiple brands simultaneously.' },
+    { q:'How does YouTube Live attribution work?', a:"YouTube doesn't expose buyer data directly, so Streamlive uses Live Pixel, a lightweight JavaScript snippet you install on your Shopify store. When a viewer clicks from your stream to your site, Live Pixel assigns a session ID that follows them through checkout. Orders are matched to your show with 99% accuracy, compared to 55–64% via time-window guessing or 82% via UTM links." },
+    { q:'What platforms do you support?', a:'Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. You can stream to all five simultaneously from the Show Planner, and manage buyers from all platforms in one unified CRM. Your Show History cards display every platform you were live on for each show, so multi-stream shows display all platform badges, not just one.' },
+    { q:'How does buyer importing work?', a:"Connect your Whatnot, TikTok, Instagram, or Amazon account and we pull your entire buyer history: names, handles, spend, and orders. It happens automatically. It takes under 2 minutes and your data is live immediately. YouTube buyers are attributed via Live Pixel after your first show." },
+    { q:'Do I need a separate OBS license for Production?', a:"No. OBS is free and open source. Streamlive connects to OBS via its official WebSocket v5 API. You install OBS once and Streamlive controls it. Sony Camera Remote SDK access requires a developer registration with Sony. We walk you through the setup." },
+    { q:"What's the difference between Growth and Pro?", a:'Growth gives you the full CRM, Live Companion across all 5 platforms, Analytics, Loyalty Hub, ManyChat automation, and AI Insights. Everything you need to run and grow your shows. Pro adds the Production suite (multi-camera, lighting, and OBS control), higher SMS volume, multi-shop TikTok support, and cross-platform buyer identity matching.' },
+    { q:'Can I white label this for my clients?', a:'Yes. The Enterprise plan includes white labeling under your domain, custom branding, and multi-seller network management. It is built for agencies running shows for multiple brands simultaneously.' },
   ]
 
   const annualDiscount = 0.17
@@ -403,7 +403,7 @@ function Landing() {
 
           <div className="fade-a0" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#2d1f5e44', border:'1px solid #7c3aed44', borderRadius:99, padding:'5px 16px 5px 10px', marginBottom:28 }}>
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#10b981', animation:'pulse 2s infinite' }} />
-            <span style={{ fontSize:11, fontWeight:700, color:'#a78bfa', letterSpacing:'0.08em', textTransform:'uppercase' }}>Now open for beta — limited spots</span>
+            <span style={{ fontSize:11, fontWeight:700, color:'#a78bfa', letterSpacing:'0.08em', textTransform:'uppercase' }}>Now open for beta. Limited spots.</span>
           </div>
 
           <h1 className="fade-a1" style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(32px,6vw,68px)', fontWeight:800, color:'#fff', lineHeight:1.06, letterSpacing:'-2px', marginBottom:16 }}>
@@ -416,7 +416,7 @@ function Landing() {
           </p>
 
           <p className="fade-a2" style={{ fontSize:'clamp(13px,1.6vw,16px)', color:'#4b5563', lineHeight:1.7, maxWidth:520, margin:'0 auto 32px', fontWeight:400 }}>
-            CRM, live show intelligence, YouTube Live attribution, production control, loyalty programs, and AI insights — one platform for serious live sellers.
+            CRM, live show intelligence, YouTube Live attribution, production control, loyalty programs, and AI insights. One platform for serious live sellers.
           </p>
 
           <div className="fade-a3 hero-input-row" style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:16, flexWrap:'wrap' }}>
@@ -433,7 +433,7 @@ function Landing() {
             ) : (
               <div style={{ display:'flex', alignItems:'center', gap:10, background:'#0a1e16', border:'1px solid #10b98144', borderRadius:11, padding:'13px 24px' }}>
                 <span style={{ fontSize:16 }}>✓</span>
-                <span style={{ fontSize:14, color:'#10b981', fontWeight:600 }}>You're on the list — we'll be in touch soon.</span>
+                <span style={{ fontSize:14, color:'#10b981', fontWeight:600 }}>You're on the list. We'll be in touch soon.</span>
               </div>
             )}
           </div>
@@ -491,11 +491,11 @@ function Landing() {
             <div style={{ width:52, height:52, borderRadius:14, background:'#ff000018', border:'1px solid #ff000044', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, flexShrink:0 }}>🔴</div>
             <div style={{ flex:1, minWidth:240 }}>
               <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                <span style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>YouTube Live — now fully supported</span>
+                <span style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>YouTube Live: Now Fully Supported</span>
                 <span style={{ fontSize:9, fontWeight:800, color:'#ff0000', background:'#ff000015', border:'1px solid #ff000033', padding:'2px 8px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em' }}>New</span>
               </div>
               <p style={{ fontSize:13, color:'#6b7280', lineHeight:1.7, margin:0 }}>
-                Stream to your YouTube audience alongside Whatnot, TikTok, Instagram, and Amazon simultaneously. <strong style={{ color:'#9ca3af' }}>Live Pixel</strong> — our first-party attribution snippet — installs on your Shopify store in under 2 minutes and tracks every viewer from stream to purchase with <strong style={{ color:'#ff4444' }}>99% accuracy</strong>. No UTM guesswork. No time-window estimation. Every sale attributed.
+                Stream to your YouTube audience alongside Whatnot, TikTok, Instagram, and Amazon simultaneously. <strong style={{ color:'#9ca3af' }}>Live Pixel</strong>, our first-party attribution snippet, installs on your Shopify store in under 2 minutes and tracks every viewer from stream to purchase with <strong style={{ color:'#ff4444' }}>99% accuracy</strong>. No UTM guesswork. No time-window estimation. Every sale attributed.
               </p>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:8, flexShrink:0 }}>
@@ -520,7 +520,7 @@ function Landing() {
             <div style={{ position:'absolute', top:-40, right:-40, width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.06, filter:'blur(60px)' }} />
             <span className="section-label">✦ Interactive Demo</span>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,4vw,26px)', fontWeight:800, color:'#fff', marginBottom:12, letterSpacing:'-0.5px' }}>Every screen is built and working right now</div>
-            <p style={{ fontSize:14, color:'#6b7280', maxWidth:520, margin:'0 auto 24px', lineHeight:1.65 }}>Buyer CRM, Live Companion with all 5 platforms, YouTube Live Pixel, analytics, production suite, loyalty hub, show planner, and more — all interactive.</p>
+            <p style={{ fontSize:14, color:'#6b7280', maxWidth:520, margin:'0 auto 24px', lineHeight:1.65 }}>Buyer CRM, Live Companion with all 5 platforms, YouTube Live Pixel, analytics, production suite, loyalty hub, show planner, and more. All fully interactive.</p>
             <button onClick={()=>navigate('/app')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'13px 32px', borderRadius:11, cursor:'pointer' }}>Open Interactive Demo →</button>
           </div>
         </div>
@@ -600,7 +600,7 @@ function Landing() {
                       {/* Perks */}
                       <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'11px 14px' }}>
                         <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Show Perks</div>
-                        {[{label:'First order 10% off',active:true},{label:'VIP early access — 5 min',active:true},{label:'Bundle unlock at $150+',active:false}].map(pk=>(
+                        {[{label:'First order 10% off',active:true},{label:'VIP early access (5 min)',active:true},{label:'Bundle unlock at $150+',active:false}].map(pk=>(
                           <div key={pk.label} style={{ display:'flex',alignItems:'center',gap:7,marginBottom:5 }}>
                             <div style={{ width:14,height:14,borderRadius:4,background:pk.active?'#7c3aed18':'#1e1e3a',border:`1px solid ${pk.active?'#7c3aed55':'#374151'}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
                               {pk.active && <span style={{ fontSize:8,color:'#a78bfa' }}>✓</span>}
@@ -611,14 +611,14 @@ function Landing() {
                       </div>
                     </div>
                   )}
-                  {/* i=1: Before the Show — Production */}
+                  {/* i=1: Before the Show - Production */}
                   {i===1 && (
                     <div>
                       {/* Camera feeds */}
                       <div style={{ background:'#0d0d1e', border:'1px solid #f59e0b22', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
                         <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Camera Feeds</div>
                         <div style={{ display:'flex', gap:7 }}>
-                          {[{label:'Sony FX3',sub:'Wide — LIVE',active:true},{label:'Sony FX6',sub:'Close-up',active:false}].map(cam=>(
+                          {[{label:'Sony FX3',sub:'Wide · LIVE',active:true},{label:'Sony FX6',sub:'Close-up',active:false}].map(cam=>(
                             <div key={cam.label} style={{ flex:1, background:cam.active?'#0a1e0a':'#0d0d1e', border:`1px solid ${cam.active?'#10b98144':'#1e1e3a'}`, borderRadius:8, padding:'8px 10px' }}>
                               <div style={{ display:'flex',alignItems:'center',gap:5,marginBottom:3 }}>
                                 <div style={{ width:5,height:5,borderRadius:'50%',background:cam.active?'#10b981':'#374151',animation:cam.active?'pulse 1s infinite':undefined }} />
@@ -661,7 +661,7 @@ function Landing() {
                       </div>
                     </div>
                   )}
-                  {/* i=2: During the Show — Live Companion */}
+                  {/* i=2: During the Show - Live Companion */}
                   {i===2 && (
                     <div>
                       {/* 5-platform live badges */}
@@ -690,12 +690,12 @@ function Landing() {
                       ))}
                     </div>
                   )}
-                  {/* i=3: After the Show — AI Insights */}
+                  {/* i=3: After the Show - AI Insights */}
                   {i===3 && (
                     <div>
                       {[
                         {icon:'💰',pri:'HIGH',title:'YouTube viewers convert 2.1× vs TikTok',impact:'+$3,400 potential',conf:89,c:'#10b981'},
-                        {icon:'⚠️',pri:'HIGH',title:'3 at-risk buyers — re-engage now',impact:'$680 at stake',conf:84,c:'#f59e0b'},
+                        {icon:'⚠️',pri:'HIGH',title:'3 at-risk buyers: re-engage now',impact:'$680 at stake',conf:84,c:'#f59e0b'},
                         {icon:'📊',pri:'MED',title:'Thursday shows outperform by +$900',impact:'Schedule more Thurs',conf:82,c:'#a78bfa'},
                         {icon:'🎯',pri:'MED',title:'Live Pixel capturing 99% of YT sales',impact:'14 orders attributed',conf:97,c:'#ff0000'},
                       ].map(ins=>(
@@ -776,7 +776,7 @@ function Landing() {
                   ) : (
                     <button onClick={()=>navigate(`/checkout?plan=${p.id}`)} className="cta-btn"
                       style={{ width:'100%', background:p.popular?'linear-gradient(135deg,#7c3aed,#4f46e5)':`${p.color}18`, border:`1px solid ${p.color}44`, color:p.popular?'#fff':p.color, fontSize:12, fontWeight:700, padding:'11px', borderRadius:10, cursor:'pointer' }}>
-                      {p.popular?`Start Growth — $${displayPrice}/mo →`:`Get ${p.name} — $${displayPrice}/mo →`}
+                      {p.popular?`Start Growth for $${displayPrice}/mo →`:`Get ${p.name} for $${displayPrice}/mo →`}
                     </button>
                   )}
                   <div style={{ fontSize:10, color:'#374151', textAlign:'center', marginTop:8 }}>{p.billing}</div>
@@ -839,7 +839,7 @@ function Landing() {
                   <div style={{ width:26, height:26, borderRadius:8, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#fff' }}>S</div>
                   <span style={{ fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:800, color:'#fff' }}>Streamlive</span>
                 </div>
-                <p style={{ fontSize:12, color:'#374151', lineHeight:1.7, margin:0 }}>The live selling command center. Stream everywhere, attribute every sale, delight every buyer — across all 5 platforms simultaneously.</p>
+                <p style={{ fontSize:12, color:'#374151', lineHeight:1.7, margin:0 }}>The live selling command center. Stream everywhere, attribute every sale, and delight every buyer across all 5 platforms.</p>
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Product</div>
@@ -956,12 +956,12 @@ function Checkout() {
         </div>
         <div style={{ maxWidth:1080, margin:'0 auto', padding:'20px 32px 0' }}>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:26, fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:4 }}>Complete your subscription</div>
-          <div style={{ fontSize:13, color:'#4b5563' }}>Pay securely below — you'll never leave Streamlive.</div>
+          <div style={{ fontSize:13, color:'#4b5563' }}>Pay securely below. You'll never leave Streamlive.</div>
         </div>
 
         <div style={{ maxWidth:1080, margin:'0 auto', padding:'28px 32px 80px', display:'grid', gridTemplateColumns:'1fr 460px', gap:32, alignItems:'start' }}>
 
-          {/* LEFT — plan selector + features */}
+          {/* LEFT - plan selector + features */}
           <div>
             <div style={{ marginBottom:28 }}>
               <div style={{ fontSize:10, fontWeight:700, color:'#4b5563', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:14 }}>Select plan</div>
@@ -993,7 +993,7 @@ function Checkout() {
               <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:18 }}>
                 <span style={{ fontSize:24 }}>{p.emoji}</span>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:15, fontWeight:700, color:'#fff' }}>{p.name} — What's included</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:'#fff' }}>{p.name}: What's Included</div>
                   <div style={{ fontSize:11, color:'#4b5563', marginTop:2 }}>{p.tagline}</div>
                 </div>
                 <div style={{ textAlign:'right' }}>
@@ -1023,7 +1023,7 @@ function Checkout() {
             </div>
           </div>
 
-          {/* RIGHT — payment form */}
+          {/* RIGHT - payment form */}
           <div style={{ position:'sticky', top:80 }}>
             <div style={{ background:'linear-gradient(160deg,#0e0e1a,#09090f)', border:`1px solid ${p.color}33`, borderRadius:20, padding:28, boxShadow:`0 0 80px ${p.color}0d` }}>
 
@@ -1120,7 +1120,7 @@ function Checkout() {
                     className={canPay ? 'cta-btn' : ''}
                     style={{ width:'100%', background:canPay?`linear-gradient(135deg,${p.color},${p.color}aa)`:'#14142a', border:`1px solid ${canPay?p.color+'55':'#1e1e3a'}`, color:canPay?'#fff':'#374151', fontSize:14, fontWeight:700, padding:13, borderRadius:11, cursor:canPay?'pointer':'default', transition:'all .2s', marginBottom:14 }}>
                     <span style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center' }}>
-                      🔒 Pay ${p.price}.00 — Start {p.name}
+                      🔒 Pay ${p.price}.00 · Start {p.name}
                     </span>
                   </button>
 
@@ -1209,7 +1209,7 @@ const SELLER_PROFILES = {
   bananarepublic: {
     name: "Banana Republic",
     owner: "Jamie Ellis",
-    bio: "Shop the latest collections live — seasonal drops, member exclusives, and styling sessions every week. Be the first to access new arrivals before they hit stores.",
+    bio: "Shop the latest collections live: seasonal drops, member exclusives, and styling sessions every week. Be the first to access new arrivals before they hit stores.",
     avatar: "BR",
     color: "#f59e0b",
     category: "Apparel & Fashion",
@@ -1236,14 +1236,14 @@ const SELLER_PROFILES = {
     perks: [
       "💄 First access to new shade launches",
       "✨ Subscriber-only bundles and kits",
-      "📲 Live drop alerts — never miss a launch",
+      "📲 Live drop alerts. Never miss a launch.",
       "🎁 VIP loyalty rewards on every order",
     ],
   },
   tropicfeel: {
     name: "Tropicfeel",
     owner: "Marc Pujol",
-    bio: "Travel-ready footwear and gear built for every terrain. We're building our live community from the ground up — join early and help shape what we do next.",
+    bio: "Travel-ready footwear and gear built for every terrain. We're building our live community from the ground up. Join early and help shape what we do next.",
     avatar: "TF",
     color: "#10b981",
     category: "Travel Footwear & Gear",
@@ -1260,7 +1260,7 @@ const SELLER_PROFILES = {
   walmartlive: {
     name: "Walmart Live",
     owner: "Rachel Nguyen",
-    bio: "Your front-row seat to the best deals across every category — fashion, beauty, electronics, home, and more. Live shows daily across all your favorite brands.",
+    bio: "Your front-row seat to the best deals across every category: fashion, beauty, electronics, home, and more. Live shows daily across all your favorite brands.",
     avatar: "WM",
     color: "#3b82f6",
     category: "Multi-Category Retail",
@@ -1282,7 +1282,7 @@ const PLATFORM_META = {
   AM: { label: "Amazon Live",  color: "#f59e0b", icon: "◆", placeholder: null,            manychat: false, dmNote: null },
   IG: { label: "Instagram",    color: "#ec4899", icon: "●", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on Instagram to activate show alerts" },
 };
-// Platforms we collect handles for (excludes Amazon — no user DMs possible)
+// Platforms we collect handles for (excludes Amazon - no user DMs possible)
 const DM_PLATFORMS = ["WN", "TT", "IG"];
 
 // ─── OPT-IN PAGE ──────────────────────────────────────────────────────────────
@@ -1501,7 +1501,7 @@ function OptInPage({ slug, connectedPlatforms }) {
                     Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
                   </label>
                   <div style={{ fontSize:11, color:"#6b7280", marginBottom:10, lineHeight:1.5 }}>
-                    Optional — helps us match you across platforms and send you personalized DMs.
+                    Optional. Helps us match you across platforms and send personalized DMs.
                   </div>
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                     {dmPlatforms.map(p => {
@@ -1558,7 +1558,7 @@ function OptInPage({ slug, connectedPlatforms }) {
                   </div>
                   <div>
                     <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>SMS alerts</div>
-                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Instant show alerts — never miss a live drop</div>
+                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Instant show alerts. Never miss a live drop.</div>
                   </div>
                 </label>
               </div>
