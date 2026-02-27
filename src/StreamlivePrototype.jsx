@@ -1624,7 +1624,7 @@ function ScreenLive({ buyers, navigate, params }) {
     const seeds = { WN:234, TT:891, IG:312, AM:156, YT:4200 };
     return Object.fromEntries(selectedPlatforms.map(p=>[p, seeds[p]||200]));
   });
-  const [liveBuyers, setLiveBuyers]   = useState(buyers.slice(0,3));
+  const [liveBuyers, setLiveBuyers]   = useState([]);
   const [elapsed, setElapsed]         = useState(0);
   const [viewerCount, setViewerCount] = useState(
     selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156,YT:4200}; return a+(s[p]||200);},0)
@@ -5677,7 +5677,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
       date:    dateStr,
       platform,
       gmv:     finalGMV,
-      buyers:  liveBuyers.length,
+      buyers:  params?.orderCount || liveBuyers.length,
       repeatRate,
       duration: durationStr,
       newBuyers,
@@ -5713,8 +5713,8 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
               <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>All changes synced to Shopify</span>
             </div>
             <div style={{ display:"flex", gap:12, justifyContent:"center" }}>
-              <button onClick={()=>navigate("shows")} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:13, fontWeight:600, padding:"11px 24px", borderRadius:10, cursor:"pointer" }}>← Back to Shows</button>
-              <button onClick={()=>navigate("dashboard")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer" }}>View Dashboard →</button>
+              <button onClick={()=>{ if (onShowComplete) onShowComplete(buildCompletedShow()); navigate("shows"); }} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:13, fontWeight:600, padding:"11px 24px", borderRadius:10, cursor:"pointer" }}>← Back to Shows</button>
+              <button onClick={()=>{ if (onShowComplete) onShowComplete(buildCompletedShow()); navigate("dashboard"); }} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer" }}>View Dashboard →</button>
             </div>
           </div>
         </div>
