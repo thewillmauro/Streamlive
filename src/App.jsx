@@ -65,7 +65,7 @@ const PLANS = {
       'Audience segmentation & win-back campaigns',
       'Show Planner with multi-platform streaming',
     ],
-    notIncluded:['Production suite','DJI / Sony SDK control','White label','Dedicated support'],
+    notIncluded:['Production suite','Multi-camera & lighting control','White label','Dedicated support'],
     nextLabel:'Set up your platforms →',
     nextHint:"Connect Whatnot and it activates automatically when you go live.",
     billing:'Billed monthly. Cancel anytime.',
@@ -77,7 +77,7 @@ const PLANS = {
     subline:'Every feature unlocked — Production suite, full AI, multi-platform at scale.',
     features:[
       'Everything in Growth',
-      'Production suite — Sony FX3/FX6, DJI Gimbal control',
+      'Production suite — Sony FX3/FX6, multi-camera & OBS control',
       'OBS scene switcher via WebSocket',
       'Lighting control (Elgato, Aputure, Godox)',
       'Production automation rules',
@@ -196,14 +196,14 @@ function Landing() {
     { icon:'◉', color:'#7c3aed', label:'Buyer CRM',             desc:'Every buyer across every platform, unified. Spend history, churn risk scores, VIP flags, and platform handles — all in one view, updated in real time.' },
     { icon:'◈', color:'#10b981', label:'Live Companion',         desc:'Your command center during shows. Real-time buyer feed, accurate per-order GMV tracking, full purchase history, loyalty tier, notes, discounts, and VIP alerts — starts fresh at $0 every show, counts only real purchases.' },
     { icon:'◑', color:'#f59e0b', label:'Analytics',              desc:'Revenue trends, audience health, platform comparison, LTV distribution, and 6 weekly AI-generated recommendations with confidence scores after every show.' },
-    { icon:'⬛', color:'#a78bfa', label:'Production Suite',       desc:'Control Sony FX3/FX6 cameras, DJI RS4 Pro gimbals, Elgato and Aputure lights, and OBS scenes — all from one interface during your show.' },
+    { icon:'⬛', color:'#a78bfa', label:'Production Suite',       desc:'Control Sony FX3/FX6 camera feeds, Elgato, Aputure, and Godox lights, and OBS scenes — all from one interface. Switch feeds, set lighting presets, and manage your broadcast without leaving the app.' },
     { icon:'◆', color:'#ec4899', label:'Campaigns',              desc:'Email, SMS, and ManyChat DM campaigns. TikTok and Instagram keyword automations that trigger instant opt-ins when fans comment.' },
     { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',            desc:'4-tier loyalty program (Bronze → VIP) with points, perks, early access, and birthday rewards. Buyers level up automatically across every platform.' },
     { icon:'●', color:'#3b82f6', label:'Opt-in Pages',           desc:'Branded landing pages at strmlive.com/s/yourshop. Collect email, phone, and platform handles. TCPA-compliant consent built in.' },
     { icon:'◧', color:'#10b981', label:'Show Planner',           desc:'Name your show, pick your platforms, set AI-ranked product run orders and perks — then go live. Your show name is required and flows automatically from planner through Live Companion, Order Review, and Show History so every report is exactly what you called it.' },
     { icon:'🔴', color:'#ff0000', label:'YouTube Live',           desc:'Stream to YouTube alongside your other platforms simultaneously. Live Pixel tracks viewers from stream to site to purchase with 99% attribution accuracy — no guessing.' },
     { icon:'◎', color:'#f59e0b', label:'Live Pixel Attribution', desc:'First-party pixel installed on your Shopify store. Every viewer who buys is tracked end-to-end — session ID, order ID, show ID — no third-party cookies needed.' },
-    { icon:'✦', color:'#a78bfa', label:'AI Insights',            desc:'Claude-powered business intelligence: VIP opportunities, at-risk buyer alerts, product performance gaps, and show timing optimization. Delivered after every show.' },
+    { icon:'✦', color:'#a78bfa', label:'AI Insights',            desc:'Intelligent business analysis: VIP opportunities, at-risk buyer alerts, product performance gaps, and show timing optimization — all confidence-scored and delivered after every show.' },
     { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync',   desc:'Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live. Stream to all five simultaneously. Show cards in your history display every platform you were live on — so you always know exactly where each show reached your audience.' },
   ]
 
@@ -211,33 +211,41 @@ function Landing() {
     { value:'5',    label:'Platforms',            sub:'Whatnot · TikTok · IG · Amazon · YouTube' },
     { value:'99%',  label:'Attribution accuracy', sub:'Live Pixel vs 55–82% guesswork' },
     { value:'$0',   label:'Show start',           sub:'GMV counts real purchases only' },
-    { value:'AI',   label:'Powered by Claude',    sub:'6+ insights after every show' },
+    { value:'6+',   label:'AI Insights per Show', sub:'Confidence-scored recommendations' },
   ]
 
   const SPOTLIGHTS = [
     {
+      tag:'PLAN THE SHOW',
+      headline:"Name it. Build it.\nLaunch it.",
+      desc:"Before you go live, the Show Planner walks you through everything. Name your show — it flows through to your Live Companion, Order Review, and Show History as a real title, not a timestamp. Pick every platform you're streaming to. Add products and let the AI rank them by conversion score so your best performers open and close the show. Configure perks for your live audience: first-order discounts, bundle unlocks, VIP early access. Everything is set before you hit Go Live.",
+      color:'#7c3aed',
+      stats:[{ label:'AI product ranking', value:'✓' },{ label:'Show perks', value:'✓' },{ label:'Multi-platform', value:'5' }],
+      side:'left',
+    },
+    {
+      tag:'BEFORE THE SHOW',
+      headline:"Broadcast-quality setup.\nOne interface.",
+      desc:"The Production Suite connects your cameras, lighting, and streaming software into one control panel. Switch between Sony FX3 and FX6 camera feeds via Sony Camera Remote SDK. Control Elgato, Aputure, and Godox lighting rigs — set intensity, color temperature, and scene presets with a tap. Manage OBS scenes via WebSocket: switch camera angles, overlays, and layouts without leaving Streamlive. Build automation rules so when a product goes live, your lighting and OBS scene update automatically.",
+      color:'#f59e0b',
+      stats:[{ label:'Camera feeds', value:'Multi' },{ label:'Lighting brands', value:'3' },{ label:'OBS control', value:'Live' }],
+      side:'right',
+    },
+    {
       tag:'DURING THE SHOW',
       headline:"Stream everywhere.\nAttribute every sale.",
-      desc:"The Live Companion is your real-time command center across all 5 platforms simultaneously. See live viewer counts pulse on Whatnot, TikTok, Instagram, Amazon, and YouTube. Every order that comes in — from any platform — appears instantly in your buyer feed with their full history, loyalty tier, and notes. GMV starts at $0 and ticks up only on real purchases, so every number you see is earned. YouTube viewers are tracked by Live Pixel: a first-party snippet on your Shopify store that follows each viewer from stream to purchase with 99% accuracy.",
+      desc:"The Live Companion is your real-time command center across all 5 platforms simultaneously. See live viewer counts pulse on Whatnot, TikTok, Instagram, Amazon, and YouTube. Every order that comes in — from any platform — appears instantly in your buyer feed with their full history, loyalty tier, and notes. GMV starts at $0 and ticks up only on real purchases, so every number you see is earned. YouTube viewers are tracked by Live Pixel: a first-party snippet that follows each viewer from stream to purchase with 99% accuracy.",
       color:'#10b981',
       stats:[{ label:'Platforms live', value:'5' },{ label:'Attribution', value:'99%' },{ label:'Buyer lookup', value:'< 1s' }],
       side:'left',
     },
     {
       tag:'AFTER THE SHOW',
-      headline:"AI that tells you what\nto do next.",
-      desc:"After every show, Streamlive analyzes your data and surfaces 6 prioritized recommendations with confidence scores. Which buyers are about to churn. Which products underperformed vs their AI score. Why Thursday shows outperform by $900. What your YouTube audience converts at vs TikTok. Each insight links directly to the action that addresses it — a campaign, a win-back, a follow-up show.",
+      headline:"Intelligent insights.\nEvery single show.",
+      desc:"After every show, Streamlive analyzes your performance and surfaces 6 prioritized recommendations with confidence scores. Which buyers are about to churn. Which products underperformed vs their projected score. Why Thursday shows outperform by $900. What your YouTube audience converts at vs TikTok. Each insight links directly to the action that addresses it — a targeted campaign, a win-back flow, a product adjustment for next time.",
       color:'#a78bfa',
-      stats:[{ label:'Insights/week', value:'6+' },{ label:'Avg confidence', value:'83%' },{ label:'Data sources', value:'5' }],
+      stats:[{ label:'Insights/show', value:'6+' },{ label:'Avg confidence', value:'83%' },{ label:'Data sources', value:'5' }],
       side:'right',
-    },
-    {
-      tag:'BEFORE THE SHOW',
-      headline:"Plan it once.\nStream it everywhere.",
-      desc:"The Show Planner lets you name your show, select all your streaming platforms, build an AI-ranked product run order, configure show perks, and go live in one flow. A show name is required — and it flows all the way through to the Live Companion, Order Review, and your Show History. Your completed show cards display every platform you were live on, so your history is always a true record of where your show reached. Production Suite connects your Sony FX3/FX6 cameras, DJI RS4 Pro gimbals, and lighting rigs for a broadcast-quality setup.",
-      color:'#f59e0b',
-      stats:[{ label:'Camera SDKs', value:'Sony' },{ label:'Gimbal', value:'DJI' },{ label:'Run order', value:'AI-ranked' }],
-      side:'left',
     },
   ]
 
@@ -245,8 +253,8 @@ function Landing() {
     { q:'How does YouTube Live attribution work?', a:"YouTube doesn't expose buyer data directly, so Streamlive uses Live Pixel — a lightweight JavaScript snippet you install on your Shopify store. When a viewer clicks from your stream to your site, Live Pixel assigns a session ID that follows them through checkout. Orders are matched to your show with 99% accuracy, compared to 55–64% via time-window guessing or 82% via UTM links." },
     { q:'What platforms do you support?', a:'Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. You can stream to all five simultaneously from the Show Planner, and manage buyers from all platforms in one unified CRM. Your Show History cards display every platform you were live on for each show — so multi-stream shows show all platform badges, not just one.' },
     { q:'How does buyer importing work?', a:"Connect your Whatnot, TikTok, Instagram, or Amazon account and we pull your entire buyer history — names, handles, spend, orders — automatically. It takes under 2 minutes and your data is live immediately. YouTube buyers are attributed via Live Pixel after your first show." },
-    { q:'Do I need a separate OBS license for Production?', a:"No. OBS is free and open source. Streamlive connects to OBS via its official WebSocket v5 API. You install OBS once and Streamlive controls it. Sony and DJI SDK access requires registering as a developer with each brand — we walk you through it." },
-    { q:"What's the difference between Growth and Pro?", a:'Growth gives you the full CRM, Live Companion across all 5 platforms, Analytics, Loyalty Hub, ManyChat automation, and AI Insights — everything you need to run and grow your shows. Pro adds the Production suite (camera/gimbal/lighting control), higher SMS volume, multi-shop TikTok support, and cross-platform buyer identity matching.' },
+    { q:'Do I need a separate OBS license for Production?', a:"No. OBS is free and open source. Streamlive connects to OBS via its official WebSocket v5 API. You install OBS once and Streamlive controls it. Sony Camera Remote SDK access requires a developer registration with Sony — we walk you through the setup." },
+    { q:"What's the difference between Growth and Pro?", a:'Growth gives you the full CRM, Live Companion across all 5 platforms, Analytics, Loyalty Hub, ManyChat automation, and AI Insights — everything you need to run and grow your shows. Pro adds the Production suite (multi-camera, lighting, and OBS control), higher SMS volume, multi-shop TikTok support, and cross-platform buyer identity matching.' },
     { q:'Can I white label this for my clients?', a:'Yes — Enterprise plan includes white labeling under your domain, custom branding, and multi-seller network management. Ideal for agencies running shows for multiple brands simultaneously.' },
   ]
 
@@ -512,7 +520,103 @@ function Landing() {
                 <div style={{ background:'linear-gradient(135deg,#0a0a15,#12102a)', border:`1px solid ${s.color}22`, borderRadius:20, padding:'24px', position:'relative', overflow:'hidden' }}>
                   <div style={{ position:'absolute', top:-20, right:-20, width:160, height:160, borderRadius:'50%', background:s.color, opacity:0.05, filter:'blur(50px)' }} />
                   <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:'#374151', marginBottom:12, textTransform:'uppercase', letterSpacing:'.08em' }}>● Streamlive · {s.tag}</div>
+                  {/* i=0: Plan the Show */}
                   {i===0 && (
+                    <div>
+                      {/* Show name */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #7c3aed33', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:5, textTransform:'uppercase', letterSpacing:'0.08em' }}>Show Name</div>
+                        <div style={{ fontSize:13, fontWeight:700, color:'#fff' }}>Friday Night Flash Sale ✦</div>
+                      </div>
+                      {/* Platform selection */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Streaming To</div>
+                        <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                          {[['TT','#f43f5e'],['IG','#ec4899'],['AM','#f59e0b'],['YT','#ff0000']].map(([p,c])=>(
+                            <div key={p} style={{ display:'flex',alignItems:'center',gap:4,background:`${c}15`,border:`1px solid ${c}44`,borderRadius:6,padding:'4px 9px' }}>
+                              <div style={{ width:5,height:5,borderRadius:'50%',background:c }} />
+                              <span style={{ fontSize:9,fontWeight:700,color:c }}>{p}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* AI run order */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>AI Run Order</div>
+                        {[{n:'Silk Wrap Midi Dress',ai:9.6},{n:'Merino Wool Blazer',ai:9.4},{n:'Spring Style Bundle',ai:9.2}].map((p,pi)=>(
+                          <div key={p.n} style={{ display:'flex',alignItems:'center',gap:8,marginBottom:5 }}>
+                            <span style={{ fontSize:9,fontWeight:800,color:'#374151',width:12 }}>{pi+1}</span>
+                            <span style={{ fontSize:10,color:'#d1d5db',flex:1 }}>{p.n}</span>
+                            <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:'#7c3aed' }}>{p.ai}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Perks */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'11px 14px' }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Show Perks</div>
+                        {[{label:'First order 10% off',active:true},{label:'VIP early access — 5 min',active:true},{label:'Bundle unlock at $150+',active:false}].map(pk=>(
+                          <div key={pk.label} style={{ display:'flex',alignItems:'center',gap:7,marginBottom:5 }}>
+                            <div style={{ width:14,height:14,borderRadius:4,background:pk.active?'#7c3aed18':'#1e1e3a',border:`1px solid ${pk.active?'#7c3aed55':'#374151'}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
+                              {pk.active && <span style={{ fontSize:8,color:'#a78bfa' }}>✓</span>}
+                            </div>
+                            <span style={{ fontSize:10,color:pk.active?'#d1d5db':'#374151' }}>{pk.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* i=1: Before the Show — Production */}
+                  {i===1 && (
+                    <div>
+                      {/* Camera feeds */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #f59e0b22', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Camera Feeds</div>
+                        <div style={{ display:'flex', gap:7 }}>
+                          {[{label:'Sony FX3',sub:'Wide — LIVE',active:true},{label:'Sony FX6',sub:'Close-up',active:false}].map(cam=>(
+                            <div key={cam.label} style={{ flex:1, background:cam.active?'#0a1e0a':'#0d0d1e', border:`1px solid ${cam.active?'#10b98144':'#1e1e3a'}`, borderRadius:8, padding:'8px 10px' }}>
+                              <div style={{ display:'flex',alignItems:'center',gap:5,marginBottom:3 }}>
+                                <div style={{ width:5,height:5,borderRadius:'50%',background:cam.active?'#10b981':'#374151',animation:cam.active?'pulse 1s infinite':undefined }} />
+                                <span style={{ fontSize:9,fontWeight:700,color:cam.active?'#10b981':'#4b5563' }}>{cam.label}</span>
+                              </div>
+                              <div style={{ fontSize:8,color:'#4b5563' }}>{cam.sub}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Lighting */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #f59e0b22', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Lighting</div>
+                        {[{name:'Elgato Key Light',brand:'Elgato',pct:100,temp:'5600K'},{name:'Aputure 300d Fill',brand:'Aputure',pct:65,temp:'4200K'},{name:'Godox Background',brand:'Godox',pct:40,temp:'3200K'}].map(light=>(
+                          <div key={light.name} style={{ display:'flex',alignItems:'center',gap:8,marginBottom:6 }}>
+                            <span style={{ fontSize:10 }}>💡</span>
+                            <div style={{ flex:1,minWidth:0 }}>
+                              <div style={{ display:'flex',justifyContent:'space-between',marginBottom:3 }}>
+                                <span style={{ fontSize:9,fontWeight:600,color:'#d1d5db' }}>{light.name}</span>
+                                <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:'#f59e0b' }}>{light.pct}%</span>
+                              </div>
+                              <div style={{ height:3,background:'#1e1e3a',borderRadius:2 }}>
+                                <div style={{ height:3,width:`${light.pct}%`,background:'linear-gradient(90deg,#f59e0b,#fbbf24)',borderRadius:2 }} />
+                              </div>
+                            </div>
+                            <span style={{ fontSize:8,color:'#4b5563',fontFamily:"'JetBrains Mono',monospace" }}>{light.temp}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {/* OBS Scenes */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #f59e0b22', borderRadius:10, padding:'11px 14px' }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>OBS Scenes</div>
+                        {[{scene:'Product Reveal',active:true},{scene:'Close-Up Shot',active:false},{scene:'Wide Room View',active:false}].map(sc=>(
+                          <div key={sc.scene} style={{ display:'flex',alignItems:'center',gap:7,padding:'6px 8px',background:sc.active?'#f59e0b10':'transparent',border:`1px solid ${sc.active?'#f59e0b33':'transparent'}`,borderRadius:6,marginBottom:4 }}>
+                            <div style={{ width:5,height:5,borderRadius:'50%',background:sc.active?'#f59e0b':'#374151',flexShrink:0 }} />
+                            <span style={{ fontSize:10,color:sc.active?'#fff':'#4b5563',fontWeight:sc.active?600:400 }}>{sc.scene}</span>
+                            {sc.active && <span style={{ marginLeft:'auto',fontSize:8,fontWeight:700,color:'#f59e0b',background:'#f59e0b15',padding:'1px 6px',borderRadius:3 }}>LIVE</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* i=2: During the Show — Live Companion */}
+                  {i===2 && (
                     <div>
                       {/* 5-platform live badges */}
                       <div style={{ display:'flex', gap:5, marginBottom:12, flexWrap:'wrap' }}>
@@ -540,7 +644,8 @@ function Landing() {
                       ))}
                     </div>
                   )}
-                  {i===1 && (
+                  {/* i=3: After the Show — AI Insights */}
+                  {i===3 && (
                     <div>
                       {[
                         {icon:'💰',pri:'HIGH',title:'YouTube viewers convert 2.1× vs TikTok',impact:'+$3,400 potential',conf:89,c:'#10b981'},
@@ -560,36 +665,6 @@ function Landing() {
                           </div>
                         </div>
                       ))}
-                    </div>
-                  )}
-                  {i===2 && (
-                    <div>
-                      {/* Show planner mockup */}
-                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px', marginBottom:10 }}>
-                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.08em' }}>Show Name</div>
-                        <div style={{ fontSize:12, fontWeight:700, color:'#fff' }}>Friday Night Flash Sale</div>
-                      </div>
-                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px', marginBottom:10 }}>
-                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>Platforms</div>
-                        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                          {[['TT','#f43f5e'],['IG','#ec4899'],['YT','#ff0000']].map(([p,c])=>(
-                            <div key={p} style={{ display:'flex',alignItems:'center',gap:4,background:`${c}15`,border:`1px solid ${c}33`,borderRadius:6,padding:'3px 8px' }}>
-                              <div style={{ width:5,height:5,borderRadius:'50%',background:c }} />
-                              <span style={{ fontSize:9,fontWeight:700,color:c }}>{p}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px' }}>
-                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>AI Run Order</div>
-                        {[{n:'Silk Wrap Midi Dress',ai:9.6},{n:'Merino Wool Blazer',ai:9.4},{n:'Spring Style Bundle',ai:9.2}].map((p,pi)=>(
-                          <div key={p.n} style={{ display:'flex',alignItems:'center',gap:8,marginBottom:6 }}>
-                            <span style={{ fontSize:9,fontWeight:800,color:'#374151',width:14 }}>{pi+1}</span>
-                            <span style={{ fontSize:10,color:'#d1d5db',flex:1 }}>{p.n}</span>
-                            <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:s.color }}>AI {p.ai}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
