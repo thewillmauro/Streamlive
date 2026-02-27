@@ -1655,9 +1655,10 @@ function ScreenLive({ buyers, navigate, params }) {
       if (Math.random() > 0.7) {
         setLiveBuyers(prev => {
           const remaining = buyers.filter(b=>!prev.find(p=>p.id===b.id));
-          if (!remaining.length) return prev;
-          const newest = remaining[0];
-          return [newest, ...prev].slice(0,10);
+          // When all buyers shown, cycle back through with a new timestamp-based id
+          const pool = remaining.length > 0 ? remaining : buyers;
+          const newest = { ...pool[Math.floor(Math.random()*pool.length)], id: pool[0].id + "_" + Date.now() };
+          return [newest, ...prev];
         });
       }
     }, 2000);
