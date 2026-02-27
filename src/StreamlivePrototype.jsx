@@ -9425,7 +9425,7 @@ export default function StreamlivePrototype() {
       <style>{GLOBAL_CSS}</style>
 
       {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
-      <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
+      <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", minHeight:0, background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
 
         {/* ── DEMO BANNER ── */}
         <div style={{ background:"linear-gradient(90deg,#1a0f2e,#2d1f5e,#1a0f2e)", borderBottom:"1px solid #7c3aed33", padding:"4px 16px", display:"flex", alignItems:"center", gap:12, flexShrink:0, flexWrap:"wrap", minHeight:36 }}>
@@ -9539,7 +9539,7 @@ export default function StreamlivePrototype() {
         </div>
 
         {/* ── BODY ── */}
-        <div style={{ display:"flex", flex:1, overflow:"hidden" }}>
+        <div style={{ display:"flex", flex:1, overflow:"hidden", minHeight:0 }}>
 
           {/* ── SIDEBAR ── */}
           <div style={{ width:216, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", padding:"12px 10px", flexShrink:0, background:"#050508" }}>
