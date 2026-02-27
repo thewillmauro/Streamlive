@@ -1639,7 +1639,8 @@ function ScreenLiveShop({ navigate, params }) {
     return () => clearInterval(t);
   }, [runOrder.length]);
 
-  const liveUrl = `strmlive.com/live/${persona.slug || "shop"}`;
+  const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
 
   const copyLink = () => {
     navigator.clipboard?.writeText(`https://${liveUrl}`).catch(()=>{});
@@ -1900,7 +1901,8 @@ function ScreenLive({ buyers, navigate, params }) {
   const showName     = params?.showName   || "Live Show";
   const runOrder     = params?.runOrder   || PRODUCTS.slice(0,5);
   const personaSlug  = params?.persona?.slug || "shop";
-  const liveShopUrl  = `strmlive.com/live/${personaSlug}`;
+  const showSlug     = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  const liveShopUrl  = `strmlive.com/live/${personaSlug}/${showSlug}`;
 
   // Default message templates per channel
   const MSG_TEMPLATES = {
@@ -1982,61 +1984,91 @@ function ScreenLive({ buyers, navigate, params }) {
     <div style={{ display:"flex", flexDirection:"column", height:"100%", minHeight:0, background:"#050510" }}>
 
       {/* ── LIVE HEADER ── */}
-      <div style={{ background:"#090916", borderBottom:`1px solid ${C.border}`, padding:"10px 24px", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
-        {/* Timer + LIVE pill */}
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, background:"#2d080822", border:"1px solid #ef444433", borderRadius:20, padding:"3px 10px 3px 6px" }}>
-            <div style={{ width:7, height:7, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }} />
-            <span style={{ fontSize:11, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE</span>
+      <div style={{ background:"#090916", borderBottom:`1px solid ${C.border}`, padding:"0 20px", flexShrink:0 }}>
+
+        {/* ROW 1: show identity + actions */}
+        <div style={{ display:"flex", alignItems:"center", gap:12, height:44, borderBottom:`1px solid ${C.border}44` }}>
+          {/* LIVE pill + timer */}
+          <div style={{ display:"flex", alignItems:"center", gap:7, flexShrink:0 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:5, background:"#1a050522", border:"1px solid #ef444444", borderRadius:20, padding:"3px 9px 3px 6px" }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+              <span style={{ fontSize:10, fontWeight:800, color:"#ef4444", letterSpacing:"0.08em" }}>LIVE</span>
+            </div>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.muted, flexShrink:0 }}>{fmt(elapsed)}</span>
           </div>
-          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:C.muted }}>{fmt(elapsed)}</span>
-        </div>
-        {/* Per-platform live badges */}
-        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-          {selectedPlatforms.map(pid=>{
-            const pc={WN:"#7c3aed",TT:"#f43f5e",IG:"#ec4899",AM:"#f59e0b",YT:"#ff0000"};
-            const pn={WN:"Whatnot",TT:"TikTok",IG:"Instagram",AM:"Amazon",YT:"YouTube"};
-            const col=pc[pid]||"#7c3aed";
-            const viewers=platformViewers[pid]||0;
-            return (
-              <div key={pid} style={{ display:"flex", alignItems:"center", gap:6, background:`${col}15`, border:`1px solid ${col}44`, borderRadius:8, padding:"4px 10px" }}>
-                <div style={{ width:6, height:6, borderRadius:"50%", background:col, animation:"pulse 1s infinite" }} />
-                <span style={{ fontSize:11, fontWeight:700, color:col }}>{pn[pid]}</span>
-                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.text, fontWeight:700 }}>{viewers.toLocaleString()}</span>
-                <span style={{ fontSize:10, color:C.muted }}>👁</span>
-              </div>
-            );
-          })}
-        </div>
-        {/* GMV + buyers */}
-        <div style={{ display:"flex", gap:16 }}>
-          <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.green }}>${gmv.toLocaleString()}</span><span style={{ fontSize:11, color:C.muted }}> GMV</span></div>
-          <div><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:"#a78bfa" }}>{orderCount}</span><span style={{ fontSize:11, color:C.muted }}> orders</span></div>
-        </div>
-        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:8 }}>
+
+          {/* Show name */}
+          <div style={{ height:18, width:1, background:C.border, flexShrink:0 }}/>
+          <span style={{ fontSize:12, fontWeight:700, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:"0 1 auto", maxWidth:220 }}>{showName}</span>
+
+          {/* Spacer */}
+          <div style={{ flex:1 }}/>
+
           {/* Live Shop link widget */}
-          <div style={{ display:"flex", alignItems:"center", background:"#07070f", border:"1px solid #10b98133", borderRadius:9, overflow:"hidden" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px 5px 8px", borderRight:"1px solid #10b98122" }}>
-              <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
-              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#6b7280", userSelect:"none", whiteSpace:"nowrap" }}>{liveShopUrl}</span>
+          <div style={{ display:"flex", alignItems:"center", background:"#06060e", border:`1px solid ${savedFeedback==="link_copied"?"#10b98155":"#1e1e3a"}`, borderRadius:8, overflow:"hidden", transition:"border-color .2s", flexShrink:0 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 9px", borderRight:"1px solid #1a1a2e" }}>
+              <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
+              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#4b5563", whiteSpace:"nowrap", maxWidth:200, overflow:"hidden", textOverflow:"ellipsis" }}>{liveShopUrl}</span>
             </div>
             <button
-              onClick={()=>{ navigator.clipboard?.writeText(`https://${liveShopUrl}`).catch(()=>{}); setSavedFeedback("link_copied"); setTimeout(()=>setSavedFeedback(null),2000); }}
-              style={{ padding:"5px 10px", background:savedFeedback==="link_copied"?"#0a1e16":"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:4, transition:"background .15s" }}
+              onClick={()=>{ navigator.clipboard?.writeText(`https://${liveShopUrl}`).catch(()=>{}); setSavedFeedback("link_copied"); setTimeout(()=>setSavedFeedback(null),2200); }}
+              style={{ padding:"4px 9px", background:savedFeedback==="link_copied"?"#0a1e16":"transparent", border:"none", cursor:"pointer", borderRight:"1px solid #1a1a2e", transition:"background .15s" }}
             >
-              {savedFeedback==="link_copied"
-                ? <span style={{ fontSize:10, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>✓ Copied</span>
-                : <span style={{ fontSize:10, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>Copy 🔗</span>
-              }
+              <span style={{ fontSize:9, fontWeight:700, color:savedFeedback==="link_copied"?"#10b981":"#a78bfa", whiteSpace:"nowrap" }}>
+                {savedFeedback==="link_copied" ? "✓ Copied" : "Copy 🔗"}
+              </span>
             </button>
             <button
               onClick={()=>navigate("live-shop",{...params, runOrder, showName, persona:params?.persona})}
-              style={{ padding:"5px 10px", background:"#10b98118", border:"none", borderLeft:"1px solid #10b98122", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}
+              style={{ padding:"4px 9px", background:"#10b98110", border:"none", cursor:"pointer" }}
             >
-              <span style={{ fontSize:10, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>Preview ↗</span>
+              <span style={{ fontSize:9, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>Shop ↗</span>
             </button>
           </div>
-          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount})} style={{ fontSize:11, color:"#ef4444", background:"#2d08081a", border:"1px solid #ef444433", padding:"6px 14px", borderRadius:7, cursor:"pointer", whiteSpace:"nowrap" }}>■ End Show</button>
+
+          {/* End Show */}
+          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount})} style={{ fontSize:10, color:"#ef4444", background:"transparent", border:"1px solid #ef444433", padding:"4px 12px", borderRadius:7, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}>■ End Show</button>
+        </div>
+
+        {/* ROW 2: stats strip */}
+        <div style={{ display:"flex", alignItems:"center", gap:0, height:38 }}>
+
+          {/* GMV */}
+          <div style={{ display:"flex", alignItems:"baseline", gap:5, paddingRight:16, borderRight:`1px solid ${C.border}44`, height:"100%", alignItems:"center" }}>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:15, fontWeight:800, color:C.green }}>${gmv.toLocaleString()}</span>
+            <span style={{ fontSize:10, color:C.muted }}>GMV</span>
+          </div>
+
+          {/* Orders */}
+          <div style={{ display:"flex", alignItems:"center", gap:5, padding:"0 16px", borderRight:`1px solid ${C.border}44`, height:"100%" }}>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:15, fontWeight:800, color:"#a78bfa" }}>{orderCount}</span>
+            <span style={{ fontSize:10, color:C.muted }}>orders</span>
+          </div>
+
+          {/* Total Viewers */}
+          <div style={{ display:"flex", alignItems:"center", gap:5, padding:"0 16px", borderRight:`1px solid ${C.border}44`, height:"100%" }}>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:15, fontWeight:800, color:"#38bdf8" }}>
+              {Object.values(platformViewers).reduce((a,v)=>a+v,0).toLocaleString()}
+            </span>
+            <span style={{ fontSize:10, color:C.muted }}>viewers</span>
+          </div>
+
+          {/* Per-platform condensed badges */}
+          <div style={{ display:"flex", alignItems:"center", gap:5, padding:"0 14px", flex:1, overflow:"hidden" }}>
+            {selectedPlatforms.map(pid=>{
+              const pc={WN:"#7c3aed",TT:"#f43f5e",IG:"#ec4899",AM:"#f59e0b",YT:"#ff0000"};
+              const col=pc[pid]||"#7c3aed";
+              const viewers=platformViewers[pid]||0;
+              return (
+                <div key={pid} style={{ display:"flex", alignItems:"center", gap:4, background:`${col}12`, border:`1px solid ${col}33`, borderRadius:6, padding:"3px 8px", flexShrink:0 }}>
+                  <div style={{ width:4, height:4, borderRadius:"50%", background:col, animation:"pulse 1s infinite" }}/>
+                  <span style={{ fontSize:9, fontWeight:800, color:col }}>{pid}</span>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, fontWeight:700, color:C.text }}>{viewers >= 1000 ? (viewers/1000).toFixed(1)+"k" : viewers}</span>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
       </div>
 
