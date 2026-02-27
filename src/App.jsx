@@ -898,7 +898,15 @@ function Landing() {
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Platforms</div>
-                {['Whatnot','TikTok Shop','Instagram Live','Amazon Live','YouTube Live'].map(l=><div key={l} style={{ fontSize:13, color:'#374151', marginBottom:8 }}>{l}</div>)}
+                {[
+                  {label:'Whatnot',        slug:'whatnot'},
+                  {label:'TikTok Shop',    slug:'tiktok-shop'},
+                  {label:'Instagram Live', slug:'instagram-live'},
+                  {label:'Amazon Live',    slug:'amazon-live'},
+                  {label:'YouTube Live',   slug:'youtube-live'},
+                ].map(({label, slug})=>(
+                  <div key={slug} onClick={()=>navigate('/platform/'+slug)} className="footer-link-hover" style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer', transition:'color .15s' }}>{label}</div>
+                ))}
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Company</div>
@@ -1575,6 +1583,146 @@ function ContactPage() {
             </button>
           </div>
         )}
+      </div>
+    </PageShell>
+  )
+}
+
+
+// ─── PLATFORM PAGES ───────────────────────────────────────────────────────────
+function PlatformPage({ slug }) {
+  const platforms = {
+    'whatnot': {
+      name: 'Whatnot',
+      color: '#7c3aed',
+      emoji: '🔨',
+      tagline: 'The auction-first live marketplace.',
+      about: "Whatnot is the leading live auction and shopping platform in the US, built specifically for collectors, resellers, and enthusiast sellers. It launched in 2020 focused on trading cards and sneakers, and has since expanded to vintage clothing, comics, toys, luxury goods, and general merchandise. Whatnot sellers go live in scheduled shows, selling items individually through timed auctions or Buy It Now pricing, with buyers competing in real time.",
+      audienceNote: "Whatnot buyers tend to be highly engaged collectors and enthusiasts. They're repeat buyers who follow specific sellers and tune in regularly. Show loyalty is strong — many Whatnot sellers build audiences that return every week for years.",
+      features: [
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive pulls your full Whatnot buyer history automatically — every buyer, every order, every item sold — into your unified CRM. Buyer handles, spend history, and auction wins are all captured and linked to a single buyer profile." },
+        { icon: '◈', title: 'Live Companion integration', body: "When you go live on Whatnot, the Live Companion activates automatically. Your Whatnot viewer count appears in the platform strip. Every bid and purchase shows up in your real-time buyer feed with the buyer's full history — loyalty tier, lifetime spend, notes, and past orders." },
+        { icon: '◆', title: 'Show attribution', body: "Every show you run on Whatnot is logged in Show History with total GMV, number of items sold, and per-buyer breakdowns. Post-show Order Review gives you a clean summary you can use to plan your next show or export for records." },
+        { icon: '✦', title: 'Opt-in & loyalty', body: "Whatnot buyers who opt in through your Streamlive link get added to your buyer CRM with SMS and email consent on file. You can enroll them in your loyalty program and send show reminders to bring them back to your next live." },
+      ],
+    },
+    'tiktok-shop': {
+      name: 'TikTok Shop',
+      color: '#f43f5e',
+      emoji: '🎵',
+      tagline: 'The fastest-growing live commerce channel in the world.',
+      about: "TikTok Shop launched in the US in 2023 and grew faster than any live commerce platform in history. It combines TikTok's algorithm-driven discovery with native shopping — viewers can buy products without leaving the app. Live selling on TikTok happens through TikTok LIVE, where creators and sellers stream to their followers and algorithmically distributed audiences simultaneously.",
+      audienceNote: "TikTok audiences skew younger and are highly impulse-driven. Discovery is algorithm-powered, so new viewers can find your show without being a follower first. This makes TikTok exceptional for new customer acquisition — but buyer loyalty requires active nurturing off-platform.",
+      features: [
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive connects to your TikTok Shop seller account and imports your full order history — buyer usernames, items purchased, order values, and dates. Every TikTok buyer gets a unified profile in your CRM alongside their activity on other platforms." },
+        { icon: '◈', title: 'Live Companion integration', body: "TikTok viewer counts and order activity appear in the Live Companion in real time during your show. When a TikTok viewer converts to a buyer, they surface immediately in your buyer feed with their full profile — even if they also buy on other platforms." },
+        { icon: '◆', title: 'ManyChat keyword automations', body: "Streamlive connects to ManyChat to power TikTok keyword DM automations. A viewer types a keyword in your TikTok LIVE chat, ManyChat sends them a DM with your product link or opt-in page automatically. No manual follow-up required." },
+        { icon: '✦', title: 'Cross-platform attribution', body: "TikTok often drives buyers who then purchase on your Shopify store. Streamlive's Live Pixel captures these cross-platform conversions and links them back to the specific TikTok show that drove them — so your TikTok GMV is never undercounted." },
+      ],
+    },
+    'instagram-live': {
+      name: 'Instagram Live',
+      color: '#ec4899',
+      emoji: '📸',
+      tagline: 'Live selling to your most loyal followers.',
+      about: "Instagram Live is Meta's live video feature inside Instagram. Sellers go live directly from their Instagram profile and sell to their existing followers in real time. Instagram Live Shopping allows sellers to tag products from their Instagram Shop catalog during a live session, letting viewers tap to buy without leaving the app. It's less discovery-driven than TikTok, making it best suited for selling to an established, warm audience.",
+      audienceNote: "Instagram Live audiences are typically existing followers — people who already know your brand and have opted in to see your content. This makes Instagram Live high-converting for repeat buyers and VIP audiences, but it requires a built-up following to drive meaningful volume.",
+      features: [
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Instagram buyer history through your Meta Business account — order records, buyer profiles, and purchase history all flow into your unified CRM. Instagram handles are linked to buyer profiles so you recognize buyers across platforms." },
+        { icon: '◈', title: 'Live Companion integration', body: "Instagram Live viewer counts appear in the Live Companion platform strip during your show. Order activity from Instagram Live Shopping surfaces in your buyer feed in real time, with full buyer profiles attached — including their history from TikTok, Whatnot, or any other connected platform." },
+        { icon: '◆', title: 'DM opt-in flow', body: "Streamlive connects to ManyChat to enable Instagram DM keyword automations. A viewer comments a keyword during your Instagram Live, and ManyChat automatically sends them a DM with your opt-in link or product URL. Opt-ins from Instagram capture consent and flow directly into your buyer CRM." },
+        { icon: '✦', title: 'Quick Message', body: "After a show, use Streamlive's Quick Message tab in the Live Companion to send a pre-built Instagram DM to followers with a link to your Live Shop page — so viewers who missed the show can still browse and buy the full lineup." },
+      ],
+    },
+    'amazon-live': {
+      name: 'Amazon Live',
+      color: '#f59e0b',
+      emoji: '📦',
+      tagline: "Live selling inside the world's largest store.",
+      about: "Amazon Live is Amazon's native live shopping feature, available to brand-registered sellers and Amazon Influencers. Sellers stream directly on Amazon product pages and their Amazon storefront, demonstrating products to shoppers who are already in buying mode. Amazon Live sits at the bottom of the funnel — viewers are actively searching for products to buy, not browsing for entertainment — which makes conversion rates exceptionally high.",
+      audienceNote: "Amazon Live audiences are purchase-intent shoppers. Unlike TikTok or Instagram where discovery is social, Amazon Live viewers find shows through product searches and Amazon's recommendation engine. They're already primed to buy — your job is to demonstrate and convince.",
+      features: [
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Amazon Live order data — buyer identifiers, product purchases, show dates, and order values — into your unified buyer CRM. Amazon buyer privacy restrictions mean we work with the data Amazon makes available to sellers through the API." },
+        { icon: '◈', title: 'Live Companion integration', body: "Amazon Live viewer counts and purchase activity appear in your Live Companion during a show. Amazon orders convert in real time and surface in your buyer feed as they come in, giving you a live view of your Amazon GMV ticking up alongside your other platforms." },
+        { icon: '◆', title: 'Show attribution', body: "Every Amazon Live show is tracked in your Show History with product-level attribution. You can see exactly which items sold, at what volume, and compare Amazon performance against other platforms for the same show — all in one post-show report." },
+        { icon: '✦', title: 'Cross-platform buyer matching', body: "Buyers who purchase on Amazon and also engage on TikTok or Instagram can be matched in your CRM using email or contact information when available. This gives you a more complete view of your highest-value buyers across every channel they use." },
+      ],
+    },
+    'youtube-live': {
+      name: 'YouTube Live',
+      color: '#ef4444',
+      emoji: '▶️',
+      tagline: 'Long-form live selling with first-party attribution.',
+      about: "YouTube Live is Google's live streaming platform, the largest video platform in the world by watch time. YouTube Live Shopping launched in 2023, allowing creators and sellers to tag products directly in their live stream for viewers to purchase. YouTube's audiences tend toward longer watch times than TikTok or Instagram — viewers will stay for hours — making it well-suited for in-depth product demonstrations, unboxings, and educational selling.",
+      audienceNote: "YouTube Live audiences are engaged, long-session viewers who are comfortable watching extended content. They research before buying and respond well to detailed product explanations, comparisons, and demonstrations. Building a YouTube audience takes longer than TikTok, but the buyer quality and average order value tend to be higher.",
+      features: [
+        { icon: '◉', title: 'Live Pixel attribution', body: "YouTube doesn't expose buyer data the same way as other platforms. Streamlive solves this with the YouTube Live Pixel — a lightweight JavaScript snippet installed on your Shopify store. When a viewer clicks from your stream to your store, the Pixel creates a session ID that follows them through checkout and links their purchase back to your specific YouTube show with 99% accuracy." },
+        { icon: '◈', title: 'Live Companion integration', body: "YouTube viewer counts appear in your Live Companion platform strip in real time. Purchases attributed via Live Pixel surface in your buyer feed as they're confirmed — typically within seconds of checkout completion. Your YouTube GMV ticks up live alongside all other platforms." },
+        { icon: '◆', title: 'Show attribution & reporting', body: "Post-show, your YouTube revenue is broken out in Order Review and Show History alongside TikTok, Whatnot, Instagram, and Amazon. You can see your total show GMV and exactly what percentage came from YouTube — the number most sellers have never been able to measure before." },
+        { icon: '✦', title: 'Pixel setup', body: "Installing the Live Pixel takes under 5 minutes. Add a single script tag to your Shopify theme, connect your YouTube channel in Streamlive settings, and the Pixel activates automatically at the start of every YouTube Live. No ongoing maintenance required." },
+      ],
+    },
+  }
+
+  const p = platforms[slug]
+
+  if (!p) {
+    return (
+      <PageShell>
+        <div style={{ textAlign:'center', padding:'60px 0' }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>📡</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', marginBottom:8 }}>Platform not found</div>
+          <button onClick={()=>navigate('/')} style={{ fontSize:13, color:'#7c3aed', background:'none', border:'none', cursor:'pointer', marginTop:8 }}>← Back to home</button>
+        </div>
+      </PageShell>
+    )
+  }
+
+  return (
+    <PageShell>
+      <div className="page-fade">
+        {/* Header */}
+        <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
+          <div style={{ width:52, height:52, borderRadius:16, background:`${p.color}18`, border:`1px solid ${p.color}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, flexShrink:0 }}>{p.emoji}</div>
+          <div>
+            <PLabel t="Platform"/>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:800, color:'#fff', letterSpacing:'-0.8px', lineHeight:1.1 }}>{p.name}</div>
+          </div>
+        </div>
+        <PSub>{p.tagline}</PSub>
+
+        {/* About the platform */}
+        <SectionTitle>About {p.name}</SectionTitle>
+        <Body>{p.about}</Body>
+
+        {/* Audience note */}
+        <div style={{ background:`${p.color}0c`, border:`1px solid ${p.color}22`, borderRadius:12, padding:'16px 20px', margin:'8px 0 44px' }}>
+          <div style={{ fontSize:10, fontWeight:800, color:p.color, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:6 }}>Audience profile</div>
+          <div style={{ fontSize:13, color:'#9ca3af', lineHeight:1.7 }}>{p.audienceNote}</div>
+        </div>
+
+        <Divider2/>
+
+        {/* How Streamlive works with this platform */}
+        <SectionTitle>How Streamlive works with {p.name}</SectionTitle>
+        <div style={{ display:'flex', flexDirection:'column', gap:14, marginBottom:52 }}>
+          {p.features.map((f, i) => (
+            <div key={i} style={{ display:'flex', gap:16, padding:'20px', background:'#0a0a14', border:`1px solid ${p.color}22`, borderRadius:14 }}>
+              <span style={{ fontSize:16, color:p.color, flexShrink:0, marginTop:1 }}>{f.icon}</span>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:'#fff', marginBottom:5 }}>{f.title}</div>
+                <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.65 }}>{f.body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div style={{ background:'linear-gradient(135deg,#0d0d1e,#12103a)', border:`1px solid ${p.color}33`, borderRadius:16, padding:'28px', textAlign:'center' }}>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:'#fff', marginBottom:8 }}>See {p.name} in the Live Companion</div>
+          <div style={{ fontSize:13, color:'#6b7280', marginBottom:20 }}>Every platform is connected and running in the interactive demo.</div>
+          <button onClick={()=>navigate('/')} style={{ background:`linear-gradient(135deg,${p.color},${p.color}bb)`, border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 26px', borderRadius:10, cursor:'pointer' }}>Explore Streamlive →</button>
+        </div>
       </div>
     </PageShell>
   )
@@ -2754,6 +2902,7 @@ export default function App() {
        route === '/privacy'        ? <PrivacyPage /> :
        route === '/terms'          ? <TermsPage /> :
        route === '/contact'        ? <ContactPage /> :
+       route.startsWith('/platform/') ? <PlatformPage slug={route.split('/platform/')[1]} /> :
        <Landing />}
     </>
   );
