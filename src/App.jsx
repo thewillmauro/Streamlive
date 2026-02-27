@@ -1442,9 +1442,7 @@ If you are in the European Economic Area, you have additional rights under GDPR 
         {sections.map((s, i) => (
           <div key={i} style={{ marginBottom:38 }}>
             <SectionTitle>{s.title}</SectionTitle>
-            {s.body.split('
-
-').map((para, pi) => (
+            {s.body.split('\n\n').map((para, pi) => (
               <Body key={pi}>{para}</Body>
             ))}
             {i < sections.length-1 && <div style={{ height:1, background:'#0d0d1a', marginTop:28 }}/>}
@@ -1499,9 +1497,7 @@ We reserve the right to change pricing with 30 days' advance notice. If payment 
         {sections.map((s, i) => (
           <div key={i} style={{ marginBottom:38 }}>
             <SectionTitle>{s.title}</SectionTitle>
-            {s.body.split('
-
-').map((para, pi) => (
+            {s.body.split('\n\n').map((para, pi) => (
               <Body key={pi}>{para}</Body>
             ))}
             {i < sections.length-1 && <div style={{ height:1, background:'#0d0d1a', marginTop:28 }}/>}
