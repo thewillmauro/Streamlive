@@ -752,7 +752,7 @@ function Landing() {
           </div>
 
           <div className="pricing-grid" style={{ display:'grid' }}>
-            {Object.values(PLANS).filter(p=>p.id!=='enterprise').map(p=>{
+            {Object.values(PLANS).map(p=>{
               const displayPrice = billingCycle==='annual' ? Math.round(p.price*(1-annualDiscount)) : p.price
               const isEnt = p.id==='enterprise'
               return (
@@ -762,12 +762,20 @@ function Landing() {
                   <div style={{ marginBottom:18 }}>
                     <div style={{ fontSize:18, marginBottom:6 }}>{p.emoji}</div>
                     <span style={{ fontSize:10, fontWeight:800, color:p.color, textTransform:'uppercase', letterSpacing:'.1em', display:'block', marginBottom:6 }}>{p.name}</span>
-                    <div style={{ display:'flex', alignItems:'flex-end', gap:4, marginBottom:4 }}>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:28, fontWeight:700, color:'#fff', lineHeight:1 }}>${isEnt&&billingCycle==='annual'?Math.round(p.price*(1-annualDiscount)):isEnt?p.price:displayPrice}</span>
-                      <span style={{ fontSize:12, color:'#4b5563', paddingBottom:2 }}>/mo</span>
-                    </div>
-                    {billingCycle==='annual'&&!isEnt && <div style={{ fontSize:10, color:'#10b981', fontWeight:600 }}>↓ ${p.price-displayPrice}/mo savings</div>}
-                    {isEnt&&billingCycle==='annual' && <div style={{ fontSize:10, color:'#10b981', fontWeight:600 }}>Annual: ${Math.round(p.price*(1-annualDiscount)*12).toLocaleString()}/yr</div>}
+                    {isEnt ? (
+                      <div style={{ marginBottom:4 }}>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color:'#a78bfa', lineHeight:1 }}>Custom pricing</span>
+                        <div style={{ fontSize:10, color:'#6b7280', marginTop:4 }}>Tailored to your team size & needs</div>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ display:'flex', alignItems:'flex-end', gap:4, marginBottom:4 }}>
+                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:28, fontWeight:700, color:'#fff', lineHeight:1 }}>${displayPrice}</span>
+                          <span style={{ fontSize:12, color:'#4b5563', paddingBottom:2 }}>/mo</span>
+                        </div>
+                        {billingCycle==='annual' && <div style={{ fontSize:10, color:'#10b981', fontWeight:600 }}>↓ ${p.price-displayPrice}/mo savings</div>}
+                      </>
+                    )}
                     <div style={{ fontSize:11, color:'#374151', marginTop:5, lineHeight:1.5 }}>{p.tagline}</div>
                   </div>
                   <div style={{ flex:1, marginBottom:18 }}>
