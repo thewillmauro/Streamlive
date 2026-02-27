@@ -1285,6 +1285,268 @@ const PLATFORM_META = {
 // Platforms we collect handles for (excludes Amazon - no user DMs possible)
 const DM_PLATFORMS = ["WN", "TT", "IG"];
 
+
+// ─── LIVE SHOP PAGE (public, shareable URL) ────────────────────────────────────
+// Route: /live/:shopSlug/:showSlug
+// This is the buyer-facing landing page sent via SMS/DM during a live show.
+// In production it pulls live session data from the API. Here it uses demo data.
+
+const LIVE_SHOP_DATA = {
+  bananarepublic: {
+    shows: {
+      "friday-night-flash-sale": {
+        name: "Friday Night Flash Sale",
+        platforms: ["TT","IG","AM","YT"],
+        products: [
+          { id:"p4",  name:"Silk Wrap Midi Dress",        image:"👗", price:268, inventory:22, url:"/products/silk-wrap-midi-dress"     },
+          { id:"p1",  name:"Merino Wool Blazer",          image:"🧥", price:228, inventory:48, url:"/products/merino-wool-blazer"       },
+          { id:"p8",  name:"Spring Style Bundle (3pc)",   image:"🎁", price:148, inventory:30, url:"/products/spring-style-bundle-3pc"  },
+          { id:"p10", name:"Linen Button-Down Shirt",     image:"👔", price:98,  inventory:96, url:"/products/linen-button-down-shirt"  },
+          { id:"p2",  name:"Italian Linen Trousers",      image:"👖", price:148, inventory:84, url:"/products/italian-linen-trousers"   },
+          { id:"p6",  name:"Slim Chino Shorts",           image:"🩳", price:80,  inventory:120,url:"/products/slim-chino-shorts"        },
+        ],
+      },
+      "thursday-night-break-95": {
+        name: "Thursday Night Break #95",
+        platforms: ["TT","IG","AM"],
+        products: [
+          { id:"p8",  name:"Spring Style Bundle (3pc)",   image:"🎁", price:148, inventory:30, url:"/products/spring-style-bundle-3pc"  },
+          { id:"p10", name:"Linen Button-Down Shirt",     image:"👔", price:98,  inventory:96, url:"/products/linen-button-down-shirt"  },
+          { id:"p6",  name:"Slim Chino Shorts",           image:"🩳", price:80,  inventory:120,url:"/products/slim-chino-shorts"        },
+          { id:"p1",  name:"Merino Wool Blazer",          image:"🧥", price:228, inventory:48, url:"/products/merino-wool-blazer"       },
+          { id:"p3",  name:"Leather Crossbody Bag",       image:"👜", price:198, inventory:36, url:"/products/leather-crossbody-bag"    },
+          { id:"p2",  name:"Italian Linen Trousers",      image:"👖", price:148, inventory:84, url:"/products/italian-linen-trousers"   },
+          { id:"p4",  name:"Silk Wrap Midi Dress",        image:"👗", price:268, inventory:22, url:"/products/silk-wrap-midi-dress"     },
+        ],
+      },
+    },
+  },
+  kyliecosmetics: {
+    shows: {
+      "new-shade-drop-live": {
+        name: "New Shade Drop — Live",
+        platforms: ["TT","IG"],
+        products: [
+          { id:"p11", name:"Matte Lip Kit Ruby",          image:"💄", price:29,  inventory:840, url:"/products/matte-lip-kit-ruby"       },
+          { id:"p15", name:"Holiday Collection Set (6pc)",image:"🎀", price:89,  inventory:180, url:"/products/holiday-collection-set"   },
+          { id:"p12", name:"Kyshadow Palette Bronze",     image:"✨", price:45,  inventory:420, url:"/products/kyshadow-palette-bronze"  },
+          { id:"p13", name:"Skin Tint SPF 30",            image:"🌟", price:38,  inventory:560, url:"/products/skin-tint-spf-30"         },
+          { id:"p14", name:"Gloss Drip Clear",            image:"💋", price:16,  inventory:1200,url:"/products/gloss-drip-clear"         },
+        ],
+      },
+    },
+  },
+};
+
+function LiveShopPage({ shopSlug, showSlug }) {
+  const seller    = SELLER_PROFILES[shopSlug];
+  const shopData  = LIVE_SHOP_DATA[shopSlug];
+  const showData  = shopData?.shows?.[showSlug];
+
+  const shopDomain = `${shopSlug}.myshopify.com`;
+  const [activeIdx, setActiveIdx]   = useState(0);
+  const [pulsed,    setPulsed]      = useState(false);
+
+  // Cycle the "Now Selling" card every 45s to simulate the live show moving forward
+  useEffect(() => {
+    if (!showData) return;
+    const t = setInterval(() => {
+      setActiveIdx(i => (i + 1) % showData.products.length);
+      setPulsed(true);
+      setTimeout(() => setPulsed(false), 600);
+    }, 45000);
+    return () => clearInterval(t);
+  }, [showData]);
+
+  const accent = seller?.color || "#7c3aed";
+  const shopifyUrl = (p) =>
+    `https://${shopDomain}${p.url}?ref=streamlive_live&show=${showSlug}&utm_source=streamlive&utm_medium=live_shop`;
+
+  const FONT_CSS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');`;
+
+  // 404 state
+  if (!seller || !showData) {
+    return (
+      <div style={{ minHeight:"100vh", background:"#06060e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:24 }}>
+        <style>{FONT_CSS}</style>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontSize:56, marginBottom:20 }}>📭</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:"#fff", marginBottom:8 }}>
+            {!seller ? "Store not found" : "Show has ended"}
+          </div>
+          <div style={{ fontSize:14, color:"#6b7280", marginBottom:28, maxWidth:300, lineHeight:1.6 }}>
+            {!seller
+              ? "This live shop link doesn't match any store we know about."
+              : "This show is no longer live. Check the store page for upcoming shows."
+            }
+          </div>
+          {seller && (
+            <a href={`/s/${shopSlug}`} style={{ display:"inline-flex", alignItems:"center", gap:6, background:`${accent}15`, border:`1px solid ${accent}44`, color:accent, fontSize:13, fontWeight:700, padding:"10px 20px", borderRadius:10, textDecoration:"none" }}>
+              Visit {seller.name} →
+            </a>
+          )}
+          <div style={{ marginTop:16 }}>
+            <a href="/" style={{ fontSize:12, color:"#374151", textDecoration:"none" }}>← Back to Streamlive</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const activeProduct = showData.products[activeIdx];
+  const PC = { WN:"#7c3aed", TT:"#f43f5e", IG:"#ec4899", AM:"#f59e0b", YT:"#ff0000" };
+  const PN = { WN:"Whatnot", TT:"TikTok", IG:"Instagram", AM:"Amazon", YT:"YouTube" };
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#06060e", fontFamily:"'DM Sans',sans-serif", color:"#fff" }}>
+      <style>{FONT_CSS + `
+        * { box-sizing:border-box; margin:0; padding:0; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        @keyframes slideIn { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes heroPop { 0%{transform:scale(0.97);opacity:0.6} 100%{transform:scale(1);opacity:1} }
+        .buy-btn:hover { filter:brightness(1.1); transform:translateY(-1px); }
+        .buy-btn:active { transform:translateY(0px); }
+        .buy-btn { transition:all .15s ease; }
+        @media(max-width:600px) {
+          .product-row { flex-direction:column !important; align-items:flex-start !important; gap:10px !important; }
+          .product-price-btn { flex-direction:row; justify-content:space-between; width:100%; align-items:center; }
+          .hero-card { padding:18px !important; }
+          .page-pad { padding:0 16px !important; }
+        }
+      `}</style>
+
+      {/* ── STICKY HEADER ── */}
+      <div style={{ position:"sticky", top:0, zIndex:50, background:"#06060eee", backdropFilter:"blur(16px)", borderBottom:"1px solid #14142a", padding:"12px 20px", display:"flex", alignItems:"center", gap:12 }}>
+        {/* Store identity */}
+        <div style={{ width:32, height:32, borderRadius:9, background:`${accent}20`, border:`1px solid ${accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:800, color:accent, flexShrink:0 }}>
+          {seller.avatar}
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{seller.name}</div>
+          <div style={{ fontSize:10, color:"#4b5563", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{showData.name}</div>
+        </div>
+        {/* Live pill */}
+        <div style={{ display:"flex", alignItems:"center", gap:5, background:"#1a0808", border:"1px solid #ef444444", borderRadius:99, padding:"5px 10px", flexShrink:0 }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1.2s infinite" }}/>
+          <span style={{ fontSize:10, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE NOW</span>
+        </div>
+      </div>
+
+      {/* ── HERO: NOW SELLING ── */}
+      <div className="page-pad" style={{ padding:"0 20px", maxWidth:540, margin:"0 auto" }}>
+        <div style={{ paddingTop:20, paddingBottom:8 }}>
+          <div style={{ fontSize:9, fontWeight:800, color:"#ef4444", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10, display:"flex", alignItems:"center", gap:6 }}>
+            <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1.2s infinite" }}/>
+            Selling Right Now
+          </div>
+          <div
+            className="hero-card"
+            key={activeIdx}
+            style={{ background:`linear-gradient(160deg,#0f1e0f,#060f06)`, border:`2px solid ${accent}55`, borderRadius:20, padding:"22px 22px 20px", animation: pulsed ? "heroPop .4s ease" : "slideIn .3s ease", position:"relative", overflow:"hidden" }}
+          >
+            {/* Glow */}
+            <div style={{ position:"absolute", top:-40, right:-40, width:180, height:180, borderRadius:"50%", background:accent, opacity:0.04, filter:"blur(50px)", pointerEvents:"none" }}/>
+
+            <div style={{ fontSize:44, marginBottom:10 }}>{activeProduct.image}</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:"#fff", lineHeight:1.2, marginBottom:8 }}>{activeProduct.name}</div>
+            <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:18 }}>
+              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:28, fontWeight:800, color:accent }}>${activeProduct.price}</span>
+              <span style={{ fontSize:11, color:"#4b5563" }}>{activeProduct.inventory} in stock</span>
+            </div>
+            <a
+              href={shopifyUrl(activeProduct)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="buy-btn"
+              style={{ display:"block", background:`linear-gradient(135deg,${accent},${accent}bb)`, borderRadius:14, padding:"16px", textAlign:"center", textDecoration:"none", boxShadow:`0 6px 24px ${accent}33` }}
+            >
+              <span style={{ fontSize:16, fontWeight:800, color:"#fff", letterSpacing:"0.01em" }}>Buy Now →</span>
+            </a>
+          </div>
+        </div>
+
+        {/* ── PLATFORM BADGES ── */}
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20, marginTop:4 }}>
+          {showData.platforms.map(pid => (
+            <div key={pid} style={{ display:"flex", alignItems:"center", gap:4, background:`${PC[pid]}12`, border:`1px solid ${PC[pid]}33`, borderRadius:6, padding:"3px 9px" }}>
+              <div style={{ width:4, height:4, borderRadius:"50%", background:PC[pid] }}/>
+              <span style={{ fontSize:9, fontWeight:700, color:PC[pid] }}>{PN[pid]}</span>
+            </div>
+          ))}
+          <div style={{ display:"flex", alignItems:"center", gap:4, background:"#0d0d1e", border:"1px solid #1e1e3a", borderRadius:6, padding:"3px 9px" }}>
+            <span style={{ fontSize:9, color:"#4b5563" }}>{showData.products.length} products today</span>
+          </div>
+        </div>
+
+        {/* ── FULL LINEUP ── */}
+        <div style={{ marginBottom:4 }}>
+          <div style={{ fontSize:10, fontWeight:800, color:"#374151", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:12 }}>Full Lineup</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:32 }}>
+            {showData.products.map((p, i) => {
+              const isActive = i === activeIdx;
+              const isSold   = i < activeIdx;
+              return (
+                <div
+                  key={p.id}
+                  className="product-row"
+                  style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:isActive?`${accent}0e`:isSold?"transparent":"#0a0a14", border:`1px solid ${isActive?accent+"44":isSold?"transparent":"#14142a"}`, borderRadius:14, opacity:isSold?0.4:1, transition:"all .25s" }}
+                >
+                  {/* Position badge */}
+                  <div style={{ width:26, height:26, borderRadius:7, background:isActive?`${accent}20`:isSold?"transparent":"#111125", border:`1px solid ${isActive?accent+"44":isSold?"transparent":"#1e1e3a"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    {isSold
+                      ? <span style={{ fontSize:10, color:"#374151" }}>✓</span>
+                      : <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, fontWeight:800, color:isActive?accent:"#374151" }}>{i+1}</span>
+                    }
+                  </div>
+
+                  <span style={{ fontSize:22, flexShrink:0 }}>{p.image}</span>
+
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:13, fontWeight:isActive?700:500, color:isSold?"#374151":"#e5e7eb", marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:isSold?"#374151":accent }}>${p.price}</span>
+                      {isActive && <span style={{ fontSize:9, fontWeight:800, color:"#ef4444", background:"#1a0505", border:"1px solid #ef444433", padding:"1px 7px", borderRadius:99, letterSpacing:"0.06em" }}>NOW</span>}
+                      <span style={{ fontSize:10, color:"#374151" }}>{p.inventory} left</span>
+                    </div>
+                  </div>
+
+                  {/* Buy Now — full text on desktop, arrow-only on mobile handled via min-width */}
+                  {!isSold && (
+                    <a
+                      href={shopifyUrl(p)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="buy-btn"
+                      style={{ flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", gap:4, padding: isActive ? "9px 18px" : "7px 14px", background: isActive ? `linear-gradient(135deg,${accent},${accent}bb)` : `${accent}14`, border:`1px solid ${isActive?"transparent":accent+"33"}`, borderRadius:10, textDecoration:"none", boxShadow: isActive ? `0 4px 14px ${accent}22` : "none" }}
+                    >
+                      <span style={{ fontSize: isActive ? 12 : 11, fontWeight:700, color: isActive ? "#fff" : accent, whiteSpace:"nowrap" }}>
+                        {isActive ? "Buy Now →" : "Buy →"}
+                      </span>
+                    </a>
+                  )}
+                  {isSold && (
+                    <span style={{ flexShrink:0, fontSize:10, color:"#374151", padding:"4px 10px", border:"1px solid #1a1a1a", borderRadius:8 }}>Sold</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── FOOTER ── */}
+        <div style={{ borderTop:"1px solid #0d0d1e", paddingTop:20, paddingBottom:32, textAlign:"center" }}>
+          <div style={{ fontSize:11, color:"#374151", marginBottom:6 }}>
+            Purchases tracked to this show via Live Pixel
+          </div>
+          <div style={{ fontSize:11, color:"#252535" }}>
+            Powered by <span style={{ color:"#4b3a7c", fontWeight:700 }}>Streamlive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── OPT-IN PAGE ──────────────────────────────────────────────────────────────
 function OptInPage({ slug, connectedPlatforms }) {
   const seller = SELLER_PROFILES[slug];
@@ -1718,6 +1980,12 @@ export default function App() {
        route === '/checkout'    ? <Checkout /> :
        route === '/welcome'     ? <Welcome /> :
        route.startsWith('/s/')  ? <OptInPage slug={route.split('/s/')[1]?.split('/')[0]} connectedPlatforms={PERSONA_PLATFORMS[route.split('/s/')[1]?.split('/')[0]]} /> :
+       route.startsWith('/live/') ? (() => {
+         const parts   = route.split('/live/')[1]?.split('/') || [];
+         const shopSlug = parts[0] || '';
+         const showSlug = parts[1] || '';
+         return <LiveShopPage shopSlug={shopSlug} showSlug={showSlug} />;
+       })() :
        <Landing />}
     </>
   );
