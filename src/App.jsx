@@ -123,7 +123,7 @@ const PLANS = {
 const GLOBAL_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: #06060e; color: #e2e8f0; font-family: 'DM Sans', sans-serif; }
-  *, *:hover, *:focus, *:active { cursor: none !important; }
+  /* cursor:none is scoped to the app screens only, not the landing page */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 4px; }
   @keyframes float     { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-12px) } }
@@ -226,16 +226,28 @@ function Landing() {
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
 
   const openDemo = () => {
-    if (sessionStorage.getItem('sl_demo_access')) { navigate('/app'); return; }
+    try {
+      if (window.sessionStorage.getItem('sl_demo_access')) {
+        window.history.pushState({}, '', '/app')
+        window.dispatchEvent(new PopStateEvent('popstate'))
+        return
+      }
+    } catch(e) {}
     setDemoModal(true)
+  }
+
+  const goToApp = () => {
+    try { window.sessionStorage.setItem('sl_demo_access', '1') } catch(e) {}
+    setDemoModal(false)
+    window.history.pushState({}, '', '/app')
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
   const submitDemoEmail = async () => {
     if (!demoEmail.includes('@')) return
     try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate' }) }) } catch(e) {}
-    sessionStorage.setItem('sl_demo_access', '1')
     setDemoEmailSent(true)
-    setTimeout(() => { setDemoModal(false); navigate('/app'); }, 1400)
+    setTimeout(goToApp, 1400)
   }
 
   const openSales = () => {
@@ -940,7 +952,7 @@ function Landing() {
                   style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'13px 14px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif", marginBottom:12 }}
                 />
                 <button
-                  onClick={submitDemoEmail}
+                  onClick={()=>{ if(demoEmail.includes('@')) submitDemoEmail() }}
                   style={{ width:'100%', background: demoEmail.includes('@') ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : '#141428', border:'none', color: demoEmail.includes('@') ? '#fff' : '#374151', fontSize:14, fontWeight:700, padding:'14px', borderRadius:10, cursor: demoEmail.includes('@') ? 'pointer' : 'default', transition:'all .15s' }}
                 >
                   Open the Demo →
