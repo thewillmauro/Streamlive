@@ -1691,7 +1691,7 @@ function ScreenLive({ buyers, navigate, params }) {
       ...prev,
       [selectedBuyer.id]: [...(prev[selectedBuyer.id]||[]), productId]
     }));
-    setSavedFeedback("item");
+    setSavedFeedback("item_" + productId);
     setTimeout(()=>setSavedFeedback(null), 1800);
   };
   const removeItem = (productId) => {
@@ -1986,7 +1986,7 @@ function ScreenLive({ buyers, navigate, params }) {
                           <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.green }}>${p.price}</div>
                           <button
                             onClick={()=>addItem(p.id)}
-                            style={{ fontSize:9, fontWeight:700, color:"#fff", background:savedFeedback==="item"?C.green:C.accent, border:"none", padding:"3px 8px", borderRadius:5, cursor:"pointer", marginTop:2 }}
+                            style={{ fontSize:9, fontWeight:700, color:"#fff", background:savedFeedback===("item_"+p.id)?C.green:C.accent, border:"none", padding:"3px 8px", borderRadius:5, cursor:"pointer", marginTop:2 }}
                           >
                             + Add
                           </button>
