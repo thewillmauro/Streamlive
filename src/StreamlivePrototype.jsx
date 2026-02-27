@@ -194,11 +194,11 @@ const BUYERS_BY_PERSONA = {
 
 // ─── SHOWS DATA ───────────────────────────────────────────────────────────────
 const SHOWS = [
-  { id:"sh1", title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch — the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
-  { id:"sh2", title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach — 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
-  { id:"sh3", title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional — high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
-  { id:"sh4", title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
-  { id:"sh5", title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show — strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution. Live Pixel captured 14 buyers end-to-end. 12 orders matched via UTM link. 6 via time-window. 6 manually reconciled. Consider longer dwell on hero products — YouTube viewers research more before buying.", topItem:"Merino Wool Blazer", newBuyers:38,
+  { id:"sh1", title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", platforms:["IG","TT"],      gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch — the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
+  { id:"sh2", title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", platforms:["TT"],           gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach — 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
+  { id:"sh3", title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", platforms:["AM","IG"],      gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional — high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
+  { id:"sh4", title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", platforms:["IG","TT","AM"], gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
+  { id:"sh5", title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", platforms:["YT"],           gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show — strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution. Live Pixel captured 14 buyers end-to-end. 12 orders matched via UTM link. 6 via time-window. 6 manually reconciled. Consider longer dwell on hero products — YouTube viewers research more before buying.", topItem:"Merino Wool Blazer", newBuyers:38,
     ytAttribution: { method:"mixed", pixel:{ orders:14, confidence:"verified", sessionsCaptured:284 }, timeWindow:{ orders:12, confidence:"high", windowMins:15 }, utm:{ orders:6, link:"strmlive.com/yt/br-2025-02-08", clicks:284 }, manual:{ orders:6, pending:2 }, shopifyOrders:38, unattributed:0 }
   },
 ];
@@ -1174,7 +1174,7 @@ function ScreenShows({ navigate, persona, shows }) {
       {/* SHOW CARDS */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
         {allShows.map(s=>{
-          const pl = PLATFORMS[s.platform];
+          const showPlatforms = s.platforms || [s.platform];
           return (
             <div key={s.id} onClick={()=>navigate("show-report", { showId:s.id })} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", cursor:"pointer", transition:"border-color .15s" }}
               onMouseEnter={e=>e.currentTarget.style.borderColor=C.border2}
@@ -1182,7 +1182,9 @@ function ScreenShows({ navigate, persona, shows }) {
             >
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
                 <div>
-                  <PlatformPill code={s.platform} />
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                    {showPlatforms.map(p => <PlatformPill key={p} code={p} />)}
+                  </div>
                   <div style={{ fontSize:13, fontWeight:700, color:C.text, marginTop:8 }}>{s.title}</div>
                   <div style={{ fontSize:11, color:C.muted, marginTop:3, fontFamily:"'JetBrains Mono',monospace" }}>{s.date} · {s.duration}</div>
                 </div>
@@ -1190,9 +1192,9 @@ function ScreenShows({ navigate, persona, shows }) {
               </div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 }}>
                 {[
-                  { label:"GMV",          value:`$${s.gmv.toLocaleString()}`, color:C.green },
-                  { label:"Buyers",       value:s.buyers,                     color:C.text  },
-                  { label:"Repeat Rate",  value:`${s.repeatRate}%`,           color:"#a78bfa" },
+                  { label:"GMV",         value:`$${s.gmv.toLocaleString()}`, color:C.green },
+                  { label:"Buyers",      value:s.buyers,                     color:C.text  },
+                  { label:"Repeat Rate", value:`${s.repeatRate}%`,           color:"#a78bfa" },
                 ].map(m=>(
                   <div key={m.label}>
                     <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:700, color:m.color }}>{m.value}</div>
@@ -5676,6 +5678,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
       title:   params?.showName ? params.showName : `Live Show — ${dateStr}`,
       date:    dateStr,
       platform,
+      platforms,
       gmv:     finalGMV,
       buyers:  params?.orderCount || liveBuyers.length,
       repeatRate,
