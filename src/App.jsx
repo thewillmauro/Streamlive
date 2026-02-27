@@ -193,167 +193,125 @@ function Landing() {
   }
 
   const FEATURES = [
-    { icon:'◉', color:'#7c3aed', label:'Buyer CRM',          desc:'Every buyer across every platform unified. Spend history, churn risk scores, VIP flags, and platform handles in one view.' },
-    { icon:'◈', color:'#10b981', label:'Live Companion',      desc:'Real-time buyer intelligence during shows. Instant lookup, notes, discounts, VIP alerts, and product add-ons — all without leaving the stream.' },
-    { icon:'◑', color:'#f59e0b', label:'Analytics',           desc:'Revenue trends, audience health, platform comparison, LTV distribution, and 6 weekly AI-generated recommendations with confidence scores.' },
-    { icon:'⬛', color:'#a78bfa', label:'Production Suite',    desc:'Control Sony FX3/FX6 cameras, DJI RS4 Pro gimbals, Elgato and Aputure lights, and OBS scenes — all from one interface during your show.' },
-    { icon:'◆', color:'#ec4899', label:'Campaigns',           desc:'Email, SMS, and ManyChat DM campaigns. TikTok and Instagram keyword automations that trigger instant opt-ins when fans comment.' },
-    { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',         desc:'4-tier loyalty program (Bronze → VIP) with points, perks, early access, and birthday rewards. Buyers level up automatically.' },
-    { icon:'●', color:'#3b82f6', label:'Opt-in Pages',        desc:'Branded landing pages at strmlive.com/s/yourshop. Collect email, phone, and platform handles. TCPA-compliant consent built in.' },
-    { icon:'◧', color:'#10b981', label:'Show Planner',        desc:'Multi-platform stream setup, AI-ranked product run orders, show perks configuration, and one-click Go Live flow.' },
-    { icon:'✦', color:'#a78bfa', label:'AI Insights',         desc:'Claude-powered business intelligence: VIP opportunities, at-risk buyer alerts, product performance gaps, and show timing optimization.' },
-    { icon:'⬡', color:'#7c3aed', label:'Audience Segments',   desc:'Smart segments: VIP buyers, at-risk, dormant, platform-specific, category fans. Send the right message to exactly the right people.' },
-    { icon:'◎', color:'#f59e0b', label:'Order Review',        desc:'Post-show order management. Bulk process discounts, add-ons, notes, and Shopify sync — all in one screen before you close out.' },
-    { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync', desc:'Whatnot, TikTok, Instagram, and Amazon Live. Import buyers, match identities across platforms, and stream to all of them simultaneously.' },
+    { icon:'◉', color:'#7c3aed', label:'Buyer CRM',             desc:'Every buyer across every platform, unified. Spend history, churn risk scores, VIP flags, and platform handles — all in one view, updated in real time.' },
+    { icon:'◈', color:'#10b981', label:'Live Companion',         desc:'Your command center during shows. Real-time buyer feed, accurate per-order GMV tracking, full purchase history, loyalty tier, notes, discounts, and VIP alerts — starts fresh at $0 every show, counts only real purchases.' },
+    { icon:'◑', color:'#f59e0b', label:'Analytics',              desc:'Revenue trends, audience health, platform comparison, LTV distribution, and 6 weekly AI-generated recommendations with confidence scores after every show.' },
+    { icon:'⬛', color:'#a78bfa', label:'Production Suite',       desc:'Control Sony FX3/FX6 cameras, DJI RS4 Pro gimbals, Elgato and Aputure lights, and OBS scenes — all from one interface during your show.' },
+    { icon:'◆', color:'#ec4899', label:'Campaigns',              desc:'Email, SMS, and ManyChat DM campaigns. TikTok and Instagram keyword automations that trigger instant opt-ins when fans comment.' },
+    { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',            desc:'4-tier loyalty program (Bronze → VIP) with points, perks, early access, and birthday rewards. Buyers level up automatically across every platform.' },
+    { icon:'●', color:'#3b82f6', label:'Opt-in Pages',           desc:'Branded landing pages at strmlive.com/s/yourshop. Collect email, phone, and platform handles. TCPA-compliant consent built in.' },
+    { icon:'◧', color:'#10b981', label:'Show Planner',           desc:'Name your show, pick your platforms, set AI-ranked product run orders and perks — then go live. Your show name is required and flows automatically from planner through Live Companion, Order Review, and Show History so every report is exactly what you called it.' },
+    { icon:'🔴', color:'#ff0000', label:'YouTube Live',           desc:'Stream to YouTube alongside your other platforms simultaneously. Live Pixel tracks viewers from stream to site to purchase with 99% attribution accuracy — no guessing.' },
+    { icon:'◎', color:'#f59e0b', label:'Live Pixel Attribution', desc:'First-party pixel installed on your Shopify store. Every viewer who buys is tracked end-to-end — session ID, order ID, show ID — no third-party cookies needed.' },
+    { icon:'✦', color:'#a78bfa', label:'AI Insights',            desc:'Claude-powered business intelligence: VIP opportunities, at-risk buyer alerts, product performance gaps, and show timing optimization. Delivered after every show.' },
+    { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync',   desc:'Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live. Stream to all five simultaneously. Show cards in your history display every platform you were live on — so you always know exactly where each show reached your audience.' },
   ]
 
   const STATS = [
-    { value:'4',   label:'Platforms',       sub:'Whatnot · TikTok · IG · Amazon' },
-    { value:'12',  label:'Core Features',   sub:'CRM to production suite' },
-    { value:'<2m', label:'Setup time',      sub:'Buyers imported instantly' },
-    { value:'AI',  label:'Powered by Claude', sub:'Insights after every show' },
+    { value:'5',    label:'Platforms',            sub:'Whatnot · TikTok · IG · Amazon · YouTube' },
+    { value:'99%',  label:'Attribution accuracy', sub:'Live Pixel vs 55–82% guesswork' },
+    { value:'$0',   label:'Show start',           sub:'GMV counts real purchases only' },
+    { value:'AI',   label:'Powered by Claude',    sub:'6+ insights after every show' },
   ]
 
   const SPOTLIGHTS = [
     {
       tag:'DURING THE SHOW',
-      headline:"Your command center\nwhile you're live.",
-      desc:"The Live Companion gives you real-time buyer intelligence — see exactly who's watching, their full purchase history, loyalty tier, and any open notes. Apply discounts, add items, or flag buyers for follow-up without ever leaving the stream. Per-platform viewer counts pulse live across Whatnot, TikTok, Instagram, and Amazon simultaneously.",
+      headline:"Stream everywhere.\nAttribute every sale.",
+      desc:"The Live Companion is your real-time command center across all 5 platforms simultaneously. See live viewer counts pulse on Whatnot, TikTok, Instagram, Amazon, and YouTube. Every order that comes in — from any platform — appears instantly in your buyer feed with their full history, loyalty tier, and notes. GMV starts at $0 and ticks up only on real purchases, so every number you see is earned. YouTube viewers are tracked by Live Pixel: a first-party snippet on your Shopify store that follows each viewer from stream to purchase with 99% accuracy.",
       color:'#10b981',
-      stats:[{ label:'Avg GMV lift', value:'+18%' },{ label:'Buyer lookup', value:'< 1s' },{ label:'Platforms', value:'4 live' }],
+      stats:[{ label:'Platforms live', value:'5' },{ label:'Attribution', value:'99%' },{ label:'Buyer lookup', value:'< 1s' }],
       side:'left',
     },
     {
       tag:'AFTER THE SHOW',
       headline:"AI that tells you what\nto do next.",
-      desc:"After every show, Streamlive analyzes your data and surfaces 6 prioritized recommendations with confidence scores. Which buyers are about to churn. Which products underperformed vs their AI score. Why Thursday shows outperform by $900. What your VIP segment is worth in untapped revenue. Each insight links directly to the action that addresses it.",
+      desc:"After every show, Streamlive analyzes your data and surfaces 6 prioritized recommendations with confidence scores. Which buyers are about to churn. Which products underperformed vs their AI score. Why Thursday shows outperform by $900. What your YouTube audience converts at vs TikTok. Each insight links directly to the action that addresses it — a campaign, a win-back, a follow-up show.",
       color:'#a78bfa',
-      stats:[{ label:'Insights/week', value:'6+' },{ label:'Avg confidence', value:'83%' },{ label:'Data sources', value:'4' }],
+      stats:[{ label:'Insights/week', value:'6+' },{ label:'Avg confidence', value:'83%' },{ label:'Data sources', value:'5' }],
       side:'right',
     },
     {
       tag:'BEFORE THE SHOW',
-      headline:"Professional production,\nsimplified.",
-      desc:"The Production suite connects your Sony FX3 and FX6 cameras via Sony Camera Remote SDK, your DJI RS4/RS5 Pro gimbals via DJI Ronin SDK over Bluetooth, and your Elgato, Aputure, or Godox lights via their respective APIs. Set scenes in OBS with one click. Build automation rules: when a product is queued, the gimbal reframes and the key light hits 100% automatically.",
+      headline:"Plan it once.\nStream it everywhere.",
+      desc:"The Show Planner lets you name your show, select all your streaming platforms, build an AI-ranked product run order, configure show perks, and go live in one flow. A show name is required — and it flows all the way through to the Live Companion, Order Review, and your Show History. Your completed show cards display every platform you were live on, so your history is always a true record of where your show reached. Production Suite connects your Sony FX3/FX6 cameras, DJI RS4 Pro gimbals, and lighting rigs for a broadcast-quality setup.",
       color:'#f59e0b',
-      stats:[{ label:'Camera SDKs', value:'Sony' },{ label:'Gimbal control', value:'DJI' },{ label:'Lighting', value:'3 brands' }],
+      stats:[{ label:'Camera SDKs', value:'Sony' },{ label:'Gimbal', value:'DJI' },{ label:'Run order', value:'AI-ranked' }],
       side:'left',
     },
   ]
 
   const FAQS = [
-    { q:'How does buyer importing work?', a:"Connect your Whatnot, TikTok, Instagram, or Amazon account and we pull your entire buyer history — names, handles, spend, orders — automatically. It takes under 2 minutes and your data is live immediately." },
-    { q:'What platforms do you support?', a:'Whatnot, TikTok Shop, Instagram Live, and Amazon Live. You can stream to all four simultaneously from the Show Planner, and manage buyers from all platforms in the same CRM.' },
+    { q:'How does YouTube Live attribution work?', a:"YouTube doesn't expose buyer data directly, so Streamlive uses Live Pixel — a lightweight JavaScript snippet you install on your Shopify store. When a viewer clicks from your stream to your site, Live Pixel assigns a session ID that follows them through checkout. Orders are matched to your show with 99% accuracy, compared to 55–64% via time-window guessing or 82% via UTM links." },
+    { q:'What platforms do you support?', a:'Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. You can stream to all five simultaneously from the Show Planner, and manage buyers from all platforms in one unified CRM. Your Show History cards display every platform you were live on for each show — so multi-stream shows show all platform badges, not just one.' },
+    { q:'How does buyer importing work?', a:"Connect your Whatnot, TikTok, Instagram, or Amazon account and we pull your entire buyer history — names, handles, spend, orders — automatically. It takes under 2 minutes and your data is live immediately. YouTube buyers are attributed via Live Pixel after your first show." },
     { q:'Do I need a separate OBS license for Production?', a:"No. OBS is free and open source. Streamlive connects to OBS via its official WebSocket v5 API. You install OBS once and Streamlive controls it. Sony and DJI SDK access requires registering as a developer with each brand — we walk you through it." },
-    { q:"What's the difference between Growth and Pro?", a:'Growth gives you the full CRM, Live Companion, Analytics, Loyalty Hub, ManyChat automation, and AI Insights — everything you need to run and grow your shows. Pro adds the Production suite (camera/gimbal/lighting control), higher SMS volume, multi-shop TikTok support, and cross-platform buyer identity matching.' },
-    { q:'Can I white label this for my clients?', a:'Yes — Enterprise plan includes white labeling under your domain, custom branding, and multi-seller network management. Ideal for agencies running shows for multiple brands.' },
-    { q:'Is there a contract for Enterprise?', a:'Enterprise is available monthly or on annual contracts with volume discounts. We also offer custom scoping for unique integration requirements. Contact our sales team to discuss.' },
+    { q:"What's the difference between Growth and Pro?", a:'Growth gives you the full CRM, Live Companion across all 5 platforms, Analytics, Loyalty Hub, ManyChat automation, and AI Insights — everything you need to run and grow your shows. Pro adds the Production suite (camera/gimbal/lighting control), higher SMS volume, multi-shop TikTok support, and cross-platform buyer identity matching.' },
+    { q:'Can I white label this for my clients?', a:'Yes — Enterprise plan includes white labeling under your domain, custom branding, and multi-seller network management. Ideal for agencies running shows for multiple brands simultaneously.' },
   ]
 
   const annualDiscount = 0.17
 
   const MOBILE_CSS = `
-    /* ── MOBILE NAV ─────────────────────────────────────────── */
     .nav-links         { display:flex; }
     .nav-hamburger     { display:none; }
     .mobile-menu       { display:none; }
     .mobile-menu.open  { display:flex; flex-direction:column; }
-
-    /* ── HERO ───────────────────────────────────────────────── */
     .hero-wrap         { padding:72px 24px 56px; }
     .hero-input-row    { flex-direction:row; }
     .hero-input        { width:300px; }
-    .hero-platforms    { gap:10px; }
-
-    /* ── STATS ──────────────────────────────────────────────── */
+    .hero-platforms    { gap:8px; }
     .stats-grid        { grid-template-columns:repeat(4,1fr); }
     .stat-divider      { border-right:1px solid #14142a; }
-
-    /* ── PREVIEW ────────────────────────────────────────────── */
     .preview-wrap      { padding:72px 40px 0; }
-
-    /* ── FEATURES ───────────────────────────────────────────── */
     .features-section  { padding:88px 40px 0; }
     .features-grid     { grid-template-columns:repeat(3,1fr); }
-
-    /* ── SPOTLIGHTS ─────────────────────────────────────────── */
     .spotlight-section { padding:88px 40px 0; }
     .spotlight-grid    { grid-template-columns:1fr 1fr; gap:56px; }
     .spotlight-text    { order:inherit; }
     .spotlight-mockup  { order:inherit; }
-
-    /* ── PRICING ────────────────────────────────────────────── */
     .pricing-section   { padding:96px 40px 0; }
     .pricing-grid      { grid-template-columns:repeat(4,1fr); gap:12px; }
     .enterprise-row    { flex-direction:row; }
-
-    /* ── FAQ ────────────────────────────────────────────────── */
     .faq-section       { padding:88px 40px 0; }
-
-    /* ── FINAL CTA ──────────────────────────────────────────── */
     .cta-section       { padding:88px 40px 80px; }
     .cta-btns          { flex-direction:row; }
-
-    /* ── FOOTER ─────────────────────────────────────────────── */
     .footer-grid       { grid-template-columns:1fr 1fr 1fr 1fr; gap:32px; }
     .footer-inner      { padding:36px 40px; }
 
     @media (max-width: 860px) {
       .pricing-grid    { grid-template-columns:repeat(2,1fr); }
     }
-
     @media (max-width: 700px) {
-      /* Nav */
       .nav-links       { display:none; }
       .nav-hamburger   { display:flex; }
-
-      /* Hero */
       .hero-wrap       { padding:56px 20px 44px; }
       .hero-input-row  { flex-direction:column; align-items:stretch; }
       .hero-input      { width:100%; }
-      .hero-platforms  { gap:8px; }
-
-      /* Stats */
+      .hero-platforms  { gap:6px; flex-wrap:wrap; }
       .stats-grid      { grid-template-columns:repeat(2,1fr); }
       .stat-divider    { border-right:none; }
       .stat-item       { border-bottom:1px solid #14142a; padding-bottom:20px !important; }
-      .stat-item:nth-child(3),
-      .stat-item:nth-child(4) { border-bottom:none; }
-
-      /* Preview */
+      .stat-item:nth-child(3), .stat-item:nth-child(4) { border-bottom:none; }
       .preview-wrap    { padding:56px 20px 0; }
-
-      /* Features */
       .features-section { padding:64px 20px 0; }
       .features-grid   { grid-template-columns:1fr; gap:10px; }
-
-      /* Spotlights */
       .spotlight-section { padding:64px 20px 0; }
       .spotlight-grid  { grid-template-columns:1fr; gap:32px; }
       .spotlight-text  { order:2 !important; }
       .spotlight-mockup { order:1 !important; }
-
-      /* Pricing */
       .pricing-section { padding:64px 20px 0; }
       .pricing-grid    { grid-template-columns:1fr; gap:16px; }
       .enterprise-row  { flex-direction:column; gap:16px; }
-
-      /* FAQ */
       .faq-section     { padding:64px 20px 0; }
-
-      /* Final CTA */
       .cta-section     { padding:64px 20px 64px; }
       .cta-btns        { flex-direction:column; align-items:stretch; }
       .cta-btns button { width:100%; }
-
-      /* Footer */
       .footer-grid     { grid-template-columns:1fr 1fr; gap:28px; }
       .footer-inner    { padding:28px 20px; }
     }
-
     @media (max-width: 420px) {
       .footer-grid     { grid-template-columns:1fr; gap:24px; }
-      .hero-platforms  { gap:6px; }
       .pricing-grid    { gap:12px; }
     }
   `
@@ -370,7 +328,8 @@ function Landing() {
         .toggle-opt    { font-size:12px; font-weight:600; padding:6px 18px; border-radius:99px; border:none; cursor:pointer; transition:all .15s; }
         .check-include { color:#10b981; font-size:11px; margin-top:1px; flex-shrink:0; }
         .check-exclude { color:#374151; font-size:11px; margin-top:1px; flex-shrink:0; }
-        .hamburger-btn { background:none; border:1px solid #1e1e3a; borderRadius:8px; color:#9ca3af; padding:6px 10px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+        .yt-badge      { display:inline-flex; align-items:center; gap:5px; background:#ff000015; border:1px solid #ff000033; border-radius:99px; padding:3px 10px; }
+        .pixel-badge   { display:inline-flex; align-items:center; gap:5px; background:#10b98115; border:1px solid #10b98133; border-radius:99px; padding:3px 10px; }
       `}</style>
 
       <div style={{ minHeight:'100vh', background:'#06060e', overflowY:'auto', overflowX:'hidden' }}>
@@ -382,44 +341,43 @@ function Landing() {
             <span style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>Streamlive</span>
           </button>
           <div style={{ flex:1 }} />
-          {/* Desktop links */}
           <div className="nav-links" style={{ alignItems:'center', gap:20 }}>
             <a href="#features" style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
             <a href="#pricing"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
             <button onClick={()=>navigate('/app')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Open App →</button>
           </div>
-          {/* Mobile hamburger */}
-          <button className="nav-hamburger hamburger-btn" onClick={()=>setMenuOpen(m=>!m)} style={{ background:'none', border:'1px solid #1e1e3a', borderRadius:8, color:'#9ca3af', padding:'6px 10px', cursor:'pointer', fontSize:16, display:'none', alignItems:'center', justifyContent:'center' }}>
+          <button className="nav-hamburger" onClick={()=>setMenuOpen(m=>!m)} style={{ background:'none', border:'1px solid #1e1e3a', borderRadius:8, color:'#9ca3af', padding:'6px 10px', cursor:'pointer', fontSize:16, display:'none', alignItems:'center', justifyContent:'center' }}>
             {menuOpen ? '✕' : '☰'}
           </button>
         </nav>
 
-        {/* Mobile menu dropdown */}
         <div className={`mobile-menu${menuOpen?' open':''}`} style={{ background:'#07070f', borderBottom:'1px solid #14142a', padding:'16px 24px', gap:0, position:'sticky', top:58, zIndex:49 }}>
-          <a href="#features" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }}
-            onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
-          <a href="#pricing"  style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }}
-            onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-          <button onClick={()=>{setMenuOpen(false);navigate('/app')}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12, textAlign:'center' }}>Open App →</button>
+          <a href="#features" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
+          <a href="#pricing"  style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
+          <button onClick={()=>{setMenuOpen(false);navigate('/app')}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Open App →</button>
         </div>
 
         {/* ── HERO ─────────────────────────────────────────────────────────── */}
-        <div className="hero-wrap" style={{ maxWidth:980, margin:'0 auto', textAlign:'center', position:'relative' }}>
-          <div style={{ position:'absolute', top:60, left:'15%', width:320, height:320, borderRadius:'50%', background:'#7c3aed', opacity:0.04, filter:'blur(80px)', pointerEvents:'none' }} />
-          <div style={{ position:'absolute', top:100, right:'15%', width:280, height:280, borderRadius:'50%', background:'#ec4899', opacity:0.04, filter:'blur(80px)', pointerEvents:'none' }} />
+        <div className="hero-wrap" style={{ maxWidth:1000, margin:'0 auto', textAlign:'center', position:'relative' }}>
+          <div style={{ position:'absolute', top:40, left:'10%', width:400, height:400, borderRadius:'50%', background:'#7c3aed', opacity:0.035, filter:'blur(100px)', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', top:80, right:'8%', width:320, height:320, borderRadius:'50%', background:'#ff0000', opacity:0.03, filter:'blur(80px)', pointerEvents:'none' }} />
 
           <div className="fade-a0" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#2d1f5e44', border:'1px solid #7c3aed44', borderRadius:99, padding:'5px 16px 5px 10px', marginBottom:28 }}>
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#10b981', animation:'pulse 2s infinite' }} />
             <span style={{ fontSize:11, fontWeight:700, color:'#a78bfa', letterSpacing:'0.08em', textTransform:'uppercase' }}>Now open for beta — limited spots</span>
           </div>
 
-          <h1 className="fade-a1" style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(34px,6.5vw,72px)', fontWeight:800, color:'#fff', lineHeight:1.06, letterSpacing:'-2px', marginBottom:20 }}>
-            The operating system<br />
-            <span className="gradient-text">for live commerce sellers.</span>
+          <h1 className="fade-a1" style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(32px,6vw,68px)', fontWeight:800, color:'#fff', lineHeight:1.06, letterSpacing:'-2px', marginBottom:16 }}>
+            The Live Selling<br />
+            <span className="gradient-text">Command Center.</span>
           </h1>
 
-          <p className="fade-a2" style={{ fontSize:'clamp(14px,2vw,18px)', color:'#6b7280', lineHeight:1.7, maxWidth:580, margin:'0 auto 32px', fontWeight:400 }}>
-            CRM, live show intelligence, production control, loyalty programs, campaign automation, and AI insights — everything a serious live seller needs, in one platform.
+          <p className="fade-a2" style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(16px,2.2vw,22px)', color:'#6b7280', lineHeight:1.5, maxWidth:600, margin:'0 auto 12px', fontWeight:700, letterSpacing:'-0.3px' }}>
+            Stream everywhere. Attribute every sale. Delight every buyer.
+          </p>
+
+          <p className="fade-a2" style={{ fontSize:'clamp(13px,1.6vw,16px)', color:'#4b5563', lineHeight:1.7, maxWidth:520, margin:'0 auto 32px', fontWeight:400 }}>
+            CRM, live show intelligence, YouTube Live attribution, production control, loyalty programs, and AI insights — one platform for serious live sellers.
           </p>
 
           <div className="fade-a3 hero-input-row" style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:16, flexWrap:'wrap' }}>
@@ -440,11 +398,18 @@ function Landing() {
               </div>
             )}
           </div>
-          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e' }}>No credit card required · Free during beta · Cancel anytime</p>
+          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:32 }}>No credit card required · Free during beta · Cancel anytime</p>
 
-          <div className="fade-a4 hero-platforms" style={{ display:'flex', justifyContent:'center', marginTop:36, flexWrap:'wrap' }}>
-            {[{id:'WN',label:'Whatnot',color:'#7c3aed'},{id:'TT',label:'TikTok',color:'#f43f5e'},{id:'IG',label:'Instagram',color:'#ec4899'},{id:'AM',label:'Amazon Live',color:'#f59e0b'}].map(p=>(
-              <div key={p.id} style={{ display:'flex', alignItems:'center', gap:7, background:`${p.color}10`, border:`1px solid ${p.color}28`, borderRadius:99, padding:'6px 14px' }}>
+          {/* Platform pills */}
+          <div className="fade-a4 hero-platforms" style={{ display:'flex', justifyContent:'center', gap:8 }}>
+            {[
+              {id:'WN',label:'Whatnot',    color:'#7c3aed'},
+              {id:'TT',label:'TikTok',     color:'#f43f5e'},
+              {id:'IG',label:'Instagram',  color:'#ec4899'},
+              {id:'AM',label:'Amazon Live',color:'#f59e0b'},
+              {id:'YT',label:'YouTube Live',color:'#ff0000'},
+            ].map(p=>(
+              <div key={p.id} style={{ display:'flex', alignItems:'center', gap:7, background:`${p.color}12`, border:`1px solid ${p.color}30`, borderRadius:99, padding:'6px 14px' }}>
                 <div style={{ width:6, height:6, borderRadius:'50%', background:p.color }} />
                 <span style={{ fontSize:12, fontWeight:600, color:p.color }}>{p.label}</span>
               </div>
@@ -453,7 +418,7 @@ function Landing() {
         </div>
 
         {/* ── STATS STRIP ──────────────────────────────────────────────────── */}
-        <div style={{ borderTop:'1px solid #14142a', borderBottom:'1px solid #14142a', background:'#07070f' }}>
+        <div style={{ borderTop:'1px solid #14142a', borderBottom:'1px solid #14142a', background:'#07070f', marginTop:56 }}>
           <div className="stats-grid" style={{ maxWidth:900, margin:'0 auto', padding:'28px 24px', display:'grid', gap:0 }}>
             {STATS.map((s,i)=>(
               <div key={s.label} className={`stat-item${i<3?' stat-divider':''}`} style={{ textAlign:'center', padding:'8px 16px' }}>
@@ -465,13 +430,43 @@ function Landing() {
           </div>
         </div>
 
+        {/* ── YOUTUBE LIVE CALLOUT ──────────────────────────────────────────── */}
+        <div style={{ maxWidth:900, margin:'0 auto', padding:'64px 24px 0' }}>
+          <div style={{ background:'linear-gradient(135deg,#0f0404,#1a0505)', border:'1px solid #ff000033', borderRadius:20, padding:'32px 36px', display:'flex', alignItems:'center', gap:28, flexWrap:'wrap', position:'relative', overflow:'hidden' }}>
+            <div style={{ position:'absolute', top:-30, right:-30, width:200, height:200, borderRadius:'50%', background:'#ff0000', opacity:0.04, filter:'blur(60px)' }} />
+            <div style={{ width:52, height:52, borderRadius:14, background:'#ff000018', border:'1px solid #ff000044', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, flexShrink:0 }}>🔴</div>
+            <div style={{ flex:1, minWidth:240 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                <span style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>YouTube Live — now fully supported</span>
+                <span style={{ fontSize:9, fontWeight:800, color:'#ff0000', background:'#ff000015', border:'1px solid #ff000033', padding:'2px 8px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em' }}>New</span>
+              </div>
+              <p style={{ fontSize:13, color:'#6b7280', lineHeight:1.7, margin:0 }}>
+                Stream to your YouTube audience alongside Whatnot, TikTok, Instagram, and Amazon simultaneously. <strong style={{ color:'#9ca3af' }}>Live Pixel</strong> — our first-party attribution snippet — installs on your Shopify store in under 2 minutes and tracks every viewer from stream to purchase with <strong style={{ color:'#ff4444' }}>99% accuracy</strong>. No UTM guesswork. No time-window estimation. Every sale attributed.
+              </p>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:8, flexShrink:0 }}>
+              {[
+                { label:'Live Pixel', sub:'99% accuracy', color:'#10b981' },
+                { label:'UTM Links', sub:'82% accuracy', color:'#f59e0b' },
+                { label:'Time Window', sub:'55–64%', color:'#ef4444' },
+              ].map(m=>(
+                <div key={m.label} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <div style={{ width:6, height:6, borderRadius:'50%', background:m.color, flexShrink:0 }} />
+                  <span style={{ fontSize:11, fontWeight:600, color:'#9ca3af' }}>{m.label}</span>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:m.color, marginLeft:'auto', paddingLeft:12 }}>{m.sub}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* ── INTERACTIVE PREVIEW ──────────────────────────────────────────── */}
         <div className="preview-wrap" style={{ maxWidth:900, margin:'0 auto' }}>
           <div style={{ background:'linear-gradient(135deg,#0d0d1e,#12103a)', border:'1px solid #7c3aed33', borderRadius:22, padding:'36px 28px', textAlign:'center', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', top:-40, right:-40, width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.06, filter:'blur(60px)' }} />
             <span className="section-label">✦ Interactive Demo</span>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,4vw,26px)', fontWeight:800, color:'#fff', marginBottom:12, letterSpacing:'-0.5px' }}>The full product is live right now</div>
-            <p style={{ fontSize:14, color:'#6b7280', maxWidth:500, margin:'0 auto 24px', lineHeight:1.65 }}>Every screen is built and interactive — buyer CRM, live shows, production control, analytics, loyalty hub, campaigns, and more.</p>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,4vw,26px)', fontWeight:800, color:'#fff', marginBottom:12, letterSpacing:'-0.5px' }}>Every screen is built and working right now</div>
+            <p style={{ fontSize:14, color:'#6b7280', maxWidth:520, margin:'0 auto 24px', lineHeight:1.65 }}>Buyer CRM, Live Companion with all 5 platforms, YouTube Live Pixel, analytics, production suite, loyalty hub, show planner, and more — all interactive.</p>
             <button onClick={()=>navigate('/app')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'13px 32px', borderRadius:11, cursor:'pointer' }}>Open Interactive Demo →</button>
           </div>
         </div>
@@ -481,7 +476,7 @@ function Landing() {
           <div style={{ textAlign:'center', marginBottom:44 }}>
             <span className="section-label">Built for live sellers</span>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(24px,4vw,40px)', fontWeight:800, color:'#fff', letterSpacing:'-1px', marginBottom:12 }}>Everything in one platform.</div>
-            <p style={{ fontSize:15, color:'#6b7280', maxWidth:500, margin:'0 auto' }}>Not another tool to manage. A single place where every part of your live commerce business lives.</p>
+            <p style={{ fontSize:15, color:'#6b7280', maxWidth:500, margin:'0 auto' }}>Not another tool to manage. A single command center where every part of your live commerce business lives.</p>
           </div>
           <div className="features-grid" style={{ display:'grid', gap:12 }}>
             {FEATURES.map(f=>(
@@ -500,7 +495,6 @@ function Landing() {
         {SPOTLIGHTS.map((s,i)=>(
           <div key={i} className="spotlight-section" style={{ maxWidth:980, margin:'0 auto' }}>
             <div className="spotlight-grid" style={{ display:'grid', alignItems:'center' }}>
-              {/* Text side */}
               <div className="spotlight-text" style={{ order:s.side==='right'?2:1 }}>
                 <span style={{ fontSize:10, fontWeight:800, letterSpacing:'.14em', textTransform:'uppercase', color:s.color, display:'block', marginBottom:14 }}>{s.tag}</span>
                 <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.2vw,34px)', fontWeight:800, color:'#fff', lineHeight:1.15, letterSpacing:'-1px', marginBottom:16, whiteSpace:'pre-line' }}>{s.headline}</div>
@@ -514,35 +508,48 @@ function Landing() {
                   ))}
                 </div>
               </div>
-              {/* Mockup side */}
               <div className="spotlight-mockup" style={{ order:s.side==='right'?1:2 }}>
                 <div style={{ background:'linear-gradient(135deg,#0a0a15,#12102a)', border:`1px solid ${s.color}22`, borderRadius:20, padding:'24px', position:'relative', overflow:'hidden' }}>
                   <div style={{ position:'absolute', top:-20, right:-20, width:160, height:160, borderRadius:'50%', background:s.color, opacity:0.05, filter:'blur(50px)' }} />
                   <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:'#374151', marginBottom:12, textTransform:'uppercase', letterSpacing:'.08em' }}>● Streamlive · {s.tag}</div>
                   {i===0 && (
                     <div>
-                      <div style={{ display:'flex', gap:6, marginBottom:12 }}>
-                        {['WN','TT','IG','AM'].map((p,pi)=>{ const cols=['#7c3aed','#f43f5e','#ec4899','#f59e0b']; const views=[312,891,445,156]; return (
-                          <div key={p} style={{ flex:1, background:`${cols[pi]}12`, border:`1px solid ${cols[pi]}33`, borderRadius:8, padding:'7px 6px', textAlign:'center' }}>
-                            <div style={{ width:5,height:5,borderRadius:'50%',background:cols[pi],margin:'0 auto 4px',animation:'pulse 1s infinite' }} />
-                            <div style={{ fontSize:9,fontWeight:800,color:cols[pi] }}>{p}</div>
-                            <div style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,color:'#fff' }}>{views[pi]}</div>
+                      {/* 5-platform live badges */}
+                      <div style={{ display:'flex', gap:5, marginBottom:12, flexWrap:'wrap' }}>
+                        {[['WN','#7c3aed',312],['TT','#f43f5e',891],['IG','#ec4899',445],['AM','#f59e0b',156],['YT','#ff0000',4200]].map(([p,c,v])=>(
+                          <div key={p} style={{ flex:1, minWidth:40, background:`${c}12`, border:`1px solid ${c}33`, borderRadius:8, padding:'7px 4px', textAlign:'center' }}>
+                            <div style={{ width:5,height:5,borderRadius:'50%',background:c,margin:'0 auto 4px',animation:'pulse 1s infinite' }} />
+                            <div style={{ fontSize:8,fontWeight:800,color:c }}>{p}</div>
+                            <div style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,color:'#fff' }}>{v.toLocaleString()}</div>
                           </div>
-                        );})}</div>
-                      {[{n:'Marcus Webb',s:9.4,t:'VIP',c:'#f59e0b'},{n:'Priya Nair',s:8.9,t:'VIP',c:'#f59e0b'},{n:'Devon Price',s:8.1,t:'Active',c:'#10b981'}].map(b=>(
+                        ))}
+                      </div>
+                      {/* GMV ticker */}
+                      <div style={{ display:'flex', alignItems:'center', gap:8, background:'#0a1e1680', border:'1px solid #10b98133', borderRadius:8, padding:'8px 12px', marginBottom:10 }}>
+                        <div style={{ width:6,height:6,borderRadius:'50%',background:'#10b981',animation:'pulse 1s infinite' }} />
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:'#10b981' }}>$2,708 GMV</span>
+                        <span style={{ fontSize:9, color:'#374151' }}>· 10 orders · live</span>
+                      </div>
+                      {[{n:'Marcus Duval',s:9.4,t:'VIP',c:'#f59e0b',p:'AM'},{n:'Olivia Bennett',s:9.1,t:'VIP',c:'#f59e0b',p:'IG'},{n:'Derek Huang',s:6.4,t:'New',c:'#3b82f6',p:'YT'}].map(b=>(
                         <div key={b.n} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 10px',background:'#0d0d1e',border:'1px solid #14142a',borderRadius:9,marginBottom:6 }}>
                           <div style={{ width:28,height:28,borderRadius:8,background:'#1e1e3a',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#a78bfa',flexShrink:0 }}>{b.n.split(' ').map(w=>w[0]).join('')}</div>
                           <div style={{ flex:1 }}><div style={{ fontSize:11,fontWeight:700,color:'#fff' }}>{b.n}</div><div style={{ fontSize:9,color:'#4b5563' }}>Score {b.s}</div></div>
-                          <span style={{ fontSize:9,fontWeight:700,color:b.c,background:`${b.c}15`,border:`1px solid ${b.c}33`,padding:'2px 7px',borderRadius:4 }}>{b.t}</span>
+                          <span style={{ fontSize:8,fontWeight:700,color:b.c,background:`${b.c}15`,border:`1px solid ${b.c}33`,padding:'2px 6px',borderRadius:4 }}>{b.t}</span>
+                          <span style={{ fontSize:8,fontWeight:700,color:({AM:'#f59e0b',IG:'#ec4899',YT:'#ff0000'})[b.p]||'#7c3aed',background:'#14142a',padding:'1px 5px',borderRadius:3 }}>{b.p}</span>
                         </div>
                       ))}
                     </div>
                   )}
                   {i===1 && (
                     <div>
-                      {[{icon:'💰',pri:'HIGH',title:'VIP segment underserved',impact:'$4,820 est.',conf:91,c:'#10b981'},{icon:'⚠️',pri:'HIGH',title:'3 at-risk buyers — re-engage now',impact:'$680 potential',conf:84,c:'#f59e0b'},{icon:'📊',pri:'MED',title:'SMS outperforms email 2.4×',impact:'3× list growth',conf:82,c:'#a78bfa'}].map(ins=>(
-                        <div key={ins.title} style={{ padding:'10px 12px',background:'#0d0d1e',border:`1px solid ${ins.c}22`,borderRadius:10,marginBottom:8,display:'flex',gap:10,alignItems:'flex-start' }}>
-                          <div style={{ width:28,height:28,borderRadius:8,background:`${ins.c}15`,border:`1px solid ${ins.c}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,flexShrink:0 }}>{ins.icon}</div>
+                      {[
+                        {icon:'💰',pri:'HIGH',title:'YouTube viewers convert 2.1× vs TikTok',impact:'+$3,400 potential',conf:89,c:'#10b981'},
+                        {icon:'⚠️',pri:'HIGH',title:'3 at-risk buyers — re-engage now',impact:'$680 at stake',conf:84,c:'#f59e0b'},
+                        {icon:'📊',pri:'MED',title:'Thursday shows outperform by +$900',impact:'Schedule more Thurs',conf:82,c:'#a78bfa'},
+                        {icon:'🎯',pri:'MED',title:'Live Pixel capturing 99% of YT sales',impact:'14 orders attributed',conf:97,c:'#ff0000'},
+                      ].map(ins=>(
+                        <div key={ins.title} style={{ padding:'9px 10px',background:'#0d0d1e',border:`1px solid ${ins.c}22`,borderRadius:9,marginBottom:7,display:'flex',gap:10,alignItems:'flex-start' }}>
+                          <div style={{ width:26,height:26,borderRadius:7,background:`${ins.c}15`,border:`1px solid ${ins.c}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,flexShrink:0 }}>{ins.icon}</div>
                           <div style={{ flex:1, minWidth:0 }}>
                             <div style={{ display:'flex',gap:6,alignItems:'center',marginBottom:2 }}>
                               <span style={{ fontSize:8,fontWeight:800,color:ins.c==='#10b981'?'#ef4444':ins.c,textTransform:'uppercase' }}>{ins.pri}</span>
@@ -557,19 +564,32 @@ function Landing() {
                   )}
                   {i===2 && (
                     <div>
-                      <div style={{ display:'flex',gap:8,marginBottom:12 }}>
-                        {['Equipment','OBS Scenes','Automation'].map(t=>(
-                          <div key={t} style={{ fontSize:10,fontWeight:600,color:t==='Equipment'?s.color:'#4b5563',borderBottom:`2px solid ${t==='Equipment'?s.color:'transparent'}`,padding:'4px 0',cursor:'pointer' }}>{t}</div>
+                      {/* Show planner mockup */}
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px', marginBottom:10 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.08em' }}>Show Name</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:'#fff' }}>Friday Night Flash Sale</div>
+                      </div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px', marginBottom:10 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>Platforms</div>
+                        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                          {[['TT','#f43f5e'],['IG','#ec4899'],['YT','#ff0000']].map(([p,c])=>(
+                            <div key={p} style={{ display:'flex',alignItems:'center',gap:4,background:`${c}15`,border:`1px solid ${c}33`,borderRadius:6,padding:'3px 8px' }}>
+                              <div style={{ width:5,height:5,borderRadius:'50%',background:c }} />
+                              <span style={{ fontSize:9,fontWeight:700,color:c }}>{p}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px' }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>AI Run Order</div>
+                        {[{n:'Silk Wrap Midi Dress',ai:9.6},{n:'Merino Wool Blazer',ai:9.4},{n:'Spring Style Bundle',ai:9.2}].map((p,pi)=>(
+                          <div key={p.n} style={{ display:'flex',alignItems:'center',gap:8,marginBottom:6 }}>
+                            <span style={{ fontSize:9,fontWeight:800,color:'#374151',width:14 }}>{pi+1}</span>
+                            <span style={{ fontSize:10,color:'#d1d5db',flex:1 }}>{p.n}</span>
+                            <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:s.color }}>AI {p.ai}</span>
+                          </div>
                         ))}
                       </div>
-                      {[{n:'Sony FX3',t:'Camera',icon:'📷',badge:'SDK'},{n:'Sony FX6',t:'Camera',icon:'🎥',badge:'SDK'},{n:'DJI RS4 Pro',t:'Gimbal',icon:'🎛',badge:'BT'},{n:'Elgato Key Light',t:'Light',icon:'💡',badge:'HTTP'}].map(d=>(
-                        <div key={d.n} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 10px',background:'#0d0d1e',border:`1px solid ${s.color}22`,borderRadius:9,marginBottom:6 }}>
-                          <span style={{ fontSize:16 }}>{d.icon}</span>
-                          <div style={{ flex:1, minWidth:0 }}><div style={{ fontSize:11,fontWeight:700,color:'#fff' }}>{d.n}</div><div style={{ fontSize:9,color:'#4b5563' }}>{d.t}</div></div>
-                          <span style={{ fontSize:8,fontWeight:700,color:s.color,background:`${s.color}15`,padding:'2px 6px',borderRadius:4 }}>{d.badge}</span>
-                          <div style={{ width:6,height:6,borderRadius:'50%',background:'#10b981',flexShrink:0,animation:'pulse 2s infinite' }} />
-                        </div>
-                      ))}
                     </div>
                   )}
                 </div>
@@ -644,14 +664,13 @@ function Landing() {
             })}
           </div>
 
-          {/* Enterprise callout */}
           <div className="enterprise-row" style={{ marginTop:20, background:'linear-gradient(135deg,#0f0a1e,#12102a)', border:'1px solid #7c3aed33', borderRadius:16, padding:'24px', display:'flex', alignItems:'center', gap:20, flexWrap:'wrap' }}>
             <div style={{ width:44, height:44, borderRadius:12, background:'#2d1f5e44', border:'1px solid #7c3aed44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }}>🏢</div>
             <div style={{ flex:1, minWidth:180 }}>
               <div style={{ fontSize:15, fontWeight:700, color:'#fff', marginBottom:4 }}>Running an agency or seller network?</div>
               <div style={{ fontSize:13, color:'#6b7280' }}>Enterprise includes white labeling, unlimited team seats, dedicated support, and custom integrations.</div>
             </div>
-            <button onClick={()=>document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})} className="cta-btn" style={{ background:'linear-gradient(135deg,#4c1d95,#7c3aed)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 24px', borderRadius:10, cursor:'pointer', whiteSpace:'nowrap' }}>Talk to Sales →</button>
+            <button className="cta-btn" style={{ background:'linear-gradient(135deg,#4c1d95,#7c3aed)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 24px', borderRadius:10, cursor:'pointer', whiteSpace:'nowrap' }}>Talk to Sales →</button>
           </div>
         </div>
 
@@ -677,9 +696,9 @@ function Landing() {
           <div className="divider-glow" style={{ marginBottom:56 }} />
           <span className="section-label">Get started</span>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(26px,4.5vw,48px)', fontWeight:800, color:'#fff', letterSpacing:'-1.5px', lineHeight:1.1, marginBottom:16 }}>
-            Your buyers are waiting.<br/><span className="gradient-text">Don't let them forget you.</span>
+            Stream everywhere.<br/>Attribute every sale.<br/><span className="gradient-text">Delight every buyer.</span>
           </div>
-          <p style={{ fontSize:15, color:'#6b7280', marginBottom:32, lineHeight:1.65 }}>Join the beta and get full access while we build. Your feedback shapes the product.</p>
+          <p style={{ fontSize:15, color:'#6b7280', marginBottom:32, lineHeight:1.65 }}>Join the beta and get full access while we build. Every platform, every feature, your feedback shapes what's next.</p>
           <div className="cta-btns" style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
             <button onClick={()=>navigate('/checkout?plan=growth')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'13px 32px', borderRadius:11, cursor:'pointer' }}>
               Start with Growth →
@@ -699,7 +718,7 @@ function Landing() {
                   <div style={{ width:26, height:26, borderRadius:8, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#fff' }}>S</div>
                   <span style={{ fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:800, color:'#fff' }}>Streamlive</span>
                 </div>
-                <p style={{ fontSize:12, color:'#374151', lineHeight:1.7, margin:0 }}>The operating system for live commerce sellers. CRM, production, analytics, and campaigns in one platform.</p>
+                <p style={{ fontSize:12, color:'#374151', lineHeight:1.7, margin:0 }}>The live selling command center. Stream everywhere, attribute every sale, delight every buyer — across all 5 platforms simultaneously.</p>
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Product</div>
@@ -707,7 +726,7 @@ function Landing() {
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Platforms</div>
-                {['Whatnot','TikTok Shop','Instagram Live','Amazon Live'].map(l=><div key={l} style={{ fontSize:13, color:'#374151', marginBottom:8 }}>{l}</div>)}
+                {['Whatnot','TikTok Shop','Instagram Live','Amazon Live','YouTube Live'].map(l=><div key={l} style={{ fontSize:13, color:'#374151', marginBottom:8 }}>{l}</div>)}
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Company</div>
