@@ -1700,7 +1700,7 @@ function ScreenLive({ buyers, navigate, params }) {
   const addedProducts   = PRODUCTS.filter(p=>currentItems.includes(p.id));
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", background:"#050510" }}>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", minHeight:0, background:"#050510" }}>
 
       {/* ── LIVE HEADER ── */}
       <div style={{ background:"#090916", borderBottom:`1px solid ${C.border}`, padding:"10px 24px", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>
@@ -5454,8 +5454,9 @@ function ScreenShowPlanner({ navigate }) {
                 </div>
               </div>
             )}
-            <div style={{ marginTop:24, display:"flex", justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(2)} disabled={selectedPlatforms.length===0} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer", opacity:selectedPlatforms.length===0?0.4:1 }}>
+            <div style={{ marginTop:24, display:"flex", justifyContent:"flex-end", alignItems:"center", gap:12 }}>
+              {!showName && <span style={{ fontSize:11, color:"#f59e0b" }}>⚠ Enter a show name to continue</span>}
+              <button onClick={()=>setStep(2)} disabled={selectedPlatforms.length===0 || !showName.trim()} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:selectedPlatforms.length===0||!showName.trim()?"not-allowed":"pointer", opacity:selectedPlatforms.length===0||!showName.trim()?0.4:1 }}>
                 Select Products →
               </button>
             </div>
@@ -9635,7 +9636,7 @@ export default function StreamlivePrototype() {
           </div>
 
           {/* ── MAIN CONTENT ── */}
-          <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
+          <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column", minHeight:0 }}>
             {isEnterprise ? (
               <>
                 {(view==="network"||view==="dashboard") && <ScreenNetwork          persona={persona} navigate={navigate} />}
