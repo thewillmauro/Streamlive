@@ -2096,8 +2096,10 @@ function LiveCursor() {
     const styleEl = document.createElement('style');
     styleEl.id = 'live-cursor-hide';
     styleEl.textContent = `
-      html, body, * { cursor: none !important; }
-      html, body, *:hover, *:focus, *:active { cursor: none !important; }
+      html, body { cursor: none !important; }
+      *:not(button):not(a):not(input):not(select):not(textarea):not([role="button"]) { cursor: none !important; }
+      button, a, input, select, textarea, [role="button"], label { cursor: pointer !important; }
+      button:disabled, input[type="text"]:not([disabled]), input[type="email"]:not([disabled]) { cursor: default !important; }
     `;
     document.head.appendChild(styleEl);
 
@@ -2188,7 +2190,7 @@ export default function App() {
           100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
         }
       `}</style>
-      {route !== '/' && <LiveCursor />}
+      <LiveCursor />
       {route === '/app'         ? <StreamlivePrototype /> :
        route === '/checkout'    ? <Checkout /> :
        route === '/welcome'     ? <Welcome /> :
