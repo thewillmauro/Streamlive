@@ -184,6 +184,9 @@ function Landing() {
   const [faqOpen, setFaqOpen] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [liveGmv, setLiveGmv] = useState(0)
+  const [demoModal, setDemoModal] = useState(false)
+  const [demoEmail, setDemoEmail] = useState('')
+  const [demoEmailSent, setDemoEmailSent] = useState(false)
 
   useEffect(() => {
     // Simulate realistic live show GMV ticking up
@@ -214,6 +217,20 @@ function Landing() {
     const t = setTimeout(tick, 800)
     return () => clearTimeout(t)
   }, [])
+
+  const openDemo = () => {
+    // If already captured email this session, go straight through
+    if (sessionStorage.getItem('sl_demo_access')) { openDemo(); return; }
+    setDemoModal(true);
+  }
+
+  const submitDemoEmail = async () => {
+    if (!demoEmail.includes('@')) return;
+    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate' }) }) } catch(e) {}
+    sessionStorage.setItem('sl_demo_access', '1');
+    setDemoEmailSent(true);
+    setTimeout(() => { setDemoModal(false); openDemo(); }, 1200);
+  }
 
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
 
@@ -383,7 +400,7 @@ function Landing() {
           <div className="nav-links" style={{ alignItems:'center', gap:20 }}>
             <a href="#features" style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
             <a href="#pricing"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-            <button onClick={()=>navigate('/app')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Open App →</button>
+            <button onClick={()=>openDemo()} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Open App →</button>
           </div>
           <button className="nav-hamburger" onClick={()=>setMenuOpen(m=>!m)} style={{ background:'none', border:'1px solid #1e1e3a', borderRadius:8, color:'#9ca3af', padding:'6px 10px', cursor:'pointer', fontSize:16, display:'none', alignItems:'center', justifyContent:'center' }}>
             {menuOpen ? '✕' : '☰'}
@@ -393,7 +410,7 @@ function Landing() {
         <div className={`mobile-menu${menuOpen?' open':''}`} style={{ background:'#07070f', borderBottom:'1px solid #14142a', padding:'16px 24px', gap:0, position:'sticky', top:58, zIndex:49 }}>
           <a href="#features" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
           <a href="#pricing"  style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-          <button onClick={()=>{setMenuOpen(false);navigate('/app')}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Open App →</button>
+          <button onClick={()=>{setMenuOpen(false);openDemo()}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Open App →</button>
         </div>
 
         {/* ── HERO ─────────────────────────────────────────────────────────── */}
@@ -521,7 +538,7 @@ function Landing() {
             <span className="section-label">✦ Interactive Demo</span>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,4vw,26px)', fontWeight:800, color:'#fff', marginBottom:12, letterSpacing:'-0.5px' }}>Every screen is built and working right now</div>
             <p style={{ fontSize:14, color:'#6b7280', maxWidth:520, margin:'0 auto 24px', lineHeight:1.65 }}>Buyer CRM, Live Companion with all 5 platforms, YouTube Live Pixel, analytics, production suite, loyalty hub, show planner, and more. All fully interactive.</p>
-            <button onClick={()=>navigate('/app')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'13px 32px', borderRadius:11, cursor:'pointer' }}>Open Interactive Demo →</button>
+            <button onClick={()=>openDemo()} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'13px 32px', borderRadius:11, cursor:'pointer' }}>Open Interactive Demo →</button>
           </div>
         </div>
 
@@ -735,7 +752,7 @@ function Landing() {
           </div>
 
           <div className="pricing-grid" style={{ display:'grid' }}>
-            {Object.values(PLANS).map(p=>{
+            {Object.values(PLANS).filter(p=>p.id!=='enterprise').map(p=>{
               const displayPrice = billingCycle==='annual' ? Math.round(p.price*(1-annualDiscount)) : p.price
               const isEnt = p.id==='enterprise'
               return (
@@ -824,7 +841,7 @@ function Landing() {
             <button onClick={()=>navigate('/checkout?plan=growth')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'13px 32px', borderRadius:11, cursor:'pointer' }}>
               Start with Growth →
             </button>
-            <button onClick={()=>navigate('/app')} className="cta-btn" style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'13px 28px', borderRadius:11, cursor:'pointer' }}>
+            <button onClick={()=>openDemo()} className="cta-btn" style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'13px 28px', borderRadius:11, cursor:'pointer' }}>
               Explore the demo
             </button>
           </div>
@@ -863,6 +880,76 @@ function Landing() {
 
       </div>
     </>
+      {/* ── DEMO EMAIL GATE MODAL ── */}
+      {demoModal && (
+        <div onClick={e=>{ if(e.target===e.currentTarget) setDemoModal(false); }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.85)', backdropFilter:'blur(12px)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #1e1e3a', borderRadius:22, padding:'40px 36px', maxWidth:420, width:'100%', position:'relative', boxShadow:'0 32px 80px rgba(0,0,0,.8)' }}>
+            {/* Close */}
+            <button onClick={()=>setDemoModal(false)} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'#374151', fontSize:18, cursor:'pointer', lineHeight:1 }}>✕</button>
+
+            {/* Animated glow */}
+            <div style={{ position:'absolute', top:-60, left:'50%', transform:'translateX(-50%)', width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.08, filter:'blur(60px)', pointerEvents:'none' }}/>
+
+            {demoEmailSent ? (
+              <div style={{ textAlign:'center', padding:'12px 0' }}>
+                <div style={{ fontSize:44, marginBottom:16 }}>✓</div>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', marginBottom:8 }}>You're in!</div>
+                <div style={{ fontSize:13, color:'#6b7280' }}>Opening the demo now…</div>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div style={{ textAlign:'center', marginBottom:28 }}>
+                  <div style={{ width:52, height:52, borderRadius:14, background:'linear-gradient(135deg,#7c3aed22,#4f46e522)', border:'1px solid #7c3aed44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>🚀</div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', letterSpacing:'-0.4px', marginBottom:8 }}>Access the live demo</div>
+                  <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.6 }}>Enter your email to explore every screen. Fully interactive — no credit card needed.</div>
+                </div>
+
+                {/* What you get */}
+                <div style={{ background:'#0a0a14', border:'1px solid #14142a', borderRadius:12, padding:'12px 16px', marginBottom:22 }}>
+                  {[
+                    { icon:'◉', label:'Buyer CRM across all platforms' },
+                    { icon:'◈', label:'Live Companion during a real show' },
+                    { icon:'◑', label:'Analytics & AI Insights' },
+                    { icon:'◆', label:'Show Planner + Production Suite' },
+                  ].map(r => (
+                    <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'5px 0' }}>
+                      <span style={{ fontSize:12, color:'#7c3aed' }}>{r.icon}</span>
+                      <span style={{ fontSize:12, color:'#9ca3af' }}>{r.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Email input */}
+                <div style={{ marginBottom:14 }}>
+                  <input
+                    type="email"
+                    value={demoEmail}
+                    onChange={e=>setDemoEmail(e.target.value)}
+                    onKeyDown={e=>e.key==='Enter'&&submitDemoEmail()}
+                    placeholder="your@email.com"
+                    autoFocus
+                    style={{ width:'100%', background:'#07070f', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
+                  />
+                </div>
+
+                <button
+                  onClick={submitDemoEmail}
+                  disabled={!demoEmail.includes('@')}
+                  className="cta-btn"
+                  style={{ width:'100%', background: demoEmail.includes('@') ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : '#1a1a2e', border:'none', color: demoEmail.includes('@') ? '#fff' : '#374151', fontSize:14, fontWeight:700, padding:'13px', borderRadius:10, cursor: demoEmail.includes('@') ? 'pointer' : 'default', transition:'all .15s' }}
+                >
+                  Open the Demo →
+                </button>
+
+                <div style={{ fontSize:10, color:'#374151', textAlign:'center', marginTop:10 }}>
+                  No spam. We'll share product updates occasionally.
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
   )
 }
 
