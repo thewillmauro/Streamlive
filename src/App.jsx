@@ -184,9 +184,14 @@ function Landing() {
   const [faqOpen, setFaqOpen] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [liveGmv, setLiveGmv] = useState(0)
+  // Demo gate modal
   const [demoModal, setDemoModal] = useState(false)
   const [demoEmail, setDemoEmail] = useState('')
   const [demoEmailSent, setDemoEmailSent] = useState(false)
+  // Contact Sales modal
+  const [salesModal, setSalesModal] = useState(false)
+  const [salesForm, setSalesForm] = useState({ firstName:'', lastName:'', email:'', phone:'' })
+  const [salesSent, setSalesSent] = useState(false)
 
   useEffect(() => {
     // Simulate realistic live show GMV ticking up
@@ -218,21 +223,32 @@ function Landing() {
     return () => clearTimeout(t)
   }, [])
 
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
+
   const openDemo = () => {
-    // If already captured email this session, go straight through
     if (sessionStorage.getItem('sl_demo_access')) { navigate('/app'); return; }
-    setDemoModal(true);
+    setDemoModal(true)
   }
 
   const submitDemoEmail = async () => {
-    if (!demoEmail.includes('@')) return;
+    if (!demoEmail.includes('@')) return
     try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate' }) }) } catch(e) {}
-    sessionStorage.setItem('sl_demo_access', '1');
-    setDemoEmailSent(true);
-    setTimeout(() => { setDemoModal(false); navigate('/app'); }, 1200);
+    sessionStorage.setItem('sl_demo_access', '1')
+    setDemoEmailSent(true)
+    setTimeout(() => { setDemoModal(false); navigate('/app'); }, 1400)
   }
 
-  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
+  const openSales = () => {
+    setSalesForm({ firstName:'', lastName:'', email:'', phone:'' })
+    setSalesSent(false)
+    setSalesModal(true)
+  }
+
+  const submitSales = async () => {
+    if (!salesForm.firstName || !salesForm.email.includes('@')) return
+    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ...salesForm, source: 'contact_sales' }) }) } catch(e) {}
+    setSalesSent(true)
+  }
 
   const handleSubmit = async () => {
     if (!email.includes('@')) return
@@ -797,7 +813,7 @@ function Landing() {
                     )}
                   </div>
                   {p.contactSales ? (
-                    <button className="cta-btn" style={{ width:'100%', background:`${p.color}18`, border:`1px solid ${p.color}44`, color:p.color, fontSize:12, fontWeight:700, padding:'11px', borderRadius:10, cursor:'pointer' }}>Contact Sales →</button>
+                    <button onClick={openSales} className="cta-btn" style={{ width:'100%', background:`${p.color}18`, border:`1px solid ${p.color}44`, color:p.color, fontSize:12, fontWeight:700, padding:'11px', borderRadius:10, cursor:'pointer' }}>Contact Sales →</button>
                   ) : (
                     <button onClick={()=>navigate(`/checkout?plan=${p.id}`)} className="cta-btn"
                       style={{ width:'100%', background:p.popular?'linear-gradient(135deg,#7c3aed,#4f46e5)':`${p.color}18`, border:`1px solid ${p.color}44`, color:p.popular?'#fff':p.color, fontSize:12, fontWeight:700, padding:'11px', borderRadius:10, cursor:'pointer' }}>
@@ -816,7 +832,7 @@ function Landing() {
               <div style={{ fontSize:15, fontWeight:700, color:'#fff', marginBottom:4 }}>Running an agency or seller network?</div>
               <div style={{ fontSize:13, color:'#6b7280' }}>Enterprise includes white labeling, unlimited team seats, dedicated support, and custom integrations.</div>
             </div>
-            <button className="cta-btn" style={{ background:'linear-gradient(135deg,#4c1d95,#7c3aed)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 24px', borderRadius:10, cursor:'pointer', whiteSpace:'nowrap' }}>Talk to Sales →</button>
+            <button onClick={openSales} className="cta-btn" style={{ background:'linear-gradient(135deg,#4c1d95,#7c3aed)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 24px', borderRadius:10, cursor:'pointer', whiteSpace:'nowrap' }}>Talk to Sales →</button>
           </div>
         </div>
 
@@ -889,70 +905,123 @@ function Landing() {
       </div>
       {/* ── DEMO EMAIL GATE MODAL ── */}
       {demoModal && (
-        <div onClick={e=>{ if(e.target===e.currentTarget) setDemoModal(false); }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.85)', backdropFilter:'blur(12px)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-          <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #1e1e3a', borderRadius:22, padding:'40px 36px', maxWidth:420, width:'100%', position:'relative', boxShadow:'0 32px 80px rgba(0,0,0,.8)' }}>
-            {/* Close */}
-            <button onClick={()=>setDemoModal(false)} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'#374151', fontSize:18, cursor:'pointer', lineHeight:1 }}>✕</button>
-
-            {/* Animated glow */}
-            <div style={{ position:'absolute', top:-60, left:'50%', transform:'translateX(-50%)', width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.08, filter:'blur(60px)', pointerEvents:'none' }}/>
-
+        <div onClick={e=>{ if(e.target===e.currentTarget) setDemoModal(false) }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.88)', backdropFilter:'blur(14px)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #2a2a4a', borderRadius:22, padding:'40px 36px', maxWidth:420, width:'100%', position:'relative', boxShadow:'0 40px 100px rgba(0,0,0,.9)' }}>
+            <button onClick={()=>setDemoModal(false)} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'#4b5563', fontSize:20, cursor:'pointer', lineHeight:1, padding:'4px 8px' }}>✕</button>
+            <div style={{ position:'absolute', top:-60, left:'50%', transform:'translateX(-50%)', width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.07, filter:'blur(60px)', pointerEvents:'none' }}/>
             {demoEmailSent ? (
-              <div style={{ textAlign:'center', padding:'12px 0' }}>
-                <div style={{ fontSize:44, marginBottom:16 }}>✓</div>
-                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', marginBottom:8 }}>You're in!</div>
-                <div style={{ fontSize:13, color:'#6b7280' }}>Opening the demo now…</div>
+              <div style={{ textAlign:'center', padding:'20px 0' }}>
+                <div style={{ fontSize:52, marginBottom:16 }}>🚀</div>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:'#fff', marginBottom:8 }}>You're in!</div>
+                <div style={{ fontSize:14, color:'#6b7280' }}>Opening the demo now…</div>
               </div>
             ) : (
-              <>
-                {/* Header */}
+              <div>
                 <div style={{ textAlign:'center', marginBottom:28 }}>
-                  <div style={{ width:52, height:52, borderRadius:14, background:'linear-gradient(135deg,#7c3aed22,#4f46e522)', border:'1px solid #7c3aed44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, margin:'0 auto 16px' }}>🚀</div>
-                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', letterSpacing:'-0.4px', marginBottom:8 }}>Access the live demo</div>
-                  <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.6 }}>Enter your email to explore every screen. Fully interactive — no credit card needed.</div>
+                  <div style={{ width:56, height:56, borderRadius:16, background:'linear-gradient(135deg,#7c3aed22,#4f46e522)', border:'1px solid #7c3aed44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, margin:'0 auto 16px' }}>🚀</div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', letterSpacing:'-0.4px', marginBottom:8 }}>Try the interactive demo</div>
+                  <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.65 }}>Enter your email to get full access. No credit card needed.</div>
                 </div>
-
-                {/* What you get */}
-                <div style={{ background:'#0a0a14', border:'1px solid #14142a', borderRadius:12, padding:'12px 16px', marginBottom:22 }}>
-                  {[
-                    { icon:'◉', label:'Buyer CRM across all platforms' },
-                    { icon:'◈', label:'Live Companion during a real show' },
-                    { icon:'◑', label:'Analytics & AI Insights' },
-                    { icon:'◆', label:'Show Planner + Production Suite' },
-                  ].map(r => (
-                    <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'5px 0' }}>
-                      <span style={{ fontSize:12, color:'#7c3aed' }}>{r.icon}</span>
-                      <span style={{ fontSize:12, color:'#9ca3af' }}>{r.label}</span>
+                <div style={{ background:'#07070f', border:'1px solid #14142a', borderRadius:12, padding:'12px 16px', marginBottom:20 }}>
+                  {[['◉','Buyer CRM across all platforms'],['◈','Live Companion & real-time show data'],['◑','Analytics & AI Insights'],['◆','Show Planner + Production Suite']].map(([icon,label]) => (
+                    <div key={label} style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 0', borderBottom:'1px solid #0d0d1a' }}>
+                      <span style={{ fontSize:13, color:'#7c3aed', flexShrink:0 }}>{icon}</span>
+                      <span style={{ fontSize:13, color:'#9ca3af' }}>{label}</span>
                     </div>
                   ))}
                 </div>
-
-                {/* Email input */}
-                <div style={{ marginBottom:14 }}>
-                  <input
-                    type="email"
-                    value={demoEmail}
-                    onChange={e=>setDemoEmail(e.target.value)}
-                    onKeyDown={e=>e.key==='Enter'&&submitDemoEmail()}
-                    placeholder="your@email.com"
-                    autoFocus
-                    style={{ width:'100%', background:'#07070f', border:'1px solid #1e1e3a', borderRadius:10, padding:'12px 14px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
-                  />
-                </div>
-
+                <input
+                  type="email"
+                  value={demoEmail}
+                  onChange={e=>setDemoEmail(e.target.value)}
+                  onKeyDown={e=>{ if(e.key==='Enter') submitDemoEmail() }}
+                  placeholder="your@email.com"
+                  autoFocus
+                  style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'13px 14px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif", marginBottom:12 }}
+                />
                 <button
                   onClick={submitDemoEmail}
-                  disabled={!demoEmail.includes('@')}
-                  className="cta-btn"
-                  style={{ width:'100%', background: demoEmail.includes('@') ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : '#1a1a2e', border:'none', color: demoEmail.includes('@') ? '#fff' : '#374151', fontSize:14, fontWeight:700, padding:'13px', borderRadius:10, cursor: demoEmail.includes('@') ? 'pointer' : 'default', transition:'all .15s' }}
+                  style={{ width:'100%', background: demoEmail.includes('@') ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : '#141428', border:'none', color: demoEmail.includes('@') ? '#fff' : '#374151', fontSize:14, fontWeight:700, padding:'14px', borderRadius:10, cursor: demoEmail.includes('@') ? 'pointer' : 'default', transition:'all .15s' }}
                 >
                   Open the Demo →
                 </button>
+                <div style={{ fontSize:11, color:'#374151', textAlign:'center', marginTop:10 }}>No spam. Occasional product updates only.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-                <div style={{ fontSize:10, color:'#374151', textAlign:'center', marginTop:10 }}>
-                  No spam. We'll share product updates occasionally.
+      {/* ── CONTACT SALES MODAL ── */}
+      {salesModal && (
+        <div onClick={e=>{ if(e.target===e.currentTarget) setSalesModal(false) }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.88)', backdropFilter:'blur(14px)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #2a2a4a', borderRadius:22, padding:'40px 36px', maxWidth:440, width:'100%', position:'relative', boxShadow:'0 40px 100px rgba(0,0,0,.9)' }}>
+            <button onClick={()=>setSalesModal(false)} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'#4b5563', fontSize:20, cursor:'pointer', lineHeight:1, padding:'4px 8px' }}>✕</button>
+            <div style={{ position:'absolute', top:-60, left:'50%', transform:'translateX(-50%)', width:200, height:200, borderRadius:'50%', background:'#a78bfa', opacity:0.07, filter:'blur(60px)', pointerEvents:'none' }}/>
+            {salesSent ? (
+              <div style={{ textAlign:'center', padding:'20px 0' }}>
+                <div style={{ fontSize:52, marginBottom:16 }}>🎉</div>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:'#fff', marginBottom:10 }}>We'll be in touch!</div>
+                <div style={{ fontSize:14, color:'#6b7280', lineHeight:1.65 }}>Thanks for reaching out. Our team will contact you within one business day.</div>
+                <button onClick={()=>setSalesModal(false)} style={{ marginTop:24, background:'#1a1a2e', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:13, fontWeight:600, padding:'10px 24px', borderRadius:10, cursor:'pointer' }}>Close</button>
+              </div>
+            ) : (
+              <div>
+                <div style={{ textAlign:'center', marginBottom:28 }}>
+                  <div style={{ width:56, height:56, borderRadius:16, background:'linear-gradient(135deg,#a78bfa22,#7c3aed22)', border:'1px solid #a78bfa44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, margin:'0 auto 16px' }}>🏢</div>
+                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', letterSpacing:'-0.4px', marginBottom:8 }}>Talk to Sales</div>
+                  <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.65 }}>Tell us about your team. We'll reach out with custom pricing and a walkthrough.</div>
                 </div>
-              </>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
+                  <div>
+                    <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>First Name *</label>
+                    <input
+                      type="text"
+                      value={salesForm.firstName}
+                      onChange={e=>setSalesForm(f=>({...f, firstName:e.target.value}))}
+                      placeholder="Jamie"
+                      style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Last Name</label>
+                    <input
+                      type="text"
+                      value={salesForm.lastName}
+                      onChange={e=>setSalesForm(f=>({...f, lastName:e.target.value}))}
+                      placeholder="Ellis"
+                      style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginBottom:12 }}>
+                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Work Email *</label>
+                  <input
+                    type="email"
+                    value={salesForm.email}
+                    onChange={e=>setSalesForm(f=>({...f, email:e.target.value}))}
+                    placeholder="jamie@company.com"
+                    style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
+                  />
+                </div>
+                <div style={{ marginBottom:20 }}>
+                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Phone Number</label>
+                  <input
+                    type="tel"
+                    value={salesForm.phone}
+                    onChange={e=>setSalesForm(f=>({...f, phone:e.target.value}))}
+                    placeholder="(555) 000-0000"
+                    style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
+                  />
+                </div>
+                <button
+                  onClick={submitSales}
+                  style={{ width:'100%', background: (salesForm.firstName && salesForm.email.includes('@')) ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : '#141428', border:'none', color: (salesForm.firstName && salesForm.email.includes('@')) ? '#fff' : '#374151', fontSize:14, fontWeight:700, padding:'14px', borderRadius:10, cursor: (salesForm.firstName && salesForm.email.includes('@')) ? 'pointer' : 'default', transition:'all .15s' }}
+                >
+                  Get in Touch →
+                </button>
+                <div style={{ fontSize:11, color:'#374151', textAlign:'center', marginTop:10 }}>We respond within one business day.</div>
+              </div>
             )}
           </div>
         </div>
