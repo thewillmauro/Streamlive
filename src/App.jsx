@@ -887,15 +887,32 @@ function Landing() {
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Product</div>
-                {['Features','Pricing','Changelog','Roadmap'].map(l=><div key={l} style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer' }}>{l}</div>)}
+                {[
+                  {label:'Features', action:()=>document.getElementById('features')?.scrollIntoView({behavior:'smooth'})},
+                  {label:'Pricing',  action:()=>document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})},
+                  {label:'Changelog',action:()=>navigate('/changelog')},
+                  {label:'Roadmap',  action:()=>navigate('/roadmap')},
+                ].map(({label,action})=>(
+                  <div key={label} onClick={action} className="footer-link-hover" style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer', transition:'color .15s' }}>{label}</div>
+                ))}
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Platforms</div>
-                {['Whatnot','TikTok Shop','Instagram Live','Amazon Live','YouTube Live'].map(l=><div key={l} style={{ fontSize:13, color:'#374151', marginBottom:8 }}>{l}</div>)}
+                {[['Whatnot','whatnot'],['TikTok Shop','tiktok'],['Instagram Live','instagram'],['Amazon Live','amazon'],['YouTube Live','youtube']].map(([l,slug])=>(
+                  <div key={l} onClick={()=>navigate(`/platform/${slug}`)} style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer', transition:'color .15s' }} onMouseEnter={e=>e.target.style.color='#9ca3af'} onMouseLeave={e=>e.target.style.color='#374151'}>{l}</div>
+                ))}
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Company</div>
-                {['About','Blog','Privacy Policy','Terms of Service','Contact'].map(l=><a key={l} href="#" style={{ display:'block', fontSize:13, color:'#374151', marginBottom:8, textDecoration:'none' }}>{l}</a>)}
+                {[
+                  {label:'About',           path:'/about'},
+                  {label:'Blog',            path:'/blog'},
+                  {label:'Privacy Policy',  path:'/privacy'},
+                  {label:'Terms of Service',path:'/terms'},
+                  {label:'Contact',         path:'/contact'},
+                ].map(({label,path})=>(
+                  <div key={label} onClick={()=>navigate(path)} className="footer-link-hover" style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer', transition:'color .15s' }}>{label}</div>
+                ))}
               </div>
             </div>
             <div style={{ borderTop:'1px solid #0d0d1a', paddingTop:20, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
@@ -1034,1151 +1051,8 @@ function Landing() {
 }
 
 
-// ─── CHECKOUT ─────────────────────────────────────────────────────────────────
-function Checkout() {
-  const params = new URLSearchParams(window.location.search)
-  const [selectedPlan, setSelectedPlan] = useState(params.get('plan') || 'growth')
-  const p = PLANS[selectedPlan] || PLANS.growth
 
-  // Form fields
-  const [email,    setEmail]    = useState('')
-  const [name,     setName]     = useState('')
-  const [cardNum,  setCardNum]  = useState('')
-  const [expiry,   setExpiry]   = useState('')
-  const [cvc,      setCvc]      = useState('')
-  const [agreed,   setAgreed]   = useState(false)
-  const [stage,    setStage]    = useState('idle') // idle | processing | success | error
-  const [errMsg,   setErrMsg]   = useState('')
-
-  // Card brand detection
-  const cardBrand = (() => {
-    const n = cardNum.replace(/\s/g,'')
-    if (/^4/.test(n))          return { name:'Visa',       logo:'VISA',  color:'#1a1f71' }
-    if (/^5[1-5]/.test(n))     return { name:'Mastercard', logo:'MC',    color:'#eb001b' }
-    if (/^3[47]/.test(n))      return { name:'Amex',       logo:'AMEX',  color:'#2E77BC' }
-    if (/^6011|^65/.test(n))   return { name:'Discover',   logo:'DISC',  color:'#e65c1e' }
-    return null
-  })()
-
-  // Format card number with spaces
-  const formatCard = (val) => {
-    const digits = val.replace(/\D/g,'').slice(0,16)
-    return digits.replace(/(.{4})/g,'$1 ').trim()
-  }
-  const formatExpiry = (val) => {
-    const digits = val.replace(/\D/g,'').slice(0,4)
-    if (digits.length >= 3) return digits.slice(0,2) + '/' + digits.slice(2)
-    return digits
-  }
-
-  // Validation
-  const isValidEmail  = email.includes('@') && email.includes('.')
-  const isValidName   = name.trim().length > 2
-  const rawCard       = cardNum.replace(/\s/g,'')
-  const isValidCard   = rawCard.length === 16
-  const isValidExpiry = /^\d{2}\/\d{2}$/.test(expiry) && (() => {
-    const [m,y] = expiry.split('/').map(Number)
-    const now = new Date(); const nm = now.getMonth()+1; const ny = now.getFullYear()%100
-    return m >= 1 && m <= 12 && (y > ny || (y === ny && m >= nm))
-  })()
-  const isValidCvc    = cvc.length >= 3
-  const canPay = isValidEmail && isValidName && isValidCard && isValidExpiry && isValidCvc && agreed
-
-  const handlePay = async () => {
-    if (!canPay || stage !== 'idle') return
-    setStage('processing')
-    setErrMsg('')
-    // Simulate payment processing (1.8s) then go to /welcome
-    await new Promise(r => setTimeout(r, 1800))
-    navigate(`/welcome?plan=${selectedPlan}`)
-  }
-
-  const TRUST = [
-    { icon:'🔒', label:'SSL Encrypted',   sub:'Your card data never touches our servers' },
-    { icon:'↩',  label:'Cancel anytime',  sub:'No contracts. No fees. Ever.' },
-    { icon:'✉',  label:'Instant receipt', sub:'Confirmation email within seconds' },
-  ]
-
-  const inputStyle = (valid, touched) => ({
-    width:'100%', background:'#07070f',
-    border:`1px solid ${touched && !valid ? '#ef444466' : touched && valid ? '#10b98144' : '#1e1e3a'}`,
-    borderRadius:10, padding:'11px 14px', color:'#fff', fontSize:14,
-    outline:'none', transition:'border-color .15s', fontFamily:"'DM Sans',sans-serif"
-  })
-
-  return (
-    <>
-      <style>{FONT}</style><style>{GLOBAL_CSS}</style>
-      <style>{`
-        .card-input-wrap { position:relative; }
-        .card-brand-badge { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:9px; font-weight:900; padding:2px 6px; border-radius:4px; letter-spacing:.05em; }
-        @keyframes checkPop { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
-        .check-pop { animation: checkPop .35s ease both; }
-      `}</style>
-      <div style={{ minHeight:'100vh', background:'#06060e', overflowY:'auto' }}>
-        <Nav currentPlan={selectedPlan} />
-
-        <div style={{ maxWidth:1080, margin:'0 auto', padding:'20px 32px 0' }}>
-          <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', color:'#4b5563', fontSize:12, cursor:'pointer', padding:0 }}>← Back to plans</button>
-        </div>
-        <div style={{ maxWidth:1080, margin:'0 auto', padding:'20px 32px 0' }}>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:26, fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:4 }}>Complete your subscription</div>
-          <div style={{ fontSize:13, color:'#4b5563' }}>Pay securely below. You'll never leave Streamlive.</div>
-        </div>
-
-        <div style={{ maxWidth:1080, margin:'0 auto', padding:'28px 32px 80px', display:'grid', gridTemplateColumns:'1fr 460px', gap:32, alignItems:'start' }}>
-
-          {/* LEFT - plan selector + features */}
-          <div>
-            <div style={{ marginBottom:28 }}>
-              <div style={{ fontSize:10, fontWeight:700, color:'#4b5563', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:14 }}>Select plan</div>
-              {Object.values(PLANS).map(plan => {
-                const sel = selectedPlan === plan.id
-                return (
-                  <div key={plan.id} onClick={()=>{ setSelectedPlan(plan.id); navigate(`/checkout?plan=${plan.id}`) }}
-                    style={{ background:sel?plan.bg:'#0a0a15', border:`1.5px solid ${sel?plan.color+'77':'#1e1e3a'}`, borderRadius:14, padding:'16px 20px', cursor:'pointer', transition:'all .18s', display:'flex', alignItems:'center', gap:16, marginBottom:10, position:'relative' }}>
-                    {plan.popular && !sel && <div style={{ position:'absolute', right:14, top:-8, background:'#7c3aed', color:'#fff', fontSize:9, fontWeight:700, padding:'2px 10px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.06em' }}>Popular</div>}
-                    <div style={{ width:42, height:42, borderRadius:12, background:sel?`${plan.color}20`:'#14142a', border:`1px solid ${sel?plan.color+'44':'#1e1e3a'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }}>{plan.emoji}</div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:sel?'#fff':'#9ca3af' }}>{plan.name}</div>
-                      <div style={{ fontSize:11, color:sel?'#6b7280':'#374151', marginTop:2 }}>{plan.tagline}</div>
-                    </div>
-                    <div style={{ textAlign:'right', flexShrink:0 }}>
-                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:700, color:sel?plan.color:'#374151' }}>${plan.price}</div>
-                      <div style={{ fontSize:10, color:'#374151' }}>/mo</div>
-                    </div>
-                    <div style={{ width:20, height:20, borderRadius:'50%', border:`2px solid ${sel?plan.color:'#374151'}`, background:sel?plan.color:'transparent', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', transition:'all .15s' }}>
-                      {sel && <div style={{ width:7, height:7, borderRadius:'50%', background:'#fff' }} />}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Features */}
-            <div style={{ background:'#0a0a15', border:'1px solid #14142a', borderRadius:16, padding:'22px 24px', marginBottom:20 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:18 }}>
-                <span style={{ fontSize:24 }}>{p.emoji}</span>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:15, fontWeight:700, color:'#fff' }}>{p.name}: What's Included</div>
-                  <div style={{ fontSize:11, color:'#4b5563', marginTop:2 }}>{p.tagline}</div>
-                </div>
-                <div style={{ textAlign:'right' }}>
-                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color:p.color }}>${p.price}</div>
-                  <div style={{ fontSize:10, color:'#4b5563' }}>per month</div>
-                </div>
-              </div>
-              <div style={{ borderTop:'1px solid #14142a', paddingTop:16, display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 16px' }}>
-                {p.features.map(f => (
-                  <div key={f} style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
-                    <span style={{ color:p.color, fontSize:12, flexShrink:0, marginTop:2 }}>✓</span>
-                    <span style={{ fontSize:12, color:'#9ca3af', lineHeight:1.5 }}>{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Trust */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
-              {TRUST.map(t => (
-                <div key={t.label} style={{ background:'#0a0a15', border:'1px solid #14142a', borderRadius:12, padding:'14px 16px' }}>
-                  <div style={{ fontSize:20, marginBottom:8 }}>{t.icon}</div>
-                  <div style={{ fontSize:11, fontWeight:700, color:'#d1d5db', marginBottom:4 }}>{t.label}</div>
-                  <div style={{ fontSize:10, color:'#4b5563', lineHeight:1.5 }}>{t.sub}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* RIGHT - payment form */}
-          <div style={{ position:'sticky', top:80 }}>
-            <div style={{ background:'linear-gradient(160deg,#0e0e1a,#09090f)', border:`1px solid ${p.color}33`, borderRadius:20, padding:28, boxShadow:`0 0 80px ${p.color}0d` }}>
-
-              {/* Order summary */}
-              <div style={{ marginBottom:22 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-                  <span style={{ fontSize:20 }}>{p.emoji}</span>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:16, fontWeight:700, color:'#fff' }}>{p.name} Plan</div>
-                    <div style={{ fontSize:11, color:'#4b5563' }}>{p.billing}</div>
-                  </div>
-                </div>
-                <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:14 }}>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:34, fontWeight:700, color:p.color }}>${p.price}</span>
-                  <span style={{ fontSize:13, color:'#4b5563' }}>/month</span>
-                </div>
-                <div style={{ background:'#0a0a15', border:'1px solid #14142a', borderRadius:10, padding:'10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                  <div>
-                    <div style={{ fontSize:12, fontWeight:600, color:'#d1d5db' }}>Streamlive {p.name}</div>
-                    <div style={{ fontSize:10, color:'#374151', marginTop:1 }}>Monthly · renews automatically</div>
-                  </div>
-                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:'#fff' }}>${p.price}.00</div>
-                </div>
-              </div>
-
-              {/* ── FORM ── */}
-              {stage === 'processing' ? (
-                /* Processing state */
-                <div style={{ textAlign:'center', padding:'28px 0' }}>
-                  <div style={{ width:52, height:52, border:'3px solid #1e1e3a', borderTop:`3px solid ${p.color}`, borderRadius:'50%', animation:'spin .8s linear infinite', margin:'0 auto 20px' }} />
-                  <div style={{ fontSize:15, fontWeight:700, color:'#fff', marginBottom:6 }}>Processing payment…</div>
-                  <div style={{ fontSize:12, color:'#4b5563' }}>Please don't close this tab</div>
-                </div>
-              ) : (
-                <div>
-                  {/* Email */}
-                  <div style={{ marginBottom:14 }}>
-                    <label style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.07em', display:'block', marginBottom:7 }}>Email Address</label>
-                    <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"
-                      style={inputStyle(isValidEmail, email.length > 0)} />
-                  </div>
-
-                  {/* Name on card */}
-                  <div style={{ marginBottom:14 }}>
-                    <label style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.07em', display:'block', marginBottom:7 }}>Name on Card</label>
-                    <input value={name} onChange={e=>setName(e.target.value)} placeholder="Jane Smith"
-                      style={inputStyle(isValidName, name.length > 0)} />
-                  </div>
-
-                  {/* Card number */}
-                  <div style={{ marginBottom:14 }}>
-                    <label style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.07em', display:'block', marginBottom:7 }}>Card Number</label>
-                    <div className="card-input-wrap">
-                      <input value={cardNum} onChange={e=>setCardNum(formatCard(e.target.value))} placeholder="1234 5678 9012 3456"
-                        style={{ ...inputStyle(isValidCard, cardNum.length > 0), fontFamily:"'JetBrains Mono',monospace", letterSpacing:'0.12em', paddingRight:64 }} />
-                      {cardBrand ? (
-                        <span className="card-brand-badge" style={{ background:cardBrand.color, color:'#fff' }}>{cardBrand.logo}</span>
-                      ) : cardNum.length > 0 ? (
-                        <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', fontSize:16 }}>💳</span>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {/* Expiry + CVC */}
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:18 }}>
-                    <div>
-                      <label style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.07em', display:'block', marginBottom:7 }}>Expiry</label>
-                      <input value={expiry} onChange={e=>setExpiry(formatExpiry(e.target.value))} placeholder="MM/YY"
-                        style={{ ...inputStyle(isValidExpiry, expiry.length > 0), fontFamily:"'JetBrains Mono',monospace", letterSpacing:'0.1em' }} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.07em', display:'block', marginBottom:7 }}>CVC</label>
-                      <input value={cvc} onChange={e=>setCvc(e.target.value.replace(/\D/g,'').slice(0,4))} placeholder="123"
-                        type="password"
-                        style={{ ...inputStyle(isValidCvc, cvc.length > 0), fontFamily:"'JetBrains Mono',monospace", letterSpacing:'0.2em' }} />
-                    </div>
-                  </div>
-
-                  {/* Terms */}
-                  <div style={{ display:'flex', gap:10, alignItems:'flex-start', marginBottom:20, cursor:'pointer' }} onClick={()=>setAgreed(v=>!v)}>
-                    <div style={{ width:18, height:18, borderRadius:5, border:`2px solid ${agreed?p.color:'#374151'}`, background:agreed?p.color:'transparent', flexShrink:0, marginTop:2, display:'flex', alignItems:'center', justifyContent:'center', transition:'all .15s' }}>
-                      {agreed && <span className="check-pop" style={{ fontSize:10, color:'#fff', fontWeight:800, lineHeight:1 }}>✓</span>}
-                    </div>
-                    <span style={{ fontSize:11, color:'#6b7280', lineHeight:1.65 }}>
-                      I agree to Streamlive's <a href="#" style={{ color:'#a78bfa', textDecoration:'none' }}>Terms</a> and <a href="#" style={{ color:'#a78bfa', textDecoration:'none' }}>Privacy Policy</a>
-                    </span>
-                  </div>
-
-                  {/* Error */}
-                  {errMsg && <div style={{ background:'#2d0808', border:'1px solid #ef444444', borderRadius:8, padding:'10px 14px', fontSize:12, color:'#f87171', marginBottom:14 }}>{errMsg}</div>}
-
-                  {/* Pay button */}
-                  <button disabled={!canPay} onClick={handlePay}
-                    className={canPay ? 'cta-btn' : ''}
-                    style={{ width:'100%', background:canPay?`linear-gradient(135deg,${p.color},${p.color}aa)`:'#14142a', border:`1px solid ${canPay?p.color+'55':'#1e1e3a'}`, color:canPay?'#fff':'#374151', fontSize:14, fontWeight:700, padding:13, borderRadius:11, cursor:canPay?'pointer':'default', transition:'all .2s', marginBottom:14 }}>
-                    <span style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center' }}>
-                      🔒 Pay ${p.price}.00 · Start {p.name}
-                    </span>
-                  </button>
-
-                  {/* Stripe badge */}
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:7 }}>
-                    <svg width="38" height="16" viewBox="0 0 60 25" fill="none">
-                      <rect width="60" height="25" rx="4" fill="#635bff"/>
-                      <text x="30" y="17" textAnchor="middle" fill="white" fontSize="12" fontWeight="700" fontFamily="sans-serif">stripe</text>
-                    </svg>
-                    <span style={{ fontSize:10, color:'#374151' }}>256-bit SSL · PCI compliant</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div style={{ textAlign:'center', marginTop:12 }}>
-              <p style={{ fontSize:11, color:'#374151' }}>Questions? <a href="mailto:hello@strmlive.com" style={{ color:'#a78bfa', textDecoration:'none' }}>hello@strmlive.com</a></p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-// ─── WELCOME ──────────────────────────────────────────────────────────────────
-function Welcome() {
-  const plan = new URLSearchParams(window.location.search).get('plan') || 'starter'
-  const p = PLANS[plan] || PLANS.starter
-
-  return (
-    <>
-      <style>{FONT}</style><style>{GLOBAL_CSS}</style>
-      <div style={{ minHeight:'100vh', background:'#06060e', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'40px 24px' }}>
-        <div className="fade-a0" style={{ display:'flex', alignItems:'center', gap:8, marginBottom:48 }}>
-          <div style={{ width:28, height:28, borderRadius:8, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:900, color:'#fff' }}>S</div>
-          <span style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'#fff' }}>Streamlive</span>
-        </div>
-        <div style={{ width:'100%', maxWidth:560 }}>
-          <div className="pop" style={{ textAlign:'center', marginBottom:28 }}>
-            <div style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:72, height:72, borderRadius:'50%', background:`${p.color}18`, border:`2px solid ${p.color}44`, fontSize:32, marginBottom:16 }}>{p.emoji}</div>
-            <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'#0a1e16', border:'1px solid #10b98144', borderRadius:99, padding:'4px 14px', marginLeft:12 }}>
-              <div style={{ width:6, height:6, borderRadius:'50%', background:'#10b981', animation:'pulse 2s infinite' }} />
-              <span style={{ fontSize:11, fontWeight:700, color:'#10b981', textTransform:'uppercase', letterSpacing:'0.06em' }}>Payment confirmed</span>
-            </div>
-          </div>
-          <div className="fade-a1" style={{ textAlign:'center', marginBottom:32 }}>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:10 }}>{p.headline}</div>
-            <p style={{ fontSize:15, color:'#6b7280', lineHeight:1.6 }}>{p.subline}</p>
-          </div>
-          <div className="fade-a1" style={{ display:'flex', justifyContent:'center', marginBottom:28 }}>
-            <div style={{ background:`${p.color}12`, border:`1px solid ${p.color}33`, borderRadius:10, padding:'10px 24px', display:'flex', alignItems:'center', gap:10 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:p.color, textTransform:'uppercase', letterSpacing:'0.08em' }}>{p.name} Plan</span>
-              <div style={{ width:1, height:12, background:`${p.color}44` }} />
-              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:'#fff' }}>${p.price}/mo</span>
-            </div>
-          </div>
-          <div className="fade-a2" style={{ background:'#0a0a15', border:'1px solid #14142a', borderRadius:16, padding:'22px 24px', marginBottom:20 }}>
-            <div style={{ fontSize:10, fontWeight:700, color:'#4b5563', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:14 }}>What you unlocked</div>
-            {p.features.map((f,i) => (
-              <div key={i} style={{ display:'flex', gap:10, marginBottom:10, alignItems:'flex-start' }}>
-                <span style={{ color:p.color, fontSize:12, flexShrink:0, marginTop:2 }}>✓</span>
-                <span style={{ fontSize:13, color:'#9ca3af', lineHeight:1.5 }}>{f}</span>
-              </div>
-            ))}
-          </div>
-          <div className="fade-a3">
-            <button onClick={()=>{ window.location.href = p.id === 'starter' ? '/app?onboard=settings' : p.id === 'growth' ? '/app?onboard=settings' : '/app?onboard=settings' }} className="cta-btn"
-              style={{ width:'100%', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:15, fontWeight:700, padding:14, borderRadius:12, cursor:'pointer', marginBottom:10 }}>
-              {p.nextLabel}
-            </button>
-            <p style={{ textAlign:'center', fontSize:12, color:'#3d3d6e' }}>{p.nextHint}</p>
-          </div>
-          <div className="fade-a3" style={{ textAlign:'center', marginTop:28, paddingTop:24, borderTop:'1px solid #14142a' }}>
-            <p style={{ fontSize:12, color:'#4b5563' }}>Questions? Email us at <a href="mailto:hello@strmlive.com" style={{ color:'#a78bfa', textDecoration:'none' }}>hello@strmlive.com</a></p>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-
-// ─── SELLER DATA (for opt-in page) ────────────────────────────────────────────
-const SELLER_PROFILES = {
-  bananarepublic: {
-    name: "Banana Republic",
-    owner: "Jamie Ellis",
-    bio: "Shop the latest collections live: seasonal drops, member exclusives, and styling sessions every week. Be the first to access new arrivals before they hit stores.",
-    avatar: "BR",
-    color: "#f59e0b",
-    category: "Apparel & Fashion",
-    platforms: ["TT", "IG", "AM"],
-    badge: "🧥",
-    followers: "38.2K",
-    perks: [
-      "🛍️ Member-early access to new collections",
-      "💌 Exclusive live-only pricing and bundles",
-      "🎁 Birthday discount + loyalty rewards",
-      "📲 Show alerts before we go live",
-    ],
-  },
-  kyliecosmetics: {
-    name: "Kylie Cosmetics",
-    owner: "Alyssa Kim",
-    bio: "New shades, exclusive drops, and live tutorials with the Kylie Cosmetics team. Join the community and get first access to every launch before it sells out.",
-    avatar: "KC",
-    color: "#ec4899",
-    category: "Beauty & Cosmetics",
-    platforms: ["TT", "IG"],
-    badge: "💄",
-    followers: "58.9K",
-    perks: [
-      "💄 First access to new shade launches",
-      "✨ Subscriber-only bundles and kits",
-      "📲 Live drop alerts. Never miss a launch.",
-      "🎁 VIP loyalty rewards on every order",
-    ],
-  },
-  tropicfeel: {
-    name: "Tropicfeel",
-    owner: "Marc Pujol",
-    bio: "Travel-ready footwear and gear built for every terrain. We're building our live community from the ground up. Join early and help shape what we do next.",
-    avatar: "TF",
-    color: "#10b981",
-    category: "Travel Footwear & Gear",
-    platforms: ["IG", "AM"],
-    badge: "🌴",
-    followers: "2.1K",
-    perks: [
-      "👟 Early access to new colorways and styles",
-      "💸 Founding member discount on every drop",
-      "📲 Live show alerts straight to your phone",
-      "🌱 Shape our product roadmap directly",
-    ],
-  },
-  walmartlive: {
-    name: "Walmart Live",
-    owner: "Rachel Nguyen",
-    bio: "Your front-row seat to the best deals across every category: fashion, beauty, electronics, home, and more. Live shows daily across all your favorite brands.",
-    avatar: "WM",
-    color: "#3b82f6",
-    category: "Multi-Category Retail",
-    platforms: ["TT", "IG", "AM"],
-    badge: "🛒",
-    followers: "124K",
-    perks: [
-      "⚡ Flash deals before they go public",
-      "💌 VIP early access across all brand shows",
-      "🎁 Loyalty rewards on every live purchase",
-      "📲 Alerts for your favorite brand drops",
-    ],
-  },
-};
-
-const PLATFORM_META = {
-  WN: { label: "Whatnot",      color: "#7c3aed", icon: "◈", placeholder: "@yourhandle",  manychat: false, dmNote: null },
-  TT: { label: "TikTok",       color: "#f43f5e", icon: "♦", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on TikTok to activate show alerts" },
-  AM: { label: "Amazon Live",  color: "#f59e0b", icon: "◆", placeholder: null,            manychat: false, dmNote: null },
-  IG: { label: "Instagram",    color: "#ec4899", icon: "●", placeholder: "@yourhandle",  manychat: true,  dmNote: "DM us your keyword on Instagram to activate show alerts" },
-};
-// Platforms we collect handles for (excludes Amazon - no user DMs possible)
-const DM_PLATFORMS = ["WN", "TT", "IG"];
-
-
-// ─── LIVE SHOP PAGE (public, shareable URL) ────────────────────────────────────
-// Route: /live/:shopSlug/:showSlug
-// This is the buyer-facing landing page sent via SMS/DM during a live show.
-// In production it pulls live session data from the API. Here it uses demo data.
-
-const LIVE_SHOP_DATA = {
-  bananarepublic: {
-    defaultProducts: [
-      { id:"p4",  name:"Silk Wrap Midi Dress",        image:"👗", price:268, inventory:22,  url:"/products/silk-wrap-midi-dress"     },
-      { id:"p1",  name:"Merino Wool Blazer",          image:"🧥", price:228, inventory:48,  url:"/products/merino-wool-blazer"       },
-      { id:"p8",  name:"Spring Style Bundle (3pc)",   image:"🎁", price:148, inventory:30,  url:"/products/spring-style-bundle-3pc"  },
-      { id:"p10", name:"Linen Button-Down Shirt",     image:"👔", price:98,  inventory:96,  url:"/products/linen-button-down-shirt"  },
-      { id:"p2",  name:"Italian Linen Trousers",      image:"👖", price:148, inventory:84,  url:"/products/italian-linen-trousers"   },
-      { id:"p6",  name:"Slim Chino Shorts",           image:"🩳", price:80,  inventory:120, url:"/products/slim-chino-shorts"        },
-      { id:"p3",  name:"Leather Crossbody Bag",       image:"👜", price:198, inventory:36,  url:"/products/leather-crossbody-bag"    },
-    ],
-    shows: {
-      "friday-night-flash-sale": {
-        name: "Friday Night Flash Sale",
-        platforms: ["TT","IG","AM","YT"],
-        products: [
-          { id:"p4",  name:"Silk Wrap Midi Dress",        image:"👗", price:268, inventory:22, url:"/products/silk-wrap-midi-dress"     },
-          { id:"p1",  name:"Merino Wool Blazer",          image:"🧥", price:228, inventory:48, url:"/products/merino-wool-blazer"       },
-          { id:"p8",  name:"Spring Style Bundle (3pc)",   image:"🎁", price:148, inventory:30, url:"/products/spring-style-bundle-3pc"  },
-          { id:"p10", name:"Linen Button-Down Shirt",     image:"👔", price:98,  inventory:96, url:"/products/linen-button-down-shirt"  },
-          { id:"p2",  name:"Italian Linen Trousers",      image:"👖", price:148, inventory:84, url:"/products/italian-linen-trousers"   },
-          { id:"p6",  name:"Slim Chino Shorts",           image:"🩳", price:80,  inventory:120,url:"/products/slim-chino-shorts"        },
-        ],
-      },
-      "thursday-night-break-95": {
-        name: "Thursday Night Break #95",
-        platforms: ["TT","IG","AM"],
-        products: [
-          { id:"p8",  name:"Spring Style Bundle (3pc)",   image:"🎁", price:148, inventory:30, url:"/products/spring-style-bundle-3pc"  },
-          { id:"p10", name:"Linen Button-Down Shirt",     image:"👔", price:98,  inventory:96, url:"/products/linen-button-down-shirt"  },
-          { id:"p6",  name:"Slim Chino Shorts",           image:"🩳", price:80,  inventory:120,url:"/products/slim-chino-shorts"        },
-          { id:"p1",  name:"Merino Wool Blazer",          image:"🧥", price:228, inventory:48, url:"/products/merino-wool-blazer"       },
-          { id:"p3",  name:"Leather Crossbody Bag",       image:"👜", price:198, inventory:36, url:"/products/leather-crossbody-bag"    },
-          { id:"p2",  name:"Italian Linen Trousers",      image:"👖", price:148, inventory:84, url:"/products/italian-linen-trousers"   },
-          { id:"p4",  name:"Silk Wrap Midi Dress",        image:"👗", price:268, inventory:22, url:"/products/silk-wrap-midi-dress"     },
-        ],
-      },
-    },
-  },
-  kyliecosmetics: {
-    defaultProducts: [
-      { id:"p11", name:"Matte Lip Kit Ruby",           image:"💄", price:29,  inventory:840,  url:"/products/matte-lip-kit-ruby"       },
-      { id:"p15", name:"Holiday Collection Set (6pc)", image:"🎀", price:89,  inventory:180,  url:"/products/holiday-collection-set"   },
-      { id:"p12", name:"Kyshadow Palette Bronze",      image:"✨", price:45,  inventory:420,  url:"/products/kyshadow-palette-bronze"  },
-      { id:"p13", name:"Skin Tint SPF 30",             image:"🌟", price:38,  inventory:560,  url:"/products/skin-tint-spf-30"         },
-      { id:"p14", name:"Gloss Drip Clear",             image:"💋", price:16,  inventory:1200, url:"/products/gloss-drip-clear"         },
-      { id:"p17", name:"Kylighter Highlighter Stick",  image:"💫", price:21,  inventory:740,  url:"/products/kylighter-highlighter"    },
-    ],
-    shows: {
-      "new-shade-drop-live": {
-        name: "New Shade Drop — Live",
-        platforms: ["TT","IG"],
-        products: [
-          { id:"p11", name:"Matte Lip Kit Ruby",          image:"💄", price:29,  inventory:840, url:"/products/matte-lip-kit-ruby"       },
-          { id:"p15", name:"Holiday Collection Set (6pc)",image:"🎀", price:89,  inventory:180, url:"/products/holiday-collection-set"   },
-          { id:"p12", name:"Kyshadow Palette Bronze",     image:"✨", price:45,  inventory:420, url:"/products/kyshadow-palette-bronze"  },
-          { id:"p13", name:"Skin Tint SPF 30",            image:"🌟", price:38,  inventory:560, url:"/products/skin-tint-spf-30"         },
-          { id:"p14", name:"Gloss Drip Clear",            image:"💋", price:16,  inventory:1200,url:"/products/gloss-drip-clear"         },
-        ],
-      },
-    },
-  },
-  tropicfeel: {
-    defaultProducts: [
-      { id:"p18", name:"Canyon All-Terrain Sneaker",  image:"👟", price:148, inventory:84, url:"/products/canyon-all-terrain-sneaker" },
-      { id:"p19", name:"Shell Travel Backpack 26L",   image:"🎒", price:178, inventory:42, url:"/products/shell-travel-backpack-26l"  },
-      { id:"p20", name:"Nest 2-in-1 Sandal",          image:"🩴", price:118, inventory:62, url:"/products/nest-2-in-1-sandal"         },
-      { id:"p21", name:"Tropicfeel Starter Bundle",   image:"🌴", price:228, inventory:24, url:"/products/tropicfeel-starter-bundle"  },
-    ],
-    shows: {},
-  },
-  walmartlive: {
-    defaultProducts: [
-      { id:"w1",  name:"Flash Deal Bundle",           image:"⚡", price:49,  inventory:200, url:"/products/flash-deal-bundle"    },
-      { id:"w2",  name:"Home Essentials Kit",         image:"🏠", price:89,  inventory:150, url:"/products/home-essentials-kit"  },
-      { id:"w3",  name:"Fashion Basics Set",          image:"👚", price:38,  inventory:300, url:"/products/fashion-basics-set"   },
-      { id:"w4",  name:"Beauty Starter Pack",         image:"💅", price:34,  inventory:180, url:"/products/beauty-starter-pack"  },
-    ],
-    shows: {},
-  },
-};
-
-function LiveShopPage({ shopSlug, showSlug }) {
-  const seller    = SELLER_PROFILES[shopSlug];
-
-  // Resolve seller first — everything else depends on it
-  const resolvedSeller = seller || (shopSlug && shopSlug !== "shop" ? {
-    name: shopSlug.replace(/-/g," ").replace(/\b\w/g, c=>c.toUpperCase()),
-    avatar: shopSlug.slice(0,2).toUpperCase(),
-    color: "#7c3aed",
-    category: "Live Commerce",
-  } : null);
-
-  const shopData  = LIVE_SHOP_DATA[shopSlug];
-  const exactShow = shopData?.shows?.[showSlug];
-
-  const fallbackShow = resolvedSeller ? {
-    name: showSlug
-      ? showSlug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
-      : "Live Show",
-    platforms: PERSONA_PLATFORMS[shopSlug] || ["TT","IG"],
-    products: (shopData?.defaultProducts || Object.values(LIVE_SHOP_DATA)
-      .flatMap(s => Object.values(s.shows || {}))
-      .find(s => true)?.products || []).slice(0, 8),
-  } : null;
-
-  const showData   = exactShow || fallbackShow;
-  const shopDomain = `${shopSlug}.myshopify.com`;
-  const accent     = resolvedSeller?.color || "#7c3aed";
-
-  const FONT_CSS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');`;
-
-  const shopifyUrl = (p) =>
-    `https://${shopDomain}${p.url}?ref=streamlive_live&show=${showSlug}&utm_source=streamlive&utm_medium=live_shop`;
-
-  const [activeIdx, setActiveIdx]   = useState(0);
-  const [pulsed,    setPulsed]      = useState(false);
-
-  useEffect(() => {
-    if (!showData?.products?.length) return;
-    const t = setInterval(() => {
-      setActiveIdx(i => (i + 1) % showData.products.length);
-      setPulsed(true);
-      setTimeout(() => setPulsed(false), 600);
-    }, 45000);
-    return () => clearInterval(t);
-  }, [showData]);
-
-  if (!resolvedSeller) {
-    return (
-      <div style={{ minHeight:"100vh", background:"#06060e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:24 }}>
-        <style>{FONT_CSS}</style>
-        <div style={{ textAlign:"center" }}>
-          <div style={{ fontSize:56, marginBottom:20 }}>📭</div>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:"#fff", marginBottom:8 }}>
-            Link not found
-          </div>
-          <div style={{ fontSize:14, color:"#6b7280", marginBottom:28, maxWidth:300, lineHeight:1.6 }}>
-            This live shop link appears to be invalid or has expired.
-          </div>
-          <div style={{ marginTop:16 }}>
-            <a href="/" style={{ fontSize:12, color:"#374151", textDecoration:"none" }}>← Back to Streamlive</a>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const activeProduct = showData.products[activeIdx];
-  const PC = { WN:"#7c3aed", TT:"#f43f5e", IG:"#ec4899", AM:"#f59e0b", YT:"#ff0000" };
-  const PN = { WN:"Whatnot", TT:"TikTok", IG:"Instagram", AM:"Amazon", YT:"YouTube" };
-
-  return (
-    <div style={{ minHeight:"100vh", background:"#06060e", fontFamily:"'DM Sans',sans-serif", color:"#fff" }}>
-      <style>{FONT_CSS + `
-        * { box-sizing:border-box; margin:0; padding:0; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-        @keyframes slideIn { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
-        @keyframes heroPop { 0%{transform:scale(0.97);opacity:0.6} 100%{transform:scale(1);opacity:1} }
-        .buy-btn:hover { filter:brightness(1.1); transform:translateY(-1px); }
-        .buy-btn:active { transform:translateY(0px); }
-        .buy-btn { transition:all .15s ease; }
-        @media(max-width:600px) {
-          .product-row { flex-direction:column !important; align-items:flex-start !important; gap:10px !important; }
-          .product-price-btn { flex-direction:row; justify-content:space-between; width:100%; align-items:center; }
-          .hero-card { padding:18px !important; }
-          .page-pad { padding:0 16px !important; }
-        }
-      `}</style>
-
-      {/* ── STICKY HEADER ── */}
-      <div style={{ position:"sticky", top:0, zIndex:50, background:"#06060eee", backdropFilter:"blur(16px)", borderBottom:"1px solid #14142a", padding:"12px 20px", display:"flex", alignItems:"center", gap:12 }}>
-        {/* Store identity */}
-        <div style={{ width:32, height:32, borderRadius:9, background:`${accent}20`, border:`1px solid ${accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:800, color:accent, flexShrink:0 }}>
-          {resolvedSeller.avatar}
-        </div>
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:13, fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{resolvedSeller.name}</div>
-          <div style={{ fontSize:10, color:"#4b5563", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{showData.name}</div>
-        </div>
-        {/* Live pill */}
-        <div style={{ display:"flex", alignItems:"center", gap:5, background:"#1a0808", border:"1px solid #ef444444", borderRadius:99, padding:"5px 10px", flexShrink:0 }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1.2s infinite" }}/>
-          <span style={{ fontSize:10, fontWeight:800, color:"#ef4444", letterSpacing:"0.06em" }}>LIVE NOW</span>
-        </div>
-      </div>
-
-      {/* ── HERO: NOW SELLING ── */}
-      <div className="page-pad" style={{ padding:"0 20px", maxWidth:540, margin:"0 auto" }}>
-        <div style={{ paddingTop:20, paddingBottom:8 }}>
-          <div style={{ fontSize:9, fontWeight:800, color:"#ef4444", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10, display:"flex", alignItems:"center", gap:6 }}>
-            <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1.2s infinite" }}/>
-            Selling Right Now
-          </div>
-          <div
-            className="hero-card"
-            key={activeIdx}
-            style={{ background:`linear-gradient(160deg,#0f1e0f,#060f06)`, border:`2px solid ${accent}55`, borderRadius:20, padding:"22px 22px 20px", animation: pulsed ? "heroPop .4s ease" : "slideIn .3s ease", position:"relative", overflow:"hidden" }}
-          >
-            {/* Glow */}
-            <div style={{ position:"absolute", top:-40, right:-40, width:180, height:180, borderRadius:"50%", background:accent, opacity:0.04, filter:"blur(50px)", pointerEvents:"none" }}/>
-
-            <div style={{ fontSize:44, marginBottom:10 }}>{activeProduct.image}</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:"#fff", lineHeight:1.2, marginBottom:8 }}>{activeProduct.name}</div>
-            <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:18 }}>
-              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:28, fontWeight:800, color:accent }}>${activeProduct.price}</span>
-              <span style={{ fontSize:11, color:"#4b5563" }}>{activeProduct.inventory} in stock</span>
-            </div>
-            <a
-              href={shopifyUrl(activeProduct)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="buy-btn"
-              style={{ display:"block", background:`linear-gradient(135deg,${accent},${accent}bb)`, borderRadius:14, padding:"16px", textAlign:"center", textDecoration:"none", boxShadow:`0 6px 24px ${accent}33` }}
-            >
-              <span style={{ fontSize:16, fontWeight:800, color:"#fff", letterSpacing:"0.01em" }}>Buy Now →</span>
-            </a>
-          </div>
-        </div>
-
-        {/* ── PLATFORM BADGES ── */}
-        <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20, marginTop:4 }}>
-          {showData.platforms.map(pid => (
-            <div key={pid} style={{ display:"flex", alignItems:"center", gap:4, background:`${PC[pid]}12`, border:`1px solid ${PC[pid]}33`, borderRadius:6, padding:"3px 9px" }}>
-              <div style={{ width:4, height:4, borderRadius:"50%", background:PC[pid] }}/>
-              <span style={{ fontSize:9, fontWeight:700, color:PC[pid] }}>{PN[pid]}</span>
-            </div>
-          ))}
-          <div style={{ display:"flex", alignItems:"center", gap:4, background:"#0d0d1e", border:"1px solid #1e1e3a", borderRadius:6, padding:"3px 9px" }}>
-            <span style={{ fontSize:9, color:"#4b5563" }}>{showData.products.length} products today</span>
-          </div>
-        </div>
-
-        {/* ── FULL LINEUP ── */}
-        <div style={{ marginBottom:4 }}>
-          <div style={{ fontSize:10, fontWeight:800, color:"#374151", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:12 }}>Full Lineup</div>
-          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:32 }}>
-            {showData.products.map((p, i) => {
-              const isActive = i === activeIdx;
-              const isSold   = i < activeIdx;
-              return (
-                <div
-                  key={p.id}
-                  className="product-row"
-                  style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:isActive?`${accent}0e`:isSold?"transparent":"#0a0a14", border:`1px solid ${isActive?accent+"44":isSold?"transparent":"#14142a"}`, borderRadius:14, opacity:isSold?0.4:1, transition:"all .25s" }}
-                >
-                  {/* Position badge */}
-                  <div style={{ width:26, height:26, borderRadius:7, background:isActive?`${accent}20`:isSold?"transparent":"#111125", border:`1px solid ${isActive?accent+"44":isSold?"transparent":"#1e1e3a"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    {isSold
-                      ? <span style={{ fontSize:10, color:"#374151" }}>✓</span>
-                      : <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, fontWeight:800, color:isActive?accent:"#374151" }}>{i+1}</span>
-                    }
-                  </div>
-
-                  <span style={{ fontSize:22, flexShrink:0 }}>{p.image}</span>
-
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:isActive?700:500, color:isSold?"#374151":"#e5e7eb", marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:isSold?"#374151":accent }}>${p.price}</span>
-                      {isActive && <span style={{ fontSize:9, fontWeight:800, color:"#ef4444", background:"#1a0505", border:"1px solid #ef444433", padding:"1px 7px", borderRadius:99, letterSpacing:"0.06em" }}>NOW</span>}
-                      <span style={{ fontSize:10, color:"#374151" }}>{p.inventory} left</span>
-                    </div>
-                  </div>
-
-                  {/* Buy Now — full text on desktop, arrow-only on mobile handled via min-width */}
-                  {!isSold && (
-                    <a
-                      href={shopifyUrl(p)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="buy-btn"
-                      style={{ flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", gap:4, padding: isActive ? "9px 18px" : "7px 14px", background: isActive ? `linear-gradient(135deg,${accent},${accent}bb)` : `${accent}14`, border:`1px solid ${isActive?"transparent":accent+"33"}`, borderRadius:10, textDecoration:"none", boxShadow: isActive ? `0 4px 14px ${accent}22` : "none" }}
-                    >
-                      <span style={{ fontSize: isActive ? 12 : 11, fontWeight:700, color: isActive ? "#fff" : accent, whiteSpace:"nowrap" }}>
-                        {isActive ? "Buy Now →" : "Buy →"}
-                      </span>
-                    </a>
-                  )}
-                  {isSold && (
-                    <span style={{ flexShrink:0, fontSize:10, color:"#374151", padding:"4px 10px", border:"1px solid #1a1a1a", borderRadius:8 }}>Sold</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── FOOTER ── */}
-        <div style={{ borderTop:"1px solid #0d0d1e", paddingTop:20, paddingBottom:32, textAlign:"center" }}>
-          <div style={{ fontSize:11, color:"#374151", marginBottom:6 }}>
-            Purchases tracked to this show via Live Pixel
-          </div>
-          <div style={{ fontSize:11, color:"#252535" }}>
-            Powered by <span style={{ color:"#4b3a7c", fontWeight:700 }}>Streamlive</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── OPT-IN PAGE ──────────────────────────────────────────────────────────────
-function OptInPage({ slug, connectedPlatforms }) {
-  const seller = SELLER_PROFILES[slug];
-  // Use live connected platforms if provided, fall back to profile default
-  const activePlatforms = connectedPlatforms || seller?.platforms || [];
-  const [step, setStep] = useState("form"); // form | success
-  const [firstName, setFirstName] = useState("");
-  const [email, setEmail]         = useState("");
-  const [phone, setPhone]         = useState("");
-  const [handles, setHandles]     = useState({});
-  const [emailOptIn, setEmailOptIn]   = useState(true);
-  const [smsOptIn, setSmsOptIn]       = useState(true);
-  const [submitting, setSubmitting]   = useState(false);
-  const [errors, setErrors]           = useState({});
-
-  const formatPhone = (val) => {
-    const digits = val.replace(/\D/g, "").slice(0, 10);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `(${digits.slice(0,3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
-  };
-
-  const validate = () => {
-    const e = {};
-    if (!firstName.trim()) e.firstName = "Required";
-    if (!email.includes("@") || !email.includes(".")) e.email = "Enter a valid email";
-    if (smsOptIn && phone.replace(/\D/g,"").length < 10) e.phone = "Enter a valid phone number";
-    if (!emailOptIn && !smsOptIn) e.consent = "Please choose at least one way to stay in touch";
-    return e;
-  };
-
-  const handleSubmit = () => {
-    const e = validate();
-    if (Object.keys(e).length) { setErrors(e); return; }
-    setSubmitting(true);
-    setTimeout(() => { setStep("success"); }, 1800);
-  };
-
-  if (!seller) {
-    return (
-      <div style={{ minHeight:"100vh", background:"#06060e", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"DM Sans,sans-serif" }}>
-        <div style={{ textAlign:"center", color:"#6b7280" }}>
-          <div style={{ fontSize:48, marginBottom:16 }}>404</div>
-          <div style={{ fontSize:16 }}>This opt-in page doesn't exist.</div>
-          <a href="/" style={{ color:"#7c3aed", marginTop:12, display:"block" }}>← Back to Streamlive</a>
-        </div>
-      </div>
-    );
-  }
-
-  const accentRgb = seller.color;
-
-  if (step === "success") {
-    return (
-      <div style={{ minHeight:"100vh", background:"#06060e", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:24 }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap'); * { box-sizing:border-box; margin:0; padding:0; }`}</style>
-        <div style={{ maxWidth:480, width:"100%", textAlign:"center" }}>
-          <div style={{ width:80, height:80, borderRadius:"50%", background:`${accentRgb}22`, border:`2px solid ${accentRgb}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, margin:"0 auto 24px" }}>✓</div>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:800, color:"#fff", marginBottom:8, letterSpacing:"-0.5px" }}>You're in, {firstName}!</div>
-          <div style={{ fontSize:15, color:"#9ca3af", lineHeight:1.7, marginBottom:32 }}>
-            Welcome to the <span style={{ color:"#fff", fontWeight:600 }}>{seller.name}</span> subscriber list.
-            You'll be the first to know about shows, exclusive drops, and VIP offers.
-          </div>
-          <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
-            <div style={{ fontSize:11, color:"#6b7280", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>What to expect</div>
-            {seller.perks.map((p,i) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:i<seller.perks.length-1?"1px solid #1e1e3a":"none" }}>
-                <span style={{ fontSize:14 }}>{p.split(" ")[0]}</span>
-                <span style={{ fontSize:13, color:"#d1d5db" }}>{p.slice(p.indexOf(" ")+1)}</span>
-              </div>
-            ))}
-          </div>
-          {/* ManyChat activation steps */}
-          {activePlatforms.filter(p=>PLATFORM_META[p]?.manychat).length > 0 && (
-            <div style={{ background:"#0d1a1f", border:"1px solid #1e3a2e", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
-              <div style={{ fontSize:11, color:"#34d399", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>🔔 Activate your DM alerts</div>
-              <div style={{ fontSize:12, color:"#9ca3af", marginBottom:14, lineHeight:1.6 }}>
-                To receive show alerts as a direct message, send <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0a1e16", border:"1px solid #34d39933", padding:"2px 8px", borderRadius:4, color:"#34d399", fontWeight:600 }}>JOIN</span> to {seller.name} on each platform:
-              </div>
-              {activePlatforms.filter(p=>PLATFORM_META[p]?.manychat).map(p => {
-                const pm = PLATFORM_META[p];
-                return (
-                  <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"1px solid #1e1e3a" }}>
-                    <div style={{ width:32, height:32, borderRadius:8, background:`${pm.color}18`, border:`1px solid ${pm.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, flexShrink:0 }}>
-                      {p === "TT" ? "♦" : "●"}
-                    </div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>DM on {pm.label}</div>
-                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Open {pm.label} → find <span style={{ color:pm.color }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> → send "JOIN"</div>
-                    </div>
-                    <span style={{ fontSize:11, fontWeight:700, color:pm.color, background:`${pm.color}15`, border:`1px solid ${pm.color}33`, padding:"3px 10px", borderRadius:6 }}>Required</span>
-                  </div>
-                );
-              })}
-              <div style={{ fontSize:11, color:"#4b5563", marginTop:12, lineHeight:1.5 }}>
-                This activates ManyChat so {seller.name} can send you instant alerts on these platforms. Only takes 30 seconds.
-              </div>
-            </div>
-          )}
-          <a href={`https://strmlive.com/s/${slug}`} style={{ fontSize:13, color:"#6b7280", textDecoration:"none" }}>← Back to page</a>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ minHeight:"100vh", background:"#06060e", fontFamily:"'DM Sans',sans-serif", display:"flex", flexDirection:"column" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
-        * { box-sizing:border-box; margin:0; padding:0; }
-        body { background:#06060e; }
-        .opt-input { width:100%; background:#0d0d1a; border:1.5px solid #1e1e3a; border-radius:10px; padding:12px 16px; color:#fff; font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .15s; }
-        .opt-input:focus { border-color:${accentRgb}88; }
-        .opt-input::placeholder { color:#4b5563; }
-        .opt-input.error { border-color:#ef444488; }
-        .toggle-check { display:flex; align-items:flex-start; gap:12; cursor:pointer; }
-        .check-box { width:20px; height:20px; border-radius:6px; border:2px solid #374151; background:transparent; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .15s; margin-top:1px; }
-        .check-box.checked { background:${accentRgb}; border-color:${accentRgb}; }
-      `}</style>
-
-      {/* HERO BANNER */}
-      <div style={{ background:`linear-gradient(160deg, ${accentRgb}18 0%, #06060e 60%)`, borderBottom:"1px solid #1e1e3a", padding:"48px 24px 40px" }}>
-        <div style={{ maxWidth:560, margin:"0 auto", textAlign:"center" }}>
-          {/* Avatar */}
-          <div style={{ width:72, height:72, borderRadius:"50%", background:`${accentRgb}22`, border:`2px solid ${accentRgb}55`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:accentRgb }}>
-            {resolvedSeller.avatar}
-          </div>
-          <div style={{ fontSize:11, fontWeight:700, color:accentRgb, textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:8 }}>{seller.category}</div>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", marginBottom:12, lineHeight:1.2 }}>
-            Join the {seller.name}<br />VIP List {seller.badge}
-          </div>
-          <div style={{ fontSize:15, color:"#9ca3af", lineHeight:1.7, maxWidth:420, margin:"0 auto 20px" }}>{seller.bio}</div>
-          {/* Social proof */}
-          <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
-            <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:20, padding:"5px 14px", fontSize:12, color:"#9ca3af" }}>
-              <span style={{ color:"#fff", fontWeight:700 }}>{seller.followers}</span> live followers
-            </div>
-            {activePlatforms.map(p => (
-              <div key={p} style={{ background:`${PLATFORM_META[p].color}15`, border:`1px solid ${PLATFORM_META[p].color}33`, borderRadius:20, padding:"5px 14px", fontSize:12, color:PLATFORM_META[p].color, fontWeight:600 }}>
-                {PLATFORM_META[p].label}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* FORM */}
-      <div style={{ flex:1, padding:"32px 24px 48px" }}>
-        <div style={{ maxWidth:480, margin:"0 auto" }}>
-
-          {/* Perks */}
-          <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"18px 20px", marginBottom:28 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:12 }}>When you join you get</div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-              {seller.perks.map((p,i) => (
-                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:8 }}>
-                  <span style={{ fontSize:14, flexShrink:0, marginTop:1 }}>{p.split(" ")[0]}</span>
-                  <span style={{ fontSize:12, color:"#d1d5db", lineHeight:1.5 }}>{p.slice(p.indexOf(" ")+1)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Form fields */}
-          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-
-            {/* Name */}
-            <div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>First Name *</label>
-              <input
-                className={`opt-input${errors.firstName?" error":""}`}
-                placeholder="Your first name"
-                value={firstName}
-                onChange={e=>{ setFirstName(e.target.value); setErrors(er=>({...er,firstName:null})); }}
-              />
-              {errors.firstName && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.firstName}</div>}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>Email Address *</label>
-              <input
-                className={`opt-input${errors.email?" error":""}`}
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e=>{ setEmail(e.target.value); setErrors(er=>({...er,email:null})); }}
-              />
-              {errors.email && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.email}</div>}
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>
-                Phone Number <span style={{ color:"#6b7280", fontWeight:400 }}>(for SMS alerts)</span>
-              </label>
-              <input
-                className={`opt-input${errors.phone?" error":""}`}
-                type="tel"
-                placeholder="(555) 000-0000"
-                value={phone}
-                onChange={e=>{ setPhone(formatPhone(e.target.value)); setErrors(er=>({...er,phone:null})); }}
-              />
-              {errors.phone && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.phone}</div>}
-            </div>
-
-            {/* Platform handles */}
-            {(() => {
-              const dmPlatforms = activePlatforms.filter(p => DM_PLATFORMS.includes(p));
-              if (dmPlatforms.length === 0) return null;
-              return (
-                <div>
-                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:4 }}>
-                    Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
-                  </label>
-                  <div style={{ fontSize:11, color:"#6b7280", marginBottom:10, lineHeight:1.5 }}>
-                    Optional. Helps us match you across platforms and send personalized DMs.
-                  </div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                    {dmPlatforms.map(p => {
-                      const pm = PLATFORM_META[p];
-                      const hasHandle = handles[p] && handles[p].length > 1;
-                      return (
-                        <div key={p}>
-                          <div style={{ display:"flex", alignItems:"center", gap:10, background:"#0d0d1a", border:`1.5px solid ${hasHandle?pm.color+"55":"#1e1e3a"}`, borderRadius:10, padding:"10px 14px", transition:"border-color .15s" }}>
-                            <span style={{ fontSize:11, fontWeight:700, color:pm.color, minWidth:68 }}>{pm.label}</span>
-                            <input
-                              style={{ flex:1, background:"none", border:"none", color:"#fff", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
-                              placeholder={pm.placeholder}
-                              value={handles[p]||""}
-                              onChange={e=>setHandles(h=>({...h,[p]:e.target.value}))}
-                            />
-                          </div>
-                          {pm.manychat && hasHandle && (
-                            <div style={{ display:"flex", alignItems:"flex-start", gap:8, background:`${pm.color}0d`, border:`1px solid ${pm.color}22`, borderRadius:8, padding:"9px 12px", marginTop:6 }}>
-                              <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>💬</span>
-                              <div>
-                                <div style={{ fontSize:11, fontWeight:700, color:pm.color, marginBottom:2 }}>Activate {pm.label} DMs</div>
-                                <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.5 }}>
-                                  To receive show alerts via {pm.label} DM, send the message{" "}
-                                  <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0d0d1a", border:`1px solid ${pm.color}33`, padding:"1px 7px", borderRadius:4, color:"#fff", fontWeight:600 }}>JOIN</span>
-                                  {" "}to <span style={{ color:pm.color, fontWeight:600 }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> on {pm.label} after signing up.
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Consent checkboxes */}
-            <div style={{ background:"#0d0d1a", border:`1px solid ${errors.consent?"#ef444444":"#1e1e3a"}`, borderRadius:12, padding:"16px 18px" }}>
-              <div style={{ fontSize:12, fontWeight:700, color:"#9ca3af", marginBottom:12 }}>How do you want to hear from {seller.name}?</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setEmailOptIn(v=>!v)}>
-                  <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${emailOptIn?accentRgb:"#374151"}`, background:emailOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
-                    {emailOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
-                  </div>
-                  <div>
-                    <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Email updates</div>
-                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Show schedules, exclusive drops, and VIP offers</div>
-                  </div>
-                </label>
-                <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setSmsOptIn(v=>!v)}>
-                  <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${smsOptIn?accentRgb:"#374151"}`, background:smsOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
-                    {smsOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
-                  </div>
-                  <div>
-                    <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>SMS alerts</div>
-                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Instant show alerts. Never miss a live drop.</div>
-                  </div>
-                </label>
-              </div>
-              {errors.consent && <div style={{ fontSize:11, color:"#ef4444", marginTop:10 }}>{errors.consent}</div>}
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              style={{ width:"100%", background:submitting?"#374151":`linear-gradient(135deg,${accentRgb},${accentRgb}cc)`, border:"none", color:"#fff", fontSize:15, fontWeight:700, padding:"15px", borderRadius:12, cursor:submitting?"not-allowed":"pointer", transition:"all .2s", marginTop:4, letterSpacing:"-0.2px" }}
-            >
-              {submitting ? "Joining..." : `Join ${seller.name}'s VIP List →`}
-            </button>
-
-            {/* Legal */}
-            <p style={{ fontSize:11, color:"#4b5563", textAlign:"center", lineHeight:1.6 }}>
-              By subscribing you agree to receive marketing messages from <strong style={{ color:"#6b7280" }}>{seller.name}</strong> via Streamlive.
-              Message & data rates may apply. Reply STOP to unsubscribe at any time.{" "}
-              <a href="#" style={{ color:"#6b7280" }}>Privacy Policy</a>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{ padding:"16px 24px", borderTop:"1px solid #1e1e3a", textAlign:"center" }}>
-        <a href="https://strmlive.com" style={{ fontSize:11, color:"#4b5563", textDecoration:"none" }}>
-          Powered by <span style={{ color:"#7c3aed", fontWeight:700 }}>Streamlive</span>
-        </a>
-      </div>
-    </div>
-  );
-}
-
-// ─── ROOT ROUTER ──────────────────────────────────────────────────────────────
-// ─── PERSONA PLATFORM CONFIG (mirrors StreamlivePrototype PERSONAS) ───────────
-const PERSONA_PLATFORMS = {
-  bananarepublic: ["TT", "IG", "AM"],
-  kyliecosmetics: ["TT", "IG"],
-  tropicfeel:     ["IG", "AM"],
-  walmartlive:    ["WN", "TT", "AM", "IG"],
-};
-
-// ─── LIVE DOT CURSOR (shared across all routes) ───────────────────────────────
-function LiveCursor() {
-  const [pos,     setPos]     = useState({ x: -100, y: -100 });
-  const [clicked, setClicked] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    // Strip cursor from any element that has it inline — runs on mount + DOM changes
-    const stripCursors = (root = document.body) => {
-      root.querySelectorAll('*').forEach(el => {
-        if (el.style.cursor) el.style.cursor = '';
-      });
-    };
-
-    // Inject stylesheet cursor:none as a fallback layer
-    const styleEl = document.createElement('style');
-    styleEl.id = 'live-cursor-hide';
-    styleEl.textContent = `
-      html, body { cursor: none !important; }
-      *:not(button):not(a):not(input):not(select):not(textarea):not([role="button"]) { cursor: none !important; }
-      button, a, input, select, textarea, [role="button"], label { cursor: pointer !important; }
-      button:disabled, input[type="text"]:not([disabled]), input[type="email"]:not([disabled]) { cursor: default !important; }
-    `;
-    document.head.appendChild(styleEl);
-
-    // Strip existing inline cursors immediately
-    stripCursors();
-
-    // Watch for new elements added by React renders
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach(m => {
-        m.addedNodes.forEach(node => {
-          if (node.nodeType === 1) {
-            if (node.style?.cursor) node.style.cursor = '';
-            node.querySelectorAll?.('*')?.forEach(el => {
-              if (el.style.cursor) el.style.cursor = '';
-            });
-          }
-        });
-        // Also catch attribute changes (React updating style prop)
-        if (m.type === 'attributes' && m.attributeName === 'style') {
-          if (m.target.style?.cursor) m.target.style.cursor = '';
-        }
-      });
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['style'],
-    });
-
-    const onMove  = (e) => { setPos({ x: e.clientX, y: e.clientY }); setVisible(true); };
-    const onDown  = ()  => setClicked(true);
-    const onUp    = ()  => setTimeout(() => setClicked(false), 400);
-    const onLeave = ()  => setVisible(false);
-    const onEnter = ()  => setVisible(true);
-
-    window.addEventListener('mousemove',  onMove);
-    window.addEventListener('mousedown',  onDown);
-    window.addEventListener('mouseup',    onUp);
-    document.documentElement.addEventListener('mouseleave', onLeave);
-    document.documentElement.addEventListener('mouseenter', onEnter);
-
-    return () => {
-      observer.disconnect();
-      if (document.head.contains(styleEl)) document.head.removeChild(styleEl);
-      window.removeEventListener('mousemove',  onMove);
-      window.removeEventListener('mousedown',  onDown);
-      window.removeEventListener('mouseup',    onUp);
-      document.documentElement.removeEventListener('mouseleave', onLeave);
-      document.documentElement.removeEventListener('mouseenter', onEnter);
-    };
-  }, []);
-
-  const color = clicked ? '#10b981' : '#ef4444';
-  if (!visible) return null;
-
-  return (
-    <div style={{ position:'fixed', left:pos.x, top:pos.y, pointerEvents:'none', zIndex:999999 }}>
-      {/* Pulse ring */}
-      <div style={{
-        position:'absolute', width:14, height:14, borderRadius:'50%',
-        background: color,
-        transform:'translate(-50%,-50%)',
-        animation:'livePulse 1.2s ease-out infinite',
-        transition:'background 0.15s ease',
-      }}/>
-      {/* Solid core */}
-      <div style={{
-        position:'absolute', width:8, height:8, borderRadius:'50%',
-        background: color,
-        transform: clicked ? 'translate(-50%,-50%) scale(1.4)' : 'translate(-50%,-50%) scale(1)',
-        boxShadow: `0 0 ${clicked ? '10px 3px' : '6px 2px'} ${color}99`,
-        transition:'background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease',
-      }}/>
-    </div>
-  );
-}
-
+// ─── SHARED PAGE SHELL ────────────────────────────────────────────────────────
 export default function App() {
   const route = useRoute()
   return (
@@ -2201,7 +1075,711 @@ export default function App() {
          const showSlug = parts[1] || '';
          return <LiveShopPage shopSlug={shopSlug} showSlug={showSlug} />;
        })() :
+       route === '/changelog'      ? <ChangelogPage /> :
+       route === '/roadmap'        ? <RoadmapPage /> :
+       route === '/about'          ? <AboutPage /> :
+       route === '/blog'           ? <BlogPage /> :
+       route === '/privacy'        ? <PrivacyPage /> :
+       route === '/terms'          ? <TermsPage /> :
+       route === '/contact'        ? <ContactPage /> :
+       route.startsWith('/blog/')    ? <BlogPostPage slug={route.split('/blog/')[1]} /> :
+       route.startsWith('/platform/')? <PlatformPage platform={route.split('/platform/')[1]} /> :
        <Landing />}
     </>
   );
+}
+
+// ─── SHARED PAGE SHELL ────────────────────────────────────────────────────────
+function PageShell({ children, title }) {
+  return (
+    <div style={{ minHeight:'100vh', background:'#06060e', color:'#e2e8f0', fontFamily:"'DM Sans',sans-serif" }}>
+      <style>{FONT}</style>
+      <style>{GLOBAL_CSS}</style>
+      {/* Nav */}
+      <nav style={{ position:'sticky', top:0, zIndex:50, background:'#06060eee', backdropFilter:'blur(16px)', borderBottom:'1px solid #14142a', padding:'0 24px', height:58, display:'flex', alignItems:'center', gap:12 }}>
+        <button onClick={()=>navigate('/')} style={{ display:'flex', alignItems:'center', gap:9, background:'none', border:'none', cursor:'pointer', padding:0 }}>
+          <div style={{ width:30, height:30, borderRadius:9, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:900, color:'#fff' }}>S</div>
+          <span style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>Streamlive</span>
+        </button>
+        <div style={{ flex:1 }} />
+        <button onClick={()=>navigate('/#pricing')} style={{ background:'none', border:'none', color:'#6b7280', fontSize:13, fontWeight:500, cursor:'pointer' }}>Pricing</button>
+        <button onClick={()=>{ window.history.pushState({},'','/app'); window.dispatchEvent(new PopStateEvent('popstate')) }} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer', marginLeft:8 }}>Open App →</button>
+      </nav>
+      {/* Content */}
+      <div style={{ maxWidth:780, margin:'0 auto', padding:'56px 24px 80px' }}>
+        {children}
+      </div>
+      {/* Footer */}
+      <div style={{ borderTop:'1px solid #14142a', padding:'28px 24px', display:'flex', justifyContent:'center', gap:24, flexWrap:'wrap' }}>
+        {[['About','/about'],['Blog','/blog'],['Changelog','/changelog'],['Privacy','/privacy'],['Terms','/terms'],['Contact','/contact']].map(([l,h])=>(
+          <button key={l} onClick={()=>navigate(h)} style={{ background:'none', border:'none', color:'#374151', fontSize:12, cursor:'pointer' }}>{l}</button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PageHeading({ label, title, subtitle }) {
+  return (
+    <div style={{ marginBottom:48 }}>
+      {label && <span style={{ fontSize:10, fontWeight:800, letterSpacing:'.12em', textTransform:'uppercase', color:'#a78bfa', display:'block', marginBottom:14 }}>{label}</span>}
+      <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(28px,5vw,48px)', fontWeight:800, color:'#fff', letterSpacing:'-1.5px', lineHeight:1.1, margin:'0 0 16px' }}>{title}</h1>
+      {subtitle && <p style={{ fontSize:16, color:'#6b7280', lineHeight:1.7, margin:0, maxWidth:600 }}>{subtitle}</p>}
+    </div>
+  )
+}
+
+// ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
+function AboutPage() {
+  return (
+    <PageShell>
+      <PageHeading
+        label="Our story"
+        title="Built by live sellers, for live sellers."
+        subtitle="Streamlive was born from a simple frustration: going live on five platforms and having no idea which one actually drove sales."
+      />
+      <div style={{ display:'flex', flexDirection:'column', gap:40 }}>
+        <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #1e1e3a', borderRadius:18, padding:'32px 36px' }}>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', marginBottom:16 }}>The problem we set out to solve</div>
+          <p style={{ fontSize:15, color:'#9ca3af', lineHeight:1.8, margin:'0 0 16px' }}>Live commerce is the fastest-growing channel in retail — but the tools haven't kept up. Sellers were juggling five browser tabs, copy-pasting tracking links, guessing at attribution, and losing buyers in the chaos of managing chats across TikTok, Instagram, Whatnot, Amazon, and YouTube simultaneously.</p>
+          <p style={{ fontSize:15, color:'#9ca3af', lineHeight:1.8, margin:0 }}>Every dollar earned in a live show deserves to be attributed. Every buyer deserves to feel remembered. We built Streamlive to make both things possible.</p>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+          {[
+            { icon:'📡', title:'Multi-platform first', body:'We built for all 5 major live platforms from day one — not as an afterthought.' },
+            { icon:'🧠', title:'Attribution obsessed', body:'Every order, every click, every show. We track the full buyer journey across platforms.' },
+            { icon:'🛒', title:'Buyer relationships', body:'A CRM built for live commerce means your buyers feel recognized every time they return.' },
+            { icon:'⚡', title:'Real-time everything', body:'Your show is live. Your data should be too — GMV, orders, viewers, and sentiment in real time.' },
+          ].map(c => (
+            <div key={c.title} style={{ background:'#0a0a14', border:'1px solid #14142a', borderRadius:14, padding:'24px 22px' }}>
+              <div style={{ fontSize:28, marginBottom:12 }}>{c.icon}</div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'#fff', marginBottom:8 }}>{c.title}</div>
+              <p style={{ fontSize:13, color:'#6b7280', lineHeight:1.7, margin:0 }}>{c.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background:'linear-gradient(135deg,#7c3aed11,#4f46e511)', border:'1px solid #7c3aed33', borderRadius:18, padding:'32px 36px' }}>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:'#fff', marginBottom:14 }}>Where we're headed</div>
+          <p style={{ fontSize:15, color:'#9ca3af', lineHeight:1.8, margin:'0 0 16px' }}>We're in active beta with real sellers across fashion, beauty, collectibles, and home goods. Every week we ship new features based directly on what our sellers tell us they need.</p>
+          <p style={{ fontSize:15, color:'#9ca3af', lineHeight:1.8, margin:'0 0 24px' }}>Our roadmap includes AI-powered show planning, predictive inventory, and post-show email sequences that turn one-time buyers into loyal regulars.</p>
+          <button onClick={()=>navigate('/roadmap')} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'10px 22px', borderRadius:9, cursor:'pointer' }}>View the Roadmap →</button>
+        </div>
+
+        <div>
+          <div style={{ fontSize:11, fontWeight:800, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:20 }}>The team</div>
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            {[
+              { initials:'WM', name:'Will Mauro', role:'Founder & CEO', color:'#7c3aed', bio:'Former live seller. Built Streamlive after losing $40k in untraceable show revenue.' },
+              { initials:'EL', name:'Engineering Lead', role:'Head of Platform Integrations', color:'#10b981', bio:'Previously built real-time data infrastructure for e-commerce at scale.' },
+              { initials:'PM', name:'Product & Design', role:'Head of Seller Experience', color:'#f59e0b', bio:'Spent 3 years studying live commerce buyer behavior across Asian and US markets.' },
+            ].map(m => (
+              <div key={m.name} style={{ display:'flex', alignItems:'center', gap:16, background:'#0a0a14', border:'1px solid #14142a', borderRadius:12, padding:'16px 20px' }}>
+                <div style={{ width:44, height:44, borderRadius:12, background:`${m.color}20`, border:`1px solid ${m.color}44`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Syne',sans-serif", fontSize:14, fontWeight:800, color:m.color, flexShrink:0 }}>{m.initials}</div>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:700, color:'#fff', marginBottom:2 }}>{m.name} · <span style={{ color:m.color, fontWeight:600 }}>{m.role}</span></div>
+                  <div style={{ fontSize:12, color:'#6b7280', lineHeight:1.5 }}>{m.bio}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </PageShell>
+  )
+}
+
+// ─── BLOG PAGE ────────────────────────────────────────────────────────────────
+const BLOG_POSTS = [
+  {
+    slug: 'live-commerce-attribution',
+    date: 'Jan 14, 2025',
+    tag: 'Strategy',
+    tagColor: '#7c3aed',
+    title: 'Why Live Commerce Attribution Is Broken (And How to Fix It)',
+    excerpt: 'Most live sellers have no idea which platform drives their actual revenue. Here\'s the attribution model we built to solve it.',
+    readTime: '6 min read',
+    emoji: '📊',
+  },
+  {
+    slug: 'multiplatform-live-guide',
+    date: 'Jan 28, 2025',
+    tag: 'Guide',
+    tagColor: '#10b981',
+    title: 'The Complete Guide to Going Live on 5 Platforms at Once',
+    excerpt: 'TikTok, Instagram, Whatnot, Amazon, YouTube — streaming to all five simultaneously without losing your mind.',
+    readTime: '9 min read',
+    emoji: '📡',
+  },
+  {
+    slug: 'buyer-crm-live-sellers',
+    date: 'Feb 5, 2025',
+    tag: 'Product',
+    tagColor: '#f59e0b',
+    title: 'Why Every Live Seller Needs a Buyer CRM',
+    excerpt: 'Your repeat buyers are your highest-value customers. Here\'s how recognizing them in-show drives 3x more repeat purchases.',
+    readTime: '5 min read',
+    emoji: '🧠',
+  },
+  {
+    slug: 'tiktok-shop-live-tips',
+    date: 'Feb 12, 2025',
+    tag: 'Platform',
+    tagColor: '#f43f5e',
+    title: '10 TikTok Shop Live Tactics That Actually Convert',
+    excerpt: 'From show structure to comment pinning to product sequencing — what the top TikTok Live sellers do differently.',
+    readTime: '7 min read',
+    emoji: '🎵',
+  },
+  {
+    slug: 'live-show-planning',
+    date: 'Feb 19, 2025',
+    tag: 'Operations',
+    tagColor: '#06b6d4',
+    title: 'How Top Live Sellers Plan Their Shows Like Professionals',
+    excerpt: 'A structured run-of-show, product lineup prep, and a pre-show checklist that reduces chaos and increases GMV.',
+    readTime: '8 min read',
+    emoji: '🗓️',
+  },
+  {
+    slug: 'whatnot-vs-tiktok',
+    date: 'Feb 24, 2025',
+    tag: 'Analysis',
+    tagColor: '#a78bfa',
+    title: 'Whatnot vs TikTok Shop: Where Should You Sell Live in 2025?',
+    excerpt: 'We analyzed 500+ shows across both platforms. Here\'s the data on fees, reach, conversion rates, and buyer loyalty.',
+    readTime: '10 min read',
+    emoji: '⚖️',
+  },
+]
+
+function BlogPage() {
+  return (
+    <PageShell>
+      <PageHeading
+        label="Streamlive Blog"
+        title="Insights for live sellers."
+        subtitle="Strategy, platform guides, and product updates from the Streamlive team."
+      />
+      <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+        {BLOG_POSTS.map((post, i) => (
+          <div key={post.slug} onClick={()=>navigate(`/blog/${post.slug}`)} style={{ display:'flex', gap:20, background: i===0 ? 'linear-gradient(160deg,#0d0d1e,#0a0a16)' : '#0a0a14', border:`1px solid ${i===0 ? '#2a2a4a' : '#14142a'}`, borderRadius:16, padding:'22px 24px', cursor:'pointer', transition:'border-color .15s' }}>
+            <div style={{ width:52, height:52, borderRadius:14, background:`${post.tagColor}15`, border:`1px solid ${post.tagColor}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, flexShrink:0 }}>{post.emoji}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+                <span style={{ fontSize:10, fontWeight:800, color:post.tagColor, background:`${post.tagColor}15`, border:`1px solid ${post.tagColor}33`, padding:'2px 8px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.06em' }}>{post.tag}</span>
+                <span style={{ fontSize:11, color:'#374151' }}>{post.date}</span>
+                <span style={{ fontSize:11, color:'#374151' }}>· {post.readTime}</span>
+              </div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:800, color:'#fff', marginBottom:6, lineHeight:1.3 }}>{post.title}</div>
+              <p style={{ fontSize:13, color:'#6b7280', lineHeight:1.6, margin:0 }}>{post.excerpt}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </PageShell>
+  )
+}
+
+function BlogPostPage({ slug }) {
+  const post = BLOG_POSTS.find(p => p.slug === slug)
+  if (!post) return <PageShell><div style={{ textAlign:'center', padding:'60px 0' }}><div style={{ fontSize:48, marginBottom:16 }}>📭</div><div style={{ color:'#fff', fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800 }}>Post not found</div></div></PageShell>
+
+  const CONTENT = {
+    'live-commerce-attribution': `Live commerce is growing at 30%+ annually — but most sellers still can't answer the most basic question: which platform actually made me money today?\n\nThe problem is structural. Each platform has its own analytics dashboard. Orders come in from five different places. And the "source" of a sale — whether a viewer on TikTok bought after seeing you on Instagram first — is invisible to every native tool.\n\n**The attribution gap costs real money.**\n\nWe surveyed 200 live sellers and found that 73% couldn't confidently say which platform drove their highest-ROI shows. They were making platform decisions — where to invest their time, which software to buy, which audiences to grow — based on gut feeling instead of data.\n\n**How proper live attribution works:**\n\nEvery product link shared in a live show should carry three pieces of tracking data: the platform it was shared on, the show ID, and a seller identifier. When a buyer clicks and converts, that data travels all the way to your order management system.\n\nStreamlive does this automatically. Every product deeplink generated for a show is tagged with `ref=streamlive_live`, `show_id`, and `utm_source` parameters. Post-show, you get a clean breakdown: $2,400 from TikTok, $890 from Instagram, $340 from Whatnot — for the same 2-hour show.\n\n**What good attribution changes:**\n\nOnce you know which platforms convert, you can double down on them. Once you know which products sell better on which platforms, you can plan your show lineup accordingly. Attribution turns live commerce from performance art into a data-driven operation.`,
+    'multiplatform-live-guide': `Going live on five platforms simultaneously sounds overwhelming. Most sellers try it once, get confused by the chaos, and retreat to one or two platforms. That's leaving serious revenue on the table.\n\nHere's the framework we've seen work for high-volume multi-platform sellers.\n\n**Step 1: Use a streaming tool that handles the multicast**\n\nDon't try to manage five separate streaming sessions manually. Use a tool like StreamYard, Restream, or OBS with plugins to send one stream to all platforms simultaneously. The stream itself is the easy part.\n\n**Step 2: Manage chats with a unified inbox**\n\nThis is where sellers break down. TikTok chat, Instagram comments, Whatnot bidding activity, YouTube chat — all at once. Streamlive's Live Companion aggregates all of this into one view, filtered by priority.\n\n**Step 3: Pre-generate your product links**\n\nBefore going live, build your show run order in Streamlive's Show Planner. Each product gets a deeplink with platform-specific tracking baked in. When you go live, your links are ready.\n\n**Step 4: Assign platform roles**\n\nIf you have a team: one person watches TikTok chat, one watches Instagram, one manages Whatnot bidding. If you're solo: focus on the platform with your highest viewer count and let the others run.\n\n**Step 5: Do a post-show debrief within 1 hour**\n\nWhile it's fresh: which product sold out fastest, which platform had the most engagement, what questions came up repeatedly. Streamlive logs all of this automatically — your job is to read the data and adjust.`,
+  }
+
+  const bodyText = CONTENT[slug] || `Full article coming soon. In the meantime, explore the rest of our blog for more live commerce insights.`
+
+  return (
+    <PageShell>
+      <button onClick={()=>navigate('/blog')} style={{ background:'none', border:'none', color:'#6b7280', fontSize:13, cursor:'pointer', marginBottom:32, padding:0, display:'flex', alignItems:'center', gap:6 }}>← Back to Blog</button>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+        <span style={{ fontSize:10, fontWeight:800, color:post.tagColor, background:`${post.tagColor}15`, border:`1px solid ${post.tagColor}33`, padding:'3px 10px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.06em' }}>{post.tag}</span>
+        <span style={{ fontSize:12, color:'#374151' }}>{post.date} · {post.readTime}</span>
+      </div>
+      <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(24px,4vw,40px)', fontWeight:800, color:'#fff', letterSpacing:'-1px', lineHeight:1.15, margin:'0 0 32px' }}>{post.title}</h1>
+      <div style={{ borderLeft:'3px solid #7c3aed44', paddingLeft:20, marginBottom:36 }}>
+        <p style={{ fontSize:16, color:'#9ca3af', lineHeight:1.75, margin:0, fontStyle:'italic' }}>{post.excerpt}</p>
+      </div>
+      <div style={{ fontSize:15, color:'#9ca3af', lineHeight:1.85 }}>
+        {bodyText.split('\n\n').map((para, i) => {
+          if (para.startsWith('**') && para.endsWith('**')) {
+            return <h3 key={i} style={{ fontFamily:"'Syne',sans-serif", fontSize:19, fontWeight:800, color:'#fff', margin:'28px 0 12px' }}>{para.replace(/\*\*/g,'')}</h3>
+          }
+          return <p key={i} style={{ margin:'0 0 20px' }}>{para}</p>
+        })}
+      </div>
+      <div style={{ borderTop:'1px solid #14142a', paddingTop:28, marginTop:20 }}>
+        <div style={{ fontSize:13, color:'#6b7280', marginBottom:16 }}>Ready to track your live show performance?</div>
+        <button onClick={()=>{ window.history.pushState({},'','/app'); window.dispatchEvent(new PopStateEvent('popstate')) }} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 24px', borderRadius:10, cursor:'pointer' }}>Try Streamlive Free →</button>
+      </div>
+    </PageShell>
+  )
+}
+
+// ─── CHANGELOG PAGE ───────────────────────────────────────────────────────────
+function ChangelogPage() {
+  const entries = [
+    {
+      version: 'v0.9.2',
+      date: 'Feb 24, 2025',
+      type: 'Feature',
+      color: '#10b981',
+      changes: [
+        'Live Shop buyer-facing page with deeplinks to Shopify PDPs',
+        'Quick Message tab — send pre-filled SMS, Instagram DM, or TikTok DM with live shop link',
+        'Copy-link widget in Live Companion header with one-click URL copy',
+      ]
+    },
+    {
+      version: 'v0.9.1',
+      date: 'Feb 19, 2025',
+      type: 'Improvement',
+      color: '#7c3aed',
+      changes: [
+        'Two-row Live Companion header with Total Viewers and condensed platform badges',
+        'Show name now included in live shop URL slug',
+        'Platform viewer counts now abbreviated (1.0k, 4.2k)',
+        'Email gate modal before demo access with Google Sheets capture',
+      ]
+    },
+    {
+      version: 'v0.9.0',
+      date: 'Feb 14, 2025',
+      type: 'Feature',
+      color: '#10b981',
+      changes: [
+        'Show Planner redesigned as Command Center with 4-phase flow: Plan → Production → Live → Post-Show',
+        'Post-Show analytics screen with AI-generated insights and revenue attribution',
+        'Perks & Exclusives tab in Live Companion for show-specific offers',
+        'Subscriber management with tier tracking and renewal flags',
+      ]
+    },
+    {
+      version: 'v0.8.5',
+      date: 'Feb 7, 2025',
+      type: 'Feature',
+      color: '#10b981',
+      changes: [
+        'Buyer CRM with cross-platform profile merging',
+        'Lifetime value and order history per buyer',
+        'Platform handle linking across TT, IG, WN, AM, YT',
+        'Buyer tags and notes',
+      ]
+    },
+    {
+      version: 'v0.8.0',
+      date: 'Jan 28, 2025',
+      type: 'Launch',
+      color: '#f59e0b',
+      changes: [
+        'Live Companion: unified chat view across all 5 platforms',
+        'Real-time GMV, order count, and platform viewer stats',
+        'Product run-order management during live show',
+        'Pinned message composer with per-platform send',
+      ]
+    },
+    {
+      version: 'v0.7.0',
+      date: 'Jan 15, 2025',
+      type: 'Launch',
+      color: '#f59e0b',
+      changes: [
+        'Multi-platform Opt-In page builder (TT, IG, WN, AM, YT)',
+        'Seller persona system with platform connectivity dashboard',
+        'Show Planner v1 with run-of-show builder',
+        'Landing page and marketing site launched',
+      ]
+    },
+  ]
+
+  return (
+    <PageShell>
+      <PageHeading
+        label="Changelog"
+        title="What's new in Streamlive."
+        subtitle="We ship every week. Here's what we've built."
+      />
+      <div style={{ position:'relative', paddingLeft:28 }}>
+        <div style={{ position:'absolute', left:7, top:8, bottom:0, width:2, background:'linear-gradient(180deg,#7c3aed44,transparent)' }} />
+        {entries.map(entry => (
+          <div key={entry.version} style={{ marginBottom:40, position:'relative' }}>
+            <div style={{ position:'absolute', left:-28, top:4, width:14, height:14, borderRadius:'50%', background:`${entry.color}`, border:'3px solid #06060e', boxShadow:`0 0 8px ${entry.color}66` }} />
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:'#fff' }}>{entry.version}</span>
+              <span style={{ fontSize:10, fontWeight:800, color:entry.color, background:`${entry.color}15`, border:`1px solid ${entry.color}33`, padding:'2px 8px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.06em' }}>{entry.type}</span>
+              <span style={{ fontSize:11, color:'#374151' }}>{entry.date}</span>
+            </div>
+            <div style={{ background:'#0a0a14', border:'1px solid #14142a', borderRadius:12, padding:'16px 20px' }}>
+              {entry.changes.map((c, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'6px 0', borderBottom: i < entry.changes.length-1 ? '1px solid #0d0d1a' : 'none' }}>
+                  <span style={{ color:entry.color, fontSize:12, marginTop:1, flexShrink:0 }}>+</span>
+                  <span style={{ fontSize:13, color:'#9ca3af', lineHeight:1.5 }}>{c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </PageShell>
+  )
+}
+
+// ─── ROADMAP PAGE ─────────────────────────────────────────────────────────────
+function RoadmapPage() {
+  const quarters = [
+    {
+      period: 'Q1 2025 — In Progress',
+      color: '#10b981',
+      items: [
+        { status:'✅', label:'Live Shop buyer pages with Shopify deeplinks' },
+        { status:'✅', label:'Email gate + lead capture on demo access' },
+        { status:'✅', label:'Contact Sales modal with Google Sheets capture' },
+        { status:'🔄', label:'Stripe billing integration for paid plans' },
+        { status:'🔄', label:'Webhook support for Shopify order sync' },
+        { status:'🔄', label:'Mobile app (iOS) for Live Companion' },
+      ]
+    },
+    {
+      period: 'Q2 2025 — Planned',
+      color: '#7c3aed',
+      items: [
+        { status:'🗓️', label:'AI-generated show outlines from past performance data' },
+        { status:'🗓️', label:'Predictive inventory: flag products likely to sell out' },
+        { status:'🗓️', label:'Post-show email sequences (Klaviyo + Mailchimp)' },
+        { status:'🗓️', label:'Buyer win-back campaigns for lapsed customers' },
+        { status:'🗓️', label:'TikTok Shop native order ingestion' },
+        { status:'🗓️', label:'Affiliate link support for show collaborators' },
+      ]
+    },
+    {
+      period: 'Q3 2025 — Roadmap',
+      color: '#4b5563',
+      items: [
+        { status:'💡', label:'Real-time sentiment analysis from live chat' },
+        { status:'💡', label:'Cross-show buyer cohort analysis' },
+        { status:'💡', label:'Multi-seller show support (guest hosts)' },
+        { status:'💡', label:'Custom branded buyer opt-in domains' },
+        { status:'💡', label:'Live show replay attribution (VOD tracking)' },
+        { status:'💡', label:'Wholesale/B2B live show mode' },
+      ]
+    },
+  ]
+
+  return (
+    <PageShell>
+      <PageHeading
+        label="Roadmap"
+        title="Where Streamlive is headed."
+        subtitle="Our public roadmap, updated each quarter. Have a feature request? Let us know."
+      />
+      <div style={{ display:'flex', flexDirection:'column', gap:36 }}>
+        {quarters.map(q => (
+          <div key={q.period}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
+              <div style={{ width:10, height:10, borderRadius:'50%', background:q.color }} />
+              <span style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'#fff' }}>{q.period}</span>
+            </div>
+            <div style={{ background:'#0a0a14', border:'1px solid #14142a', borderRadius:14, overflow:'hidden' }}>
+              {q.items.map((item, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 20px', borderBottom: i < q.items.length-1 ? '1px solid #0d0d1a' : 'none' }}>
+                  <span style={{ fontSize:14, flexShrink:0 }}>{item.status}</span>
+                  <span style={{ fontSize:13, color: item.status==='✅' ? '#9ca3af' : '#e5e7eb', textDecoration: item.status==='✅' ? 'line-through' : 'none', textDecorationColor:'#374151' }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div style={{ background:'linear-gradient(135deg,#7c3aed11,#4f46e511)', border:'1px solid #7c3aed33', borderRadius:14, padding:'24px 26px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:16 }}>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'#fff', marginBottom:4 }}>Got a feature idea?</div>
+            <div style={{ fontSize:13, color:'#6b7280' }}>We read every suggestion and the best ones make it onto the roadmap.</div>
+          </div>
+          <button onClick={()=>navigate('/contact')} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'10px 22px', borderRadius:9, cursor:'pointer', whiteSpace:'nowrap' }}>Submit an Idea →</button>
+        </div>
+      </div>
+    </PageShell>
+  )
+}
+
+// ─── CONTACT PAGE ─────────────────────────────────────────────────────────────
+function ContactPage() {
+  const [form, setForm] = useState({ name:'', email:'', topic:'general', message:'' })
+  const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
+
+  const submit = async () => {
+    if (!form.name || !form.email.includes('@') || !form.message) return
+    setSending(true)
+    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ...form, source:'contact_page' }) }) } catch(e) {}
+    setSending(false)
+    setSent(true)
+  }
+
+  const inputStyle = { width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 14px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }
+  const labelStyle = { display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }
+
+  return (
+    <PageShell>
+      <PageHeading
+        label="Contact"
+        title="We'd love to hear from you."
+        subtitle="Questions, feedback, partnerships, or just to say hi. We respond to every message."
+      />
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1.6fr', gap:32, alignItems:'start' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          {[
+            { icon:'💬', title:'General questions', body:'Product questions, how things work, compatibility.' },
+            { icon:'🏢', title:'Enterprise & teams', body:'Custom pricing, onboarding, and team setup. Click Talk to Sales on the landing page.' },
+            { icon:'🐛', title:'Report a bug', body:'Found something broken? Tell us exactly what happened.' },
+            { icon:'💡', title:'Feature requests', body:'Ideas for what we should build next. We actually read these.' },
+            { icon:'🤝', title:'Partnerships', body:'Platform integrations, agency partnerships, reseller programs.' },
+          ].map(c => (
+            <div key={c.title} style={{ background:'#0a0a14', border:'1px solid #14142a', borderRadius:12, padding:'16px 18px' }}>
+              <div style={{ fontSize:20, marginBottom:6 }}>{c.icon}</div>
+              <div style={{ fontSize:13, fontWeight:700, color:'#fff', marginBottom:4 }}>{c.title}</div>
+              <div style={{ fontSize:12, color:'#6b7280', lineHeight:1.5 }}>{c.body}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #2a2a4a', borderRadius:18, padding:'32px' }}>
+          {sent ? (
+            <div style={{ textAlign:'center', padding:'40px 0' }}>
+              <div style={{ fontSize:52, marginBottom:16 }}>🎉</div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', marginBottom:8 }}>Message received!</div>
+              <div style={{ fontSize:14, color:'#6b7280', lineHeight:1.65 }}>We'll get back to you within one business day.</div>
+              <button onClick={()=>setSent(false)} style={{ marginTop:24, background:'#1a1a2e', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:13, fontWeight:600, padding:'10px 24px', borderRadius:10, cursor:'pointer' }}>Send another message</button>
+            </div>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              <div>
+                <label style={labelStyle}>Your name</label>
+                <input type="text" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Jamie Ellis" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Email</label>
+                <input type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="jamie@yourstore.com" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Topic</label>
+                <select value={form.topic} onChange={e=>setForm(f=>({...f,topic:e.target.value}))} style={{...inputStyle, cursor:'pointer'}}>
+                  <option value="general">General question</option>
+                  <option value="bug">Bug report</option>
+                  <option value="feature">Feature request</option>
+                  <option value="partnership">Partnership</option>
+                  <option value="billing">Billing</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Message</label>
+                <textarea value={form.message} onChange={e=>setForm(f=>({...f,message:e.target.value}))} placeholder="Tell us what's on your mind…" rows={5} style={{...inputStyle, resize:'vertical', lineHeight:1.6}} />
+              </div>
+              <button
+                onClick={submit}
+                disabled={sending}
+                style={{ background: (form.name && form.email.includes('@') && form.message) ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : '#141428', border:'none', color: (form.name && form.email.includes('@') && form.message) ? '#fff' : '#374151', fontSize:14, fontWeight:700, padding:'14px', borderRadius:10, cursor: (form.name && form.email.includes('@') && form.message) ? 'pointer' : 'default', transition:'all .15s' }}
+              >
+                {sending ? 'Sending…' : 'Send Message →'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </PageShell>
+  )
+}
+
+// ─── PRIVACY POLICY ───────────────────────────────────────────────────────────
+function PrivacyPage() {
+  const sections = [
+    { title:'Information We Collect', body:'We collect information you provide directly, including name, email address, and payment details when you create an account or purchase a plan. We also collect usage data such as features accessed, show data, buyer CRM entries, and platform connection details necessary to provide the service.' },
+    { title:'How We Use Your Information', body:'We use your information to provide, maintain, and improve Streamlive. This includes processing payments, sending transactional emails, providing customer support, and analyzing usage patterns to improve the product. We do not sell your personal data to third parties.' },
+    { title:'Platform Integrations', body:'When you connect your TikTok, Instagram, Whatnot, Amazon, or YouTube accounts, we access only the permissions required to display chat, viewer counts, and order data within Streamlive. We do not post on your behalf or access content beyond what is required for the Live Companion and analytics features.' },
+    { title:'Buyer Data', body:'Data you collect about your buyers through Streamlive (names, platform handles, purchase history) is your data. You remain the data controller for all buyer information. We process this data on your behalf as a data processor and do not use it for our own marketing purposes.' },
+    { title:'Data Security', body:'We use industry-standard encryption for data in transit (TLS 1.3) and at rest (AES-256). Access to production systems is restricted to authorized personnel. We conduct regular security reviews.' },
+    { title:'Data Retention', body:'We retain your account data for as long as your account is active. If you cancel your account, we retain data for 90 days before permanent deletion, allowing time for export. You may request immediate deletion by contacting support.' },
+    { title:'Cookies', body:'We use cookies for authentication (session management) and analytics (understanding how features are used). We do not use third-party advertising cookies. You can manage cookie preferences in your browser settings.' },
+    { title:'Third-Party Services', body:'We use Stripe for payment processing, Google Sheets for lead capture, and standard cloud infrastructure providers. Each third-party service processes only the data necessary for their function and is bound by their own privacy policies.' },
+    { title:'Your Rights', body:'You have the right to access, correct, or delete your personal data at any time. EU/UK residents have additional rights under GDPR including data portability and the right to object to processing. To exercise these rights, contact privacy@strmlive.com.' },
+    { title:'Contact', body:'For privacy-related questions, contact us at privacy@strmlive.com. For general inquiries, visit our Contact page.' },
+  ]
+  return (
+    <PageShell>
+      <PageHeading label="Legal" title="Privacy Policy" subtitle="Last updated February 24, 2025. We keep this plain and readable on purpose." />
+      <div style={{ display:'flex', flexDirection:'column', gap:28 }}>
+        {sections.map((s, i) => (
+          <div key={i}>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'#fff', marginBottom:10 }}>{i+1}. {s.title}</div>
+            <p style={{ fontSize:14, color:'#9ca3af', lineHeight:1.8, margin:0 }}>{s.body}</p>
+          </div>
+        ))}
+      </div>
+    </PageShell>
+  )
+}
+
+// ─── TERMS OF SERVICE ─────────────────────────────────────────────────────────
+function TermsPage() {
+  const sections = [
+    { title:'Acceptance of Terms', body:'By accessing or using Streamlive ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service. We may update these terms periodically; continued use after changes constitutes acceptance.' },
+    { title:'Description of Service', body:'Streamlive is a live commerce management platform that enables sellers to manage multi-platform live shows, track buyer data, and attribute sales. Features include Live Companion, Show Planner, Buyer CRM, Analytics, and Live Shop pages.' },
+    { title:'Account Registration', body:'You must create an account to use most features of the Service. You are responsible for maintaining the confidentiality of your credentials and for all activities under your account. You must be at least 18 years old to create an account.' },
+    { title:'Acceptable Use', body:'You agree not to use the Service to violate any laws, infringe intellectual property rights, transmit harmful content, attempt to gain unauthorized access to systems, or engage in fraudulent activity. We reserve the right to suspend accounts that violate these terms.' },
+    { title:'Platform Connections', body:'When connecting third-party platforms (TikTok, Instagram, Whatnot, Amazon, YouTube), you are responsible for complying with those platforms\' terms of service. Streamlive is not responsible for changes to third-party APIs that affect functionality.' },
+    { title:'Buyer Data Responsibility', body:'You are the data controller for buyer information collected through Streamlive. You are responsible for complying with applicable privacy laws regarding the buyer data you collect, including GDPR, CCPA, and other relevant regulations.' },
+    { title:'Payment and Billing', body:'Paid plans are billed monthly or annually as selected. Fees are non-refundable except as required by law or as explicitly stated in our refund policy. We reserve the right to change pricing with 30 days\' notice.' },
+    { title:'Intellectual Property', body:'Streamlive and its original content, features, and functionality are owned by Streamlive and protected by intellectual property laws. Your content (show data, buyer records, product information) remains your property.' },
+    { title:'Limitation of Liability', body:'Streamlive shall not be liable for indirect, incidental, or consequential damages arising from use of the Service, including lost revenue from platform outages, integration failures, or data loss beyond our reasonable control.' },
+    { title:'Termination', body:'Either party may terminate the relationship at any time. Upon termination, your access to the Service will cease. We will provide a 30-day data export window following account termination.' },
+    { title:'Governing Law', body:'These terms are governed by the laws of the State of Delaware, USA. Disputes will be resolved by binding arbitration rather than in court, except for small claims.' },
+    { title:'Contact', body:'Questions about these terms: legal@strmlive.com' },
+  ]
+  return (
+    <PageShell>
+      <PageHeading label="Legal" title="Terms of Service" subtitle="Last updated February 24, 2025. The important stuff, written to be understood." />
+      <div style={{ display:'flex', flexDirection:'column', gap:28 }}>
+        {sections.map((s, i) => (
+          <div key={i}>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'#fff', marginBottom:10 }}>{i+1}. {s.title}</div>
+            <p style={{ fontSize:14, color:'#9ca3af', lineHeight:1.8, margin:0 }}>{s.body}</p>
+          </div>
+        ))}
+      </div>
+    </PageShell>
+  )
+}
+
+// ─── PLATFORM PAGES ───────────────────────────────────────────────────────────
+const PLATFORM_DATA = {
+  whatnot: {
+    name: 'Whatnot',
+    tagline: 'The collector\'s platform, supercharged.',
+    color: '#7c3aed',
+    emoji: '🏷️',
+    desc: 'Whatnot is the leading live auction and fixed-price platform for collectibles, trading cards, sneakers, and vintage goods. Streamlive integrates deeply with Whatnot\'s bidding system, live chat, and buyer profiles.',
+    features: [
+      { icon:'🔨', title:'Bid activity in Live Companion', body:'See every bid, outbid notification, and winning buyer in your unified chat view.' },
+      { icon:'📋', title:'Auction run-order planning', body:'Build your lot lineup in Show Planner with estimated prices and reserve tracking.' },
+      { icon:'👤', title:'Buyer history across shows', body:'Recognize your best bidders the moment they join — total spent, items won, show history.' },
+      { icon:'📊', title:'GMV by lot', body:'Post-show breakdown of revenue per lot, average bid, and sell-through rate.' },
+    ],
+    stat1: { label:'Avg seller GMV/show', value:'$2,840' },
+    stat2: { label:'Buyer retention rate', value:'67%' },
+  },
+  tiktok: {
+    name: 'TikTok Shop',
+    tagline: 'Viral moments. Attributed revenue.',
+    color: '#f43f5e',
+    emoji: '🎵',
+    desc: 'TikTok Shop Live is the fastest-growing live commerce channel in the US. Streamlive captures your TikTok Live orders, chat, and viewer data in real time — and ties it back to your other platform performance.',
+    features: [
+      { icon:'💬', title:'TikTok chat in unified inbox', body:'All TikTok Live comments alongside IG, Whatnot, Amazon, and YouTube in one view.' },
+      { icon:'🛍️', title:'TikTok Shop order tracking', body:'Orders from TikTok Shop flow directly into your Streamlive analytics dashboard.' },
+      { icon:'📌', title:'Comment pinning for product links', body:'Quick Message lets you DM your TikTok Live shop link with one tap, mid-show.' },
+      { icon:'📈', title:'Viewer-to-buyer conversion', body:'See exactly how many TikTok viewers converted to buyers compared to other platforms.' },
+    ],
+    stat1: { label:'Avg TikTok Live viewers', value:'1,200' },
+    stat2: { label:'Conversion to purchase', value:'4.8%' },
+  },
+  instagram: {
+    name: 'Instagram Live',
+    tagline: 'Your audience. Your products. Together.',
+    color: '#ec4899',
+    emoji: '📸',
+    desc: 'Instagram Live Shopping connects your existing IG following directly to your product catalog. Streamlive helps you manage the chaos of high-engagement IG Lives with unified chat and live shop links.',
+    features: [
+      { icon:'💬', title:'Instagram comments tracked', body:'Surface the highest-intent comments from your Instagram Live directly in Streamlive.' },
+      { icon:'🔗', title:'Live shop links via Instagram DM', body:'Send your live shop page link directly to interested buyers via IG DM, mid-show.' },
+      { icon:'👥', title:'Follower-to-buyer tracking', body:'See which of your Instagram followers are also buying — and which need a nudge.' },
+      { icon:'📸', title:'Story + Live show coordination', body:'Plan your Story teases and Live show in the same Show Planner workflow.' },
+    ],
+    stat1: { label:'Avg IG Live viewers', value:'445' },
+    stat2: { label:'DM-to-purchase rate', value:'12%' },
+  },
+  amazon: {
+    name: 'Amazon Live',
+    tagline: 'Prime buyers. Premium attribution.',
+    color: '#f59e0b',
+    emoji: '📦',
+    desc: 'Amazon Live gives you access to Prime members actively shopping. Streamlive integrates with Amazon Live to track your carousel clicks, orders, and commission revenue alongside all your other platforms.',
+    features: [
+      { icon:'📦', title:'Amazon order attribution', body:'Link Amazon Live carousel purchases back to specific shows and products.' },
+      { icon:'💰', title:'Commission tracking', body:'Track affiliate commission and direct sale revenue separately in your post-show report.' },
+      { icon:'🛒', title:'Product carousel sync', body:'Your Streamlive run-order syncs with your Amazon Live product carousel sequence.' },
+      { icon:'⭐', title:'Prime buyer recognition', body:'Identify your Amazon Prime regulars in the Buyer CRM across show appearances.' },
+    ],
+    stat1: { label:'Avg order value', value:'$89' },
+    stat2: { label:'Prime buyer retention', value:'58%' },
+  },
+  youtube: {
+    name: 'YouTube Live',
+    tagline: 'Reach. Scale. Attribution.',
+    color: '#ef4444',
+    emoji: '▶️',
+    desc: 'YouTube Live offers massive organic reach and long-form show formats perfect for product education and storytelling. Streamlive unifies your YouTube Live data with your other platforms for a complete picture.',
+    features: [
+      { icon:'💬', title:'YouTube chat integration', body:'YouTube Live Superchat and regular comments surface in your unified Streamlive inbox.' },
+      { icon:'🎯', title:'VOD replay tracking', body:'Track clicks on your live shop links that come in after the show ends from the VOD.' },
+      { icon:'📊', title:'Cross-platform audience overlap', body:'See how many of your YouTube viewers are also buyers on your other platforms.' },
+      { icon:'🔔', title:'Subscriber milestone alerts', body:'Get notified of subscriber milestones mid-show so you can acknowledge them live.' },
+    ],
+    stat1: { label:'Avg live viewers', value:'4,200' },
+    stat2: { label:'VOD-to-purchase rate', value:'2.1%' },
+  },
+}
+
+function PlatformPage({ platform }) {
+  const p = PLATFORM_DATA[platform]
+  if (!p) return <PageShell><div style={{ textAlign:'center', padding:'60px 0' }}><div style={{ fontSize:48, marginBottom:16 }}>📭</div><div style={{ color:'#fff', fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800 }}>Platform not found</div></div></PageShell>
+
+  return (
+    <PageShell>
+      <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
+        <div style={{ width:54, height:54, borderRadius:16, background:`${p.color}20`, border:`1px solid ${p.color}44`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>{p.emoji}</div>
+        <div>
+          <div style={{ fontSize:10, fontWeight:800, letterSpacing:'.12em', textTransform:'uppercase', color:p.color, marginBottom:4 }}>Platform Integration</div>
+          <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:32, fontWeight:800, color:'#fff', letterSpacing:'-1px', margin:0, lineHeight:1 }}>{p.name}</h1>
+        </div>
+      </div>
+      <p style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:700, color:p.color, marginBottom:16, lineHeight:1.2 }}>{p.tagline}</p>
+      <p style={{ fontSize:15, color:'#9ca3af', lineHeight:1.8, marginBottom:40, maxWidth:620 }}>{p.desc}</p>
+
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:40 }}>
+        {[p.stat1, p.stat2].map(s => (
+          <div key={s.label} style={{ background:`${p.color}10`, border:`1px solid ${p.color}33`, borderRadius:14, padding:'22px 24px' }}>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:32, fontWeight:700, color:p.color, marginBottom:6 }}>{s.value}</div>
+            <div style={{ fontSize:12, color:'#6b7280' }}>{s.label} on Streamlive</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginBottom:40 }}>
+        <div style={{ fontSize:11, fontWeight:800, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:16 }}>What Streamlive adds to your {p.name} shows</div>
+        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          {p.features.map(f => (
+            <div key={f.title} style={{ display:'flex', gap:16, background:'#0a0a14', border:'1px solid #14142a', borderRadius:12, padding:'18px 20px' }}>
+              <div style={{ width:40, height:40, borderRadius:10, background:`${p.color}15`, border:`1px solid ${p.color}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{f.icon}</div>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:'#fff', marginBottom:4 }}>{f.title}</div>
+                <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.55 }}>{f.body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ background:'linear-gradient(135deg,#7c3aed11,#4f46e511)', border:'1px solid #7c3aed33', borderRadius:16, padding:'28px 32px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:16 }}>
+        <div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:'#fff', marginBottom:4 }}>Add {p.name} to your setup</div>
+          <div style={{ fontSize:13, color:'#6b7280' }}>Connect all 5 platforms and see your full live commerce picture.</div>
+        </div>
+        <button onClick={()=>{ window.history.pushState({},'','/app'); window.dispatchEvent(new PopStateEvent('popstate')) }} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 24px', borderRadius:10, cursor:'pointer', whiteSpace:'nowrap' }}>Try It Free →</button>
+      </div>
+    </PageShell>
+  )
 }
