@@ -2186,6 +2186,85 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
           {liveTab === "production" && (
             <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
 
+              {/* ── CAMERA FEEDS ── */}
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Camera Feeds</div>
+
+                {/* Main feed - active scene */}
+                <div style={{ position:"relative", borderRadius:12, overflow:"hidden", marginBottom:8, border:"2px solid #a78bfa55", background:"#0a0a14" }}>
+                  {/* Simulated camera feed with gradient noise */}
+                  <div style={{
+                    height:140, background:"linear-gradient(135deg,#0d0820 0%,#141028 40%,#0a1a0a 70%,#100a0a 100%)",
+                    position:"relative", overflow:"hidden"
+                  }}>
+                    {/* Scanline effect */}
+                    <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px)", pointerEvents:"none" }}/>
+                    {/* Scene label overlay */}
+                    <div style={{ position:"absolute", top:8, left:8, display:"flex", alignItems:"center", gap:6 }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, fontWeight:800, color:"#ef4444", letterSpacing:".08em" }}>LIVE</span>
+                    </div>
+                    <div style={{ position:"absolute", top:8, right:8 }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, color:"rgba(255,255,255,0.35)" }}>{new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span>
+                    </div>
+                    {/* Center camera label */}
+                    <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
+                      <span style={{ fontSize:28 }}>{activeScene.includes("FX6") ? "🎥" : activeScene.includes("Screen") ? "💻" : "📷"}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.5)" }}>{activeScene}</span>
+                    </div>
+                    {/* Corner crosshairs */}
+                    {[["0%","0%"],["0%","auto"],["auto","0%"],["auto","auto"]].map(([t,b],ci)=>(
+                      <div key={ci} style={{ position:"absolute", top:t==="auto"?undefined:12, bottom:b==="auto"?undefined:12, left:ci%2===0?12:undefined, right:ci%2===1?12:undefined, width:12, height:12,
+                        borderTop:t!=="auto"?"1.5px solid rgba(167,139,250,0.4)":undefined,
+                        borderBottom:b!=="auto"?"1.5px solid rgba(167,139,250,0.4)":undefined,
+                        borderLeft:ci%2===0?"1.5px solid rgba(167,139,250,0.4)":undefined,
+                        borderRight:ci%2===1?"1.5px solid rgba(167,139,250,0.4)":undefined,
+                      }}/>
+                    ))}
+                  </div>
+                  {/* Feed label bar */}
+                  <div style={{ padding:"6px 10px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"#0d0d1a" }}>
+                    <span style={{ fontSize:10, fontWeight:700, color:"#a78bfa" }}>Program Output</span>
+                    <span style={{ fontSize:9, color:C.muted }}>1920×1080 · 60fps · H.264</span>
+                  </div>
+                </div>
+
+                {/* Secondary feeds row — all connected cameras */}
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
+                  {[
+                    { id:"fx3",  name:"Sony FX3",  icon:"📷", color:"#7c3aed", status:"recording", iso:"ISO 800",  scene:"Wide" },
+                    { id:"fx6",  name:"Sony FX6",  icon:"🎥", color:"#a78bfa", status:"standby",   iso:"ISO 1600", scene:"Close-Up" },
+                  ].map(cam => {
+                    const isActive = activeScene.toLowerCase().includes(cam.id === "fx3" ? "fx3" : "fx6");
+                    return (
+                      <div key={cam.id} onClick={()=>setActiveScene(cam.id==="fx3"?"Wide — FX3":"Close-Up — FX6")}
+                        style={{ borderRadius:9, overflow:"hidden", border:`1.5px solid ${isActive?"#a78bfa55":"#1e1e3a"}`, cursor:"pointer", transition:"border-color .15s" }}>
+                        <div style={{
+                          height:72, position:"relative",
+                          background:`linear-gradient(135deg,${cam.id==="fx3"?"#0d0820,#0a0a18":"#0a180d,#0a0a14"})`,
+                          overflow:"hidden"
+                        }}>
+                          <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px)" }}/>
+                          {isActive && (
+                            <div style={{ position:"absolute", top:5, left:6, display:"flex", alignItems:"center", gap:4 }}>
+                              <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+                              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:7, fontWeight:800, color:"#ef4444" }}>LIVE</span>
+                            </div>
+                          )}
+                          <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:2 }}>
+                            <span style={{ fontSize:18 }}>{cam.icon}</span>
+                          </div>
+                        </div>
+                        <div style={{ padding:"5px 8px", background:"#0a0a14" }}>
+                          <div style={{ fontSize:9, fontWeight:700, color:isActive?"#a78bfa":C.text, marginBottom:1 }}>{cam.name}</div>
+                          <div style={{ fontSize:8, color:C.muted }}>{cam.iso} · {cam.scene}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* ── PLATFORM CONNECTION STRIP ── */}
               <div style={{ marginBottom:20 }}>
                 <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Platform Connections</div>
