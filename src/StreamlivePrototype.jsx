@@ -2241,7 +2241,7 @@ function BriefingTab({ runOrder, showName }) {
       + "      + '<div class='sidebar-name'>' + p.name + '</div>'"
       + "      + '<div class='sidebar-price'>$' + p.price + '</div>'"
       + "      + '</div>'"
-      + "      + '<span class='sidebar-check' id="check-' + i + '"></span>';"
+      + "      + '<span class='sidebar-check' id='check-' + i + ''></span>';"
       + "    item.addEventListener('click', function() { jumpTo(i); });"
       + "    list.appendChild(item);"
       + "  });"
