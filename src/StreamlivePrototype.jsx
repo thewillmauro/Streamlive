@@ -14,6 +14,9 @@ const GLOBAL_CSS = `
   @keyframes pulse    { 0%,100% { opacity:1 } 50% { opacity:.4 } }
   @keyframes spin     { to { transform:rotate(360deg) } }
   @keyframes pop      { 0% { transform:scale(.92); opacity:0 } 100% { transform:scale(1); opacity:1 } }
+  @keyframes soundBar0 { from { height:3px } to { height:10px } }
+  @keyframes soundBar1 { from { height:5px } to { height:13px } }
+  @keyframes soundBar2 { from { height:4px } to { height:8px  } }
   @keyframes livePulse {
     0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.7; }
     50%  { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
@@ -1902,6 +1905,10 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
   const [activeScene,   setActiveScene]   = useState("Wide — FX3");
   const [lightBrightness, setLightBrightness] = useState(80);
   const [lightTemp,     setLightTemp]     = useState(5500);
+  const [lightColor,    setLightColor]    = useState(null);   // hue 0-360, null = white/temp mode
+  const [lightPattern,  setLightPattern]  = useState(null);  // pattern id or null
+  const [soundPlaying,  setSoundPlaying]  = useState(null);
+  const [soundVolume,   setSoundVolume]   = useState(75);
   const [micMuted,      setMicMuted]      = useState(false);
   const [audioLevel,    setAudioLevel]    = useState(72);
   const [streamHealth,  setStreamHealth]  = useState({ WN:true, TT:true, IG:true, AM:true, YT:true });
@@ -2322,42 +2329,180 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
               </div>
 
               {/* ── LIGHTING ── */}
-              <div>
+              <div style={{ marginBottom:20 }}>
                 <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Lighting</div>
                 <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
-                  <div style={{ marginBottom:12 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-                      <span style={{ fontSize:11, fontWeight:600, color:C.text }}>💡 Elgato Key Light</span>
-                      <span style={{ fontSize:9, fontWeight:700, color:"#10b981" }}>● Connected</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                      <span style={{ fontSize:9, color:C.muted, width:56 }}>Brightness</span>
-                      <input type="range" min={0} max={100} value={lightBrightness} onChange={e=>setLightBrightness(+e.target.value)}
-                        style={{ flex:1, accentColor:"#a78bfa" }}/>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#a78bfa", width:28, textAlign:"right" }}>{lightBrightness}%</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span style={{ fontSize:9, color:C.muted, width:56 }}>Temp</span>
-                      <input type="range" min={2900} max={7000} step={100} value={lightTemp} onChange={e=>setLightTemp(+e.target.value)}
-                        style={{ flex:1, accentColor:"#f59e0b" }}/>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#f59e0b", width:40, textAlign:"right" }}>{lightTemp}K</span>
-                    </div>
+
+                  {/* Header */}
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                    <span style={{ fontSize:11, fontWeight:600, color:C.text }}>💡 Elgato Key Light</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:"#10b981" }}>● Connected</span>
                   </div>
-                  <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+
+                  {/* Brightness */}
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                    <span style={{ fontSize:9, color:C.muted, width:56 }}>Brightness</span>
+                    <input type="range" min={0} max={100} value={lightBrightness} onChange={e=>setLightBrightness(+e.target.value)}
+                      style={{ flex:1, accentColor:"#a78bfa" }}/>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#a78bfa", width:28, textAlign:"right" }}>{lightBrightness}%</span>
+                  </div>
+
+                  {/* Color temp */}
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                    <span style={{ fontSize:9, color:C.muted, width:56 }}>Temp</span>
+                    <input type="range" min={2900} max={7000} step={100} value={lightTemp} onChange={e=>setLightTemp(+e.target.value)}
+                      style={{ flex:1, accentColor:"#f59e0b" }}/>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#f59e0b", width:40, textAlign:"right" }}>{lightTemp}K</span>
+                  </div>
+
+                  {/* Temp presets */}
+                  <div style={{ display:"flex", gap:6, marginBottom:14 }}>
                     {[
-                      { label:"Warm",    bright:70,  temp:3200 },
-                      { label:"Daylight",bright:85,  temp:5600 },
-                      { label:"Cool",    bright:90,  temp:7000 },
+                      { label:"Warm",    bright:70, temp:3200 },
+                      { label:"Daylight",bright:85, temp:5600 },
+                      { label:"Cool",    bright:90, temp:7000 },
                     ].map(p=>(
-                      <button key={p.label} onClick={()=>{ setLightBrightness(p.bright); setLightTemp(p.temp); }}
+                      <button key={p.label} onClick={()=>{ setLightBrightness(p.bright); setLightTemp(p.temp); setLightColor(null); setLightPattern(null); }}
                         style={{ flex:1, padding:"5px 0", background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:7, cursor:"pointer", fontSize:9, fontWeight:600, color:C.muted }}>
                         {p.label}
                       </button>
                     ))}
                   </div>
+
+                  {/* Divider */}
+                  <div style={{ height:1, background:"#1e1e3a", marginBottom:14 }}/>
+
+                  {/* Color label + swatch preview */}
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                    <span style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em" }}>Color</span>
+                    <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                      {lightColor && (
+                        <button onClick={()=>setLightColor(null)} style={{ fontSize:8, color:C.muted, background:"none", border:"none", cursor:"pointer" }}>✕ clear</button>
+                      )}
+                      <div style={{ width:22, height:22, borderRadius:6, border:"1.5px solid #2a2a3a",
+                        background: lightColor ? `hsl(${lightColor},100%,55%)` : `linear-gradient(135deg,#3b1f6a,#4a3a00)`,
+                        boxShadow: lightColor ? `0 0 10px hsl(${lightColor},100%,55%)66` : "none",
+                        transition:"all .2s"
+                      }}/>
+                    </div>
+                  </div>
+
+                  {/* Rainbow hue slider */}
+                  <div style={{ position:"relative", marginBottom:10 }}>
+                    <div style={{ height:10, borderRadius:6, marginBottom:6,
+                      background:"linear-gradient(to right,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#0088ff,#8800ff,#ff00ff,#ff0000)"
+                    }}/>
+                    <input type="range" min={0} max={360} value={lightColor ?? 0}
+                      onChange={e=>{ setLightColor(+e.target.value); setLightPattern(null); }}
+                      style={{ position:"absolute", top:-2, left:0, width:"100%", opacity:0, cursor:"pointer", height:14 }}/>
+                    {lightColor !== null && (
+                      <div style={{
+                        position:"absolute", top:-4, left:`calc(${(lightColor/360)*100}% - 9px)`,
+                        width:18, height:18, borderRadius:"50%", border:"2.5px solid #fff",
+                        background:`hsl(${lightColor},100%,55%)`,
+                        boxShadow:`0 0 8px hsl(${lightColor},100%,55%)`,
+                        pointerEvents:"none", transition:"left .05s"
+                      }}/>
+                    )}
+                  </div>
+                  <div style={{ display:"flex", gap:5, marginBottom:14 }}>
+                    {[
+                      { label:"Red",    hue:0   },
+                      { label:"Orange", hue:25  },
+                      { label:"Yellow", hue:55  },
+                      { label:"Green",  hue:130 },
+                      { label:"Cyan",   hue:190 },
+                      { label:"Blue",   hue:220 },
+                      { label:"Purple", hue:270 },
+                      { label:"Pink",   hue:320 },
+                    ].map(c=>(
+                      <button key={c.label} onClick={()=>{ setLightColor(c.hue); setLightPattern(null); }}
+                        style={{ flex:1, height:18, borderRadius:4, border: lightColor===c.hue ? "2px solid #fff" : "1.5px solid transparent",
+                          background:`hsl(${c.hue},100%,55%)`,
+                          boxShadow: lightColor===c.hue ? `0 0 8px hsl(${c.hue},100%,55%)` : "none",
+                          cursor:"pointer", padding:0, transition:"all .12s"
+                        }} title={c.label}/>
+                    ))}
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ height:1, background:"#1e1e3a", marginBottom:14 }}/>
+
+                  {/* Patterns */}
+                  <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>Patterns</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6, marginBottom:14 }}>
+                    {[
+                      { id:"celebrate",  label:"🎉 Celebrate",   desc:"Fast rainbow cycle" },
+                      { id:"pulse",      label:"💜 Pulse",        desc:"Slow breathe fade" },
+                      { id:"strobe",     label:"⚡ Strobe",       desc:"Quick white flash" },
+                      { id:"fire",       label:"🔥 Fire",         desc:"Warm amber flicker" },
+                      { id:"police",     label:"🚨 Alert",        desc:"Red/blue alternating" },
+                      { id:"sunrise",    label:"🌅 Sunrise",      desc:"Warm fade-in ramp" },
+                    ].map(p=>(
+                      <button key={p.id} onClick={()=>{ setLightPattern(lightPattern===p.id ? null : p.id); setLightColor(null); }}
+                        style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", padding:"8px 10px",
+                          background: lightPattern===p.id ? "#1a0f2e" : "#0d0d1a",
+                          border:`1px solid ${lightPattern===p.id?"#a78bfa55":"#1e1e3a"}`,
+                          borderRadius:8, cursor:"pointer", textAlign:"left", transition:"all .12s"
+                        }}>
+                        <span style={{ fontSize:11, marginBottom:2 }}>{p.label}</span>
+                        <span style={{ fontSize:8, color:C.muted }}>{p.desc}</span>
+                        {lightPattern===p.id && <span style={{ fontSize:7, fontWeight:800, color:"#a78bfa", marginTop:3, letterSpacing:".05em" }}>● RUNNING</span>}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Aputure offline */}
                   <div style={{ padding:"7px 10px", background:"#0d0d1a", border:"1px solid #ef444422", borderRadius:7, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span style={{ fontSize:10, color:"#4b5563" }}>🔆 Aputure 600d</span>
                     <span style={{ fontSize:9, fontWeight:700, color:"#ef4444" }}>● Disconnected</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── SOUND ── */}
+              <div style={{ marginBottom:8 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Sound Effects</div>
+                <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
+
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+                    {[
+                      { id:"airhorn",    label:"📯 Air Horn",      desc:"Classic drop" },
+                      { id:"ding",       label:"🔔 Cha-Ching",      desc:"Sale bell" },
+                      { id:"crowd",      label:"🙌 Crowd Cheer",    desc:"Audience applause" },
+                      { id:"drumroll",   label:"🥁 Drum Roll",      desc:"Build the hype" },
+                      { id:"confetti",   label:"🎊 Party Horn",     desc:"Celebration blast" },
+                      { id:"countdown",  label:"⏱ Countdown",      desc:"3-2-1 beeps" },
+                      { id:"vip",        label:"⭐ VIP Arrival",    desc:"Fanfare sting" },
+                      { id:"sold",       label:"🔨 Sold!",           desc:"Auction gavel" },
+                    ].map(s=>(
+                      <button key={s.id}
+                        onClick={()=>{ setSoundPlaying(s.id); setTimeout(()=>setSoundPlaying(null), 1800); }}
+                        style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", padding:"8px 10px",
+                          background: soundPlaying===s.id ? "#0a1e16" : "#0d0d1a",
+                          border:`1px solid ${soundPlaying===s.id?"#10b98155":"#1e1e3a"}`,
+                          borderRadius:8, cursor:"pointer", textAlign:"left", transition:"all .12s",
+                          transform: soundPlaying===s.id ? "scale(0.97)" : "scale(1)"
+                        }}>
+                        <span style={{ fontSize:11, marginBottom:2 }}>{s.label}</span>
+                        <span style={{ fontSize:8, color:C.muted }}>{s.desc}</span>
+                        {soundPlaying===s.id && (
+                          <div style={{ display:"flex", gap:2, marginTop:4, alignItems:"flex-end", height:10 }}>
+                            {[6,10,7,12,8].map((h,i)=>(
+                              <div key={i} style={{ width:2, height:h, background:"#10b981", borderRadius:1, animation:`soundBar${i%3} .4s ease-in-out infinite alternate` }}/>
+                            ))}
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Volume */}
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:12, paddingTop:10, borderTop:`1px solid ${C.border}` }}>
+                    <span style={{ fontSize:9, color:C.muted }}>🔊</span>
+                    <input type="range" min={0} max={100} value={soundVolume} onChange={e=>setSoundVolume(+e.target.value)}
+                      style={{ flex:1, accentColor:"#10b981" }}/>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#10b981", width:28, textAlign:"right" }}>{soundVolume}%</span>
                   </div>
                 </div>
               </div>
