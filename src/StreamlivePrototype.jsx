@@ -1897,6 +1897,39 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
   const [msgText,       setMsgText]       = useState("");
   const [msgSent,       setMsgSent]       = useState(false);
 
+  // Production tab state (inline production panel)
+  const [liveTab,       setLiveTab]       = useState("orders");
+  const [activeScene,   setActiveScene]   = useState("Wide — FX3");
+  const [lightBrightness, setLightBrightness] = useState(80);
+  const [lightTemp,     setLightTemp]     = useState(5500);
+  const [micMuted,      setMicMuted]      = useState(false);
+  const [audioLevel,    setAudioLevel]    = useState(72);
+  const [streamHealth,  setStreamHealth]  = useState({ WN:true, TT:true, IG:true, AM:true, YT:true });
+
+  // Simulate fluctuating audio level
+  useEffect(()=>{
+    const t = setInterval(()=>{
+      if (!micMuted) setAudioLevel(v => Math.max(20, Math.min(95, v + Math.floor((Math.random()-0.4)*14))));
+    }, 400);
+    return ()=>clearInterval(t);
+  }, [micMuted]);
+
+  const SCENES = [
+    { id:"wide",    name:"Wide — FX3",     icon:"📷" },
+    { id:"closeup", name:"Close-Up — FX6", icon:"🎥" },
+    { id:"product", name:"Product Focus",  icon:"🎥" },
+    { id:"pip",     name:"PiP",            icon:"📷" },
+    { id:"screen",  name:"Screen Share",   icon:"💻" },
+  ];
+
+  const PLATFORM_META_LIVE = {
+    WN:{ label:"Whatnot",   color:"#7c3aed", bitrate:"6 Mbps",  latency:"1.2s" },
+    TT:{ label:"TikTok",    color:"#f43f5e", bitrate:"4 Mbps",  latency:"0.8s" },
+    IG:{ label:"Instagram", color:"#ec4899", bitrate:"3.5 Mbps",latency:"1.4s" },
+    AM:{ label:"Amazon",    color:"#f59e0b", bitrate:"4 Mbps",  latency:"2.1s" },
+    YT:{ label:"YouTube",   color:"#ff0000", bitrate:"8 Mbps",  latency:"1.0s" },
+  };
+
   // Build the live shop link whenever showName/persona changes
   const showName     = params?.showName   || "Live Show";
   const runOrder     = params?.runOrder   || PRODUCTS.slice(0,5);
@@ -2075,8 +2108,26 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
       {/* ── MAIN BODY ── */}
       <div style={{ flex:1, display:"flex", overflow:"hidden", minHeight:0 }}>
 
-        {/* ── BUYER FEED ── */}
+        {/* ── LEFT PANEL — ORDERS or PRODUCTION ── */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", borderRight:`1px solid ${C.border}`, minHeight:0 }}>
+
+          {/* ── TAB SWITCHER ── */}
+          <div style={{ display:"flex", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:"#07070f" }}>
+            {[
+              { id:"orders",     label:"Orders" },
+              { id:"production", label:"Production" },
+            ].map(t=>(
+              <button key={t.id} onClick={()=>setLiveTab(t.id)} style={{
+                padding:"0 20px", height:38, background:"none", border:"none",
+                borderBottom:`2px solid ${liveTab===t.id?"#a78bfa":"transparent"}`,
+                color:liveTab===t.id?"#a78bfa":C.muted,
+                fontSize:11, fontWeight:liveTab===t.id?700:400, cursor:"pointer", transition:"all .12s"
+              }}>{t.label}</button>
+            ))}
+          </div>
+
+          {/* ── ORDERS TAB ── */}
+          {liveTab === "orders" && <>
           <div style={{ padding:"10px 16px", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Quick lookup — search any buyer…"
               style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 12px", color:C.text, fontSize:12, outline:"none" }} />
@@ -2129,6 +2180,149 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
               );
             })}
           </div>
+          </>}
+
+          {/* ── PRODUCTION TAB ── */}
+          {liveTab === "production" && (
+            <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
+
+              {/* ── PLATFORM CONNECTION STRIP ── */}
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Platform Connections</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                  {selectedPlatforms.map(pid => {
+                    const pm   = PLATFORM_META_LIVE[pid] || { label:pid, color:"#6b7280", bitrate:"4 Mbps", latency:"1.2s" };
+                    const up   = streamHealth[pid] !== false;
+                    const viewers = platformViewers[pid] || 0;
+                    return (
+                      <div key={pid} style={{ display:"flex", alignItems:"center", gap:10, background:"#0a0a14", border:`1px solid ${up?"#10b98122":"#ef444422"}`, borderRadius:10, padding:"10px 14px" }}>
+                        <div style={{ width:8, height:8, borderRadius:"50%", background:up?"#10b981":"#ef4444", flexShrink:0, boxShadow:up?"0 0 6px #10b98188":"0 0 6px #ef444488" }}/>
+                        <div style={{ flex:1 }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2 }}>
+                            <span style={{ fontSize:12, fontWeight:700, color:pm.color }}>{pm.label}</span>
+                            <span style={{ fontSize:9, fontWeight:700, color:up?"#10b981":"#ef4444", background:up?"#0a1e16":"#1e0808", border:`1px solid ${up?"#10b98133":"#ef444433"}`, padding:"1px 7px", borderRadius:4 }}>{up?"LIVE":"OFFLINE"}</span>
+                          </div>
+                          <div style={{ display:"flex", gap:12, fontSize:9, color:C.muted }}>
+                            <span>{pm.bitrate}</span>
+                            <span>Latency {pm.latency}</span>
+                            <span>{viewers >= 1000 ? (viewers/1000).toFixed(1)+"k" : viewers} viewers</span>
+                          </div>
+                        </div>
+                        <button onClick={()=>setStreamHealth(prev=>({...prev,[pid]:!prev[pid]}))}
+                          style={{ fontSize:9, fontWeight:700, color:up?"#ef4444":"#10b981", background:"transparent", border:`1px solid ${up?"#ef444433":"#10b98133"}`, padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>
+                          {up?"Disconnect":"Reconnect"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {selectedPlatforms.includes("IG") && (
+                    <div style={{ display:"flex", gap:8, padding:"8px 12px", background:"#1a0f0a", border:"1px solid #f59e0b33", borderRadius:8 }}>
+                      <span style={{ fontSize:11, color:"#f59e0b", flexShrink:0 }}>⚠</span>
+                      <span style={{ fontSize:10, color:"#92400e", lineHeight:1.5 }}>Instagram is running via capture card → iPhone. Verify the Cam Link is connected and Instagram Live is active on the dedicated device.</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── OBS SCENE SWITCHER ── */}
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>OBS Scene</div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
+                  {SCENES.map(s => (
+                    <button key={s.id} onClick={()=>setActiveScene(s.name)}
+                      style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:activeScene===s.name?"#1a0f2e":"#0a0a14", border:`1px solid ${activeScene===s.name?"#a78bfa55":"#1e1e3a"}`, borderRadius:9, cursor:"pointer", transition:"all .12s", textAlign:"left" }}>
+                      <span style={{ fontSize:14, flexShrink:0 }}>{s.icon}</span>
+                      <div>
+                        <div style={{ fontSize:11, fontWeight:700, color:activeScene===s.name?"#a78bfa":C.text }}>{s.name}</div>
+                        {activeScene===s.name && <div style={{ fontSize:9, color:"#a78bfa", marginTop:1 }}>● Active</div>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <div style={{ marginTop:8, padding:"7px 12px", background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:8 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:10, color:C.muted }}>Active scene</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, fontWeight:700, color:"#a78bfa" }}>{activeScene}</span>
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:3 }}>
+                    <span style={{ fontSize:10, color:C.muted }}>OBS WebSocket</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:"#10b981" }}>● Connected</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── AUDIO ── */}
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Audio — Rode Wireless GO II</div>
+                <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+                    <div style={{ flex:1, height:8, background:"#0d0d1a", borderRadius:4, overflow:"hidden" }}>
+                      <div style={{
+                        height:"100%", borderRadius:4, transition:"width .1s",
+                        width:`${micMuted?0:audioLevel}%`,
+                        background:audioLevel > 85 ? "#ef4444" : audioLevel > 70 ? "#f59e0b" : "#10b981"
+                      }}/>
+                    </div>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, fontWeight:700, color:micMuted?"#374151":audioLevel>85?"#ef4444":audioLevel>70?"#f59e0b":"#10b981", width:28, textAlign:"right" }}>
+                      {micMuted ? "MUTE" : `${audioLevel}%`}
+                    </span>
+                  </div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={()=>setMicMuted(m=>!m)}
+                      style={{ flex:1, padding:"6px", background:micMuted?"#2d0808":"#0a1e16", border:`1px solid ${micMuted?"#ef444433":"#10b98133"}`, borderRadius:7, cursor:"pointer", fontSize:10, fontWeight:700, color:micMuted?"#ef4444":"#10b981" }}>
+                      {micMuted ? "🔇 Unmute" : "🎙 Mute"}
+                    </button>
+                    <div style={{ padding:"6px 10px", background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:7, fontSize:10, color:C.muted, display:"flex", alignItems:"center" }}>
+                      Ch A+B · Gain +0dB
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── LIGHTING ── */}
+              <div>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Lighting</div>
+                <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
+                  <div style={{ marginBottom:12 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                      <span style={{ fontSize:11, fontWeight:600, color:C.text }}>💡 Elgato Key Light</span>
+                      <span style={{ fontSize:9, fontWeight:700, color:"#10b981" }}>● Connected</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                      <span style={{ fontSize:9, color:C.muted, width:56 }}>Brightness</span>
+                      <input type="range" min={0} max={100} value={lightBrightness} onChange={e=>setLightBrightness(+e.target.value)}
+                        style={{ flex:1, accentColor:"#a78bfa" }}/>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#a78bfa", width:28, textAlign:"right" }}>{lightBrightness}%</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:9, color:C.muted, width:56 }}>Temp</span>
+                      <input type="range" min={2900} max={7000} step={100} value={lightTemp} onChange={e=>setLightTemp(+e.target.value)}
+                        style={{ flex:1, accentColor:"#f59e0b" }}/>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#f59e0b", width:40, textAlign:"right" }}>{lightTemp}K</span>
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+                    {[
+                      { label:"Warm",    bright:70,  temp:3200 },
+                      { label:"Daylight",bright:85,  temp:5600 },
+                      { label:"Cool",    bright:90,  temp:7000 },
+                    ].map(p=>(
+                      <button key={p.label} onClick={()=>{ setLightBrightness(p.bright); setLightTemp(p.temp); }}
+                        style={{ flex:1, padding:"5px 0", background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:7, cursor:"pointer", fontSize:9, fontWeight:600, color:C.muted }}>
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ padding:"7px 10px", background:"#0d0d1a", border:"1px solid #ef444422", borderRadius:7, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:10, color:"#4b5563" }}>🔆 Aputure 600d</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:"#ef4444" }}>● Disconnected</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
+
         </div>
 
         {/* ── RIGHT PANEL — BUYER CONTEXT ── */}
