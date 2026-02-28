@@ -1629,21 +1629,22 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
 function ScreenLiveShop({ navigate, params, persona: personaProp }) {
-  // Read from liveSession (params) — fall back to localStorage for new-tab opens
-  const _lsStart   = (() => { try { return parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0; } catch(e){return 0;} })();
-  const _lsTimings = (() => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}"); } catch(e){return {};} })();
-  const _lsOrder   = (() => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]"); } catch(e){return [];} })();
-  const _lsRunOrder = _lsOrder.length > 0 ? _lsOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean) : null;
+  // ── helpers that read fresh from localStorage every call ──────────────────
+  const getLsStart   = () => { try { return parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0; } catch(e){return 0;} };
+  const getLsTimings = () => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}"); } catch(e){return {};} };
+  const getLsOrder   = () => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]"); } catch(e){return [];} };
 
-  const runOrder       = params?.runOrder      || _lsRunOrder || PRODUCTS.slice(0,5);
-  const showName       = params?.showName      || "Live Show";
-  const persona        = params?.persona       || personaProp || { shop:"Our Store", slug:"shop" };
-  const shopDomain     = params?.shopDomain    || `${persona.slug || "shop"}.myshopify.com`;
-  const productTimings = params?.productTimings || _lsTimings || {};
-  const showStartTime  = params?.showStartTime  || _lsStart || Date.now();
+  const getRunOrder   = () => params?.runOrder      || (getLsOrder().map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean).length ? getLsOrder().map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean) : null) || PRODUCTS.slice(0,5);
+  const getTimings    = () => params?.productTimings || getLsTimings() || {};
+  const getStartTime  = () => params?.showStartTime  || getLsStart()   || Date.now();
+
+  const runOrder       = getRunOrder();
+  const showName       = params?.showName   || "Live Show";
+  const persona        = params?.persona    || personaProp || { shop:"Our Store", slug:"shop" };
+  const shopDomain     = params?.shopDomain || `${persona.slug || "shop"}.myshopify.com`;
   const [copied, setCopied] = useState(false);
 
-  // Build cumulative breakpoints from current runOrder + timings
+  // Build cumulative breakpoints
   const buildBreakpoints = (ro, pt) => {
     let cursor = 0;
     return ro.map((p, i) => {
@@ -1654,30 +1655,49 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
     });
   };
 
-  const breakpoints = buildBreakpoints(runOrder, productTimings);
-  const totalDurMs  = breakpoints.length > 0 ? breakpoints[breakpoints.length - 1].endMs : 90000;
-
-  // Compute active index deterministically from wall clock — always in sync
-  const computeIdx = (bps, total) => {
+  // Compute active index — always reads fresh from localStorage so new tabs sync instantly
+  const computeCurrentIdx = () => {
+    const ro   = getRunOrder();
+    const pt   = getTimings();
+    const st   = getStartTime();
+    const bps  = buildBreakpoints(ro, pt);
+    const total = bps.length > 0 ? bps[bps.length - 1].endMs : 90000;
     if (!bps.length) return 0;
-    const elapsed = (Date.now() - showStartTime) % total;
-    const bp = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
-    return bp ? bp.idx : 0;
+    const elapsed = (Date.now() - st) % total;
+    const found = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
+    return found ? found.idx : 0;
   };
 
-  const [activeIdx, setActiveIdx] = useState(() => computeIdx(breakpoints, totalDurMs));
-  const [, setTick] = useState(0); // force re-render every second for countdown
+  // Compute remaining seconds for a given product index
+  const computeRemaining = (idx) => {
+    const ro   = getRunOrder();
+    const pt   = getTimings();
+    const st   = getStartTime();
+    const bps  = buildBreakpoints(ro, pt);
+    const total = bps.length > 0 ? bps[bps.length - 1].endMs : 90000;
+    const elapsed = (Date.now() - st) % total;
+    const bp = bps[idx];
+    if (!bp) return pt[ro[idx]?.id] || 90;
+    return Math.max(0, Math.ceil((bp.endMs - elapsed) / 1000));
+  };
 
-  // Tick every second — recompute idx from clock, force re-render for countdowns
+  // Init from clock immediately — correct product on open, even in new tab
+  const [activeIdx, setActiveIdx] = useState(() => computeCurrentIdx());
+  const [, setTick] = useState(0);
+
+  // Tick every second — re-reads localStorage fresh, so always in sync
   useEffect(() => {
     const t = setInterval(() => {
-      const freshBps   = buildBreakpoints(runOrder, productTimings);
-      const freshTotal = freshBps.length > 0 ? freshBps[freshBps.length - 1].endMs : 90000;
-      setActiveIdx(computeIdx(freshBps, freshTotal));
-      setTick(n => n + 1); // trigger countdown re-render
+      setActiveIdx(computeCurrentIdx());
+      setTick(n => n + 1);
     }, 1000);
     return () => clearInterval(t);
-  }, [params]); // re-subscribe whenever params (liveSession) changes
+  }, []); // no deps needed — reads localStorage fresh every tick
+
+  const productTimings = getTimings();
+  const showStartTime  = getStartTime();
+  const breakpoints    = buildBreakpoints(runOrder, productTimings);
+  const totalDurMs     = breakpoints.length > 0 ? breakpoints[breakpoints.length - 1].endMs : 90000;
 
   const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
@@ -2563,19 +2583,19 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
 </div>
 <script>
 (function(){
-  // Re-read latest timings from localStorage (updated when Catalog tab changes)
+
+  // ── 1. Load product data, merging latest timings from localStorage ──────────
   var prods = (function() {
     var base = ${prodsData};
     try {
       var t = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS") || "{}");
-      if (Object.keys(t).length > 0) {
-        return base.map(function(p) { return Object.assign({}, p, { timing: t[p.id] || p.timing || 90 }); });
-      }
+      if (Object.keys(t).length > 0)
+        return base.map(function(p){ return Object.assign({}, p, {timing: t[p.id] || p.timing || 90}); });
     } catch(e) {}
     return base;
   })();
-  // Shared clock: read from localStorage (written by app on Go Live),
-  // fall back to baked-in timestamp if localStorage not accessible
+
+  // ── 2. Shared show clock — localStorage first, baked-in fallback ─────────────
   var SHOW_START = (function() {
     try {
       var ls = parseInt(localStorage.getItem("STRMLIVE_SHOW_START") || "0");
@@ -2584,39 +2604,41 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
     return ${showStartTimeMs};
   })();
 
-  // ── clock-based sync (same logic as LiveShop + BriefingTab) ──
+  // ── 3. Cumulative breakpoints (identical logic to LiveShop + BriefingTab) ────
   var breakpoints = (function() {
     var cursor = 0;
     return prods.map(function(p, i) {
       var dur = (p.timing || 90) * 1000;
-      var bp  = { idx: i, startMs: cursor, endMs: cursor + dur };
+      var bp  = {idx:i, startMs:cursor, endMs:cursor+dur};
       cursor += dur;
       return bp;
     });
   })();
   var totalDurMs = breakpoints.length ? breakpoints[breakpoints.length-1].endMs : 90000;
 
-  function computeIdx() {
+  // ── 4. Clock helpers ──────────────────────────────────────────────────────────
+  function clockIdx() {
     var elapsed = (Date.now() - SHOW_START) % totalDurMs;
-    for (var i = 0; i < breakpoints.length; i++) {
+    for (var i = 0; i < breakpoints.length; i++)
       if (elapsed >= breakpoints[i].startMs && elapsed < breakpoints[i].endMs) return i;
-    }
     return 0;
   }
-  function computeRemaining(idx) {
+  function clockRemaining(idx) {
     var elapsed = (Date.now() - SHOW_START) % totalDurMs;
     var bp = breakpoints[idx];
     if (!bp) return prods[idx] ? (prods[idx].timing || 90) : 90;
     return Math.max(0, Math.ceil((bp.endMs - elapsed) / 1000));
   }
 
-  var cur = computeIdx();
-  var manualUntil = 0; // timestamp until which manual override is active
+  // ── 5. State ──────────────────────────────────────────────────────────────────
+  var cur = clockIdx();        // starts in sync on open
+  var manualUntil = 0;         // epoch ms until manual override expires
   var ticker = null;
 
+  // ── 6. DOM helpers ────────────────────────────────────────────────────────────
   function el(tag,cls) { var e=document.createElement(tag); if(cls)e.className=cls; return e; }
-  function txt(t) { return document.createTextNode(t); }
 
+  // ── 7. Talking points ─────────────────────────────────────────────────────────
   function getPoints(p) {
     var pts = [];
     pts.push({icon:"💰", text:"Lead with the price — $"+p.price+" is your live-exclusive rate"});
@@ -2639,6 +2661,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
     return pts;
   }
 
+  // ── 8. Build slides ───────────────────────────────────────────────────────────
   function buildSlides() {
     var area = document.getElementById("product-area");
     prods.forEach(function(p,i) {
@@ -2646,11 +2669,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
       var inv = p.inventory;
       var margin = (p.cost&&p.price) ? Math.round((p.price-p.cost)/p.price*100) : null;
       var invColor = (inv!==null&&inv<25)?"#ef4444":(inv!==null&&inv<60)?"#f59e0b":"#10b981";
-
-      // Counter
       var counter = el("div","prod-counter"); var cs=el("span"); cs.textContent=(i+1)+" of "+prods.length; counter.appendChild(cs);
-
-      // Hero
       var hero=el("div","prod-hero");
       var emo=el("span","prod-emoji"); emo.textContent=p.image; hero.appendChild(emo);
       var info=el("div");
@@ -2662,16 +2681,12 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
       if(p.aiScore){var b=el("span","badge b-purple");b.textContent="AI "+p.aiScore+"/10";bdg.appendChild(b);}
       if(inv!==null&&inv<30){var b=el("span","badge b-red");b.textContent="⚠ Low Stock";bdg.appendChild(b);}
       info.appendChild(bdg); hero.appendChild(info);
-
-      // Stats
       var stats=el("div","stats-row");
       function addStat(val,lbl,color){var box=el("div","stat-box");var v=el("div","stat-val");v.style.color=color;v.textContent=val;var l=el("div","stat-lbl");l.textContent=lbl;box.appendChild(v);box.appendChild(l);stats.appendChild(box);}
       if(inv!==null) addStat(inv+" units","In Stock",invColor);
       if(p.soldLast30) addStat(p.soldLast30,"Sold 30d","#a78bfa");
       if(p.avgPerShow) addStat(p.avgPerShow,"Avg / Show","#38bdf8");
       if(margin!==null) addStat(margin+"%","Margin","#10b981");
-
-      // Talking points
       var tpCard=el("div","tp-card");
       var tpTitle=el("div","tp-title"); tpTitle.textContent="Host Talking Points"; tpCard.appendChild(tpTitle);
       getPoints(p).forEach(function(pt){
@@ -2680,12 +2695,12 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
         var text=el("span","tp-text"); text.textContent=pt.text;
         item.appendChild(icon); item.appendChild(text); tpCard.appendChild(item);
       });
-
       slide.appendChild(counter); slide.appendChild(hero); slide.appendChild(stats); slide.appendChild(tpCard);
       area.appendChild(slide);
     });
   }
 
+  // ── 9. Build sidebar ──────────────────────────────────────────────────────────
   function buildSidebar() {
     var list = document.getElementById("sidebar-list");
     prods.forEach(function(p,i) {
@@ -2698,73 +2713,90 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
       var chk=el("span","si-check"); chk.id="chk-"+i;
       info.appendChild(nm); info.appendChild(pr);
       item.appendChild(num); item.appendChild(emo); item.appendChild(info); item.appendChild(chk);
-      item.addEventListener("click",function(){jumpTo(i);});
+      item.addEventListener("click", function(){ jumpTo(i); });
       list.appendChild(item);
     });
   }
 
+  // ── 10. Update sidebar active/done states ─────────────────────────────────────
   function updateSidebar() {
     prods.forEach(function(p,i){
       var s=document.getElementById("si-"+i);
       var c=document.getElementById("chk-"+i);
-      s.className="si"+(i===cur?" active":i<cur?" done":"");
-      c.textContent=i<cur?"✓":"";
+      if(s) s.className="si"+(i===cur?" active":i<cur?" done":"");
+      if(c) c.textContent=i<cur?"✓":"";
     });
   }
 
+  // ── 11. Show a slide ──────────────────────────────────────────────────────────
   function showSlide(idx) {
     prods.forEach(function(p,i){
       var s=document.getElementById("slide-"+i);
-      s.className="slide"+(i===idx?" visible":i<idx?" done":" hidden");
+      if(s) s.className="slide"+(i===idx?" visible":i<idx?" done":" hidden");
     });
     var pct=prods.length>1?Math.round(idx/(prods.length-1)*100):100;
     document.getElementById("progress-fill").style.width=pct+"%";
-    document.getElementById("btn-prev").disabled=idx===0;
-    document.getElementById("btn-next").disabled=idx===prods.length-1;
+    document.getElementById("btn-prev").disabled=(idx===0);
+    document.getElementById("btn-next").disabled=(idx===prods.length-1);
     updateSidebar();
     var si=document.getElementById("si-"+idx);
     if(si) si.scrollIntoView({behavior:"smooth",block:"nearest"});
   }
 
-  function updateTimer() {
+  // ── 12. Update countdown timer display ───────────────────────────────────────
+  function updateTimerDisplay(secs) {
     var m=Math.floor(secs/60), s=secs%60;
     var d=document.getElementById("timer-display");
+    if(!d) return;
     d.textContent=m+":"+(s<10?"0":"")+s;
     d.className=secs<=10?"urgent":secs<=30?"low":"";
   }
 
-  function startTimer() {
-    if(timer) clearInterval(timer);
-    timer=setInterval(function(){
-    if(!paused&&secs>0){secs--;updateTimer();}
-    else if(!paused&&secs===0&&cur<prods.length-1){
-      // auto-advance to next product
-      setTimeout(function(){ next(); }, 400);
-    }
-  },1000);
+  // ── 13. Manual override (click sidebar / prev / next) ────────────────────────
+  function jumpTo(idx) {
+    cur = idx;
+    manualUntil = Date.now() + (prods[idx].timing || 90) * 2 * 1000;
+    showSlide(cur);
+    updateTimerDisplay(prods[idx].timing || 90);
+  }
+  function next() { if(cur < prods.length-1) jumpTo(cur+1); }
+  function prev() { if(cur > 0) jumpTo(cur-1); }
+
+  // ── 14. Re-sync to show clock immediately ─────────────────────────────────────
+  function resync() {
+    manualUntil = 0;
+    cur = clockIdx();
+    showSlide(cur);
+    updateTimerDisplay(clockRemaining(cur));
   }
 
-  function jumpTo(idx) { cur=idx; showSlide(cur); secs=prods[idx].timing||90; updateTimer(); startTimer(); }
-  function next() { if(cur<prods.length-1){cur++;showSlide(cur);secs=prods[cur].timing||90;updateTimer();startTimer();} }
-  function prev() { if(cur>0){cur--;showSlide(cur);secs=prods[cur].timing||90;updateTimer();startTimer();} }
+  // ── 15. Main tick — runs every second ─────────────────────────────────────────
+  function tick() {
+    // If manual override has expired, snap back to clock
+    if (Date.now() > manualUntil) {
+      var idx = clockIdx();
+      if (idx !== cur) { cur = idx; showSlide(cur); }
+    }
+    updateTimerDisplay(clockRemaining(cur));
+  }
 
-  document.getElementById("btn-next").addEventListener("click",next);
-  document.getElementById("btn-prev").addEventListener("click",prev);
-  document.getElementById("btn-pause").addEventListener("click",function(){
-    paused=!paused;
-    this.textContent=paused?"▶ Resume":"⏸ Pause";
-  });
-  document.addEventListener("keydown",function(e){
-    if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();next();}
-    if(e.key==="ArrowLeft"){e.preventDefault();prev();}
-    if(e.key==="p"||e.key==="P"){document.getElementById("btn-pause").click();}
+  // ── 16. Wire up buttons + keyboard ───────────────────────────────────────────
+  document.getElementById("btn-next").addEventListener("click", next);
+  document.getElementById("btn-prev").addEventListener("click", prev);
+  document.getElementById("btn-pause").addEventListener("click", resync);
+  document.addEventListener("keydown", function(e) {
+    if(e.key==="ArrowRight"||e.key===" "){e.preventDefault(); next();}
+    if(e.key==="ArrowLeft"){e.preventDefault(); prev();}
+    if(e.key==="r"||e.key==="R") resync();
   });
 
+  // ── 17. Init — sync to clock immediately on open ─────────────────────────────
   buildSlides();
   buildSidebar();
-  showSlide(0);
-  secs = prods[0].timing || 90; updateTimer();
-  startTimer();
+  showSlide(cur);                      // correct slide from clock, not slide 0
+  updateTimerDisplay(clockRemaining(cur));
+  ticker = setInterval(tick, 1000);
+
 })();
 </script>
 </body>
