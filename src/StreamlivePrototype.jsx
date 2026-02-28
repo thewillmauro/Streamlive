@@ -2059,315 +2059,273 @@ function BriefingTab({ runOrder, showName }) {
   const bp = prods.find(p => p.id === selId) || prods[0];
 
   const openForHost = () => {
-    // Build products JSON for the standalone page
-    const prodsJson = JSON.stringify(prods.map(function(p) {
+    const prodsData = JSON.stringify(prods.map(function(p) {
       return {
-        id:         p.id,
-        name:       p.name,
-        image:      p.image || "📦",
-        price:      p.price,
-        sku:        p.sku        || "",
-        category:   p.category  || "",
-        inventory:  p.inventory !== undefined ? p.inventory : null,
-        soldLast30: p.soldLast30 || null,
-        avgPerShow: p.avgPerShow || null,
-        aiScore:    p.aiScore   !== undefined ? p.aiScore : null,
-        showReady:  p.showReady || false,
-        platforms:  p.platforms || [],
-        cost:       p.cost      || null,
+        id:p.id, name:p.name, image:p.image||"\u{1F4E6}", price:p.price,
+        sku:p.sku||"", category:p.category||"",
+        inventory:p.inventory!==undefined?p.inventory:null,
+        soldLast30:p.soldLast30||null, avgPerShow:p.avgPerShow||null,
+        aiScore:p.aiScore!==undefined?p.aiScore:null,
+        showReady:!!p.showReady, platforms:p.platforms||[],
+        cost:p.cost||null,
       };
     }));
 
-    const css = [
-      "*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }",
-      "body { background: #04040e; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: flex; }",
-      "#sidebar { width: 240px; flex-shrink: 0; background: #07070f; border-right: 1px solid #1a1a2e; display: flex; flex-direction: column; overflow: hidden; }",
-      "#sidebar-header { padding: 16px 14px 12px; border-bottom: 1px solid #1a1a2e; flex-shrink: 0; }",
-      "#sidebar-title { font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 2px; }",
-      "#sidebar-sub { font-size: 9px; color: #4b5563; }",
-      "#sidebar-list { flex: 1; overflow-y: auto; padding: 8px; }",
-      ".sidebar-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 9px; margin-bottom: 4px; border: 1.5px solid transparent; cursor: pointer; transition: all .2s; }",
-      ".sidebar-item.active { background: #a78bfa18; border-color: #a78bfa55; }",
-      ".sidebar-item.done { opacity: 0.35; }",
-      ".sidebar-item.upcoming { background: #0a0a14; border-color: #1e1e3a; }",
-      ".sidebar-num { font-size: 10px; font-weight: 800; color: #4b5563; width: 18px; text-align: center; flex-shrink: 0; }",
-      ".sidebar-item.active .sidebar-num { color: #a78bfa; }",
-      ".sidebar-emoji { font-size: 18px; flex-shrink: 0; }",
-      ".sidebar-info { flex: 1; min-width: 0; }",
-      ".sidebar-name { font-size: 11px; font-weight: 600; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }",
-      ".sidebar-item.active .sidebar-name { color: #e2e8f0; font-weight: 700; }",
-      ".sidebar-price { font-size: 10px; color: #4b5563; font-family: monospace; margin-top: 1px; }",
-      ".sidebar-item.active .sidebar-price { color: #10b981; }",
-      ".sidebar-check { font-size: 10px; color: #374151; flex-shrink: 0; }",
-      "#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }",
-      "#top-bar { display: flex; align-items: center; gap: 12px; padding: 12px 24px; background: #06060e; border-bottom: 1px solid #1a1a2e; flex-shrink: 0; }",
-      "#live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; animation: pulse 1s infinite; flex-shrink: 0; }",
-      "#show-name { font-size: 12px; font-weight: 700; color: #e2e8f0; }",
-      "#spacer { flex: 1; }",
-      "#timer-bar { display: flex; align-items: center; gap: 10px; }",
-      "#timer-display { font-family: monospace; font-size: 22px; font-weight: 800; color: #10b981; min-width: 48px; text-align: center; }",
-      "#timer-display.low { color: #f59e0b; }",
-      "#timer-display.urgent { color: #ef4444; animation: pulse .5s infinite; }",
-      "#btn-pause { background: #0d0d1a; border: 1px solid #1e1e3a; color: #9ca3af; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; }",
-      "#btn-pause:hover { border-color: #a78bfa44; color: #a78bfa; }",
-      "#product-area { flex: 1; overflow: hidden; position: relative; }",
-      ".product-slide { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 40px 48px; transition: opacity .5s ease, transform .5s ease; }",
-      ".product-slide.hidden  { opacity: 0; transform: translateY(24px); pointer-events: none; }",
-      ".product-slide.visible { opacity: 1; transform: translateY(0); }",
-      ".product-slide.done    { opacity: 0; transform: translateY(-24px); pointer-events: none; }",
-      ".product-number { font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }",
-      ".product-number-badge { background: #a78bfa18; border: 1px solid #a78bfa44; border-radius: 6px; padding: 3px 10px; }",
-      ".product-header { display: flex; align-items: flex-start; gap: 28px; margin-bottom: 32px; }",
-      ".product-emoji { font-size: 72px; line-height: 1; flex-shrink: 0; }",
-      ".product-titles { flex: 1; }",
-      ".product-name { font-size: 42px; font-weight: 800; color: #f0f0ff; line-height: 1.1; margin-bottom: 8px; }",
-      ".product-sku { font-size: 13px; color: #4b5563; margin-bottom: 16px; font-family: monospace; }",
-      ".product-price { font-size: 52px; font-weight: 800; color: #10b981; font-family: monospace; line-height: 1; margin-bottom: 10px; }",
-      ".product-badges { display: flex; gap: 8px; flex-wrap: wrap; }",
-      ".badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 6px; }",
-      ".badge-green { background: #0a1e16; border: 1px solid #10b98133; color: #10b981; }",
-      ".badge-purple { background: #1a0f2e; border: 1px solid #a78bfa44; color: #a78bfa; }",
-      ".badge-amber { background: #1c1208; border: 1px solid #f59e0b44; color: #f59e0b; }",
-      ".badge-red { background: #1a0505; border: 1px solid #ef444444; color: #ef4444; }",
-      ".stats-row { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }",
-      ".stat-box { background: #0a0a14; border: 1px solid #1e1e3a; border-radius: 10px; padding: 14px 18px; min-width: 110px; }",
-      ".stat-value { font-size: 22px; font-weight: 800; font-family: monospace; margin-bottom: 4px; }",
-      ".stat-label { font-size: 10px; color: #4b5563; text-transform: uppercase; letter-spacing: .08em; }",
-      ".talking-points { background: #07070f; border: 1px solid #1e1e3a; border-radius: 12px; padding: 20px 24px; }",
-      ".tp-title { font-size: 10px; font-weight: 800; color: #4b5563; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 14px; }",
-      ".tp-list { display: flex; flex-direction: column; gap: 10px; }",
-      ".tp-item { display: flex; align-items: flex-start; gap: 12px; }",
-      ".tp-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }",
-      ".tp-text { font-size: 16px; color: #d1d5db; line-height: 1.55; }",
-      "#bottom-bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: #06060e; border-top: 1px solid #1a1a2e; flex-shrink: 0; }",
-      "#progress-track { flex: 1; height: 4px; background: #1a1a2e; border-radius: 2px; margin: 0 20px; overflow: hidden; }",
-      "#progress-fill { height: 100%; background: #a78bfa; border-radius: 2px; transition: width .3s ease; }",
-      ".nav-btn { background: #0d0d1a; border: 1px solid #1e1e3a; color: #9ca3af; font-size: 13px; font-weight: 700; padding: 8px 20px; border-radius: 9px; cursor: pointer; transition: all .15s; }",
-      ".nav-btn:hover { border-color: #a78bfa55; color: #a78bfa; background: #1a0f2e; }",
-      ".nav-btn.primary { background: linear-gradient(135deg, #a78bfa, #7c3aed); border-color: transparent; color: #fff; }",
-      ".nav-btn.primary:hover { opacity: .9; }",
-      ".nav-btn:disabled { opacity: .3; cursor: default; }",
-      ".nav-btn.primary:disabled { background: #1a1a2e; }",
-      "#shortcut-hint { font-size: 9px; color: #2a2a3a; text-align: center; margin-top: 3px; }",
-      "@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }",
-    ].join(" ");
+    const showTitle = (showName || "Live Show").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-    const js = "(function() {"
-      + "var prods = " + prodsJson + ";"
-      + "var cur = 0;"
-      + "var timer = null;"
-      + "var seconds = 90;"
-      + "var paused = false;"
-      + "var DEFAULT_SECS = 90;"
-      + ""
-      + "function getPoints(p) {"
-      + "  var pts = [];"
-      + "  pts.push({ icon:'💰', text:'Lead with the price — $' + p.price + ' is your live-exclusive rate' });"
-      + "  if (p.inventory !== null && p.inventory < 30) {"
-      + "    pts.push({ icon:'⚠️', text:'Only ' + p.inventory + ' units left — say it now and keep coming back to it' });"
-      + "  } else if (p.inventory !== null) {"
-      + "    pts.push({ icon:'✅', text:p.inventory + ' in stock — solid supply, focus on the value' });"
-      + "  }"
-      + "  if (p.soldLast30) pts.push({ icon:'📈', text:p.soldLast30 + ' units sold in the last 30 days — a proven bestseller' });"
-      + "  if (p.avgPerShow)  pts.push({ icon:'🎬', text:'Typically sells ' + p.avgPerShow + ' per show — pick it up and demo it live' });"
-      + "  if (p.category === 'Bundles' || p.category === 'Sets') {"
-      + "    pts.push({ icon:'🎁', text:'Bundle deal — break down what each piece costs separately to show the value' });"
-      + "  } else {"
-      + "    pts.push({ icon:'🔍', text:'Hold it close to camera. Describe the texture, weight, and finish' });"
-      + "  }"
-      + "  if (p.platforms && p.platforms.length > 1) {"
-      + "    pts.push({ icon:'📡', text:'Shout out all ' + p.platforms.length + ' platforms by name — everyone watching wants to feel seen' });"
-      + "  }"
-      + "  if (p.cost && p.price) {"
-      + "    var room = Math.max(0, Math.round((p.price - p.cost) / p.price * 100) - 15);"
-      + "    pts.push({ icon:'💡', text:'Up to ' + room + '% discount room available — use it as a closing push if needed' });"
-      + "  }"
-      + "  return pts;"
-      + "}"
-      + ""
-      + "function buildSlides() {"
-      + "  var area = document.getElementById('product-area');"
-      + "  area.innerHTML = '';"
-      + "  prods.forEach(function(p, i) {"
-      + "    var slide = document.createElement('div');"
-      + "    slide.className = 'product-slide hidden';"
-      + "    slide.id = 'slide-' + i;"
-      + "    var inv = p.inventory !== null ? p.inventory : null;"
-      + "    var margin = (p.cost && p.price) ? Math.round((p.price - p.cost) / p.price * 100) : null;"
-      + "    var invColor = (inv !== null && inv < 25) ? '#ef4444' : (inv !== null && inv < 60) ? '#f59e0b' : '#10b981';"
-      + "    var pts = getPoints(p);"
-      + "    var ptsHtml = pts.map(function(pt) {"
-      + "      return \"<div class='tp-item'><span class='tp-icon'>\" + pt.icon + \"</span><span class='tp-text'>\" + pt.text + \"</span></div>\";"
-      + "    }).join('');"
-      + "    var statsHtml = '';"
-      + "    if (inv !== null) statsHtml += '<div class='stat-box'><div class='stat-value' style='color:' + invColor + ''>' + inv + '</div><div class='stat-label'>In Stock</div></div>';"
-      + "    if (p.soldLast30)  statsHtml += '<div class='stat-box'><div class='stat-value' style='color:#a78bfa'>' + p.soldLast30 + '</div><div class='stat-label'>Sold 30d</div></div>';"
-      + "    if (p.avgPerShow)  statsHtml += '<div class='stat-box'><div class='stat-value' style='color:#38bdf8'>' + p.avgPerShow + '</div><div class='stat-label'>Avg / Show</div></div>';"
-      + "    if (margin !== null) statsHtml += '<div class='stat-box'><div class='stat-value' style='color:#10b981'>' + margin + '%</div><div class='stat-label'>Margin</div></div>';"
-      + "    var badgesHtml = '';"
-      + "    if (p.showReady)   badgesHtml += '<span class='badge badge-green'>● Show Ready</span>';"
-      + "    if (p.aiScore)     badgesHtml += '<span class='badge badge-purple'>AI ' + p.aiScore + '/10</span>';"
-      + "    if (inv !== null && inv < 30) badgesHtml += '<span class='badge badge-red'>⚠ Low Stock</span>';"
-      + "    slide.innerHTML = "
-      + "      '<div class='product-number'>'"
-      + "      + '<span class='product-number-badge'>' + (i+1) + ' of ' + prods.length + '</span>'"
-      + "      + '</div>'"
-      + "      + '<div class='product-header'>'"
-      + "      + '<span class='product-emoji'>' + p.image + '</span>'"
-      + "      + '<div class='product-titles'>'"
-      + "      + '<div class='product-name'>' + p.name + '</div>'"
-      + "      + '<div class='product-sku'>' + p.sku + ' · ' + p.category + '</div>'"
-      + "      + '<div class='product-price'>$' + p.price + '</div>'"
-      + "      + '<div class='product-badges'>' + badgesHtml + '</div>'"
-      + "      + '</div></div>'"
-      + "      + '<div class='stats-row'>' + statsHtml + '</div>'"
-      + "      + '<div class='talking-points'><div class='tp-title'>Host Talking Points</div>'"
-      + "      + '<div class='tp-list'>' + ptsHtml + '</div></div>';"
-      + "    area.appendChild(slide);"
-      + "  });"
-      + "}"
-      + ""
-      + "function buildSidebar() {"
-      + "  var list = document.getElementById('sidebar-list');"
-      + "  list.innerHTML = '';"
-      + "  prods.forEach(function(p, i) {"
-      + "    var item = document.createElement('div');"
-      + "    item.className = 'sidebar-item upcoming';"
-      + "    item.id = 'sidebar-' + i;"
-      + "    item.innerHTML = "
-      + "      '<span class='sidebar-num'>' + (i+1) + '</span>'"
-      + "      + '<span class='sidebar-emoji'>' + p.image + '</span>'"
-      + "      + '<div class='sidebar-info'>'"
-      + "      + '<div class='sidebar-name'>' + p.name + '</div>'"
-      + "      + '<div class='sidebar-price'>$' + p.price + '</div>'"
-      + "      + '</div>'"
-      + "      + '<span class='sidebar-check' id='check-' + i + ''></span>';"
-      + "    item.addEventListener('click', function() { jumpTo(i); });"
-      + "    list.appendChild(item);"
-      + "  });"
-      + "}"
-      + ""
-      + "function updateSidebar() {"
-      + "  prods.forEach(function(p, i) {"
-      + "    var el = document.getElementById('sidebar-' + i);"
-      + "    var chk = document.getElementById('check-' + i);"
-      + "    el.className = 'sidebar-item ' + (i === cur ? 'active' : i < cur ? 'done' : 'upcoming');"
-      + "    chk.textContent = i < cur ? '✓' : '';"
-      + "  });"
-      + "}"
-      + ""
-      + "function showSlide(idx, direction) {"
-      + "  prods.forEach(function(p, i) {"
-      + "    var s = document.getElementById('slide-' + i);"
-      + "    if (i === idx)      { s.className = 'product-slide visible'; }"
-      + "    else if (i < idx)   { s.className = 'product-slide done'; }"
-      + "    else                { s.className = 'product-slide hidden'; }"
-      + "  });"
-      + "  var pct = prods.length > 1 ? Math.round((idx / (prods.length - 1)) * 100) : 100;"
-      + "  document.getElementById('progress-fill').style.width = pct + '%';"
-      + "  document.getElementById('btn-prev').disabled = idx === 0;"
-      + "  document.getElementById('btn-next').disabled = idx === prods.length - 1;"
-      + "  updateSidebar();"
-      + "  var sideItem = document.getElementById('sidebar-' + idx);"
-      + "  if (sideItem) sideItem.scrollIntoView({ behavior:'smooth', block:'nearest' });"
-      + "}"
-      + ""
-      + "function resetTimer() {"
-      + "  seconds = DEFAULT_SECS;"
-      + "  updateTimerDisplay();"
-      + "}"
-      + ""
-      + "function updateTimerDisplay() {"
-      + "  var m = Math.floor(seconds / 60);"
-      + "  var s = seconds % 60;"
-      + "  var disp = document.getElementById('timer-display');"
-      + "  disp.textContent = m + ':' + (s < 10 ? '0' : '') + s;"
-      + "  disp.className = seconds <= 10 ? 'urgent' : seconds <= 30 ? 'low' : '';"
-      + "}"
-      + ""
-      + "function startTimer() {"
-      + "  if (timer) clearInterval(timer);"
-      + "  timer = setInterval(function() {"
-      + "    if (paused) return;"
-      + "    seconds--;"
-      + "    updateTimerDisplay();"
-      + "    if (seconds <= 0) { clearInterval(timer); }"
-      + "  }, 1000);"
-      + "}"
-      + ""
-      + "function jumpTo(idx) {"
-      + "  cur = idx;"
-      + "  showSlide(cur);"
-      + "  resetTimer();"
-      + "  startTimer();"
-      + "}"
-      + ""
-      + "function next() {"
-      + "  if (cur < prods.length - 1) { cur++; showSlide(cur); resetTimer(); startTimer(); }"
-      + "}"
-      + ""
-      + "function prev() {"
-      + "  if (cur > 0) { cur--; showSlide(cur); resetTimer(); startTimer(); }"
-      + "}"
-      + ""
-      + "function togglePause() {"
-      + "  paused = !paused;"
-      + "  document.getElementById('btn-pause').textContent = paused ? '▶ Resume' : '⏸ Pause';"
-      + "}"
-      + ""
-      + "document.getElementById('btn-next').addEventListener('click', next);"
-      + "document.getElementById('btn-prev').addEventListener('click', prev);"
-      + "document.getElementById('btn-pause').addEventListener('click', togglePause);"
-      + ""
-      + "document.addEventListener('keydown', function(e) {"
-      + "  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }"
-      + "  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }"
-      + "  if (e.key === 'p' || e.key === 'P') togglePause();"
-      + "});"
-      + ""
-      + "buildSlides();"
-      + "buildSidebar();"
-      + "showSlide(0);"
-      + "startTimer();"
-      + "})();";
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Briefing \u2014 ${showName || "Live Show"}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #04040e; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; height: 100vh; overflow: hidden; display: flex; }
+  #sidebar { width: 240px; flex-shrink: 0; background: #07070f; border-right: 1px solid #1a1a2e; display: flex; flex-direction: column; overflow: hidden; }
+  #sidebar-header { padding: 16px 14px 12px; border-bottom: 1px solid #1a1a2e; flex-shrink: 0; }
+  #sidebar-title { font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3px; }
+  #sidebar-sub { font-size: 9px; color: #4b5563; }
+  #sidebar-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .si { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 9px; margin-bottom: 4px; border: 1.5px solid transparent; cursor: pointer; transition: all .2s; background: #0a0a14; border-color: #1e1e3a; }
+  .si.active { background: #a78bfa18; border-color: #a78bfa55; }
+  .si.done { opacity: 0.35; }
+  .si-num { font-size: 10px; font-weight: 800; color: #4b5563; width: 18px; text-align: center; flex-shrink: 0; }
+  .si.active .si-num { color: #a78bfa; }
+  .si-emoji { font-size: 18px; flex-shrink: 0; }
+  .si-name { font-size: 11px; font-weight: 600; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .si.active .si-name { color: #e2e8f0; font-weight: 700; }
+  .si-price { font-size: 10px; color: #4b5563; font-family: monospace; margin-top: 1px; }
+  .si.active .si-price { color: #10b981; }
+  .si-check { font-size: 10px; color: #374151; flex-shrink: 0; }
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #top-bar { display: flex; align-items: center; gap: 12px; padding: 12px 24px; background: #06060e; border-bottom: 1px solid #1a1a2e; flex-shrink: 0; }
+  #live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; animation: blink 1s infinite; flex-shrink: 0; }
+  #show-name { font-size: 12px; font-weight: 700; }
+  #spacer { flex: 1; }
+  #timer-label { font-size: 10px; color: #4b5563; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+  #timer-display { font-family: monospace; font-size: 22px; font-weight: 800; color: #10b981; min-width: 52px; text-align: center; }
+  #timer-display.low { color: #f59e0b; }
+  #timer-display.urgent { color: #ef4444; animation: blink .5s infinite; }
+  #btn-pause { background: #0d0d1a; border: 1px solid #1e1e3a; color: #9ca3af; font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 7px; cursor: pointer; }
+  #product-area { flex: 1; overflow: hidden; position: relative; }
+  .slide { position: absolute; inset: 0; padding: 36px 48px; transition: opacity .45s ease, transform .45s ease; overflow-y: auto; }
+  .slide.hidden  { opacity: 0; transform: translateY(20px); pointer-events: none; }
+  .slide.visible { opacity: 1; transform: translateY(0); }
+  .slide.done    { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+  .prod-counter { font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 14px; }
+  .prod-counter span { background: #a78bfa18; border: 1px solid #a78bfa44; border-radius: 6px; padding: 3px 12px; }
+  .prod-hero { display: flex; align-items: flex-start; gap: 28px; margin-bottom: 28px; }
+  .prod-emoji { font-size: 68px; line-height: 1; flex-shrink: 0; }
+  .prod-name { font-size: 40px; font-weight: 800; color: #f0f0ff; line-height: 1.1; margin-bottom: 7px; }
+  .prod-sku { font-size: 13px; color: #4b5563; font-family: monospace; margin-bottom: 14px; }
+  .prod-price { font-size: 50px; font-weight: 800; color: #10b981; font-family: monospace; line-height: 1; margin-bottom: 10px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 6px; }
+  .b-green  { background: #0a1e16; border: 1px solid #10b98133; color: #10b981; }
+  .b-purple { background: #1a0f2e; border: 1px solid #a78bfa44; color: #a78bfa; }
+  .b-red    { background: #1a0505; border: 1px solid #ef444444; color: #ef4444; }
+  .b-amber  { background: #1c1208; border: 1px solid #f59e0b44; color: #f59e0b; }
+  .stats-row { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat-box { background: #0a0a14; border: 1px solid #1e1e3a; border-radius: 10px; padding: 14px 18px; min-width: 100px; }
+  .stat-val { font-size: 22px; font-weight: 800; font-family: monospace; margin-bottom: 4px; }
+  .stat-lbl { font-size: 10px; color: #4b5563; text-transform: uppercase; letter-spacing: .08em; }
+  .tp-card { background: #07070f; border: 1px solid #1e1e3a; border-radius: 12px; padding: 20px 24px; }
+  .tp-title { font-size: 10px; font-weight: 800; color: #4b5563; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 14px; }
+  .tp-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid #1a1a2e44; }
+  .tp-item:last-child { border-bottom: none; }
+  .tp-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+  .tp-text { font-size: 16px; color: #d1d5db; line-height: 1.55; }
+  #bottom-bar { display: flex; align-items: center; padding: 14px 24px; background: #06060e; border-top: 1px solid #1a1a2e; flex-shrink: 0; gap: 16px; }
+  #progress-track { flex: 1; height: 4px; background: #1a1a2e; border-radius: 2px; overflow: hidden; }
+  #progress-fill { height: 100%; background: #a78bfa; border-radius: 2px; transition: width .3s; }
+  .nav-btn { background: #0d0d1a; border: 1px solid #1e1e3a; color: #9ca3af; font-size: 13px; font-weight: 700; padding: 9px 22px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+  .nav-btn.primary { background: linear-gradient(135deg,#a78bfa,#7c3aed); border-color: transparent; color: #fff; }
+  .nav-btn:disabled { opacity: .3; cursor: default; }
+  #hint { font-size: 9px; color: #2a2a3a; text-align: center; white-space: nowrap; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:.4} }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div id="sidebar-header">
+    <div id="sidebar-title">\u{1F4CB} Briefing</div>
+    <div id="sidebar-sub">${showTitle}</div>
+  </div>
+  <div id="sidebar-list"></div>
+</div>
+<div id="main">
+  <div id="top-bar">
+    <div id="live-dot"></div>
+    <div id="show-name">${showTitle}</div>
+    <div id="spacer"></div>
+    <span id="timer-label">Time</span>
+    <div id="timer-display">1:30</div>
+    <button id="btn-pause">\u23F8 Pause</button>
+  </div>
+  <div id="product-area"></div>
+  <div id="bottom-bar">
+    <button id="btn-prev" class="nav-btn" disabled>\u2190 Prev</button>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px">
+      <div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
+      <div id="hint">\u2190 \u2192 arrow keys or spacebar to navigate \u00B7 P to pause</div>
+    </div>
+    <button id="btn-next" class="nav-btn primary">Next \u2192</button>
+  </div>
+</div>
+<script>
+(function(){
+  var prods = ${prodsData};
+  var cur = 0, secs = 90, paused = false, timer = null;
 
-    const showTitle = showName || "Live Show";
-    const html = "<!DOCTYPE html><html lang='en'><head>"
-      + "<meta charset='UTF-8'>"
-      + "<title>Briefing — " + showTitle + "</title>"
-      + "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-      + "<style>" + css + "</style>"
-      + "</head><body>"
-      + "<div id='sidebar'>"
-      + "  <div id='sidebar-header'>"
-      + "    <div id='sidebar-title'>📋 Briefing</div>"
-      + "    <div id='sidebar-sub'>" + showTitle + " · " + prods.length + " products</div>"
-      + "  </div>"
-      + "  <div id='sidebar-list'></div>"
-      + "</div>"
-      + "<div id='main'>"
-      + "  <div id='top-bar'>"
-      + "    <div id='live-dot'></div>"
-      + "    <div id='show-name'>" + showTitle + "</div>"
-      + "    <div id='spacer'></div>"
-      + "    <div id='timer-bar'>"
-      + "      <span style='font-size:10px;color:#4b5563;font-weight:700;text-transform:uppercase;letter-spacing:.07em'>Time</span>"
-      + "      <div id='timer-display'>1:30</div>"
-      + "      <button id='btn-pause'>⏸ Pause</button>"
-      + "    </div>"
-      + "  </div>"
-      + "  <div id='product-area'></div>"
-      + "  <div id='bottom-bar'>"
-      + "    <button id='btn-prev' class='nav-btn' disabled>← Prev</button>"
-      + "    <div style='flex:1;display:flex;flex-direction:column;align-items:center;gap:4px'>"
-      + "      <div id='progress-track'><div id='progress-fill' style='width:0%'></div></div>"
-      + "      <div id='shortcut-hint'>← → arrow keys or spacebar to navigate · P to pause</div>"
-      + "    </div>"
-      + "    <button id='btn-next' class='nav-btn primary'>Next →</button>"
-      + "  </div>"
-      + "</div>"
-      + "<script>" + js + "</script>"
-      + "</body></html>";
+  function el(tag,cls) { var e=document.createElement(tag); if(cls)e.className=cls; return e; }
+  function txt(t) { return document.createTextNode(t); }
+
+  function getPoints(p) {
+    var pts = [];
+    pts.push({icon:"💰", text:"Lead with the price — $"+p.price+" is your live-exclusive rate"});
+    if (p.inventory !== null && p.inventory < 30)
+      pts.push({icon:"⚠️", text:"Only "+p.inventory+" units left — say it now and keep repeating it"});
+    else if (p.inventory !== null)
+      pts.push({icon:"✅", text:p.inventory+" in stock — solid supply, lean into the value"});
+    if (p.soldLast30) pts.push({icon:"📈", text:p.soldLast30+" units sold in the last 30 days — a proven bestseller"});
+    if (p.avgPerShow) pts.push({icon:"🎬", text:"Typically sells "+p.avgPerShow+" per show — demo it live"});
+    if (p.category==="Bundles"||p.category==="Sets")
+      pts.push({icon:"🎁", text:"Bundle — break down what each piece costs separately"});
+    else
+      pts.push({icon:"🔍", text:"Hold it to camera. Describe the texture, weight, and finish"});
+    if (p.platforms && p.platforms.length>1)
+      pts.push({icon:"📡", text:"Shout out all "+p.platforms.length+" platforms by name"});
+    if (p.cost && p.price) {
+      var room = Math.max(0, Math.round((p.price-p.cost)/p.price*100)-15);
+      pts.push({icon:"💡", text:"Up to "+room+"% discount room — hold it for a closing push"});
+    }
+    return pts;
+  }
+
+  function buildSlides() {
+    var area = document.getElementById("product-area");
+    prods.forEach(function(p,i) {
+      var slide = el("div","slide hidden"); slide.id="slide-"+i;
+      var inv = p.inventory;
+      var margin = (p.cost&&p.price) ? Math.round((p.price-p.cost)/p.price*100) : null;
+      var invColor = (inv!==null&&inv<25)?"#ef4444":(inv!==null&&inv<60)?"#f59e0b":"#10b981";
+
+      // Counter
+      var counter = el("div","prod-counter"); var cs=el("span"); cs.textContent=(i+1)+" of "+prods.length; counter.appendChild(cs);
+
+      // Hero
+      var hero=el("div","prod-hero");
+      var emo=el("span","prod-emoji"); emo.textContent=p.image; hero.appendChild(emo);
+      var info=el("div");
+      var nm=el("div","prod-name"); nm.textContent=p.name; info.appendChild(nm);
+      var sk=el("div","prod-sku"); sk.textContent=(p.sku?" "+p.sku+" · ":"")+p.category; info.appendChild(sk);
+      var pr=el("div","prod-price"); pr.textContent="$"+p.price; info.appendChild(pr);
+      var bdg=el("div","badges");
+      if(p.showReady){var b=el("span","badge b-green");b.textContent="● Show Ready";bdg.appendChild(b);}
+      if(p.aiScore){var b=el("span","badge b-purple");b.textContent="AI "+p.aiScore+"/10";bdg.appendChild(b);}
+      if(inv!==null&&inv<30){var b=el("span","badge b-red");b.textContent="⚠ Low Stock";bdg.appendChild(b);}
+      info.appendChild(bdg); hero.appendChild(info);
+
+      // Stats
+      var stats=el("div","stats-row");
+      function addStat(val,lbl,color){var box=el("div","stat-box");var v=el("div","stat-val");v.style.color=color;v.textContent=val;var l=el("div","stat-lbl");l.textContent=lbl;box.appendChild(v);box.appendChild(l);stats.appendChild(box);}
+      if(inv!==null) addStat(inv+" units","In Stock",invColor);
+      if(p.soldLast30) addStat(p.soldLast30,"Sold 30d","#a78bfa");
+      if(p.avgPerShow) addStat(p.avgPerShow,"Avg / Show","#38bdf8");
+      if(margin!==null) addStat(margin+"%","Margin","#10b981");
+
+      // Talking points
+      var tpCard=el("div","tp-card");
+      var tpTitle=el("div","tp-title"); tpTitle.textContent="Host Talking Points"; tpCard.appendChild(tpTitle);
+      getPoints(p).forEach(function(pt){
+        var item=el("div","tp-item");
+        var icon=el("span","tp-icon"); icon.textContent=pt.icon;
+        var text=el("span","tp-text"); text.textContent=pt.text;
+        item.appendChild(icon); item.appendChild(text); tpCard.appendChild(item);
+      });
+
+      slide.appendChild(counter); slide.appendChild(hero); slide.appendChild(stats); slide.appendChild(tpCard);
+      area.appendChild(slide);
+    });
+  }
+
+  function buildSidebar() {
+    var list = document.getElementById("sidebar-list");
+    prods.forEach(function(p,i) {
+      var item=el("div","si"); item.id="si-"+i;
+      var num=el("span","si-num"); num.textContent=i+1;
+      var emo=el("span","si-emoji"); emo.textContent=p.image;
+      var info=el("div"); info.style.flex="1"; info.style.minWidth="0";
+      var nm=el("div","si-name"); nm.textContent=p.name;
+      var pr=el("div","si-price"); pr.textContent="$"+p.price;
+      var chk=el("span","si-check"); chk.id="chk-"+i;
+      info.appendChild(nm); info.appendChild(pr);
+      item.appendChild(num); item.appendChild(emo); item.appendChild(info); item.appendChild(chk);
+      item.addEventListener("click",function(){jumpTo(i);});
+      list.appendChild(item);
+    });
+  }
+
+  function updateSidebar() {
+    prods.forEach(function(p,i){
+      var s=document.getElementById("si-"+i);
+      var c=document.getElementById("chk-"+i);
+      s.className="si"+(i===cur?" active":i<cur?" done":"");
+      c.textContent=i<cur?"✓":"";
+    });
+  }
+
+  function showSlide(idx) {
+    prods.forEach(function(p,i){
+      var s=document.getElementById("slide-"+i);
+      s.className="slide"+(i===idx?" visible":i<idx?" done":" hidden");
+    });
+    var pct=prods.length>1?Math.round(idx/(prods.length-1)*100):100;
+    document.getElementById("progress-fill").style.width=pct+"%";
+    document.getElementById("btn-prev").disabled=idx===0;
+    document.getElementById("btn-next").disabled=idx===prods.length-1;
+    updateSidebar();
+    var si=document.getElementById("si-"+idx);
+    if(si) si.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  function updateTimer() {
+    var m=Math.floor(secs/60), s=secs%60;
+    var d=document.getElementById("timer-display");
+    d.textContent=m+":"+(s<10?"0":"")+s;
+    d.className=secs<=10?"urgent":secs<=30?"low":"";
+  }
+
+  function startTimer() {
+    if(timer) clearInterval(timer);
+    timer=setInterval(function(){if(!paused&&secs>0){secs--;updateTimer();}},1000);
+  }
+
+  function jumpTo(idx) { cur=idx; showSlide(cur); secs=90; updateTimer(); startTimer(); }
+  function next() { if(cur<prods.length-1){cur++;showSlide(cur);secs=90;updateTimer();startTimer();} }
+  function prev() { if(cur>0){cur--;showSlide(cur);secs=90;updateTimer();startTimer();} }
+
+  document.getElementById("btn-next").addEventListener("click",next);
+  document.getElementById("btn-prev").addEventListener("click",prev);
+  document.getElementById("btn-pause").addEventListener("click",function(){
+    paused=!paused;
+    this.textContent=paused?"▶ Resume":"⏸ Pause";
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();next();}
+    if(e.key==="ArrowLeft"){e.preventDefault();prev();}
+    if(e.key==="p"||e.key==="P"){document.getElementById("btn-pause").click();}
+  });
+
+  buildSlides();
+  buildSidebar();
+  showSlide(0);
+  startTimer();
+})();
+</script>
+</body>
+</html>`;
 
     const blob = new Blob([html], { type: "text/html" });
     window.open(URL.createObjectURL(blob), "_blank");
