@@ -1633,19 +1633,37 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
   const showName   = params?.showName  || "Live Show";
   const persona    = params?.persona   || personaProp || { shop:"Our Store", slug:"shop" };
   const shopDomain = params?.shopDomain|| `${persona.slug || "shop"}.myshopify.com`;
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [copied, setCopied]       = useState(false);
-  const productTimings = params?.productTimings || {};
+  const [copied, setCopied] = useState(false);
+  const productTimings  = params?.productTimings || {};
+  const showStartTime   = params?.showStartTime  || Date.now();
 
-  // Auto-advance based on per-product timing
+  // Build cumulative breakpoints: [{startMs, endMs, idx}]
+  const breakpoints = React.useMemo(() => {
+    let cursor = 0;
+    return runOrder.map((p, i) => {
+      const dur = (productTimings[p.id] || 90) * 1000;
+      const bp  = { idx: i, startMs: cursor, endMs: cursor + dur };
+      cursor += dur;
+      return bp;
+    });
+  }, [runOrder, productTimings]);
+
+  const totalDurMs = breakpoints.length > 0 ? breakpoints[breakpoints.length - 1].endMs : 90000;
+
+  // Compute current active index from elapsed time — deterministic & always in sync
+  const computeIdx = () => {
+    const elapsed = (Date.now() - showStartTime) % totalDurMs;
+    const bp = breakpoints.find(b => elapsed >= b.startMs && elapsed < b.endMs);
+    return bp ? bp.idx : 0;
+  };
+
+  const [activeIdx, setActiveIdx] = useState(() => computeIdx());
+
+  // Tick every second, recompute idx from clock — stays in sync even if tab was backgrounded
   useEffect(() => {
-    const currentProduct = runOrder[activeIdx];
-    const secs = (currentProduct && productTimings[currentProduct.id]) ? productTimings[currentProduct.id] : 90;
-    const t = setTimeout(() => {
-      setActiveIdx(i => (i + 1) % Math.max(runOrder.length, 1));
-    }, secs * 1000);
-    return () => clearTimeout(t);
-  }, [activeIdx, runOrder.length]);
+    const t = setInterval(() => setActiveIdx(computeIdx()), 1000);
+    return () => clearInterval(t);
+  }, [breakpoints, totalDurMs, showStartTime]);
 
   const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
@@ -1727,8 +1745,22 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
                 const p = runOrder[activeIdx];
                 return (
                   <div style={{ background:"linear-gradient(160deg,#0f2a1a,#061508)", border:"1px solid #10b98155", borderRadius:16, padding:"14px", marginBottom:12 }}>
-                    <div style={{ fontSize:7, fontWeight:800, color:"#10b981", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8, display:"flex", alignItems:"center", gap:4 }}>
-                      <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/> Now Selling
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                      <div style={{ fontSize:7, fontWeight:800, color:"#10b981", textTransform:"uppercase", letterSpacing:"0.1em", display:"flex", alignItems:"center", gap:4 }}>
+                        <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/> Now Selling
+                      </div>
+                      {(() => {
+                        const elapsed = (Date.now() - showStartTime) % totalDurMs;
+                        const bp = breakpoints[activeIdx];
+                        const remaining = bp ? Math.max(0, Math.ceil((bp.endMs - elapsed) / 1000)) : 0;
+                        const m = Math.floor(remaining/60), s = remaining%60;
+                        return (
+                          <div style={{ fontSize:7, fontWeight:800, color: remaining<=10?"#ef4444":remaining<=30?"#f59e0b":"#4b5563",
+                            fontFamily:"monospace" }}>
+                            {m>0?`${m}:`:"⏱ "}{s<10&&m>0?"0":""}{s}{m>0?"s":"s"}
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div style={{ fontSize:22, marginBottom:6 }}>{p.image}</div>
                     <div style={{ fontSize:12, fontWeight:800, color:"#fff", lineHeight:1.3, marginBottom:6 }}>{p.name}</div>
@@ -2764,6 +2796,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
   });
   const [liveBuyers, setLiveBuyers]   = useState([]);
   const [elapsed, setElapsed]         = useState(0);
+  const showStartTime = useRef(params?.showStartTime || Date.now()); // stable for sync
   const [viewerCount, setViewerCount] = useState(
     selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156,YT:4200}; return a+(s[p]||200);},0)
   );
@@ -2951,7 +2984,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
               </span>
             </button>
             <button
-              onClick={()=>navigate("live-shop",{...params, runOrder, showName, persona:params?.persona})}
+              onClick={()=>navigate("live-shop",{...params, runOrder, showName, persona:params?.persona, productTimings, showStartTime:showStartTime.current})}
               style={{ padding:"4px 9px", background:"#10b98110", border:"none", cursor:"pointer" }}
             >
               <span style={{ fontSize:9, fontWeight:700, color:"#10b981", whiteSpace:"nowrap" }}>Shop ↗</span>
@@ -3673,7 +3706,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
                         <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
                         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#a78bfa" }}>{liveShopUrl}</span>
                         <button
-                          onClick={()=>navigate("live-shop", {...params, persona:params?.persona})}
+                          onClick={()=>navigate("live-shop", {...params, persona:params?.persona, productTimings, showStartTime:showStartTime.current})}
                           style={{ marginLeft:"auto", fontSize:9, fontWeight:700, color:C.muted, background:"none", border:"none", cursor:"pointer", whiteSpace:"nowrap" }}
                         >
                           Preview ↗
@@ -7500,7 +7533,7 @@ function ScreenShowPlanner({ navigate, persona }) {
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={()=>setStep(4)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,showStartTime:Date.now()})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
                 🔴 Go Live Now
               </button>
             </div>
