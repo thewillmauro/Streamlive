@@ -1629,13 +1629,18 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
 function ScreenLiveShop({ navigate, params, persona: personaProp }) {
-  // Always read from params — which is now always liveSession (kept fresh by updateLiveSession)
-  const runOrder       = params?.runOrder      || PRODUCTS.slice(0,5);
+  // Read from liveSession (params) — fall back to localStorage for new-tab opens
+  const _lsStart   = (() => { try { return parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0; } catch(e){return 0;} })();
+  const _lsTimings = (() => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}"); } catch(e){return {};} })();
+  const _lsOrder   = (() => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]"); } catch(e){return [];} })();
+  const _lsRunOrder = _lsOrder.length > 0 ? _lsOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean) : null;
+
+  const runOrder       = params?.runOrder      || _lsRunOrder || PRODUCTS.slice(0,5);
   const showName       = params?.showName      || "Live Show";
   const persona        = params?.persona       || personaProp || { shop:"Our Store", slug:"shop" };
   const shopDomain     = params?.shopDomain    || `${persona.slug || "shop"}.myshopify.com`;
-  const productTimings = params?.productTimings || {};
-  const showStartTime  = params?.showStartTime  || Date.now();
+  const productTimings = params?.productTimings || _lsTimings || {};
+  const showStartTime  = params?.showStartTime  || _lsStart || Date.now();
   const [copied, setCopied] = useState(false);
 
   // Build cumulative breakpoints from current runOrder + timings
@@ -2369,8 +2374,9 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
 // ── BriefingTab ───────────────────────────────────────────────────────────────
 function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
   const prods = (runOrder && runOrder.length > 0) ? runOrder : PRODUCTS.slice(0, 5);
-  const timings = productTimings || {};
-  const startTime = showStartTime || Date.now();
+  const _lsStart = (() => { try { return parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0; } catch(e){return 0;} })();
+  const timings   = productTimings || {};
+  const startTime = showStartTime || _lsStart || Date.now();
 
   // Build cumulative breakpoints (same logic as LiveShop for perfect sync)
   const buildBreakpoints = (ro, pt) => {
@@ -2453,6 +2459,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
     }));
 
     const showTitle = (showName || "Live Show").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const showStartTimeMs = startTime || Date.now();
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -2542,22 +2549,70 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
     <div id="spacer"></div>
     <span id="timer-label">Time</span>
     <div id="timer-display">1:30</div>
-    <button id="btn-pause">\u23F8 Pause</button>
+    <button id="btn-pause">\u27F3 Re-sync</button>
   </div>
   <div id="product-area"></div>
   <div id="bottom-bar">
     <button id="btn-prev" class="nav-btn" disabled>\u2190 Prev</button>
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px">
       <div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
-      <div id="hint">\u2190 \u2192 arrow keys or spacebar to navigate \u00B7 P to pause</div>
+      <div id="hint">\u2190 \u2192 arrow keys or spacebar to advance \u00B7 R to re-sync to show clock</div>
     </div>
     <button id="btn-next" class="nav-btn primary">Next \u2192</button>
   </div>
 </div>
 <script>
 (function(){
-  var prods = ${prodsData};
-  var cur = 0, secs = 90, paused = false, timer = null;
+  // Re-read latest timings from localStorage (updated when Catalog tab changes)
+  var prods = (function() {
+    var base = ${prodsData};
+    try {
+      var t = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS") || "{}");
+      if (Object.keys(t).length > 0) {
+        return base.map(function(p) { return Object.assign({}, p, { timing: t[p.id] || p.timing || 90 }); });
+      }
+    } catch(e) {}
+    return base;
+  })();
+  // Shared clock: read from localStorage (written by app on Go Live),
+  // fall back to baked-in timestamp if localStorage not accessible
+  var SHOW_START = (function() {
+    try {
+      var ls = parseInt(localStorage.getItem("STRMLIVE_SHOW_START") || "0");
+      if (ls > 0) return ls;
+    } catch(e) {}
+    return ${showStartTimeMs};
+  })();
+
+  // ── clock-based sync (same logic as LiveShop + BriefingTab) ──
+  var breakpoints = (function() {
+    var cursor = 0;
+    return prods.map(function(p, i) {
+      var dur = (p.timing || 90) * 1000;
+      var bp  = { idx: i, startMs: cursor, endMs: cursor + dur };
+      cursor += dur;
+      return bp;
+    });
+  })();
+  var totalDurMs = breakpoints.length ? breakpoints[breakpoints.length-1].endMs : 90000;
+
+  function computeIdx() {
+    var elapsed = (Date.now() - SHOW_START) % totalDurMs;
+    for (var i = 0; i < breakpoints.length; i++) {
+      if (elapsed >= breakpoints[i].startMs && elapsed < breakpoints[i].endMs) return i;
+    }
+    return 0;
+  }
+  function computeRemaining(idx) {
+    var elapsed = (Date.now() - SHOW_START) % totalDurMs;
+    var bp = breakpoints[idx];
+    if (!bp) return prods[idx] ? (prods[idx].timing || 90) : 90;
+    return Math.max(0, Math.ceil((bp.endMs - elapsed) / 1000));
+  }
+
+  var cur = computeIdx();
+  var manualUntil = 0; // timestamp until which manual override is active
+  var ticker = null;
 
   function el(tag,cls) { var e=document.createElement(tag); if(cls)e.className=cls; return e; }
   function txt(t) { return document.createTextNode(t); }
@@ -11485,10 +11540,19 @@ export default function StreamlivePrototype() {
   const navigate = (screen, newParams={}) => {
     // Starting a live show — persist the session
     if (screen === "live") {
-      setLiveSession(newParams);
+      // Stamp showStartTime now and write to localStorage so ALL tabs stay in sync
+      const t = newParams.showStartTime || Date.now();
+      const session = { ...newParams, showStartTime: t };
+      try { localStorage.setItem("STRMLIVE_SHOW_START", String(t));
+            localStorage.setItem("STRMLIVE_SHOW_TIMINGS", JSON.stringify(session.productTimings || {}));
+            localStorage.setItem("STRMLIVE_SHOW_ORDER", JSON.stringify((session.runOrder || []).map(p=>p.id))); } catch(e) {}
+      setLiveSession(session);
     }
     // Ending a show — clear the session
     if (screen === "order-review") {
+      try { localStorage.removeItem("STRMLIVE_SHOW_START");
+            localStorage.removeItem("STRMLIVE_SHOW_TIMINGS");
+            localStorage.removeItem("STRMLIVE_SHOW_ORDER"); } catch(e) {}
       setLiveSession(null);
     }
     // Clicking Shows nav while a show is live — jump back into it
@@ -11505,7 +11569,15 @@ export default function StreamlivePrototype() {
 
   // Allows ScreenLive to push runOrder/timing changes back up so Live Shop stays in sync
   const updateLiveSession = (patch) => {
-    setLiveSession(prev => prev ? { ...prev, ...patch } : prev);
+    setLiveSession(prev => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      try {
+        if (patch.productTimings) localStorage.setItem("STRMLIVE_SHOW_TIMINGS", JSON.stringify(patch.productTimings));
+        if (patch.runOrder)       localStorage.setItem("STRMLIVE_SHOW_ORDER",   JSON.stringify(patch.runOrder.map(p=>p.id)));
+      } catch(e) {}
+      return next;
+    });
   };
 
   const activeBuyer = params.buyerId ? buyers.find(b=>b.id===params.buyerId) : null;
