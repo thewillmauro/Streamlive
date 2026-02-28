@@ -2123,6 +2123,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
             {[
               { id:"orders",     label:"Orders" },
               { id:"production", label:"Production" },
+              { id:"scene",      label:"Scene" },
               { id:"platforms",  label:"Platforms" },
             ].map(t=>(
               <button key={t.id} onClick={()=>setLiveTab(t.id)} style={{
@@ -2430,26 +2431,31 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
 
                   {/* Patterns */}
                   <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>Patterns</div>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6, marginBottom:14 }}>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6, marginBottom:14 }}>
                     {[
-                      { id:"celebrate",  label:"🎉 Celebrate",   desc:"Fast rainbow cycle" },
-                      { id:"pulse",      label:"💜 Pulse",        desc:"Slow breathe fade" },
-                      { id:"strobe",     label:"⚡ Strobe",       desc:"Quick white flash" },
-                      { id:"fire",       label:"🔥 Fire",         desc:"Warm amber flicker" },
-                      { id:"police",     label:"🚨 Alert",        desc:"Red/blue alternating" },
-                      { id:"sunrise",    label:"🌅 Sunrise",      desc:"Warm fade-in ramp" },
-                    ].map(p=>(
-                      <button key={p.id} onClick={()=>{ setLightPattern(lightPattern===p.id ? null : p.id); setLightColor(null); }}
-                        style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", padding:"8px 10px",
-                          background: lightPattern===p.id ? "#1a0f2e" : "#0d0d1a",
-                          border:`1px solid ${lightPattern===p.id?"#a78bfa55":"#1e1e3a"}`,
-                          borderRadius:8, cursor:"pointer", textAlign:"left", transition:"all .12s"
-                        }}>
-                        <span style={{ fontSize:11, marginBottom:2 }}>{p.label}</span>
-                        <span style={{ fontSize:8, color:C.muted }}>{p.desc}</span>
-                        {lightPattern===p.id && <span style={{ fontSize:7, fontWeight:800, color:"#a78bfa", marginTop:3, letterSpacing:".05em" }}>● RUNNING</span>}
+                      { id:"celebrate", emoji:"🎉", label:"Celebrate",  desc:"Rainbow cycle",  color:"#a78bfa" },
+                      { id:"pulse",     emoji:"💜", label:"Pulse",       desc:"Breathe fade",   color:"#ec4899" },
+                      { id:"strobe",    emoji:"⚡", label:"Strobe",      desc:"White flash",    color:"#e2e8f0" },
+                      { id:"fire",      emoji:"🔥", label:"Fire",        desc:"Amber flicker",  color:"#f59e0b" },
+                      { id:"police",    emoji:"🚨", label:"Alert",       desc:"Red/blue alt",   color:"#ef4444" },
+                      { id:"sunrise",   emoji:"🌅", label:"Sunrise",     desc:"Warm fade-in",   color:"#fb923c" },
+                    ].map(p=>{ const active=lightPattern===p.id; return (
+                      <button key={p.id} onClick={()=>{ setLightPattern(active?null:p.id); setLightColor(null); }}
+                        style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+                          padding:"10px 4px", gap:3,
+                          background:active?`${p.color}18`:"#0d0d1a",
+                          border:`1.5px solid ${active?p.color+"77":"#1e1e3a"}`,
+                          borderRadius:10, cursor:"pointer", textAlign:"center", transition:"all .15s",
+                          boxShadow:active?`0 0 12px ${p.color}44`:"none" }}>
+                        <span style={{ fontSize:18, lineHeight:1 }}>{p.emoji}</span>
+                        <span style={{ fontSize:10, fontWeight:700, color:active?p.color:C.text, lineHeight:1.2 }}>{p.label}</span>
+                        <span style={{ fontSize:8, color:C.muted, lineHeight:1 }}>{p.desc}</span>
+                        {active && <div style={{ display:"flex", gap:2, alignItems:"flex-end", height:8, marginTop:2 }}>
+                          {[5,8,6].map((h,i)=><div key={i} style={{ width:2, height:h, background:p.color, borderRadius:1,
+                            animation:`soundBar${i} .35s ease-in-out infinite alternate` }}/>)}
+                        </div>}
                       </button>
-                    ))}
+                    );})}
                   </div>
 
                   {/* Aputure offline */}
@@ -2465,36 +2471,36 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
                 <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Sound Effects</div>
                 <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
 
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
                     {[
-                      { id:"airhorn",    label:"📯 Air Horn",      desc:"Classic drop" },
-                      { id:"ding",       label:"🔔 Cha-Ching",      desc:"Sale bell" },
-                      { id:"crowd",      label:"🙌 Crowd Cheer",    desc:"Audience applause" },
-                      { id:"drumroll",   label:"🥁 Drum Roll",      desc:"Build the hype" },
-                      { id:"confetti",   label:"🎊 Party Horn",     desc:"Celebration blast" },
-                      { id:"countdown",  label:"⏱ Countdown",      desc:"3-2-1 beeps" },
-                      { id:"vip",        label:"⭐ VIP Arrival",    desc:"Fanfare sting" },
-                      { id:"sold",       label:"🔨 Sold!",           desc:"Auction gavel" },
-                    ].map(s=>(
+                      { id:"airhorn",   emoji:"📯", label:"Air Horn",    desc:"Classic drop",       color:"#ef4444" },
+                      { id:"ding",      emoji:"🔔", label:"Cha-Ching",   desc:"Sale bell",          color:"#10b981" },
+                      { id:"crowd",     emoji:"🙌", label:"Crowd Cheer", desc:"Applause",           color:"#f59e0b" },
+                      { id:"drumroll",  emoji:"🥁", label:"Drum Roll",   desc:"Build the hype",     color:"#a78bfa" },
+                      { id:"confetti",  emoji:"🎊", label:"Party Horn",  desc:"Celebration blast",  color:"#ec4899" },
+                      { id:"countdown", emoji:"⏱", label:"Countdown",   desc:"3-2-1 beeps",        color:"#38bdf8" },
+                      { id:"vip",       emoji:"⭐", label:"VIP Arrival", desc:"Fanfare sting",      color:"#fbbf24" },
+                      { id:"sold",      emoji:"🔨", label:"Sold!",        desc:"Auction gavel",      color:"#10b981" },
+                    ].map(s=>{ const playing=soundPlaying===s.id; return (
                       <button key={s.id}
-                        onClick={()=>{ setSoundPlaying(s.id); setTimeout(()=>setSoundPlaying(null), 1800); }}
-                        style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", padding:"8px 10px",
-                          background: soundPlaying===s.id ? "#0a1e16" : "#0d0d1a",
-                          border:`1px solid ${soundPlaying===s.id?"#10b98155":"#1e1e3a"}`,
-                          borderRadius:8, cursor:"pointer", textAlign:"left", transition:"all .12s",
-                          transform: soundPlaying===s.id ? "scale(0.97)" : "scale(1)"
-                        }}>
-                        <span style={{ fontSize:11, marginBottom:2 }}>{s.label}</span>
-                        <span style={{ fontSize:8, color:C.muted }}>{s.desc}</span>
-                        {soundPlaying===s.id && (
-                          <div style={{ display:"flex", gap:2, marginTop:4, alignItems:"flex-end", height:10 }}>
-                            {[6,10,7,12,8].map((h,i)=>(
-                              <div key={i} style={{ width:2, height:h, background:"#10b981", borderRadius:1, animation:`soundBar${i%3} .4s ease-in-out infinite alternate` }}/>
-                            ))}
-                          </div>
-                        )}
+                        onClick={()=>{ setSoundPlaying(s.id); setTimeout(()=>setSoundPlaying(null),1800); }}
+                        style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px",
+                          background:playing?`${s.color}15`:"#0d0d1a",
+                          border:`1.5px solid ${playing?s.color+"66":"#1e1e3a"}`,
+                          borderRadius:10, cursor:"pointer", textAlign:"left", transition:"all .12s",
+                          boxShadow:playing?`0 0 10px ${s.color}33`:"none",
+                          transform:playing?"scale(0.97)":"scale(1)" }}>
+                        <span style={{ fontSize:20, flexShrink:0 }}>{s.emoji}</span>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:11, fontWeight:700, color:playing?s.color:C.text, lineHeight:1, marginBottom:3 }}>{s.label}</div>
+                          <div style={{ fontSize:9, color:C.muted, lineHeight:1 }}>{s.desc}</div>
+                          {playing && <div style={{ display:"flex", gap:2, marginTop:5, alignItems:"flex-end", height:10 }}>
+                            {[4,8,5,10,6,7].map((h,i)=><div key={i} style={{ width:2, height:h, background:s.color, borderRadius:1,
+                              animation:`soundBar${i%3} .3s ease-in-out ${i*0.05}s infinite alternate` }}/>)}
+                          </div>}
+                        </div>
                       </button>
-                    ))}
+                    );})}
                   </div>
 
                   {/* Volume */}
@@ -2509,6 +2515,172 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
 
             </div>
           )}
+
+
+          {/* ── SCENE TAB ── */}
+          {liveTab === "scene" && (() => {
+            const lightGlow = lightPattern==="celebrate" ? "hsl(300,100%,60%)"
+              : lightPattern==="fire"    ? "#f97316"
+              : lightPattern==="police"  ? "#ef4444"
+              : lightPattern==="pulse"   ? "#a78bfa"
+              : lightPattern==="strobe"  ? "#e2e8f0"
+              : lightPattern==="sunrise" ? "#fb923c"
+              : lightColor!==null        ? `hsl(${lightColor},100%,55%)`
+              : null;
+            const fx3Active = activeScene.includes("FX3") || activeScene.includes("Wide");
+            const fx6Active = activeScene.includes("FX6") || activeScene.includes("Close");
+            return (
+              <div style={{ flex:1, overflowY:"auto", padding:"14px" }}>
+
+                {/* Header */}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                  <div>
+                    <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Set Layout</div>
+                    <div style={{ fontSize:9, color:C.muted, marginTop:2 }}>Live diagram — updates with your settings</div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontSize:9, color: fx3Active||fx6Active ? "#10b981" : C.muted }}>
+                      {fx3Active&&fx6Active?"FX3 + FX6 on":fx3Active?"FX3 Wide":fx6Active?"FX6 Close-Up":"No cam active"}
+                    </div>
+                    {lightGlow && <div style={{ fontSize:9, color:lightGlow, marginTop:2 }}>● Light active</div>}
+                  </div>
+                </div>
+
+                {/* ── DIAGRAM ── */}
+                <div style={{ position:"relative", width:"100%", height:268, background:"#07070f", border:"1px solid #1a1a2e", borderRadius:14, overflow:"hidden", marginBottom:14 }}>
+
+                  {/* Grid */}
+                  {[1,2,3,4].map(i=><div key={"v"+i} style={{ position:"absolute", left:`${i*20}%`, top:0, bottom:0, width:1, background:"#0d0d1a" }}/>)}
+                  {[1,2,3,4].map(i=><div key={"h"+i} style={{ position:"absolute", top:`${i*20}%`, left:0, right:0, height:1, background:"#0d0d1a" }}/>)}
+
+                  {/* Floor/Audience labels */}
+                  <div style={{ position:"absolute", bottom:6, left:"50%", transform:"translateX(-50%)", fontSize:7, fontWeight:700, color:"#1a1a2e", textTransform:"uppercase", letterSpacing:".1em" }}>STAGE FLOOR</div>
+                  <div style={{ position:"absolute", bottom:6, right:8, fontSize:7, color:"#1a1a2e", fontWeight:700 }}>AUDIENCE ▼</div>
+
+                  {/* Active scene badge */}
+                  <div style={{ position:"absolute", top:8, left:"50%", transform:"translateX(-50%)", whiteSpace:"nowrap", zIndex:2 }}>
+                    <div style={{ background:"#0d0d1a", border:"1px solid #a78bfa33", borderRadius:6, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
+                      <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, fontWeight:700, color:"#a78bfa" }}>{activeScene}</span>
+                    </div>
+                  </div>
+
+                  {/* ── KEY LIGHT — top left ── */}
+                  <div style={{ position:"absolute", top:14, left:18 }}>
+                    <div style={{
+                      width:30, height:30, borderRadius:8,
+                      background:lightGlow?`${lightGlow}28`:"#0d1a12",
+                      border:`1.5px solid ${lightGlow||"#10b98155"}`,
+                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:16,
+                      boxShadow:lightGlow?`0 0 22px ${lightGlow}99,0 0 44px ${lightGlow}33`:"0 0 10px #10b98122",
+                      transition:"all .3s",
+                    }}>💡</div>
+                    {lightGlow && <div style={{ position:"absolute", top:30, left:30, width:100, height:100, borderRadius:"50%",
+                      background:`radial-gradient(circle,${lightGlow}1a 0%,transparent 70%)`, pointerEvents:"none" }}/>}
+                    <div style={{ fontSize:7, color:lightGlow||"#10b981", fontWeight:700, marginTop:3, textAlign:"center", whiteSpace:"nowrap" }}>KEY LIGHT</div>
+                    {lightPattern && <div style={{ fontSize:6, color:lightGlow||"#10b981", textAlign:"center" }}>◉ {lightPattern.toUpperCase()}</div>}
+                    {!lightPattern && lightColor!==null && <div style={{ fontSize:6, color:lightGlow, textAlign:"center" }}>◉ COLOR {Math.round(lightColor)}°</div>}
+                  </div>
+
+                  {/* ── APUTURE — top right (offline) ── */}
+                  <div style={{ position:"absolute", top:14, right:18, opacity:0.3 }}>
+                    <div style={{ width:30, height:30, borderRadius:8, background:"#0d0d18", border:"1.5px solid #1e1e3a",
+                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>🔆</div>
+                    <div style={{ fontSize:7, color:"#374151", fontWeight:700, marginTop:3, textAlign:"center" }}>APUTURE</div>
+                    <div style={{ fontSize:6, color:"#ef4444", textAlign:"center" }}>✕ offline</div>
+                  </div>
+
+                  {/* ── FX3 — bottom left ── */}
+                  <div style={{ position:"absolute", bottom:30, left:12 }}>
+                    <svg style={{ position:"absolute", bottom:22, left:34, overflow:"visible", pointerEvents:"none" }} width={1} height={1}>
+                      <line x1={0} y1={0} x2={82} y2={-42}
+                        stroke={fx3Active?"#7c3aed88":"#1e1e3a33"} strokeWidth={1.5} strokeDasharray="4 3"/>
+                      <polygon points="82,-42 74,-38 76,-46"
+                        fill={fx3Active?"#7c3aed88":"#1e1e3a33"}/>
+                    </svg>
+                    <div style={{
+                      width:36, height:28, borderRadius:7,
+                      background:fx3Active?"#1a0f2e":"#0a0a14",
+                      border:`1.5px solid ${fx3Active?"#7c3aed":"#1e1e3a"}`,
+                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:17,
+                      boxShadow:fx3Active?"0 0 16px #7c3aed55":"none", transition:"all .2s",
+                    }}>📷</div>
+                    <div style={{ fontSize:7, color:fx3Active?"#7c3aed":"#374151", fontWeight:700, marginTop:3, textAlign:"center" }}>FX3</div>
+                    {fx3Active && <div style={{ fontSize:6, color:"#7c3aed", textAlign:"center" }}>● WIDE</div>}
+                  </div>
+
+                  {/* ── FX6 — bottom right ── */}
+                  <div style={{ position:"absolute", bottom:30, right:12 }}>
+                    <svg style={{ position:"absolute", bottom:22, right:34, overflow:"visible", pointerEvents:"none" }} width={1} height={1}>
+                      <line x1={0} y1={0} x2={-82} y2={-42}
+                        stroke={fx6Active?"#a78bfa88":"#1e1e3a33"} strokeWidth={1.5} strokeDasharray="4 3"/>
+                      <polygon points="-82,-42 -74,-38 -76,-46"
+                        fill={fx6Active?"#a78bfa88":"#1e1e3a33"}/>
+                    </svg>
+                    <div style={{
+                      width:36, height:28, borderRadius:7,
+                      background:fx6Active?"#160c2e":"#0a0a14",
+                      border:`1.5px solid ${fx6Active?"#a78bfa":"#1e1e3a"}`,
+                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:17,
+                      boxShadow:fx6Active?"0 0 16px #a78bfa55":"none", transition:"all .2s",
+                    }}>🎥</div>
+                    <div style={{ fontSize:7, color:fx6Active?"#a78bfa":"#374151", fontWeight:700, marginTop:3, textAlign:"center" }}>FX6</div>
+                    {fx6Active && <div style={{ fontSize:6, color:"#a78bfa", textAlign:"center" }}>● CLOSE-UP</div>}
+                  </div>
+
+                  {/* ── HOST — center ── */}
+                  <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }}>
+                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+                      <div style={{ width:38, height:38, borderRadius:"50%",
+                        background:"linear-gradient(135deg,#f59e0b22,#92400e22)",
+                        border:"1.5px solid #f59e0b66",
+                        display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>🧑</div>
+                      <div style={{ fontSize:7, fontWeight:800, color:"#f59e0b", letterSpacing:".06em" }}>HOST</div>
+                      <div style={{ fontSize:6, color:micMuted?"#ef4444":"#10b981" }}>{micMuted?"🔇 MUTED":"🎙 ON"}</div>
+                    </div>
+                  </div>
+
+                  {/* ── PRODUCT TABLE — right of host ── */}
+                  <div style={{ position:"absolute", top:"46%", right:"18%", transform:"translateY(-50%)" }}>
+                    <div style={{ width:34, height:24, borderRadius:6, background:"#0a1218",
+                      border:"1.5px solid #38bdf844", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>📦</div>
+                    <div style={{ fontSize:7, fontWeight:700, color:"#38bdf8", marginTop:3, textAlign:"center", whiteSpace:"nowrap" }}>PRODUCTS</div>
+                  </div>
+
+                  {/* ── MONITOR — left of host ── */}
+                  <div style={{ position:"absolute", top:"46%", left:"18%", transform:"translateY(-50%)" }}>
+                    <div style={{ width:28, height:22, borderRadius:5, background:"#0a0a1a",
+                      border:"1.5px solid #3b82f644", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12 }}>📱</div>
+                    <div style={{ fontSize:7, fontWeight:700, color:"#3b82f6", marginTop:3, textAlign:"center", whiteSpace:"nowrap" }}>MONITOR</div>
+                  </div>
+
+                </div>
+
+                {/* ── LEGEND ── */}
+                <div style={{ background:"#07070f", border:"1px solid #1a1a2e", borderRadius:10, padding:"10px 12px" }}>
+                  <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>Status</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    {[
+                      { icon:"📷", color:"#7c3aed", label:"Sony FX3",           status:fx3Active?"● Wide — active":"Standby" },
+                      { icon:"🎥", color:"#a78bfa", label:"Sony FX6",           status:fx6Active?"● Close-up — active":"Standby" },
+                      { icon:"💡", color:lightGlow||"#10b981", label:"Key Light",
+                        status:lightPattern?`◉ Pattern: ${lightPattern}`:lightColor!==null?`◉ Color: ${Math.round(lightColor)}°`:`White · ${lightTemp}K` },
+                      { icon:"🔆", color:"#4b5563", label:"Aputure 600d",       status:"✕ Disconnected" },
+                      { icon:"🎙", color:micMuted?"#ef4444":"#10b981", label:"Rode GO II",
+                        status:micMuted?"🔇 Muted":`● Live · ${audioLevel}%` },
+                    ].map((item,i)=>(
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ fontSize:13, width:20, textAlign:"center", flexShrink:0 }}>{item.icon}</span>
+                        <span style={{ fontSize:10, fontWeight:600, color:item.color, width:104, flexShrink:0 }}>{item.label}</span>
+                        <span style={{ fontSize:9, color:C.muted }}>{item.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
 
           {/* ── PLATFORMS TAB ── */}
           {liveTab === "platforms" && (
