@@ -1629,41 +1629,50 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
 function ScreenLiveShop({ navigate, params, persona: personaProp }) {
-  const runOrder   = params?.runOrder  || PRODUCTS.slice(0,5);
-  const showName   = params?.showName  || "Live Show";
-  const persona    = params?.persona   || personaProp || { shop:"Our Store", slug:"shop" };
-  const shopDomain = params?.shopDomain|| `${persona.slug || "shop"}.myshopify.com`;
+  // Always read from params — which is now always liveSession (kept fresh by updateLiveSession)
+  const runOrder       = params?.runOrder      || PRODUCTS.slice(0,5);
+  const showName       = params?.showName      || "Live Show";
+  const persona        = params?.persona       || personaProp || { shop:"Our Store", slug:"shop" };
+  const shopDomain     = params?.shopDomain    || `${persona.slug || "shop"}.myshopify.com`;
+  const productTimings = params?.productTimings || {};
+  const showStartTime  = params?.showStartTime  || Date.now();
   const [copied, setCopied] = useState(false);
-  const productTimings  = params?.productTimings || {};
-  const showStartTime   = params?.showStartTime  || Date.now();
 
-  // Build cumulative breakpoints: [{startMs, endMs, idx}]
-  const breakpoints = React.useMemo(() => {
+  // Build cumulative breakpoints from current runOrder + timings
+  const buildBreakpoints = (ro, pt) => {
     let cursor = 0;
-    return runOrder.map((p, i) => {
-      const dur = (productTimings[p.id] || 90) * 1000;
+    return ro.map((p, i) => {
+      const dur = (pt[p.id] || 90) * 1000;
       const bp  = { idx: i, startMs: cursor, endMs: cursor + dur };
       cursor += dur;
       return bp;
     });
-  }, [runOrder, productTimings]);
+  };
 
-  const totalDurMs = breakpoints.length > 0 ? breakpoints[breakpoints.length - 1].endMs : 90000;
+  const breakpoints = buildBreakpoints(runOrder, productTimings);
+  const totalDurMs  = breakpoints.length > 0 ? breakpoints[breakpoints.length - 1].endMs : 90000;
 
-  // Compute current active index from elapsed time — deterministic & always in sync
-  const computeIdx = () => {
-    const elapsed = (Date.now() - showStartTime) % totalDurMs;
-    const bp = breakpoints.find(b => elapsed >= b.startMs && elapsed < b.endMs);
+  // Compute active index deterministically from wall clock — always in sync
+  const computeIdx = (bps, total) => {
+    if (!bps.length) return 0;
+    const elapsed = (Date.now() - showStartTime) % total;
+    const bp = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
     return bp ? bp.idx : 0;
   };
 
-  const [activeIdx, setActiveIdx] = useState(() => computeIdx());
+  const [activeIdx, setActiveIdx] = useState(() => computeIdx(breakpoints, totalDurMs));
+  const [, setTick] = useState(0); // force re-render every second for countdown
 
-  // Tick every second, recompute idx from clock — stays in sync even if tab was backgrounded
+  // Tick every second — recompute idx from clock, force re-render for countdowns
   useEffect(() => {
-    const t = setInterval(() => setActiveIdx(computeIdx()), 1000);
+    const t = setInterval(() => {
+      const freshBps   = buildBreakpoints(runOrder, productTimings);
+      const freshTotal = freshBps.length > 0 ? freshBps[freshBps.length - 1].endMs : 90000;
+      setActiveIdx(computeIdx(freshBps, freshTotal));
+      setTick(n => n + 1); // trigger countdown re-render
+    }, 1000);
     return () => clearInterval(t);
-  }, [breakpoints, totalDurMs, showStartTime]);
+  }, [params]); // re-subscribe whenever params (liveSession) changes
 
   const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
@@ -1844,7 +1853,24 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:3 }}>
                       <span style={{ fontSize:13, fontWeight:700, color:isSold?"#4b5563":C.text }}>{p.name}</span>
-                      {isActive && <span style={{ fontSize:8, fontWeight:800, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:99, letterSpacing:"0.06em" }}>SELLING NOW</span>}
+                      {isActive && (() => {
+                          const bps    = buildBreakpoints(runOrder, productTimings);
+                          const total  = bps.length > 0 ? bps[bps.length-1].endMs : 90000;
+                          const elapsedMs = (Date.now() - showStartTime) % total;
+                          const bp     = bps[activeIdx];
+                          const remSec = bp ? Math.max(0, Math.ceil((bp.endMs - elapsedMs) / 1000)) : 0;
+                          const rm = Math.floor(remSec/60), rs = remSec%60;
+                          return (<>
+                            <span style={{ fontSize:8, fontWeight:800, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:99, letterSpacing:"0.06em" }}>SELLING NOW</span>
+                            <span style={{ fontSize:8, fontWeight:800, fontFamily:"'JetBrains Mono',monospace",
+                              color: remSec<=10?"#ef4444":remSec<=30?"#f59e0b":"#6b7280",
+                              background: remSec<=10?"#1a0505":remSec<=30?"#1c1208":"#0a0a14",
+                              border:`1px solid ${remSec<=10?"#ef444433":remSec<=30?"#f59e0b33":"#1e1e3a"}`,
+                              padding:"2px 8px", borderRadius:99 }}>
+                              ⏱ {rm>0?`${rm}m `:""}{rs}s
+                            </span>
+                          </>);
+                        })()}
                       {isSold   && <span style={{ fontSize:8, fontWeight:700, color:"#374151", background:"#0d0d0d", border:"1px solid #1a1a1a", padding:"2px 7px", borderRadius:99 }}>SOLD</span>}
                     </div>
                     <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
@@ -2787,7 +2813,7 @@ function BriefingTab({ runOrder, showName, productTimings }) {
 }
 
 
-function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
+function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLiveSession }) {
   const selectedPlatforms = params?.selectedPlatforms || ["WN"];
   // Per-platform viewer counts (seeded differently per platform)
   const [platformViewers, setPlatformViewers] = useState(() => {
@@ -2797,6 +2823,17 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
   const [liveBuyers, setLiveBuyers]   = useState([]);
   const [elapsed, setElapsed]         = useState(0);
   const showStartTime = useRef(params?.showStartTime || Date.now()); // stable for sync
+
+  // Keep liveSession in sync whenever run order or timings change
+  useEffect(() => {
+    if (updateLiveSession) {
+      updateLiveSession({
+        runOrder: liveRunOrder,
+        productTimings,
+        showStartTime: showStartTime.current,
+      });
+    }
+  }, [liveRunOrder, productTimings]);
   const [viewerCount, setViewerCount] = useState(
     selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156,YT:4200}; return a+(s[p]||200);},0)
   );
@@ -11363,6 +11400,11 @@ export default function StreamlivePrototype() {
     setShowPersonaMenu(false);
   };
 
+  // Allows ScreenLive to push runOrder/timing changes back up so Live Shop stays in sync
+  const updateLiveSession = (patch) => {
+    setLiveSession(prev => prev ? { ...prev, ...patch } : prev);
+  };
+
   const activeBuyer = params.buyerId ? buyers.find(b=>b.id===params.buyerId) : null;
   const activeShow  = params.showId  ? (completedShows.find(s=>s.id===params.showId) || SHOWS.find(s=>s.id===params.showId)) : null;
 
@@ -11626,9 +11668,9 @@ export default function StreamlivePrototype() {
                 {view==="show-report"  && <ScreenShowReport    show={activeShow} allShows={completedShows} buyers={buyers} navigate={navigate} />}
                 {/* ScreenLive stays mounted while liveSession is active so its intervals keep ticking */}
                 <div style={{ display: view==="live" ? "contents" : "none" }}>
-                  {(view==="live" || liveSession) && <ScreenLive buyers={buyers} navigate={navigate} params={liveSession || params} persona={persona} />}
+                  {(view==="live" || liveSession) && <ScreenLive buyers={buyers} navigate={navigate} params={liveSession || params} persona={persona} updateLiveSession={updateLiveSession} />}
                 </div>
-                {view==="live-shop"    && <ScreenLiveShop     navigate={navigate} params={params} persona={persona} />}
+                {view==="live-shop"    && <ScreenLiveShop     navigate={navigate} params={liveSession || params} persona={persona} />}
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
