@@ -190,7 +190,7 @@ function Landing() {
   const [demoEmailSent, setDemoEmailSent] = useState(false)
   // Contact Sales modal
   const [salesModal, setSalesModal] = useState(false)
-  const [salesForm, setSalesForm] = useState({ firstName:'', lastName:'', email:'', phone:'' })
+  const [salesForm, setSalesForm] = useState({ firstName:'', lastName:'', email:'', phone:'', store:'', platforms:[], message:'' })
   const [salesSent, setSalesSent] = useState(false)
 
   useEffect(() => {
@@ -233,7 +233,7 @@ function Landing() {
 
   const submitDemoEmail = async () => {
     if (!demoEmail.includes('@')) return
-    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate' }) }) } catch(e) {}
+    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate', timestamp: new Date().toISOString() }) }) } catch(e) {}
     setDemoEmailSent(true)
     setTimeout(() => {
       setDemoModal(false)
@@ -249,13 +249,30 @@ function Landing() {
 
   const submitSales = async () => {
     if (!salesForm.firstName || !salesForm.email.includes('@')) return
-    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ...salesForm, source: 'contact_sales' }) }) } catch(e) {}
+    const payload = {
+      ...salesForm,
+      platforms: salesForm.platforms.join(', '),
+      source: 'contact_sales',
+      timestamp: new Date().toISOString(),
+      page: window.location.href,
+    }
+    // Primary: Vercel API proxy (avoids no-cors limitations)
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+    } catch(e) {
+      // Fallback: direct Google Sheets webhook
+      try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }) } catch(e2) {}
+    }
     setSalesSent(true)
   }
 
   const handleSubmit = async () => {
     if (!email.includes('@')) return
-    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email }) }) } catch(e) {}
+    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, source: 'waitlist', timestamp: new Date().toISOString() }) }) } catch(e) {}
     setSubmitted(true)
   }
 
@@ -1030,7 +1047,7 @@ function Landing() {
                     style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
                   />
                 </div>
-                <div style={{ marginBottom:20 }}>
+                <div style={{ marginBottom:12 }}>
                   <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Phone Number</label>
                   <input
                     type="tel"
@@ -1038,6 +1055,45 @@ function Landing() {
                     onChange={e=>setSalesForm(f=>({...f, phone:e.target.value}))}
                     placeholder="(555) 000-0000"
                     style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
+                  />
+                </div>
+                <div style={{ marginBottom:12 }}>
+                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Store / Shop Name</label>
+                  <input
+                    type="text"
+                    value={salesForm.store}
+                    onChange={e=>setSalesForm(f=>({...f, store:e.target.value}))}
+                    placeholder="Banana Republic, Jamie's Closet…"
+                    style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif" }}
+                  />
+                </div>
+                <div style={{ marginBottom:12 }}>
+                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Platforms you sell on</label>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                    {[['WN','Whatnot',(167,139,250)],['TT','TikTok',(200,200,200)],['IG','Instagram',(236,72,153)],['AM','Amazon',(245,158,11)],['YT','YouTube',(248,68,68)]].map(([code,label,col])=>{
+                      const sel = salesForm.platforms.includes(code)
+                      const c = `rgb(${col})`
+                      return (
+                        <button key={code}
+                          onClick={()=>setSalesForm(f=>({...f, platforms: sel ? f.platforms.filter(p=>p!==code) : [...f.platforms, code]}))}
+                          style={{ padding:'6px 12px', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', transition:'all .12s',
+                            background: sel ? `rgba(${col},0.15)` : '#0a0a18',
+                            border: `1px solid ${sel ? c : '#2a2a4a'}`,
+                            color: sel ? c : '#6b7280' }}>
+                          {code} · {label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div style={{ marginBottom:20 }}>
+                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Anything else? <span style={{fontWeight:400,textTransform:'none'}}>(optional)</span></label>
+                  <textarea
+                    value={salesForm.message}
+                    onChange={e=>setSalesForm(f=>({...f, message:e.target.value}))}
+                    placeholder="Tell us about your show schedule, volume, what you're looking to solve…"
+                    rows={3}
+                    style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'12px 13px', color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif", resize:'vertical', lineHeight:1.6 }}
                   />
                 </div>
                 <button
