@@ -10446,6 +10446,8 @@ export default function StreamlivePrototype() {
   const [notifications, setNotifications] = useState(3);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
   const [completedShows, setCompletedShows] = useState(SHOWS);
+  // Persist the active live session so navigating away and back restores it
+  const [liveSession, setLiveSession] = useState(null); // null = no show running
 
   // Check for invite token in URL — render accept screen instead of app
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
@@ -10457,6 +10459,21 @@ export default function StreamlivePrototype() {
   const buyers   = BUYERS_BY_PERSONA[personaId] || [];
 
   const navigate = (screen, newParams={}) => {
+    // Starting a live show — persist the session
+    if (screen === "live") {
+      setLiveSession(newParams);
+    }
+    // Ending a show — clear the session
+    if (screen === "order-review") {
+      setLiveSession(null);
+    }
+    // Clicking Shows nav while a show is live — jump back into it
+    if (screen === "shows" && liveSession) {
+      setView("live");
+      setParams(liveSession);
+      setShowPersonaMenu(false);
+      return;
+    }
     setView(screen);
     setParams(newParams);
     setShowPersonaMenu(false);
@@ -10607,6 +10624,12 @@ export default function StreamlivePrototype() {
                       style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", borderRadius:9, border:"none", cursor:"pointer", marginBottom:2, background:isActive?"#a78bfa18":"transparent", transition:"all .12s" }}>
                       <span style={{ fontSize:13, color:isActive?"#a78bfa":C.subtle, width:16, textAlign:"center" }}>{n.icon}</span>
                       <span style={{ fontSize:13, fontWeight:isActive?700:400, color:isActive?C.text:C.muted }}>{n.label}</span>
+                      {n.id==="shows" && liveSession && (
+                        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:4, background:"#1a0505", border:"1px solid #ef444444", borderRadius:5, padding:"2px 6px" }}>
+                          <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
+                          <span style={{ fontSize:8, fontWeight:800, color:"#ef4444", letterSpacing:".06em" }}>LIVE</span>
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -10651,6 +10674,12 @@ export default function StreamlivePrototype() {
                       {isLocked && <span style={{ marginLeft:"auto", fontSize:9, color:"#374151" }}>🔒</span>}
                       {!isLocked && n.id==="subscribers" && notifications>0 && (
                         <div style={{ marginLeft:"auto", width:16, height:16, borderRadius:"50%", background:"#ef4444", fontSize:9, fontWeight:700, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>{notifications}</div>
+                      )}
+                      {!isLocked && n.id==="shows" && liveSession && (
+                        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:4, background:"#1a0505", border:"1px solid #ef444444", borderRadius:5, padding:"2px 6px" }}>
+                          <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
+                          <span style={{ fontSize:8, fontWeight:800, color:"#ef4444", letterSpacing:".06em" }}>LIVE</span>
+                        </div>
                       )}
                     </button>
                   );
