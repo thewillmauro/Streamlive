@@ -1629,19 +1629,22 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
 function ScreenLiveShop({ navigate, params, persona: personaProp }) {
-  // ── helpers that read fresh from localStorage every call ──────────────────
-  const getLsStart   = () => { try { return parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0; } catch(e){return 0;} };
-  const getLsTimings = () => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}"); } catch(e){return {};} };
-  const getLsOrder   = () => { try { return JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]"); } catch(e){return [];} };
+  // ── Single source of truth: localStorage (written by app on Go Live + every Catalog change) ──
+  // Read fresh every call — no stale closures possible
+  const readLS = () => {
+    try {
+      const start   = parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0;
+      const timings = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}");
+      const ids     = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]");
+      const ro      = ids.length > 0 ? ids.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean) : null;
+      return { start, timings, runOrder: ro };
+    } catch(e) { return { start:0, timings:{}, runOrder:null }; }
+  };
 
-  const getRunOrder   = () => params?.runOrder      || (getLsOrder().map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean).length ? getLsOrder().map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean) : null) || PRODUCTS.slice(0,5);
-  const getTimings    = () => params?.productTimings || getLsTimings() || {};
-  const getStartTime  = () => params?.showStartTime  || getLsStart()   || Date.now();
-
-  const runOrder       = getRunOrder();
-  const showName       = params?.showName   || "Live Show";
-  const persona        = params?.persona    || personaProp || { shop:"Our Store", slug:"shop" };
-  const shopDomain     = params?.shopDomain || `${persona.slug || "shop"}.myshopify.com`;
+  // UI strings still come from params (showName, persona) — those don't affect sync
+  const showName   = params?.showName   || "Live Show";
+  const persona    = params?.persona    || personaProp || { shop:"Our Store", slug:"shop" };
+  const shopDomain = params?.shopDomain || `${persona.slug || "shop"}.myshopify.com`;
   const [copied, setCopied] = useState(false);
 
   // Build cumulative breakpoints
@@ -1655,49 +1658,28 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
     });
   };
 
-  // Compute active index — always reads fresh from localStorage so new tabs sync instantly
-  const computeCurrentIdx = () => {
-    const ro   = getRunOrder();
-    const pt   = getTimings();
-    const st   = getStartTime();
-    const bps  = buildBreakpoints(ro, pt);
-    const total = bps.length > 0 ? bps[bps.length - 1].endMs : 90000;
-    if (!bps.length) return 0;
-    const elapsed = (Date.now() - st) % total;
-    const found = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
-    return found ? found.idx : 0;
+  // Compute active index purely from localStorage — called fresh every tick, no stale closure
+  const computeFromLS = () => {
+    const { start, timings, runOrder: ro } = readLS();
+    const order = ro || PRODUCTS.slice(0,5);
+    const bps   = buildBreakpoints(order, timings);
+    const total = bps.length > 0 ? bps[bps.length-1].endMs : 90000;
+    if (!bps.length || !start) return { idx: 0, order, timings, bps, total, start: start || Date.now() };
+    const elapsed = (Date.now() - start) % total;
+    const found   = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
+    return { idx: found ? found.idx : 0, order, timings, bps, total, start };
   };
 
-  // Compute remaining seconds for a given product index
-  const computeRemaining = (idx) => {
-    const ro   = getRunOrder();
-    const pt   = getTimings();
-    const st   = getStartTime();
-    const bps  = buildBreakpoints(ro, pt);
-    const total = bps.length > 0 ? bps[bps.length - 1].endMs : 90000;
-    const elapsed = (Date.now() - st) % total;
-    const bp = bps[idx];
-    if (!bp) return pt[ro[idx]?.id] || 90;
-    return Math.max(0, Math.ceil((bp.endMs - elapsed) / 1000));
-  };
+  // State — order + activeIdx always come from the same LS read so they're always in sync
+  const [lsState, setLsState] = useState(() => computeFromLS());
+  const { idx: activeIdx, order: runOrder, timings: productTimings,
+          bps: breakpoints, total: totalDurMs, start: showStartTime } = lsState;
 
-  // Init from clock immediately — correct product on open, even in new tab
-  const [activeIdx, setActiveIdx] = useState(() => computeCurrentIdx());
-  const [, setTick] = useState(0);
-
-  // Tick every second — re-reads localStorage fresh, so always in sync
+  // Tick every second — re-reads localStorage fresh each time
   useEffect(() => {
-    const t = setInterval(() => {
-      setActiveIdx(computeCurrentIdx());
-      setTick(n => n + 1);
-    }, 1000);
+    const t = setInterval(() => setLsState(computeFromLS()), 1000);
     return () => clearInterval(t);
-  }, []); // no deps needed — reads localStorage fresh every tick
-
-  const productTimings = getTimings();
-  const showStartTime  = getStartTime();
-  const breakpoints    = buildBreakpoints(runOrder, productTimings);
-  const totalDurMs     = breakpoints.length > 0 ? breakpoints[breakpoints.length - 1].endMs : 90000;
+  }, []);
 
   const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
@@ -1879,10 +1861,8 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
                     <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:3 }}>
                       <span style={{ fontSize:13, fontWeight:700, color:isSold?"#4b5563":C.text }}>{p.name}</span>
                       {isActive && (() => {
-                          const bps    = buildBreakpoints(runOrder, productTimings);
-                          const total  = bps.length > 0 ? bps[bps.length-1].endMs : 90000;
-                          const elapsedMs = (Date.now() - showStartTime) % total;
-                          const bp     = bps[activeIdx];
+                          const elapsedMs = (Date.now() - showStartTime) % totalDurMs;
+                          const bp     = breakpoints[activeIdx];
                           const remSec = bp ? Math.max(0, Math.ceil((bp.endMs - elapsedMs) / 1000)) : 0;
                           const rm = Math.floor(remSec/60), rs = remSec%60;
                           return (<>
@@ -3933,7 +3913,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                         <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
                         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"#a78bfa" }}>{liveShopUrl}</span>
                         <button
-                          onClick={()=>navigate("live-shop", {...params, persona:params?.persona, productTimings, showStartTime:showStartTime.current})}
+                          onClick={()=>navigate("live-shop", {...params, runOrder, persona:params?.persona, productTimings, showStartTime:showStartTime.current})}
                           style={{ marginLeft:"auto", fontSize:9, fontWeight:700, color:C.muted, background:"none", border:"none", cursor:"pointer", whiteSpace:"nowrap" }}
                         >
                           Preview ↗
