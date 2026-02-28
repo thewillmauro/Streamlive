@@ -2116,6 +2116,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
             {[
               { id:"orders",     label:"Orders" },
               { id:"production", label:"Production" },
+              { id:"platforms",  label:"Platforms" },
             ].map(t=>(
               <button key={t.id} onClick={()=>setLiveTab(t.id)} style={{
                 padding:"0 20px", height:38, background:"none", border:"none",
@@ -2265,44 +2266,6 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
                 </div>
               </div>
 
-              {/* ── PLATFORM CONNECTION STRIP ── */}
-              <div style={{ marginBottom:20 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Platform Connections</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
-                  {selectedPlatforms.map(pid => {
-                    const pm   = PLATFORM_META_LIVE[pid] || { label:pid, color:"#6b7280", bitrate:"4 Mbps", latency:"1.2s" };
-                    const up   = streamHealth[pid] !== false;
-                    const viewers = platformViewers[pid] || 0;
-                    return (
-                      <div key={pid} style={{ display:"flex", alignItems:"center", gap:10, background:"#0a0a14", border:`1px solid ${up?"#10b98122":"#ef444422"}`, borderRadius:10, padding:"10px 14px" }}>
-                        <div style={{ width:8, height:8, borderRadius:"50%", background:up?"#10b981":"#ef4444", flexShrink:0, boxShadow:up?"0 0 6px #10b98188":"0 0 6px #ef444488" }}/>
-                        <div style={{ flex:1 }}>
-                          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2 }}>
-                            <span style={{ fontSize:12, fontWeight:700, color:pm.color }}>{pm.label}</span>
-                            <span style={{ fontSize:9, fontWeight:700, color:up?"#10b981":"#ef4444", background:up?"#0a1e16":"#1e0808", border:`1px solid ${up?"#10b98133":"#ef444433"}`, padding:"1px 7px", borderRadius:4 }}>{up?"LIVE":"OFFLINE"}</span>
-                          </div>
-                          <div style={{ display:"flex", gap:12, fontSize:9, color:C.muted }}>
-                            <span>{pm.bitrate}</span>
-                            <span>Latency {pm.latency}</span>
-                            <span>{viewers >= 1000 ? (viewers/1000).toFixed(1)+"k" : viewers} viewers</span>
-                          </div>
-                        </div>
-                        <button onClick={()=>setStreamHealth(prev=>({...prev,[pid]:!prev[pid]}))}
-                          style={{ fontSize:9, fontWeight:700, color:up?"#ef4444":"#10b981", background:"transparent", border:`1px solid ${up?"#ef444433":"#10b98133"}`, padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>
-                          {up?"Disconnect":"Reconnect"}
-                        </button>
-                      </div>
-                    );
-                  })}
-                  {selectedPlatforms.includes("IG") && (
-                    <div style={{ display:"flex", gap:8, padding:"8px 12px", background:"#1a0f0a", border:"1px solid #f59e0b33", borderRadius:8 }}>
-                      <span style={{ fontSize:11, color:"#f59e0b", flexShrink:0 }}>⚠</span>
-                      <span style={{ fontSize:10, color:"#92400e", lineHeight:1.5 }}>Instagram is running via capture card → iPhone. Verify the Cam Link is connected and Instagram Live is active on the dedicated device.</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* ── OBS SCENE SWITCHER ── */}
               <div style={{ marginBottom:20 }}>
                 <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>OBS Scene</div>
@@ -2399,6 +2362,104 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* ── PLATFORMS TAB ── */}
+          {liveTab === "platforms" && (
+            <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
+              <div style={{ marginBottom:8 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Platform Connections</div>
+
+                {/* Overall stream health summary */}
+                <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+                  <div style={{ flex:1, background:"#0a1e16", border:"1px solid #10b98133", borderRadius:8, padding:"8px 12px", textAlign:"center" }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:800, color:"#10b981" }}>
+                      {selectedPlatforms.filter(p=>streamHealth[p]!==false).length}
+                    </div>
+                    <div style={{ fontSize:9, color:"#10b981", marginTop:2 }}>Live</div>
+                  </div>
+                  <div style={{ flex:1, background:"#1e0808", border:"1px solid #ef444433", borderRadius:8, padding:"8px 12px", textAlign:"center" }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:800, color:"#ef4444" }}>
+                      {selectedPlatforms.filter(p=>streamHealth[p]===false).length}
+                    </div>
+                    <div style={{ fontSize:9, color:"#ef4444", marginTop:2 }}>Offline</div>
+                  </div>
+                  <div style={{ flex:1, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:8, padding:"8px 12px", textAlign:"center" }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:800, color:"#38bdf8" }}>
+                      {Object.values(platformViewers).reduce((a,v)=>a+v,0).toLocaleString()}
+                    </div>
+                    <div style={{ fontSize:9, color:"#38bdf8", marginTop:2 }}>Viewers</div>
+                  </div>
+                </div>
+
+                {/* Per-platform rows */}
+                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                  {selectedPlatforms.map(pid => {
+                    const pm      = PLATFORM_META_LIVE[pid] || { label:pid, color:"#6b7280", bitrate:"4 Mbps", latency:"1.2s" };
+                    const up      = streamHealth[pid] !== false;
+                    const viewers = platformViewers[pid] || 0;
+                    return (
+                      <div key={pid} style={{ background:"#0a0a14", border:`1px solid ${up?"#10b98122":"#ef444422"}`, borderRadius:12, overflow:"hidden" }}>
+                        {/* Header row */}
+                        <div style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px" }}>
+                          <div style={{ width:9, height:9, borderRadius:"50%", background:up?"#10b981":"#ef4444", flexShrink:0, boxShadow:up?"0 0 8px #10b98199":"0 0 8px #ef444499" }}/>
+                          <div style={{ flex:1 }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                              <span style={{ fontSize:13, fontWeight:700, color:pm.color }}>{pm.label}</span>
+                              <span style={{ fontSize:9, fontWeight:800, color:up?"#10b981":"#ef4444", background:up?"#0a1e16":"#1e0808", border:`1px solid ${up?"#10b98133":"#ef444433"}`, padding:"2px 8px", borderRadius:4 }}>{up?"● LIVE":"✕ OFFLINE"}</span>
+                            </div>
+                          </div>
+                          <button onClick={()=>setStreamHealth(prev=>({...prev,[pid]:!prev[pid]}))}
+                            style={{ fontSize:9, fontWeight:700, color:up?"#ef4444":"#10b981", background:"transparent", border:`1px solid ${up?"#ef444433":"#10b98133"}`, padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>
+                            {up?"Disconnect":"Reconnect"}
+                          </button>
+                        </div>
+                        {/* Stats row */}
+                        <div style={{ display:"flex", borderTop:`1px solid ${C.border}` }}>
+                          {[
+                            { label:"Bitrate", value:pm.bitrate },
+                            { label:"Latency", value:pm.latency },
+                            { label:"Viewers", value:viewers >= 1000 ? (viewers/1000).toFixed(1)+"k" : viewers },
+                          ].map((s,i)=>(
+                            <div key={i} style={{ flex:1, padding:"7px 12px", borderRight:i<2?`1px solid ${C.border}`:"none" }}>
+                              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.text }}>{s.value}</div>
+                              <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>{s.label}</div>
+                            </div>
+                          ))}
+                        </div>
+                        {/* Instagram capture card note */}
+                        {pid === "IG" && (
+                          <div style={{ display:"flex", gap:8, padding:"8px 14px", background:"#1a0f0a", borderTop:"1px solid #f59e0b22" }}>
+                            <span style={{ fontSize:10, color:"#f59e0b" }}>⚠</span>
+                            <span style={{ fontSize:10, color:"#92400e", lineHeight:1.5 }}>Capture card → iPhone. Verify Cam Link is connected and Instagram Live is active on the dedicated device.</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* RTMP endpoint reference */}
+                <div style={{ marginTop:16, background:"#07070f", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>RTMP Endpoints</div>
+                  {[
+                    { pid:"WN", rtmp:"rtmp://live.whatnot.com/app/[key]" },
+                    { pid:"TT", rtmp:"rtmp://push.tiktokcdn.com/rtmp/[key]" },
+                    { pid:"IG", rtmp:"rtmp://live-api-s.facebook.com/rtmp/[key]" },
+                    { pid:"AM", rtmp:"rtmp://live.amazon.com/app/[key]" },
+                    { pid:"YT", rtmp:"rtmp://a.rtmp.youtube.com/live2/[key]" },
+                  ].filter(r=>selectedPlatforms.includes(r.pid)).map(r=>{
+                    const pm = PLATFORM_META_LIVE[r.pid] || { label:r.pid, color:"#6b7280" };
+                    return (
+                      <div key={r.pid} style={{ display:"flex", gap:8, marginBottom:7, alignItems:"flex-start" }}>
+                        <span style={{ fontSize:9, fontWeight:700, color:pm.color, width:24, flexShrink:0, marginTop:1 }}>{r.pid}</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#4b5563", wordBreak:"break-all", lineHeight:1.5 }}>{r.rtmp}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 
