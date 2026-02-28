@@ -2124,6 +2124,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
               { id:"orders",     label:"Orders" },
               { id:"production", label:"Production" },
               { id:"scene",      label:"Scene" },
+              { id:"briefing",   label:"Briefing" },
               { id:"platforms",  label:"Platforms" },
             ].map(t=>(
               <button key={t.id} onClick={()=>setLiveTab(t.id)} style={{
@@ -2529,155 +2530,388 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
               : null;
             const fx3Active = activeScene.includes("FX3") || activeScene.includes("Wide");
             const fx6Active = activeScene.includes("FX6") || activeScene.includes("Close");
+
+            // Default equipment positions
+            const [equipment, setEquipment] = React.useState([
+              { id:"fx3",     label:"📷 FX3",      color:"#7c3aed", x:12,  y:68, w:52, h:36, status: fx3Active?"WIDE ●":"Standby" },
+              { id:"fx6",     label:"🎥 FX6",      color:"#a78bfa", x:76,  y:68, w:52, h:36, status: fx6Active?"CLOSE ●":"Standby" },
+              { id:"elgato",  label:"💡 Key Light", color:"#10b981", x:12,  y:8,  w:58, h:32, status: lightGlow?"ON ●":"White" },
+              { id:"aputure", label:"🔆 Aputure",   color:"#4b5563", x:76,  y:8,  w:58, h:32, status:"✕ Offline" },
+              { id:"host",    label:"🧑 Host",      color:"#f59e0b", x:62,  y:43, w:44, h:38, status:micMuted?"🔇 Muted":"🎙 On" },
+              { id:"products",label:"📦 Products",  color:"#38bdf8", x:108, y:44, w:46, h:32, status:"Table" },
+              { id:"monitor", label:"📱 Monitor",   color:"#3b82f6", x:18,  y:44, w:40, h:30, status:"Streamlive" },
+            ]);
+            const [dragging, setDragging] = React.useState(null);
+            const [dragOffset, setDragOffset] = React.useState({x:0,y:0});
+            const diagramRef = React.useRef(null);
+
+            const onMouseDown = (e, id) => {
+              e.preventDefault();
+              const rect = diagramRef.current.getBoundingClientRect();
+              const item = equipment.find(i=>i.id===id);
+              setDragging(id);
+              setDragOffset({ x: e.clientX - rect.left - (item.x/100)*rect.width,
+                              y: e.clientY - rect.top  - (item.y/100)*rect.height });
+            };
+            const onMouseMove = React.useCallback((e) => {
+              if (!dragging || !diagramRef.current) return;
+              const rect = diagramRef.current.getBoundingClientRect();
+              const rawX = ((e.clientX - rect.left - dragOffset.x) / rect.width)  * 100;
+              const rawY = ((e.clientY - rect.top  - dragOffset.y) / rect.height) * 100;
+              const item = equipment.find(i=>i.id===dragging);
+              const clampedX = Math.max(0, Math.min(100 - (item.w/rect.width)*100,  rawX));
+              const clampedY = Math.max(0, Math.min(100 - (item.h/rect.height)*100, rawY));
+              setEquipment(prev => prev.map(i => i.id===dragging ? {...i, x:clampedX, y:clampedY} : i));
+            }, [dragging, dragOffset, equipment]);
+            const onMouseUp = React.useCallback(() => setDragging(null), []);
+
+            React.useEffect(() => {
+              if (dragging) {
+                window.addEventListener("mousemove", onMouseMove);
+                window.addEventListener("mouseup", onMouseUp);
+              }
+              return () => {
+                window.removeEventListener("mousemove", onMouseMove);
+                window.removeEventListener("mouseup", onMouseUp);
+              };
+            }, [dragging, onMouseMove, onMouseUp]);
+
             return (
               <div style={{ flex:1, overflowY:"auto", padding:"14px" }}>
-
-                {/* Header */}
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                   <div>
                     <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Set Layout</div>
-                    <div style={{ fontSize:9, color:C.muted, marginTop:2 }}>Live diagram — updates with your settings</div>
+                    <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>Drag equipment to match your real-world set</div>
                   </div>
-                  <div style={{ textAlign:"right" }}>
-                    <div style={{ fontSize:9, color: fx3Active||fx6Active ? "#10b981" : C.muted }}>
-                      {fx3Active&&fx6Active?"FX3 + FX6 on":fx3Active?"FX3 Wide":fx6Active?"FX6 Close-Up":"No cam active"}
-                    </div>
-                    {lightGlow && <div style={{ fontSize:9, color:lightGlow, marginTop:2 }}>● Light active</div>}
-                  </div>
+                  <button onClick={()=>setEquipment(prev=>prev.map((item,idx)=>{
+                    const defaults=[{x:12,y:68},{x:76,y:68},{x:12,y:8},{x:76,y:8},{x:62,y:43},{x:108,y:44},{x:18,y:44}];
+                    return {...item,...(defaults[idx]||{})};
+                  }))} style={{ fontSize:9, color:C.muted, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:6, padding:"4px 10px", cursor:"pointer" }}>
+                    Reset
+                  </button>
                 </div>
 
                 {/* ── DIAGRAM ── */}
-                <div style={{ position:"relative", width:"100%", height:268, background:"#07070f", border:"1px solid #1a1a2e", borderRadius:14, overflow:"hidden", marginBottom:14 }}>
+                <div ref={diagramRef} style={{ position:"relative", width:"100%", height:240,
+                  background:"#07070f", border:"1px solid #1a1a2e", borderRadius:12,
+                  overflow:"hidden", marginBottom:12, userSelect:"none", cursor: dragging?"grabbing":"default" }}>
 
                   {/* Grid */}
                   {[1,2,3,4].map(i=><div key={"v"+i} style={{ position:"absolute", left:`${i*20}%`, top:0, bottom:0, width:1, background:"#0d0d1a" }}/>)}
                   {[1,2,3,4].map(i=><div key={"h"+i} style={{ position:"absolute", top:`${i*20}%`, left:0, right:0, height:1, background:"#0d0d1a" }}/>)}
-
-                  {/* Floor/Audience labels */}
-                  <div style={{ position:"absolute", bottom:6, left:"50%", transform:"translateX(-50%)", fontSize:7, fontWeight:700, color:"#1a1a2e", textTransform:"uppercase", letterSpacing:".1em" }}>STAGE FLOOR</div>
-                  <div style={{ position:"absolute", bottom:6, right:8, fontSize:7, color:"#1a1a2e", fontWeight:700 }}>AUDIENCE ▼</div>
+                  <div style={{ position:"absolute", bottom:5, left:"50%", transform:"translateX(-50%)", fontSize:7, fontWeight:700, color:"#1a1a2e", textTransform:"uppercase", letterSpacing:".1em", whiteSpace:"nowrap" }}>← STAGE FLOOR · AUDIENCE ▼ →</div>
 
                   {/* Active scene badge */}
-                  <div style={{ position:"absolute", top:8, left:"50%", transform:"translateX(-50%)", whiteSpace:"nowrap", zIndex:2 }}>
-                    <div style={{ background:"#0d0d1a", border:"1px solid #a78bfa33", borderRadius:6, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
+                  <div style={{ position:"absolute", top:6, left:"50%", transform:"translateX(-50%)", zIndex:10, whiteSpace:"nowrap" }}>
+                    <div style={{ background:"#0d0d1a", border:"1px solid #a78bfa33", borderRadius:5, padding:"2px 9px", display:"flex", alignItems:"center", gap:5 }}>
                       <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
                       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, fontWeight:700, color:"#a78bfa" }}>{activeScene}</span>
                     </div>
                   </div>
 
-                  {/* ── KEY LIGHT — top left ── */}
-                  <div style={{ position:"absolute", top:14, left:18 }}>
-                    <div style={{
-                      width:30, height:30, borderRadius:8,
-                      background:lightGlow?`${lightGlow}28`:"#0d1a12",
-                      border:`1.5px solid ${lightGlow||"#10b98155"}`,
-                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:16,
-                      boxShadow:lightGlow?`0 0 22px ${lightGlow}99,0 0 44px ${lightGlow}33`:"0 0 10px #10b98122",
-                      transition:"all .3s",
-                    }}>💡</div>
-                    {lightGlow && <div style={{ position:"absolute", top:30, left:30, width:100, height:100, borderRadius:"50%",
-                      background:`radial-gradient(circle,${lightGlow}1a 0%,transparent 70%)`, pointerEvents:"none" }}/>}
-                    <div style={{ fontSize:7, color:lightGlow||"#10b981", fontWeight:700, marginTop:3, textAlign:"center", whiteSpace:"nowrap" }}>KEY LIGHT</div>
-                    {lightPattern && <div style={{ fontSize:6, color:lightGlow||"#10b981", textAlign:"center" }}>◉ {lightPattern.toUpperCase()}</div>}
-                    {!lightPattern && lightColor!==null && <div style={{ fontSize:6, color:lightGlow, textAlign:"center" }}>◉ COLOR {Math.round(lightColor)}°</div>}
-                  </div>
+                  {/* Light glow overlay when light is on */}
+                  {lightGlow && (() => {
+                    const l = equipment.find(i=>i.id==="elgato");
+                    if (!l) return null;
+                    const cx = l.x + (l.w/2);
+                    const cy = l.y + (l.h/2);
+                    return <div style={{ position:"absolute", left:`${cx}%`, top:`${cy}%`,
+                      width:180, height:180, borderRadius:"50%", transform:"translate(-50%,-50%)",
+                      background:`radial-gradient(circle, ${lightGlow}22 0%, transparent 65%)`,
+                      pointerEvents:"none", transition:"all .4s" }}/>;
+                  })()}
 
-                  {/* ── APUTURE — top right (offline) ── */}
-                  <div style={{ position:"absolute", top:14, right:18, opacity:0.3 }}>
-                    <div style={{ width:30, height:30, borderRadius:8, background:"#0d0d18", border:"1.5px solid #1e1e3a",
-                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>🔆</div>
-                    <div style={{ fontSize:7, color:"#374151", fontWeight:700, marginTop:3, textAlign:"center" }}>APUTURE</div>
-                    <div style={{ fontSize:6, color:"#ef4444", textAlign:"center" }}>✕ offline</div>
-                  </div>
+                  {/* Camera sight lines */}
+                  {[{id:"fx3",color:"#7c3aed77",active:fx3Active},{id:"fx6",color:"#a78bfa77",active:fx6Active}].map(cam=>{
+                    const c = equipment.find(i=>i.id===cam.id);
+                    const h = equipment.find(i=>i.id==="host");
+                    if (!c || !h) return null;
+                    const x1 = c.x + c.w/2, y1 = c.y + c.h/2;
+                    const x2 = h.x + h.w/2, y2 = h.y + h.h/2;
+                    return (
+                      <svg key={cam.id} style={{ position:"absolute", inset:0, width:"100%", height:"100%", overflow:"visible", pointerEvents:"none" }}>
+                        <line x1={`${x1}%`} y1={`${y1}%`} x2={`${x2}%`} y2={`${y2}%`}
+                          stroke={cam.active ? cam.color : "#1e1e3a33"} strokeWidth={1.5} strokeDasharray="5 3"/>
+                        {cam.active && <polygon
+                          points={`${x2}%,${y2}% ${x2-1}%,${y2-2}% ${x2+1}%,${y2-2}%`}
+                          fill={cam.color}/>}
+                      </svg>
+                    );
+                  })}
 
-                  {/* ── FX3 — bottom left ── */}
-                  <div style={{ position:"absolute", bottom:30, left:12 }}>
-                    <svg style={{ position:"absolute", bottom:22, left:34, overflow:"visible", pointerEvents:"none" }} width={1} height={1}>
-                      <line x1={0} y1={0} x2={82} y2={-42}
-                        stroke={fx3Active?"#7c3aed88":"#1e1e3a33"} strokeWidth={1.5} strokeDasharray="4 3"/>
-                      <polygon points="82,-42 74,-38 76,-46"
-                        fill={fx3Active?"#7c3aed88":"#1e1e3a33"}/>
-                    </svg>
-                    <div style={{
-                      width:36, height:28, borderRadius:7,
-                      background:fx3Active?"#1a0f2e":"#0a0a14",
-                      border:`1.5px solid ${fx3Active?"#7c3aed":"#1e1e3a"}`,
-                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:17,
-                      boxShadow:fx3Active?"0 0 16px #7c3aed55":"none", transition:"all .2s",
-                    }}>📷</div>
-                    <div style={{ fontSize:7, color:fx3Active?"#7c3aed":"#374151", fontWeight:700, marginTop:3, textAlign:"center" }}>FX3</div>
-                    {fx3Active && <div style={{ fontSize:6, color:"#7c3aed", textAlign:"center" }}>● WIDE</div>}
-                  </div>
-
-                  {/* ── FX6 — bottom right ── */}
-                  <div style={{ position:"absolute", bottom:30, right:12 }}>
-                    <svg style={{ position:"absolute", bottom:22, right:34, overflow:"visible", pointerEvents:"none" }} width={1} height={1}>
-                      <line x1={0} y1={0} x2={-82} y2={-42}
-                        stroke={fx6Active?"#a78bfa88":"#1e1e3a33"} strokeWidth={1.5} strokeDasharray="4 3"/>
-                      <polygon points="-82,-42 -74,-38 -76,-46"
-                        fill={fx6Active?"#a78bfa88":"#1e1e3a33"}/>
-                    </svg>
-                    <div style={{
-                      width:36, height:28, borderRadius:7,
-                      background:fx6Active?"#160c2e":"#0a0a14",
-                      border:`1.5px solid ${fx6Active?"#a78bfa":"#1e1e3a"}`,
-                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:17,
-                      boxShadow:fx6Active?"0 0 16px #a78bfa55":"none", transition:"all .2s",
-                    }}>🎥</div>
-                    <div style={{ fontSize:7, color:fx6Active?"#a78bfa":"#374151", fontWeight:700, marginTop:3, textAlign:"center" }}>FX6</div>
-                    {fx6Active && <div style={{ fontSize:6, color:"#a78bfa", textAlign:"center" }}>● CLOSE-UP</div>}
-                  </div>
-
-                  {/* ── HOST — center ── */}
-                  <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }}>
-                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
-                      <div style={{ width:38, height:38, borderRadius:"50%",
-                        background:"linear-gradient(135deg,#f59e0b22,#92400e22)",
-                        border:"1.5px solid #f59e0b66",
-                        display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>🧑</div>
-                      <div style={{ fontSize:7, fontWeight:800, color:"#f59e0b", letterSpacing:".06em" }}>HOST</div>
-                      <div style={{ fontSize:6, color:micMuted?"#ef4444":"#10b981" }}>{micMuted?"🔇 MUTED":"🎙 ON"}</div>
-                    </div>
-                  </div>
-
-                  {/* ── PRODUCT TABLE — right of host ── */}
-                  <div style={{ position:"absolute", top:"46%", right:"18%", transform:"translateY(-50%)" }}>
-                    <div style={{ width:34, height:24, borderRadius:6, background:"#0a1218",
-                      border:"1.5px solid #38bdf844", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>📦</div>
-                    <div style={{ fontSize:7, fontWeight:700, color:"#38bdf8", marginTop:3, textAlign:"center", whiteSpace:"nowrap" }}>PRODUCTS</div>
-                  </div>
-
-                  {/* ── MONITOR — left of host ── */}
-                  <div style={{ position:"absolute", top:"46%", left:"18%", transform:"translateY(-50%)" }}>
-                    <div style={{ width:28, height:22, borderRadius:5, background:"#0a0a1a",
-                      border:"1.5px solid #3b82f644", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12 }}>📱</div>
-                    <div style={{ fontSize:7, fontWeight:700, color:"#3b82f6", marginTop:3, textAlign:"center", whiteSpace:"nowrap" }}>MONITOR</div>
-                  </div>
+                  {/* Draggable equipment items */}
+                  {equipment.map(item => {
+                    const isDraggingThis = dragging === item.id;
+                    const isActive = (item.id==="fx3"&&fx3Active)||(item.id==="fx6"&&fx6Active)||
+                      (item.id==="elgato"&&(lightGlow||lightPattern||lightColor!==null))||
+                      (item.id==="host")||(item.id==="products")||(item.id==="monitor");
+                    return (
+                      <div key={item.id}
+                        onMouseDown={e=>onMouseDown(e,item.id)}
+                        style={{
+                          position:"absolute",
+                          left:`${item.x}%`, top:`${item.y}%`,
+                          width:item.w, height:item.h,
+                          background: isDraggingThis ? `${item.color}30` : isActive ? `${item.color}18` : "#0a0a14",
+                          border:`1.5px solid ${isDraggingThis ? item.color : isActive ? item.color+"77" : "#1e1e3a"}`,
+                          borderRadius:8,
+                          display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+                          cursor: isDraggingThis ? "grabbing" : "grab",
+                          boxShadow: isDraggingThis ? `0 4px 20px ${item.color}55` : isActive ? `0 0 12px ${item.color}33` : "none",
+                          transition: isDraggingThis ? "none" : "box-shadow .2s, border-color .2s",
+                          zIndex: isDraggingThis ? 20 : 5,
+                          userSelect:"none",
+                          padding:"2px",
+                        }}>
+                        <span style={{ fontSize:13, lineHeight:1, marginBottom:1 }}>{item.label.split(" ")[0]}</span>
+                        <span style={{ fontSize:7, fontWeight:700, color: isActive ? item.color : "#374151",
+                          textAlign:"center", lineHeight:1.2, whiteSpace:"nowrap", overflow:"hidden",
+                          maxWidth:item.w-4, textOverflow:"ellipsis" }}>
+                          {item.label.replace(/^[^\s]+\s/,"")}
+                        </span>
+                        <span style={{ fontSize:6, color: item.status.includes("●")?"#10b981":item.status.includes("✕")?"#ef4444":"#374151",
+                          marginTop:1, textAlign:"center" }}>
+                          {item.status}
+                        </span>
+                      </div>
+                    );
+                  })}
 
                 </div>
 
-                {/* ── LEGEND ── */}
+                {/* ── STATUS LEGEND ── */}
                 <div style={{ background:"#07070f", border:"1px solid #1a1a2e", borderRadius:10, padding:"10px 12px" }}>
                   <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>Status</div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                     {[
-                      { icon:"📷", color:"#7c3aed", label:"Sony FX3",           status:fx3Active?"● Wide — active":"Standby" },
-                      { icon:"🎥", color:"#a78bfa", label:"Sony FX6",           status:fx6Active?"● Close-up — active":"Standby" },
+                      { icon:"📷", color:"#7c3aed", label:"Sony FX3",     status:fx3Active?"● Wide — active":"Standby" },
+                      { icon:"🎥", color:"#a78bfa", label:"Sony FX6",     status:fx6Active?"● Close-up — active":"Standby" },
                       { icon:"💡", color:lightGlow||"#10b981", label:"Key Light",
                         status:lightPattern?`◉ Pattern: ${lightPattern}`:lightColor!==null?`◉ Color: ${Math.round(lightColor)}°`:`White · ${lightTemp}K` },
-                      { icon:"🔆", color:"#4b5563", label:"Aputure 600d",       status:"✕ Disconnected" },
                       { icon:"🎙", color:micMuted?"#ef4444":"#10b981", label:"Rode GO II",
                         status:micMuted?"🔇 Muted":`● Live · ${audioLevel}%` },
                     ].map((item,i)=>(
                       <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                        <span style={{ fontSize:13, width:20, textAlign:"center", flexShrink:0 }}>{item.icon}</span>
-                        <span style={{ fontSize:10, fontWeight:600, color:item.color, width:104, flexShrink:0 }}>{item.label}</span>
+                        <span style={{ fontSize:12, width:18, textAlign:"center", flexShrink:0 }}>{item.icon}</span>
+                        <span style={{ fontSize:10, fontWeight:600, color:item.color, width:96, flexShrink:0 }}>{item.label}</span>
                         <span style={{ fontSize:9, color:C.muted }}>{item.status}</span>
                       </div>
                     ))}
                   </div>
                 </div>
+              </div>
+            );
+          })()}
 
+          {/* ── BRIEFING TAB ── */}
+          {liveTab === "briefing" && (() => {
+            const briefingProducts = runOrder && runOrder.length > 0 ? runOrder : PRODUCTS.slice(0,5);
+            const [selectedBriefProduct, setSelectedBriefProduct] = React.useState(briefingProducts[0]?.id || null);
+            const bp = briefingProducts.find(p=>p.id===selectedBriefProduct) || briefingProducts[0];
+
+            const openInNewTab = () => {
+              const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Show Briefing${showName ? " — " + showName : ""}</title>
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#050510; color:#e2e8f0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:24px; }
+    h1 { font-size:22px; font-weight:800; color:#a78bfa; margin-bottom:4px; }
+    .show-sub { font-size:13px; color:#6b7280; margin-bottom:24px; }
+    .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; }
+    .card { background:#0a0a14; border:1.5px solid #1e1e3a; border-radius:12px; padding:18px; }
+    .card-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+    .card-emoji { font-size:36px; }
+    .card-title { font-size:18px; font-weight:700; color:#e2e8f0; margin-bottom:3px; }
+    .card-sku { font-size:11px; color:#6b7280; }
+    .price { font-size:24px; font-weight:800; color:#10b981; margin-bottom:12px; }
+    .label { font-size:10px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; margin-top:12px; }
+    .value { font-size:13px; color:#e2e8f0; font-weight:600; }
+    .score { display:inline-block; background:#1a0f2e; border:1px solid #a78bfa55; color:#a78bfa; font-weight:800; font-size:13px; padding:3px 10px; border-radius:6px; }
+    .tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+    .tag { font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; }
+    .talking-points { background:#0d0d1a; border:1px solid #1e1e3a; border-radius:8px; padding:12px; margin-top:12px; }
+    .talking-points li { font-size:13px; color:#9ca3af; margin-bottom:6px; margin-left:14px; line-height:1.5; }
+    .divider { height:1px; background:#1e1e3a; margin:12px 0; }
+    .idx { font-size:11px; font-weight:800; color:#a78bfa; background:#1a0f2e; border:1px solid #a78bfa33; width:24px; height:24px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <h1>📋 Show Briefing</h1>
+  <div class="show-sub">${showName || "Live Show"} &nbsp;·&nbsp; ${briefingProducts.length} products &nbsp;·&nbsp; Strmlive</div>
+  <div class="product-grid">
+    ${briefingProducts.map((p,i)=>{
+      const margin = p.cost && p.price ? Math.round((p.price - p.cost)/p.price*100) : null;
+      const platforms = (p.platforms||[]).join(", ");
+      const pts = [
+        `Lead with the price — $${p.price} is the live-exclusive rate`,
+        p.inventory < 30 ? `Only ${p.inventory} left — create urgency` : `${p.inventory} in stock — plenty to go around`,
+        p.soldLast30 ? `Sold ${p.soldLast30} units in the last 30 days — proven seller` : null,
+        platforms ? `Live on ${platforms}` : null,
+        margin !== null ? `${margin}% margin — room for a live discount if needed` : null,
+      ].filter(Boolean);
+      return `<div class="card">
+        <div class="card-header">
+          <span class="card-emoji">${p.image||"📦"}</span>
+          <div>
+            <div><span class="idx">${i+1}</span></div>
+            <div class="card-title">${p.name}</div>
+            <div class="card-sku">${p.sku||""}</div>
+          </div>
+        </div>
+        <div class="price">$${p.price}</div>
+        ${p.aiScore!==undefined?`<span class="score">AI Score ${p.aiScore}/10</span>`:""}
+        <div class="label">Category</div><div class="value">${p.category||"—"}</div>
+        <div class="label">Inventory</div><div class="value">${p.inventory!==undefined?p.inventory+" units":"—"}</div>
+        <div class="label">Sold last 30 days</div><div class="value">${p.soldLast30||"—"}</div>
+        <div class="label">Avg per show</div><div class="value">${p.avgPerShow||"—"}</div>
+        ${margin!==null?`<div class="label">Margin</div><div class="value">${margin}%</div>`:""}
+        <div class="label">Platforms</div><div class="value">${platforms||"—"}</div>
+        <div class="talking-points">
+          <div class="label" style="margin-top:0">Talking Points</div>
+          <ul style="margin-top:8px">${pts.map(pt=>`<li>${pt}</li>`).join("")}</ul>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>
+</body>
+</html>`;
+              const blob = new Blob([html], {type:"text/html"});
+              const url = URL.createObjectURL(blob);
+              window.open(url, "_blank");
+            };
+
+            return (
+              <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+                {/* Header */}
+                <div style={{ padding:"12px 14px 10px", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                    <div>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Show Briefing</div>
+                      <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>{briefingProducts.length} products · host talking points</div>
+                    </div>
+                    <button onClick={openInNewTab}
+                      style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px",
+                        background:"#1a0f2e", border:"1px solid #a78bfa55", borderRadius:7,
+                        cursor:"pointer", color:"#a78bfa", fontSize:9, fontWeight:700 }}>
+                      <span>↗</span> Open for Host
+                    </button>
+                  </div>
+                  {/* Product tabs */}
+                  <div style={{ display:"flex", gap:5, overflowX:"auto", paddingBottom:2 }}>
+                    {briefingProducts.map((p,i)=>(
+                      <button key={p.id} onClick={()=>setSelectedBriefProduct(p.id)}
+                        style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 9px",
+                          background:selectedBriefProduct===p.id?"#1a0f2e":"#0a0a14",
+                          border:`1px solid ${selectedBriefProduct===p.id?"#a78bfa55":"#1e1e3a"}`,
+                          borderRadius:6, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                        <span style={{ fontSize:9, color:"#a78bfa", fontWeight:800 }}>{i+1}</span>
+                        <span style={{ fontSize:9, fontWeight:selectedBriefProduct===p.id?700:400,
+                          color:selectedBriefProduct===p.id?C.text:C.muted }}>{p.image} {p.name.split(" ").slice(0,2).join(" ")}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Product detail */}
+                {bp && (
+                  <div style={{ flex:1, overflowY:"auto", padding:"14px" }}>
+                    {/* Hero */}
+                    <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14,
+                      background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:12, padding:"14px" }}>
+                      <span style={{ fontSize:44 }}>{bp.image}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:16, fontWeight:800, color:C.text, marginBottom:3 }}>{bp.name}</div>
+                        <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>{bp.sku}</div>
+                        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:800, color:"#10b981" }}>${bp.price}</span>
+                          {bp.aiScore !== undefined && (
+                            <div style={{ display:"flex", alignItems:"center", background:"#1a0f2e", border:"1px solid #a78bfa44", borderRadius:7, padding:"3px 9px" }}>
+                              <span style={{ fontSize:11, fontWeight:800, color:"#a78bfa" }}>AI {bp.aiScore}/10</span>
+                            </div>
+                          )}
+                          {bp.showReady && (
+                            <div style={{ display:"flex", alignItems:"center", background:"#0a1e16", border:"1px solid #10b98133", borderRadius:7, padding:"3px 9px" }}>
+                              <span style={{ fontSize:9, fontWeight:700, color:"#10b981" }}>● Show Ready</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stats grid */}
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7, marginBottom:14 }}>
+                      {[
+                        { label:"Inventory",       value: bp.inventory !== undefined ? `${bp.inventory} units` : "—",
+                          color: bp.inventory < 25 ? "#ef4444" : bp.inventory < 60 ? "#f59e0b" : "#10b981" },
+                        { label:"Sold last 30d",   value: bp.soldLast30 || "—",          color:"#a78bfa" },
+                        { label:"Avg per show",    value: bp.avgPerShow || "—",           color:"#38bdf8" },
+                        { label:"Margin",          value: bp.cost && bp.price ? Math.round((bp.price-bp.cost)/bp.price*100)+"%" : "—",
+                          color:"#10b981" },
+                        { label:"Category",        value: bp.category || "—",             color:C.text },
+                        { label:"Platforms",       value: (bp.platforms||[]).join(", ") || "—", color:C.text },
+                      ].map((s,i)=>(
+                        <div key={i} style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:9, padding:"10px 12px" }}>
+                          <div style={{ fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:".07em", marginBottom:4 }}>{s.label}</div>
+                          <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:s.color }}>{s.value}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Inventory urgency bar */}
+                    {bp.inventory !== undefined && (
+                      <div style={{ marginBottom:14 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                          <span style={{ fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:".07em" }}>Stock Level</span>
+                          <span style={{ fontSize:9, fontWeight:700,
+                            color: bp.inventory < 25 ? "#ef4444" : bp.inventory < 60 ? "#f59e0b" : "#10b981" }}>
+                            {bp.inventory < 25 ? "⚠ Low — create urgency" : bp.inventory < 60 ? "Moderate" : "Well stocked"}
+                          </span>
+                        </div>
+                        <div style={{ height:6, background:"#0d0d1a", borderRadius:3, overflow:"hidden" }}>
+                          <div style={{ height:"100%", borderRadius:3,
+                            width:`${Math.min(100, (bp.inventory/200)*100)}%`,
+                            background: bp.inventory < 25 ? "#ef4444" : bp.inventory < 60 ? "#f59e0b" : "#10b981" }}/>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Talking points */}
+                    <div style={{ background:"#07070f", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
+                      <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Host Talking Points</div>
+                      {[
+                        { icon:"💰", text:`Lead with the price — $${bp.price} is the live-exclusive rate for your audience` },
+                        bp.inventory !== undefined && bp.inventory < 30
+                          ? { icon:"⚠️",  text:`Only ${bp.inventory} units left — tell them now and keep coming back to it` }
+                          : { icon:"✅",  text:`${bp.inventory} in stock — no rush, but momentum builds sales` },
+                        bp.soldLast30
+                          ? { icon:"📈", text:`${bp.soldLast30} units sold in the last 30 days — this is a proven bestseller` }
+                          : null,
+                        bp.avgPerShow
+                          ? { icon:"🎬", text:`Typically sells ${bp.avgPerShow} units per show — pick it up and demo it` }
+                          : null,
+                        bp.category === "Bundles" || bp.category === "Sets"
+                          ? { icon:"🎁", text:"Bundle — emphasize the value and what they'd pay separately" }
+                          : { icon:"🔍", text:"Show it close-up, hold it, describe the texture and quality" },
+                        bp.platforms && bp.platforms.length > 0
+                          ? { icon:"📡", text:`Acknowledge all ${bp.platforms.length} platforms — say hi to each audience by name` }
+                          : null,
+                        bp.cost && bp.price
+                          ? { icon:"💡", text:`Up to ${Math.round((1 - bp.cost/bp.price)*100 - 15)}% discount room available if needed — use sparingly` }
+                          : null,
+                      ].filter(Boolean).map((pt,i)=>(
+                        <div key={i} style={{ display:"flex", gap:9, padding:"8px 0",
+                          borderBottom: i < 5 ? `1px solid ${C.border}44` : "none" }}>
+                          <span style={{ fontSize:14, flexShrink:0, marginTop:1 }}>{pt.icon}</span>
+                          <span style={{ fontSize:11, color:"#d1d5db", lineHeight:1.55 }}>{pt.text}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -10740,7 +10974,10 @@ export default function StreamlivePrototype() {
                 {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
                 {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} shows={completedShows} />}
                 {view==="show-report"  && <ScreenShowReport    show={activeShow} allShows={completedShows} buyers={buyers} navigate={navigate} />}
-                {view==="live"         && <ScreenLive          buyers={buyers} navigate={navigate} params={params} persona={persona} />}
+                {/* ScreenLive stays mounted while liveSession is active so its intervals keep ticking */}
+                <div style={{ display: view==="live" ? "contents" : "none" }}>
+                  {(view==="live" || liveSession) && <ScreenLive buyers={buyers} navigate={navigate} params={liveSession || params} persona={persona} />}
+                </div>
                 {view==="live-shop"    && <ScreenLiveShop     navigate={navigate} params={params} persona={persona} />}
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
