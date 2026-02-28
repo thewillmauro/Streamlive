@@ -1635,12 +1635,17 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
   const shopDomain = params?.shopDomain|| `${persona.slug || "shop"}.myshopify.com`;
   const [activeIdx, setActiveIdx] = useState(0);
   const [copied, setCopied]       = useState(false);
+  const productTimings = params?.productTimings || {};
 
-  // Simulate "currently selling" cycling every 45s
+  // Auto-advance based on per-product timing
   useEffect(() => {
-    const t = setInterval(() => setActiveIdx(i => (i + 1) % Math.max(runOrder.length, 1)), 45000);
-    return () => clearInterval(t);
-  }, [runOrder.length]);
+    const currentProduct = runOrder[activeIdx];
+    const secs = (currentProduct && productTimings[currentProduct.id]) ? productTimings[currentProduct.id] : 90;
+    const t = setTimeout(() => {
+      setActiveIdx(i => (i + 1) % Math.max(runOrder.length, 1));
+    }, secs * 1000);
+    return () => clearTimeout(t);
+  }, [activeIdx, runOrder.length]);
 
   const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
@@ -2552,7 +2557,13 @@ function BriefingTab({ runOrder, showName, productTimings }) {
 
   function startTimer() {
     if(timer) clearInterval(timer);
-    timer=setInterval(function(){if(!paused&&secs>0){secs--;updateTimer();}},1000);
+    timer=setInterval(function(){
+    if(!paused&&secs>0){secs--;updateTimer();}
+    else if(!paused&&secs===0&&cur<prods.length-1){
+      // auto-advance to next product
+      setTimeout(function(){ next(); }, 400);
+    }
+  },1000);
   }
 
   function jumpTo(idx) { cur=idx; showSlide(cur); secs=prods[idx].timing||90; updateTimer(); startTimer(); }
@@ -2776,7 +2787,8 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
   const [liveRunOrder,    setLiveRunOrder]    = useState(() => params?.runOrder || PRODUCTS.slice(0,5));
   const [productTimings,  setProductTimings]  = useState(() => {
     const base = params?.runOrder || PRODUCTS.slice(0,5);
-    return Object.fromEntries(base.map(p => [p.id, 90])); // default 90s each
+    const fromParams = params?.productTimings || {};
+    return Object.fromEntries(base.map(p => [p.id, fromParams[p.id] || 90]));
   });
   const [catalogSearch,   setCatalogSearch]   = useState("");
 
@@ -7135,10 +7147,26 @@ function ScreenShowPlanner({ navigate, persona }) {
     prev.includes(pid) ? prev.filter(p=>p!==pid) : [...prev, pid]
   );
 
+  const [productTimings, setProductTimings] = useState(() =>
+    Object.fromEntries((UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)).map(p=>[p.id, 90]))
+  );
+  const [globalTiming, setGlobalTiming] = useState(90);
+
+  const setTimingForAll = (secs) => {
+    const v = Math.max(30, Math.min(600, Number(secs)||90));
+    setGlobalTiming(v);
+    setProductTimings(prev => Object.fromEntries(Object.keys(prev).map(id=>[id, v])));
+  };
+  const setOneTiming = (id, secs) => {
+    const v = Math.max(30, Math.min(600, Number(secs)||90));
+    setProductTimings(prev => ({...prev, [id]: v}));
+  };
   const moveUp   = (i) => { if(i===0) return; const a=[...runOrder]; [a[i-1],a[i]]=[a[i],a[i-1]]; setRunOrder(a); };
   const moveDown = (i) => { if(i===runOrder.length-1) return; const a=[...runOrder]; [a[i],a[i+1]]=[a[i+1],a[i]]; setRunOrder(a); };
-  const remove   = (i) => setRunOrder(r=>r.filter((_,idx)=>idx!==i));
+  const remove   = (i) => { const p=runOrder[i]; setRunOrder(r=>r.filter((_,idx)=>idx!==i)); };
   const showReadyProducts = PRODUCTS.filter(p=>p.showReady);
+  const PLANNER_PRESETS = [{label:"30s",secs:30},{label:"1m",secs:60},{label:"90s",secs:90},{label:"2m",secs:120},{label:"3m",secs:180},{label:"5m",secs:300}];
+  const totalShowSecs = runOrder.reduce((a,p)=>a+(productTimings[p.id]||90),0);
   const steps = ["Choose Platforms","Select Products","Set Run Order","Show Perks","Go Live"];
 
   return (
@@ -7298,23 +7326,90 @@ function ScreenShowPlanner({ navigate, persona }) {
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
               <div>
-                <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Set your run order</div>
-                <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>AI sorted by predicted sales performance. Reorder as you like.</div>
-                {runOrder.map((p,i)=>(
-                  <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, marginBottom:8 }}>
-                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.accent, width:24, textAlign:"center", flexShrink:0 }}>{i+1}</div>
-                    <div style={{ fontSize:18, flexShrink:0 }}>{p.image}</div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{p.name}</div>
-                      <div style={{ fontSize:10, color:C.muted }}>${p.price} · {p.inventory} in stock · AI: {p.aiScore}</div>
+                <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Set your run order & timing</div>
+                <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>AI sorted by predicted sales performance. Set how long to feature each product on the Live Shop and Host Briefing.</div>
+
+                {/* ── Global timing control ── */}
+                <div style={{ background:"#0a0a14", border:`1px solid ${C.accent}33`, borderRadius:12, padding:"14px 16px", marginBottom:14 }}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:700, color:C.text }}>⏱ Default time per product</div>
+                      <div style={{ fontSize:10, color:C.muted, marginTop:1 }}>Applies to all products at once · override individually below</div>
                     </div>
-                    <div style={{ display:"flex", gap:4 }}>
-                      <button onClick={()=>moveUp(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↑</button>
-                      <button onClick={()=>moveDown(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↓</button>
-                      <button onClick={()=>remove(i)} style={{ background:"#1c0f0f", border:"1px solid #ef444433", color:"#f87171", fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>✕</button>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:"#a78bfa" }}>
+                      ~{Math.floor(totalShowSecs/60)}m {totalShowSecs%60}s total
                     </div>
                   </div>
-                ))}
+                  <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
+                    {PLANNER_PRESETS.map(pt=>(
+                      <button key={pt.secs} onClick={()=>setTimingForAll(pt.secs)}
+                        style={{ padding:"6px 14px", borderRadius:7, cursor:"pointer", fontSize:11, fontWeight:700,
+                          background: globalTiming===pt.secs ? "#1a0f2e" : C.surface2,
+                          border:`1px solid ${globalTiming===pt.secs ? "#a78bfa66" : C.border}`,
+                          color: globalTiming===pt.secs ? "#a78bfa" : C.muted }}>
+                        {pt.label}
+                      </button>
+                    ))}
+                    <div style={{ display:"flex", alignItems:"center", gap:5, marginLeft:"auto" }}>
+                      <input type="number" min={30} max={600} value={globalTiming}
+                        onChange={e=>setTimingForAll(e.target.value)}
+                        style={{ width:56, background:C.surface, border:`1px solid ${C.border}`, borderRadius:7,
+                          padding:"5px 8px", color:C.text, fontSize:11, fontFamily:"'JetBrains Mono',monospace",
+                          textAlign:"center", outline:"none" }} />
+                      <span style={{ fontSize:11, color:C.muted }}>sec</span>
+                    </div>
+                  </div>
+                </div>
+
+                {runOrder.map((p,i)=>{
+                  const timing = productTimings[p.id] || 90;
+                  const mins = Math.floor(timing/60), secs = timing%60;
+                  const isCustom = timing !== globalTiming;
+                  return (
+                  <div key={p.id} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, marginBottom:8, overflow:"hidden" }}>
+                    {/* Product row */}
+                    <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px" }}>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.accent, width:24, textAlign:"center", flexShrink:0 }}>{i+1}</div>
+                      <div style={{ fontSize:18, flexShrink:0 }}>{p.image}</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{p.name}</div>
+                        <div style={{ fontSize:10, color:C.muted }}>${p.price} · {p.inventory} in stock · AI: {p.aiScore}</div>
+                      </div>
+                      {/* Per-product timer badge */}
+                      <div style={{ display:"flex", alignItems:"center", gap:5, background:"#1a0f2e", border:`1px solid ${isCustom?"#a78bfa55":"#a78bfa22"}`, borderRadius:7, padding:"4px 9px", flexShrink:0 }}>
+                        <span style={{ fontSize:9, color: isCustom?"#a78bfa":"#6b7280" }}>⏱</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, fontWeight:700, color: isCustom?"#a78bfa":"#6b7280" }}>
+                          {mins>0?`${mins}m `:""}{secs}s
+                        </span>
+                      </div>
+                      <div style={{ display:"flex", gap:4 }}>
+                        <button onClick={()=>moveUp(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↑</button>
+                        <button onClick={()=>moveDown(i)} style={{ background:C.surface2, border:`1px solid ${C.border}`, color:C.muted, fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>↓</button>
+                        <button onClick={()=>remove(i)} style={{ background:"#1c0f0f", border:"1px solid #ef444433", color:"#f87171", fontSize:11, width:26, height:26, borderRadius:6, cursor:"pointer" }}>✕</button>
+                      </div>
+                    </div>
+                    {/* Per-product timing row */}
+                    <div style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 14px 10px", borderTop:`1px solid ${C.border}44` }}>
+                      <span style={{ fontSize:9, color:C.muted, flexShrink:0 }}>Override:</span>
+                      {PLANNER_PRESETS.map(pt=>(
+                        <button key={pt.secs} onClick={()=>setOneTiming(p.id, pt.secs)}
+                          style={{ padding:"2px 8px", borderRadius:5, cursor:"pointer", fontSize:9, fontWeight:700,
+                            background: timing===pt.secs ? "#1a0f2e" : "#0a0a14",
+                            border:`1px solid ${timing===pt.secs ? "#a78bfa55" : "#1e1e3a"}`,
+                            color: timing===pt.secs ? "#a78bfa" : C.muted }}>
+                          {pt.label}
+                        </button>
+                      ))}
+                      <input type="number" min={30} max={600} value={timing}
+                        onChange={e=>setOneTiming(p.id, e.target.value)}
+                        style={{ width:46, background:"#0a0a14", border:`1px solid #1e1e3a`,
+                          borderRadius:5, padding:"2px 6px", color:C.text, fontSize:9,
+                          fontFamily:"'JetBrains Mono',monospace", textAlign:"center", outline:"none", marginLeft:"auto" }} />
+                      <span style={{ fontSize:9, color:C.muted }}>s</span>
+                    </div>
+                  </div>
+                  );
+                })}
               </div>
               <div>
                 <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}33`, borderRadius:14, padding:"16px 18px", marginBottom:14 }}>
@@ -7327,7 +7422,7 @@ function ScreenShowPlanner({ navigate, persona }) {
                     { label:"Est. GMV",      value:`$${UPCOMING_SHOW.estimatedGMV.toLocaleString()}`, color:C.green },
                     { label:"Est. Buyers",   value:UPCOMING_SHOW.estimatedBuyers,                     color:C.text },
                     { label:"Products",      value:runOrder.length,                                   color:"#a78bfa" },
-                    { label:"Est. Duration", value:`${Math.round(runOrder.length*12)} min`,           color:C.muted },
+                    { label:"Est. Duration", value:`${Math.floor(totalShowSecs/60)}m ${totalShowSecs%60}s`,  color:C.muted },
                   ].map(m=>(
                     <div key={m.label} style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                       <span style={{ fontSize:12, color:C.muted }}>{m.label}</span>
@@ -7389,18 +7484,23 @@ function ScreenShowPlanner({ navigate, persona }) {
                   </div>
                 ))}
               </div>
-              {runOrder.map((p,i)=>(
+              {runOrder.map((p,i)=>{
+                const t=productTimings[p.id]||90;
+                const tm=Math.floor(t/60), ts=t%60;
+                return (
                 <div key={p.id} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:6 }}>
                   <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.accent, width:18 }}>{i+1}.</span>
                   <span style={{ fontSize:11 }}>{p.image}</span>
-                  <span style={{ fontSize:12, color:C.text }}>{p.name}</span>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green, marginLeft:"auto" }}>${p.price}</span>
+                  <span style={{ fontSize:12, color:C.text, flex:1 }}>{p.name}</span>
+                  <span style={{ fontSize:9, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5, padding:"2px 7px", fontFamily:"'JetBrains Mono',monospace" }}>⏱ {tm>0?`${tm}m `:""}{ts}s</span>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green }}>${p.price}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={()=>setStep(4)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
                 🔴 Go Live Now
               </button>
             </div>
