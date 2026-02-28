@@ -1629,25 +1629,10 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
 function ScreenLiveShop({ navigate, params, persona: personaProp }) {
-  // ── Single source of truth: localStorage (written by app on Go Live + every Catalog change) ──
-  // Read fresh every call — no stale closures possible
-  const readLS = () => {
-    try {
-      const start   = parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0;
-      const timings = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}");
-      const ids     = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]");
-      const ro      = ids.length > 0 ? ids.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean) : null;
-      return { start, timings, runOrder: ro };
-    } catch(e) { return { start:0, timings:{}, runOrder:null }; }
-  };
+  // Keep a ref to params so the interval always reads the latest value — no stale closures
+  const paramsRef = useRef(params);
+  useEffect(() => { paramsRef.current = params; }, [params]);
 
-  // UI strings still come from params (showName, persona) — those don't affect sync
-  const showName   = params?.showName   || "Live Show";
-  const persona    = params?.persona    || personaProp || { shop:"Our Store", slug:"shop" };
-  const shopDomain = params?.shopDomain || `${persona.slug || "shop"}.myshopify.com`;
-  const [copied, setCopied] = useState(false);
-
-  // Build cumulative breakpoints
   const buildBreakpoints = (ro, pt) => {
     let cursor = 0;
     return ro.map((p, i) => {
@@ -1658,28 +1643,52 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
     });
   };
 
-  // Compute active index purely from localStorage — called fresh every tick, no stale closure
-  const computeFromLS = () => {
-    const { start, timings, runOrder: ro } = readLS();
-    const order = ro || PRODUCTS.slice(0,5);
-    const bps   = buildBreakpoints(order, timings);
+  // Always reads paramsRef.current (never stale) then falls back to localStorage
+  const computeState = () => {
+    const p = paramsRef.current;
+    let ro, timings, start;
+
+    if (p?.runOrder?.length > 0) {
+      // In-app: use liveSession directly — always the latest Catalog order
+      ro      = p.runOrder;
+      timings = p.productTimings || {};
+      start   = p.showStartTime  || Date.now();
+    } else {
+      // New tab / external: localStorage is the source of truth
+      try {
+        start   = parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0;
+        timings = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}");
+        const ids = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]");
+        ro = ids.map(id => PRODUCTS.find(q => q.id === id)).filter(Boolean);
+        if (!ro.length) ro = PRODUCTS.slice(0,5);
+        if (!start) start = Date.now();
+      } catch(e) {
+        ro = PRODUCTS.slice(0,5); timings = {}; start = Date.now();
+      }
+    }
+
+    const bps   = buildBreakpoints(ro, timings);
     const total = bps.length > 0 ? bps[bps.length-1].endMs : 90000;
-    if (!bps.length || !start) return { idx: 0, order, timings, bps, total, start: start || Date.now() };
     const elapsed = (Date.now() - start) % total;
     const found   = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
-    return { idx: found ? found.idx : 0, order, timings, bps, total, start };
+    return { idx: found ? found.idx : 0, runOrder: ro, timings, bps, total, start };
   };
 
-  // State — order + activeIdx always come from the same LS read so they're always in sync
-  const [lsState, setLsState] = useState(() => computeFromLS());
-  const { idx: activeIdx, order: runOrder, timings: productTimings,
-          bps: breakpoints, total: totalDurMs, start: showStartTime } = lsState;
+  const [showState, setShowState] = useState(() => computeState());
 
-  // Tick every second — re-reads localStorage fresh each time
+  // Single interval — reads paramsRef.current fresh every tick, no re-subscribe needed
   useEffect(() => {
-    const t = setInterval(() => setLsState(computeFromLS()), 1000);
+    const t = setInterval(() => setShowState(computeState()), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, []); // intentionally empty — paramsRef handles currency
+
+  const { idx: activeIdx, runOrder, timings: productTimings,
+          bps: breakpoints, total: totalDurMs, start: showStartTime } = showState;
+
+  const showName   = params?.showName   || "Live Show";
+  const persona    = params?.persona    || personaProp || { shop:"Our Store", slug:"shop" };
+  const shopDomain = params?.shopDomain || `${persona.slug || "shop"}.myshopify.com`;
+  const [copied, setCopied] = useState(false);
 
   const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
