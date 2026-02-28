@@ -2823,17 +2823,6 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const [liveBuyers, setLiveBuyers]   = useState([]);
   const [elapsed, setElapsed]         = useState(0);
   const showStartTime = useRef(params?.showStartTime || Date.now()); // stable for sync
-
-  // Keep liveSession in sync whenever run order or timings change
-  useEffect(() => {
-    if (updateLiveSession) {
-      updateLiveSession({
-        runOrder: liveRunOrder,
-        productTimings,
-        showStartTime: showStartTime.current,
-      });
-    }
-  }, [liveRunOrder, productTimings]);
   const [viewerCount, setViewerCount] = useState(
     selectedPlatforms.reduce((a,p)=>{const s={WN:234,TT:891,IG:312,AM:156,YT:4200}; return a+(s[p]||200);},0)
   );
@@ -2861,6 +2850,17 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
     return Object.fromEntries(base.map(p => [p.id, fromParams[p.id] || 90]));
   });
   const [catalogSearch,   setCatalogSearch]   = useState("");
+
+  // Keep liveSession in sync whenever run order or timings change in Catalog tab
+  useEffect(() => {
+    if (updateLiveSession) {
+      updateLiveSession({
+        runOrder: liveRunOrder,
+        productTimings,
+        showStartTime: showStartTime.current,
+      });
+    }
+  }, [liveRunOrder, productTimings]);
 
   // Production tab state (inline production panel)
   const [liveTab,       setLiveTab]       = useState("orders");
