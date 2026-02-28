@@ -2367,10 +2367,75 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
 }
 
 // ── BriefingTab ───────────────────────────────────────────────────────────────
-function BriefingTab({ runOrder, showName, productTimings }) {
+function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
   const prods = (runOrder && runOrder.length > 0) ? runOrder : PRODUCTS.slice(0, 5);
-  const [selId, setSelId] = useState(prods[0] ? prods[0].id : null);
-  const bp = prods.find(p => p.id === selId) || prods[0];
+  const timings = productTimings || {};
+  const startTime = showStartTime || Date.now();
+
+  // Build cumulative breakpoints (same logic as LiveShop for perfect sync)
+  const buildBreakpoints = (ro, pt) => {
+    let cursor = 0;
+    return ro.map((p, i) => {
+      const dur = (pt[p.id] || 90) * 1000;
+      const bp  = { idx: i, id: p.id, startMs: cursor, endMs: cursor + dur };
+      cursor += dur;
+      return bp;
+    });
+  };
+  const breakpoints = buildBreakpoints(prods, timings);
+  const totalDurMs  = breakpoints.length > 0 ? breakpoints[breakpoints.length - 1].endMs : 90000;
+
+  const computeIdx = () => {
+    if (!breakpoints.length) return 0;
+    const elapsed = (Date.now() - startTime) % totalDurMs;
+    const found = breakpoints.find(b => elapsed >= b.startMs && elapsed < b.endMs);
+    return found ? found.idx : 0;
+  };
+
+  const [activeIdx, setActiveIdx] = useState(() => computeIdx());
+  const [manualIdx, setManualIdx] = useState(null); // non-null = user overrode
+  const [manualExpiry, setManualExpiry] = useState(0);
+  const [tick, setTick]   = useState(0);
+
+  // Clock tick every second
+  useEffect(() => {
+    const t = setInterval(() => {
+      // If manual override has expired, re-sync to clock
+      if (manualIdx !== null && Date.now() > manualExpiry) {
+        setManualIdx(null);
+      }
+      if (manualIdx === null) {
+        setActiveIdx(computeIdx());
+      }
+      setTick(n => n + 1);
+    }, 1000);
+    return () => clearInterval(t);
+  }, [prods.length, timings, manualIdx, manualExpiry]);
+
+  const displayIdx = manualIdx !== null ? manualIdx : activeIdx;
+  const bp = prods[displayIdx] || prods[0];
+
+  // Manual override — stays on selected product for 2× its duration, then re-syncs
+  const selectProduct = (i) => {
+    setManualIdx(i);
+    const dur = (timings[prods[i]?.id] || 90) * 2 * 1000;
+    setManualExpiry(Date.now() + dur);
+  };
+
+  // Compute remaining seconds for current product
+  const getRemaining = () => {
+    const elapsed = (Date.now() - startTime) % totalDurMs;
+    const activeBp = breakpoints[displayIdx];
+    if (!activeBp) return 0;
+    // If manual, show time from now relative to where clock actually is in this product
+    const clockBp = breakpoints[activeIdx];
+    if (manualIdx !== null) return timings[prods[displayIdx]?.id] || 90;
+    return Math.max(0, Math.ceil((activeBp.endMs - elapsed) / 1000));
+  };
+
+  const remaining = getRemaining();
+  const remMins = Math.floor(remaining / 60);
+  const remSecs = remaining % 60;
 
   const openForHost = () => {
     const timings = productTimings || {};
@@ -2665,7 +2730,7 @@ function BriefingTab({ runOrder, showName, productTimings }) {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
           <div>
             <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Show Briefing</div>
-            <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>{prods.length} products · host talking points</div>
+            <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>{prods.length} products · synced with Live Shop</div>
           </div>
           <button onClick={openForHost}
             style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px",
@@ -2675,22 +2740,59 @@ function BriefingTab({ runOrder, showName, productTimings }) {
           </button>
         </div>
 
+        {/* Live countdown bar */}
+        <div style={{ marginBottom:8 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444",
+                animation:"pulse 1s infinite" }} />
+              <span style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase",
+                letterSpacing:".07em" }}>
+                {manualIdx !== null ? "Manual Override" : "Auto-Advancing"}
+              </span>
+              {manualIdx !== null && (
+                <button onClick={() => setManualIdx(null)}
+                  style={{ fontSize:8, color:"#a78bfa", background:"none", border:"none",
+                    cursor:"pointer", padding:0, textDecoration:"underline" }}>
+                  Re-sync
+                </button>
+              )}
+            </div>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:800,
+              color: remaining<=10 ? "#ef4444" : remaining<=30 ? "#f59e0b" : "#10b981" }}>
+              {remMins > 0 ? `${remMins}:${remSecs<10?"0":""}${remSecs}` : `${remSecs}s`}
+            </div>
+          </div>
+          {/* Progress bar for current product */}
+          <div style={{ height:3, background:"#1a1a2e", borderRadius:2, overflow:"hidden" }}>
+            <div style={{ height:"100%", borderRadius:2, transition:"width .9s linear",
+              background: remaining<=10 ? "#ef4444" : remaining<=30 ? "#f59e0b" : "#a78bfa",
+              width: (() => {
+                const total = timings[prods[displayIdx]?.id] || 90;
+                return Math.round((remaining / total) * 100) + "%";
+              })()
+            }} />
+          </div>
+        </div>
+
         {/* Product picker tabs */}
         <div style={{ display:"flex", gap:5, overflowX:"auto", paddingBottom:2 }}>
           {prods.map(function(p, i) {
-            const active = selId === p.id;
+            const isActive = i === displayIdx;
+            const isDone   = i < activeIdx && manualIdx === null;
             return (
-              <button key={p.id} onClick={() => setSelId(p.id)}
+              <button key={p.id} onClick={() => selectProduct(i)}
                 style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 9px",
-                  flexShrink:0, whiteSpace:"nowrap",
-                  background: active ? "#1a0f2e" : "#0a0a14",
-                  border: "1px solid " + (active ? "#a78bfa55" : "#1e1e3a"),
-                  borderRadius:6, cursor:"pointer" }}>
-                <span style={{ fontSize:9, color:"#a78bfa", fontWeight:800 }}>{i + 1}</span>
-                <span style={{ fontSize:9, fontWeight: active ? 700 : 400,
-                  color: active ? C.text : C.muted }}>
+                  flexShrink:0, whiteSpace:"nowrap", position:"relative",
+                  background: isActive ? "#1a0f2e" : "transparent",
+                  border: "1px solid " + (isActive ? "#a78bfa55" : "transparent"),
+                  borderRadius:6, cursor:"pointer", opacity: isDone ? 0.4 : 1 }}>
+                <span style={{ fontSize:9, color: isActive ? "#a78bfa" : "#374151", fontWeight:800 }}>{i + 1}</span>
+                <span style={{ fontSize:9, fontWeight: isActive ? 700 : 400,
+                  color: isActive ? C.text : C.muted }}>
                   {p.image} {p.name.split(" ").slice(0, 2).join(" ")}
                 </span>
+                {isDone && <span style={{ fontSize:7, color:"#374151" }}>✓</span>}
               </button>
             );
           })}
@@ -3512,6 +3614,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               runOrder={runOrder}
               showName={showName}
               productTimings={productTimings}
+              showStartTime={showStartTime.current}
             />
           )}
 
