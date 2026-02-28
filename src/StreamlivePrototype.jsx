@@ -1872,6 +1872,257 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
 
 
 // ─── SCREEN: LIVE COMPANION ───────────────────────────────────────────────────
+// ── CatalogTab — live run order manager with per-product timers ───────────────
+function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductTimings, catalogSearch, setCatalogSearch, persona }) {
+  const [showAddPanel, setShowAddPanel] = useState(false);
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+
+  const personaId = persona?.id || "s1";
+  const allProducts = PRODUCTS.filter(p =>
+    !p.name.toLowerCase().includes("x") || true
+  );
+  const addableProducts = allProducts.filter(p =>
+    !liveRunOrder.find(r => r.id === p.id) &&
+    (p.name.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+     p.category.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+     p.sku.toLowerCase().includes(catalogSearch.toLowerCase()))
+  );
+  const inRunOrder = liveRunOrder.filter(p =>
+    p.name.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+    p.category.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+    p.sku.toLowerCase().includes(catalogSearch.toLowerCase())
+  );
+
+  const setTiming = (id, val) => {
+    const v = Math.max(30, Math.min(600, Number(val) || 90));
+    setProductTimings(prev => ({ ...prev, [id]: v }));
+  };
+
+  const removeProduct = (id) => {
+    setLiveRunOrder(prev => prev.filter(p => p.id !== id));
+  };
+
+  const addProduct = (p) => {
+    setLiveRunOrder(prev => [...prev, p]);
+    setProductTimings(prev => ({ ...prev, [p.id]: 90 }));
+  };
+
+  const moveUp = (i) => {
+    if (i === 0) return;
+    const a = [...liveRunOrder];
+    [a[i-1], a[i]] = [a[i], a[i-1]];
+    setLiveRunOrder(a);
+  };
+
+  const moveDown = (i) => {
+    if (i === liveRunOrder.length - 1) return;
+    const a = [...liveRunOrder];
+    [a[i], a[i+1]] = [a[i+1], a[i]];
+    setLiveRunOrder(a);
+  };
+
+  const totalSecs = liveRunOrder.reduce((acc, p) => acc + (productTimings[p.id] || 90), 0);
+  const totalMins = Math.ceil(totalSecs / 60);
+
+  const PRESET_TIMES = [
+    { label:"30s", secs:30 },
+    { label:"1m",  secs:60 },
+    { label:"90s", secs:90 },
+    { label:"2m",  secs:120 },
+    { label:"3m",  secs:180 },
+    { label:"5m",  secs:300 },
+  ];
+
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+
+      {/* ── HEADER ── */}
+      <div style={{ padding:"12px 14px 10px", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Live Catalog</div>
+            <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>
+              {liveRunOrder.length} products · ~{totalMins} min show
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+            <div style={{ fontSize:9, color:C.muted, background:"#0a0a14", border:`1px solid ${C.border}`, borderRadius:6, padding:"4px 9px" }}>
+              Total: {Math.floor(totalSecs/60)}m {totalSecs%60}s
+            </div>
+            <button onClick={() => setShowAddPanel(!showAddPanel)}
+              style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px",
+                background: showAddPanel ? "#1a0f2e" : "#0a0a14",
+                border:`1px solid ${showAddPanel ? "#a78bfa55" : C.border}`,
+                borderRadius:7, cursor:"pointer", color: showAddPanel ? "#a78bfa" : C.muted,
+                fontSize:9, fontWeight:700 }}>
+              {showAddPanel ? "✕ Close" : "+ Add Product"}
+            </button>
+          </div>
+        </div>
+
+        {/* Search */}
+        <input
+          value={catalogSearch}
+          onChange={e => setCatalogSearch(e.target.value)}
+          placeholder="Search products…"
+          style={{ width:"100%", background:"#0a0a14", border:`1px solid ${C.border}`, borderRadius:7,
+            padding:"6px 10px", color:C.text, fontSize:11, outline:"none" }}
+        />
+      </div>
+
+      <div style={{ flex:1, display:"flex", overflow:"hidden", minHeight:0 }}>
+
+        {/* ── RUN ORDER ── */}
+        <div style={{ flex:1, overflowY:"auto", padding:"10px 12px" }}>
+          <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase",
+            letterSpacing:".08em", marginBottom:8 }}>Run Order</div>
+
+          {liveRunOrder.length === 0 && (
+            <div style={{ textAlign:"center", padding:"32px 16px", color:C.muted, fontSize:11 }}>
+              No products in run order.<br/>
+              <span style={{ color:"#a78bfa", cursor:"pointer" }} onClick={() => setShowAddPanel(true)}>+ Add products</span>
+            </div>
+          )}
+
+          {liveRunOrder.map((p, i) => {
+            const timing = productTimings[p.id] || 90;
+            const mins = Math.floor(timing / 60);
+            const secs = timing % 60;
+            const invColor = p.inventory < 25 ? "#ef4444" : p.inventory < 60 ? "#f59e0b" : "#10b981";
+
+            return (
+              <div key={p.id}
+                style={{ background:"#0a0a14", border:`1px solid ${C.border}`, borderRadius:10,
+                  padding:"10px 12px", marginBottom:6, transition:"all .15s" }}>
+
+                {/* Top row: drag handle, number, emoji, name, remove */}
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:2, flexShrink:0 }}>
+                    <button onClick={() => moveUp(i)} disabled={i===0}
+                      style={{ background:"none", border:"none", color: i===0 ? "#1e1e3a" : C.muted,
+                        cursor: i===0 ? "default" : "pointer", fontSize:9, padding:"1px 3px", lineHeight:1 }}>▲</button>
+                    <button onClick={() => moveDown(i)} disabled={i===liveRunOrder.length-1}
+                      style={{ background:"none", border:"none", color: i===liveRunOrder.length-1 ? "#1e1e3a" : C.muted,
+                        cursor: i===liveRunOrder.length-1 ? "default" : "pointer", fontSize:9, padding:"1px 3px", lineHeight:1 }}>▼</button>
+                  </div>
+
+                  <div style={{ width:20, height:20, borderRadius:6, background:"#a78bfa18",
+                    border:"1px solid #a78bfa33", display:"flex", alignItems:"center",
+                    justifyContent:"center", flexShrink:0 }}>
+                    <span style={{ fontSize:9, fontWeight:800, color:"#a78bfa" }}>{i+1}</span>
+                  </div>
+
+                  <span style={{ fontSize:20, flexShrink:0 }}>{p.image}</span>
+
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:C.text, whiteSpace:"nowrap",
+                      overflow:"hidden", textOverflow:"ellipsis" }}>{p.name}</div>
+                    <div style={{ display:"flex", gap:8, alignItems:"center", marginTop:2 }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11,
+                        fontWeight:700, color:"#10b981" }}>${p.price}</span>
+                      <span style={{ fontSize:9, color:invColor }}>
+                        {p.inventory} in stock
+                      </span>
+                    </div>
+                  </div>
+
+                  <button onClick={() => removeProduct(p.id)}
+                    style={{ background:"none", border:"none", color:"#374151", cursor:"pointer",
+                      fontSize:12, padding:"2px 4px", flexShrink:0, borderRadius:4 }}>✕</button>
+                </div>
+
+                {/* Time row */}
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ fontSize:9, color:C.muted, flexShrink:0 }}>⏱ Time on screen:</span>
+
+                  {/* Preset buttons */}
+                  <div style={{ display:"flex", gap:4, flex:1, flexWrap:"wrap" }}>
+                    {PRESET_TIMES.map(pt => (
+                      <button key={pt.secs} onClick={() => setTiming(p.id, pt.secs)}
+                        style={{ padding:"3px 8px", borderRadius:5, cursor:"pointer", fontSize:9, fontWeight:700,
+                          background: timing === pt.secs ? "#1a0f2e" : "#07070f",
+                          border:`1px solid ${timing === pt.secs ? "#a78bfa66" : "#1e1e3a"}`,
+                          color: timing === pt.secs ? "#a78bfa" : C.muted }}>
+                        {pt.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom input */}
+                  <div style={{ display:"flex", alignItems:"center", gap:3, flexShrink:0 }}>
+                    <input
+                      type="number" min={30} max={600} value={timing}
+                      onChange={e => setTiming(p.id, e.target.value)}
+                      style={{ width:46, background:"#07070f", border:`1px solid ${C.border}`,
+                        borderRadius:5, padding:"3px 6px", color:C.text, fontSize:10,
+                        fontFamily:"'JetBrains Mono',monospace", textAlign:"center", outline:"none" }}
+                    />
+                    <span style={{ fontSize:9, color:C.muted }}>s</span>
+                  </div>
+
+                  {/* Time display */}
+                  <div style={{ fontSize:9, fontWeight:700, color:"#a78bfa", flexShrink:0,
+                    background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5,
+                    padding:"3px 7px", fontFamily:"'JetBrains Mono',monospace" }}>
+                    {mins > 0 ? `${mins}m ` : ""}{secs}s
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── ADD PANEL ── */}
+        {showAddPanel && (
+          <div style={{ width:220, flexShrink:0, borderLeft:`1px solid ${C.border}`,
+            display:"flex", flexDirection:"column", overflow:"hidden", background:"#07070f" }}>
+            <div style={{ padding:"10px 12px 8px", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
+              <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase",
+                letterSpacing:".07em", marginBottom:6 }}>Add to Show</div>
+              <input
+                value={catalogSearch}
+                onChange={e => setCatalogSearch(e.target.value)}
+                placeholder="Search…"
+                style={{ width:"100%", background:"#0a0a14", border:`1px solid ${C.border}`,
+                  borderRadius:6, padding:"5px 8px", color:C.text, fontSize:10, outline:"none" }}
+              />
+            </div>
+            <div style={{ flex:1, overflowY:"auto", padding:8 }}>
+              {addableProducts.length === 0 && (
+                <div style={{ fontSize:10, color:C.muted, textAlign:"center", padding:"16px 8px" }}>
+                  All products added
+                </div>
+              )}
+              {addableProducts.map(p => (
+                <div key={p.id}
+                  onClick={() => addProduct(p)}
+                  style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px",
+                    background:"#0a0a14", border:`1px solid ${C.border}`, borderRadius:8,
+                    marginBottom:5, cursor:"pointer" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor="#a78bfa55"}
+                  onMouseLeave={e => e.currentTarget.style.borderColor=C.border}>
+                  <span style={{ fontSize:18, flexShrink:0 }}>{p.image}</span>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:10, fontWeight:600, color:C.text, whiteSpace:"nowrap",
+                      overflow:"hidden", textOverflow:"ellipsis" }}>{p.name}</div>
+                    <div style={{ fontSize:9, color:"#10b981", fontFamily:"'JetBrains Mono',monospace" }}>
+                      ${p.price}
+                      {p.inventory < 30 && <span style={{ color:"#ef4444", marginLeft:5 }}>● {p.inventory} left</span>}
+                    </div>
+                  </div>
+                  <span style={{ fontSize:14, color:"#a78bfa", flexShrink:0 }}>+</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 // ── SceneTab — drag-and-drop set layout diagram ────────────────────────────────
 function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, audioLevel }) {
   const lightGlow = lightPattern==="celebrate" ? "hsl(300,100%,60%)"
@@ -2053,15 +2304,17 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
 }
 
 // ── BriefingTab ───────────────────────────────────────────────────────────────
-function BriefingTab({ runOrder, showName }) {
+function BriefingTab({ runOrder, showName, productTimings }) {
   const prods = (runOrder && runOrder.length > 0) ? runOrder : PRODUCTS.slice(0, 5);
   const [selId, setSelId] = useState(prods[0] ? prods[0].id : null);
   const bp = prods.find(p => p.id === selId) || prods[0];
 
   const openForHost = () => {
+    const timings = productTimings || {};
     const prodsData = JSON.stringify(prods.map(function(p) {
       return {
         id:p.id, name:p.name, image:p.image||"\u{1F4E6}", price:p.price,
+        timing: timings[p.id] || 90,
         sku:p.sku||"", category:p.category||"",
         inventory:p.inventory!==undefined?p.inventory:null,
         soldLast30:p.soldLast30||null, avgPerShow:p.avgPerShow||null,
@@ -2302,9 +2555,9 @@ function BriefingTab({ runOrder, showName }) {
     timer=setInterval(function(){if(!paused&&secs>0){secs--;updateTimer();}},1000);
   }
 
-  function jumpTo(idx) { cur=idx; showSlide(cur); secs=90; updateTimer(); startTimer(); }
-  function next() { if(cur<prods.length-1){cur++;showSlide(cur);secs=90;updateTimer();startTimer();} }
-  function prev() { if(cur>0){cur--;showSlide(cur);secs=90;updateTimer();startTimer();} }
+  function jumpTo(idx) { cur=idx; showSlide(cur); secs=prods[idx].timing||90; updateTimer(); startTimer(); }
+  function next() { if(cur<prods.length-1){cur++;showSlide(cur);secs=prods[cur].timing||90;updateTimer();startTimer();} }
+  function prev() { if(cur>0){cur--;showSlide(cur);secs=prods[cur].timing||90;updateTimer();startTimer();} }
 
   document.getElementById("btn-next").addEventListener("click",next);
   document.getElementById("btn-prev").addEventListener("click",prev);
@@ -2321,6 +2574,7 @@ function BriefingTab({ runOrder, showName }) {
   buildSlides();
   buildSidebar();
   showSlide(0);
+  secs = prods[0].timing || 90; updateTimer();
   startTimer();
 })();
 </script>
@@ -2518,6 +2772,14 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
   const [msgText,       setMsgText]       = useState("");
   const [msgSent,       setMsgSent]       = useState(false);
 
+  // Live Catalog — mutable run order + per-product timings during show
+  const [liveRunOrder,    setLiveRunOrder]    = useState(() => params?.runOrder || PRODUCTS.slice(0,5));
+  const [productTimings,  setProductTimings]  = useState(() => {
+    const base = params?.runOrder || PRODUCTS.slice(0,5);
+    return Object.fromEntries(base.map(p => [p.id, 90])); // default 90s each
+  });
+  const [catalogSearch,   setCatalogSearch]   = useState("");
+
   // Production tab state (inline production panel)
   const [liveTab,       setLiveTab]       = useState("orders");
   const [activeScene,   setActiveScene]   = useState("Wide — FX3");
@@ -2557,7 +2819,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
 
   // Build the live shop link whenever showName/persona changes
   const showName     = params?.showName   || "Live Show";
-  const runOrder     = params?.runOrder   || PRODUCTS.slice(0,5);
+  const runOrder     = liveRunOrder;
   const personaSlug  = params?.persona?.slug || personaProp?.slug || "shop";
   const showSlug     = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveShopUrl  = `strmlive.com/live/${personaSlug}/${showSlug}`;
@@ -2742,6 +3004,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
               { id:"orders",     label:"Orders" },
               { id:"production", label:"Production" },
               { id:"scene",      label:"Scene" },
+              { id:"catalog",    label:"Catalog" },
               { id:"briefing",   label:"Briefing" },
               { id:"platforms",  label:"Platforms" },
             ].map(t=>(
@@ -3148,11 +3411,25 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp }) {
             />
           )}
 
+          {/* ── CATALOG TAB ── */}
+          {liveTab === "catalog" && (
+            <CatalogTab
+              liveRunOrder={liveRunOrder}
+              setLiveRunOrder={setLiveRunOrder}
+              productTimings={productTimings}
+              setProductTimings={setProductTimings}
+              catalogSearch={catalogSearch}
+              setCatalogSearch={setCatalogSearch}
+              persona={params?.persona || personaProp}
+            />
+          )}
+
           {/* ── BRIEFING TAB ── */}
           {liveTab === "briefing" && (
             <BriefingTab
               runOrder={runOrder}
               showName={showName}
+              productTimings={productTimings}
             />
           )}
 
