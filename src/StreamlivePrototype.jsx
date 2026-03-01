@@ -1741,8 +1741,25 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
   const showSlug   = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const liveUrl    = `strmlive.com/live/${persona.slug || "shop"}/${showSlug}`;
 
+  const buildShareUrl = () => {
+    try {
+      const payload = {
+        s: showState.start,
+        o: showState.runOrder.map(p => p.id),
+        t: showState.timings,
+        n: showName,
+        p: persona.slug || "shop",
+      };
+      const encoded = btoa(JSON.stringify(payload));
+      return `${window.location.origin}${window.location.pathname}?live=${encoded}`;
+    } catch(e) {
+      return `https://${liveUrl}`;
+    }
+  };
+
   const copyLink = () => {
-    navigator.clipboard?.writeText(`https://${liveUrl}`).catch(()=>{});
+    const url = buildShareUrl();
+    navigator.clipboard?.writeText(url).catch(()=>{});
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -3226,13 +3243,32 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const runOrder     = liveRunOrder;
   const personaSlug  = params?.persona?.slug || personaProp?.slug || "shop";
   const showSlug     = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+  // Build a self-contained shareable URL — encodes show state so any browser can sync
+  const buildShareUrl = () => {
+    try {
+      const payload = {
+        s: showStartTime.current,                         // start timestamp
+        o: liveRunOrder.map(p => p.id),                  // ordered product IDs
+        t: productTimings,                                // per-product timings (seconds)
+        n: showName,                                      // show name
+        p: personaSlug,                                   // persona slug
+      };
+      const encoded = btoa(JSON.stringify(payload));
+      return `${window.location.origin}${window.location.pathname}?live=${encoded}`;
+    } catch(e) {
+      return `https://strmlive.com/live/${personaSlug}/${showSlug}`;
+    }
+  };
+
   const liveShopUrl  = `strmlive.com/live/${personaSlug}/${showSlug}`;
+  const shareUrl     = buildShareUrl();
 
   // Default message templates per channel
   const MSG_TEMPLATES = {
-    sms:   `Hey! We're live right now selling ${runOrder[0]?.name || "new items"} and more. Shop the full lineup here: https://${liveShopUrl}`,
-    ig_dm: `Hey! We're going live right now 🔴 Check out what we're selling: https://${liveShopUrl}`,
-    tt_dm: `We're LIVE right now! Shop the full lineup at: https://${liveShopUrl} 🎵`,
+    sms:   `Hey! We're live right now selling ${runOrder[0]?.name || "new items"} and more. Shop the full lineup here: ${shareUrl}`,
+    ig_dm: `Hey! We're going live right now 🔴 Check out what we're selling: ${shareUrl}`,
+    tt_dm: `We're LIVE right now! Shop the full lineup at: ${shareUrl} 🎵`,
   };
 
   const sendMessage = () => {
@@ -3372,7 +3408,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#4b5563", whiteSpace:"nowrap", maxWidth:200, overflow:"hidden", textOverflow:"ellipsis" }}>{liveShopUrl}</span>
             </div>
             <button
-              onClick={()=>{ navigator.clipboard?.writeText(`https://${liveShopUrl}`).catch(()=>{}); setSavedFeedback("link_copied"); setTimeout(()=>setSavedFeedback(null),2200); }}
+              onClick={()=>{ navigator.clipboard?.writeText(shareUrl).catch(()=>{}); setSavedFeedback("link_copied"); setTimeout(()=>setSavedFeedback(null),2200); }}
               style={{ padding:"4px 9px", background:savedFeedback==="link_copied"?"#0a1e16":"transparent", border:"none", cursor:"pointer", borderRight:"1px solid #1a1a2e", transition:"background .15s" }}
             >
               <span style={{ fontSize:9, fontWeight:700, color:savedFeedback==="link_copied"?"#10b981":"#a78bfa", whiteSpace:"nowrap" }}>
@@ -12347,6 +12383,25 @@ export default function StreamlivePrototype() {
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
   if (urlInviteToken) {
     return <ScreenAcceptInvite token={urlInviteToken} />;
+  }
+
+  // Check for ?live= param — decode and render Live Shop directly (cross-browser sharing)
+  const urlLiveParam = new URLSearchParams(window.location.search).get("live");
+  if (urlLiveParam) {
+    try {
+      const payload = JSON.parse(atob(urlLiveParam));
+      const ro = (payload.o || []).map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+      const liveParams = {
+        showStartTime: payload.s || Date.now(),
+        runOrder: ro,
+        productTimings: payload.t || {},
+        showName: payload.n || "Live Show",
+        persona: PERSONAS.find(p => p.slug === payload.p) || PERSONAS[0],
+      };
+      return <ScreenLiveShop navigate={() => {}} params={liveParams} persona={liveParams.persona} />;
+    } catch(e) {
+      // Bad param — fall through to normal app
+    }
   }
 
   const persona  = PERSONAS.find(p=>p.id===personaId);
