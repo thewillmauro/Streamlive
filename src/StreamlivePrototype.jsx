@@ -1977,7 +1977,7 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
 
 // ─── SCREEN: LIVE COMPANION ───────────────────────────────────────────────────
 // ── CatalogTab — live run order manager with per-product timers ───────────────
-function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductTimings, catalogSearch, setCatalogSearch, persona }) {
+function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductTimings, catalogSearch, setCatalogSearch, persona, activeIdx=0 }) {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [dragIdx, setDragIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
@@ -2090,88 +2090,118 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
           )}
 
           {liveRunOrder.map((p, i) => {
-            const timing = productTimings[p.id] || 90;
-            const mins = Math.floor(timing / 60);
-            const secs = timing % 60;
-            const invColor = p.inventory < 25 ? "#ef4444" : p.inventory < 60 ? "#f59e0b" : "#10b981";
+            const timing    = productTimings[p.id] || 90;
+            const mins      = Math.floor(timing / 60);
+            const secs      = timing % 60;
+            const invColor  = p.inventory < 25 ? "#ef4444" : p.inventory < 60 ? "#f59e0b" : "#10b981";
+            const presented = i < activeIdx;   // already spoken about — lock it
+            const isCurrent = i === activeIdx; // currently live on air
 
             return (
               <div key={p.id}
-                style={{ background:"#0a0a14", border:`1px solid ${C.border}`, borderRadius:10,
-                  padding:"10px 12px", marginBottom:6, transition:"all .15s" }}>
+                style={{ background: presented ? "#070710" : isCurrent ? "#0d0d1e" : "#0a0a14",
+                  border:`1px solid ${isCurrent ? "#a78bfa55" : presented ? "#1a1a2e" : C.border}`,
+                  borderRadius:10, padding:"10px 12px", marginBottom:6, transition:"all .15s",
+                  opacity: presented ? 0.6 : 1 }}>
 
-                {/* Top row: drag handle, number, emoji, name, remove */}
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                {/* Top row */}
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom: presented ? 0 : 8 }}>
+
+                  {/* Reorder arrows — locked when presented */}
                   <div style={{ display:"flex", flexDirection:"column", gap:2, flexShrink:0 }}>
-                    <button onClick={() => moveUp(i)} disabled={i===0}
-                      style={{ background:"none", border:"none", color: i===0 ? "#1e1e3a" : C.muted,
-                        cursor: i===0 ? "default" : "pointer", fontSize:9, padding:"1px 3px", lineHeight:1 }}>▲</button>
-                    <button onClick={() => moveDown(i)} disabled={i===liveRunOrder.length-1}
-                      style={{ background:"none", border:"none", color: i===liveRunOrder.length-1 ? "#1e1e3a" : C.muted,
-                        cursor: i===liveRunOrder.length-1 ? "default" : "pointer", fontSize:9, padding:"1px 3px", lineHeight:1 }}>▼</button>
+                    <button onClick={() => !presented && moveUp(i)} disabled={i===0 || presented}
+                      style={{ background:"none", border:"none",
+                        color: (i===0 || presented) ? "#1e1e2e" : C.muted,
+                        cursor: (i===0 || presented) ? "default" : "pointer",
+                        fontSize:9, padding:"1px 3px", lineHeight:1 }}>▲</button>
+                    <button onClick={() => !presented && moveDown(i)} disabled={i===liveRunOrder.length-1 || presented}
+                      style={{ background:"none", border:"none",
+                        color: (i===liveRunOrder.length-1 || presented) ? "#1e1e2e" : C.muted,
+                        cursor: (i===liveRunOrder.length-1 || presented) ? "default" : "pointer",
+                        fontSize:9, padding:"1px 3px", lineHeight:1 }}>▼</button>
                   </div>
 
-                  <div style={{ width:20, height:20, borderRadius:6, background:"#a78bfa18",
-                    border:"1px solid #a78bfa33", display:"flex", alignItems:"center",
-                    justifyContent:"center", flexShrink:0 }}>
-                    <span style={{ fontSize:9, fontWeight:800, color:"#a78bfa" }}>{i+1}</span>
+                  {/* Index badge — shows status for presented/current */}
+                  <div style={{ width:20, height:20, borderRadius:6, flexShrink:0,
+                    background: presented ? "#10b98118" : isCurrent ? "#a78bfa18" : "#a78bfa12",
+                    border:`1px solid ${presented ? "#10b98133" : isCurrent ? "#a78bfa55" : "#a78bfa22"}`,
+                    display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <span style={{ fontSize:9, fontWeight:800,
+                      color: presented ? "#10b981" : isCurrent ? "#a78bfa" : "#6b7280" }}>
+                      {presented ? "✓" : i+1}
+                    </span>
                   </div>
 
                   <span style={{ fontSize:20, flexShrink:0 }}>{p.image}</span>
 
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:C.text, whiteSpace:"nowrap",
-                      overflow:"hidden", textOverflow:"ellipsis" }}>{p.name}</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <div style={{ fontSize:11, fontWeight:700, color: presented ? C.muted : C.text,
+                        whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{p.name}</div>
+                      {presented && (
+                        <span style={{ fontSize:8, fontWeight:700, color:"#10b981", background:"#10b98118",
+                          border:"1px solid #10b98133", padding:"1px 6px", borderRadius:4,
+                          textTransform:"uppercase", letterSpacing:"0.06em", flexShrink:0 }}>Presented</span>
+                      )}
+                      {isCurrent && (
+                        <span style={{ fontSize:8, fontWeight:700, color:"#a78bfa", background:"#a78bfa18",
+                          border:"1px solid #a78bfa44", padding:"1px 6px", borderRadius:4,
+                          textTransform:"uppercase", letterSpacing:"0.06em", flexShrink:0 }}>● Live</span>
+                      )}
+                    </div>
                     <div style={{ display:"flex", gap:8, alignItems:"center", marginTop:2 }}>
                       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11,
                         fontWeight:700, color:"#10b981" }}>${p.price}</span>
-                      <span style={{ fontSize:9, color:invColor }}>
-                        {p.inventory} in stock
-                      </span>
+                      <span style={{ fontSize:9, color:invColor }}>{p.inventory} in stock</span>
+                      {presented && (
+                        <span style={{ fontSize:9, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>
+                          {mins > 0 ? `${mins}m ` : ""}{secs}s on air
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <button onClick={() => removeProduct(p.id)}
-                    style={{ background:"none", border:"none", color:"#374151", cursor:"pointer",
-                      fontSize:12, padding:"2px 4px", flexShrink:0, borderRadius:4 }}>✕</button>
+                  {/* Remove — locked when presented or currently live */}
+                  {!presented && !isCurrent ? (
+                    <button onClick={() => removeProduct(p.id)}
+                      style={{ background:"none", border:"none", color:"#374151", cursor:"pointer",
+                        fontSize:12, padding:"2px 4px", flexShrink:0, borderRadius:4 }}>✕</button>
+                  ) : (
+                    <div style={{ width:20, flexShrink:0 }} />
+                  )}
                 </div>
 
-                {/* Time row */}
-                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                  <span style={{ fontSize:9, color:C.muted, flexShrink:0 }}>⏱ Time on screen:</span>
-
-                  {/* Preset buttons */}
-                  <div style={{ display:"flex", gap:4, flex:1, flexWrap:"wrap" }}>
-                    {PRESET_TIMES.map(pt => (
-                      <button key={pt.secs} onClick={() => setTiming(p.id, pt.secs)}
-                        style={{ padding:"3px 8px", borderRadius:5, cursor:"pointer", fontSize:9, fontWeight:700,
-                          background: timing === pt.secs ? "#1a0f2e" : "#07070f",
-                          border:`1px solid ${timing === pt.secs ? "#a78bfa66" : "#1e1e3a"}`,
-                          color: timing === pt.secs ? "#a78bfa" : C.muted }}>
-                        {pt.label}
-                      </button>
-                    ))}
+                {/* Time row — hidden entirely for presented products */}
+                {!presented && (
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <span style={{ fontSize:9, color:C.muted, flexShrink:0 }}>⏱ Time on screen:</span>
+                    <div style={{ display:"flex", gap:4, flex:1, flexWrap:"wrap" }}>
+                      {PRESET_TIMES.map(pt => (
+                        <button key={pt.secs} onClick={() => setTiming(p.id, pt.secs)}
+                          style={{ padding:"3px 8px", borderRadius:5, cursor:"pointer", fontSize:9, fontWeight:700,
+                            background: timing === pt.secs ? "#1a0f2e" : "#07070f",
+                            border:`1px solid ${timing === pt.secs ? "#a78bfa66" : "#1e1e3a"}`,
+                            color: timing === pt.secs ? "#a78bfa" : C.muted }}>
+                          {pt.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:3, flexShrink:0 }}>
+                      <input type="number" min={30} max={600} value={timing}
+                        onChange={e => setTiming(p.id, e.target.value)}
+                        style={{ width:46, background:"#07070f", border:`1px solid ${C.border}`,
+                          borderRadius:5, padding:"3px 6px", color:C.text, fontSize:10,
+                          fontFamily:"'JetBrains Mono',monospace", textAlign:"center", outline:"none" }}
+                      />
+                      <span style={{ fontSize:9, color:C.muted }}>s</span>
+                    </div>
+                    <div style={{ fontSize:9, fontWeight:700, color:"#a78bfa", flexShrink:0,
+                      background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5,
+                      padding:"3px 7px", fontFamily:"'JetBrains Mono',monospace" }}>
+                      {mins > 0 ? `${mins}m ` : ""}{secs}s
+                    </div>
                   </div>
-
-                  {/* Custom input */}
-                  <div style={{ display:"flex", alignItems:"center", gap:3, flexShrink:0 }}>
-                    <input
-                      type="number" min={30} max={600} value={timing}
-                      onChange={e => setTiming(p.id, e.target.value)}
-                      style={{ width:46, background:"#07070f", border:`1px solid ${C.border}`,
-                        borderRadius:5, padding:"3px 6px", color:C.text, fontSize:10,
-                        fontFamily:"'JetBrains Mono',monospace", textAlign:"center", outline:"none" }}
-                    />
-                    <span style={{ fontSize:9, color:C.muted }}>s</span>
-                  </div>
-
-                  {/* Time display */}
-                  <div style={{ fontSize:9, fontWeight:700, color:"#a78bfa", flexShrink:0,
-                    background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5,
-                    padding:"3px 7px", fontFamily:"'JetBrains Mono',monospace" }}>
-                    {mins > 0 ? `${mins}m ` : ""}{secs}s
-                  </div>
-                </div>
+                )}
               </div>
             );
           })}
@@ -3796,6 +3826,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               catalogSearch={catalogSearch}
               setCatalogSearch={setCatalogSearch}
               persona={params?.persona || personaProp}
+              activeIdx={activeIdx}
             />
           )}
 
