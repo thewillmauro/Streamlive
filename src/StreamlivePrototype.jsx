@@ -3424,7 +3424,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
           </div>
 
           {/* End Show */}
-          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount})} style={{ fontSize:10, color:"#ef4444", background:"transparent", border:"1px solid #ef444433", padding:"4px 12px", borderRadius:7, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}>■ End Show</button>
+          <button onClick={()=>navigate("order-review",{liveBuyers,buyerNotes,buyerDiscounts,buyerPerks,buyerItems,gmv,elapsed,orderCount,showName})} style={{ fontSize:10, color:"#ef4444", background:"transparent", border:"1px solid #ef444433", padding:"4px 12px", borderRadius:7, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}>■ End Show</button>
         </div>
 
         {/* ROW 2: stats strip */}
