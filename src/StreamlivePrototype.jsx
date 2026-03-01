@@ -162,9 +162,9 @@ const BUYERS_BY_PERSONA = {
     { id:"b2", name:"Claire Fontaine",  handle:"@clairef_fashion",  platform:"TT", spend:4210, orders:31, lastOrder:"2d ago",  category:"Dresses",      status:"vip",     score:9.1, avatar:"CF", tags:["VIP"],               email:"cf@example.com",        phone:"+1-555-0102" },
     { id:"b3", name:"Marcus Duval",     handle:"@marcusd",          platform:"AM", spend:3480, orders:24, lastOrder:"4d ago",  category:"Blazers",      status:"vip",     score:8.4, avatar:"MD", tags:["VIP","Big Spender"], email:"md@example.com",        phone:"+1-555-0103" },
     { id:"b4", name:"Natalie Rhodes",   handle:"@nat_styled",       platform:"IG", spend:1920, orders:14, lastOrder:"29d ago", category:"Accessories",  status:"risk",    score:5.1, avatar:"NR", tags:[],                    email:"nr@example.com",        phone:"+1-555-0104" },
-    { id:"b5", name:"Tom Archer",       handle:"@tomarcher",        platform:"TT", spend:1240, orders:9,  lastOrder:"31d ago", category:"Trousers",     status:"risk",    score:4.6, avatar:"TA", tags:[],                    email:"ta@example.com",        phone:"+1-555-0105" },
+    { id:"b5", name:"Tom Archer",       handle:"@tomarcher",        platform:"TT", spend:1240, orders:9,  lastOrder:"35d ago", category:"Trousers",     status:"risk",    score:4.6, avatar:"TA", tags:[],                    email:"ta@example.com",        phone:"+1-555-0105" },
     { id:"b6", name:"Zoe Kim",          handle:"@zoekim_looks",     platform:"IG", spend:980,  orders:7,  lastOrder:"3d ago",  category:"Knitwear",     status:"active",  score:6.8, avatar:"ZK", tags:["New"],               email:"zk@example.com",        phone:"+1-555-0106" },
-    { id:"b7", name:"Ellie Hoffman",    handle:"@ellieh",           platform:"TT", spend:620,  orders:4,  lastOrder:"8d ago",  category:"Dresses",      status:"active",  score:5.9, avatar:"EH", tags:[],                    email:"eh@example.com",        phone:"+1-555-0107" },
+    { id:"b7", name:"Ellie Hoffman",    handle:"@ellieh",           platform:"TT", spend:620,  orders:4,  lastOrder:"11d ago",  category:"Dresses",      status:"active",  score:5.9, avatar:"EH", tags:[],                    email:"eh@example.com",        phone:"+1-555-0107" },
     { id:"b8", name:"James Weston",     handle:"@jwestonshops",     platform:"AM", spend:290,  orders:2,  lastOrder:"88d ago", category:"Outerwear",    status:"dormant", score:2.3, avatar:"JW", tags:[],                    email:"jw@example.com",        phone:"+1-555-0108" },
     // YouTube buyers — sourced from Shopify, attributed to YouTube shows
     { id:"b9",  name:"Ryan Callahan",   handle:"youtube/ryancall",  platform:"YT", spend:456,  orders:2,  lastOrder:"18d ago", category:"Blazers",      status:"new",     score:6.2, avatar:"RC", tags:["New","YouTube"],     email:"rcallahan@gmail.com",   phone:"+1-555-0109", shopifyCustomerId:"cust_sh_4821", ytAttribution:"time-window" },
@@ -202,25 +202,52 @@ const BUYERS_BY_PERSONA = {
 
 // ─── SHOWS DATA ───────────────────────────────────────────────────────────────
 const SHOWS = [
-  { id:"sh1", title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", platforms:["IG","TT"],      gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch — the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
-  { id:"sh2", title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", platforms:["TT"],           gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach — 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
-  { id:"sh3", title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", platforms:["AM","IG"],      gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional — high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
-  { id:"sh4", title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", platforms:["IG","TT","AM"], gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
-  { id:"sh5", title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", platforms:["YT"],           gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show — strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution. Live Pixel captured 14 buyers end-to-end. 12 orders matched via UTM link. 6 via time-window. 6 manually reconciled. Consider longer dwell on hero products — YouTube viewers research more before buying.", topItem:"Merino Wool Blazer", newBuyers:38,
+  // ── Last 7 days ──────────────────────────────────────────────────────────────
+  { id:"sh1",  title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", platforms:["IG","TT"],      gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch — the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
+  { id:"sh2",  title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", platforms:["TT"],           gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach — 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
+  // ── Last 30 days (not in 7d) ─────────────────────────────────────────────────
+  { id:"sh3",  title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", platforms:["AM","IG"],      gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional — high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
+  { id:"sh4",  title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", platforms:["IG","TT","AM"], gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
+  { id:"sh5",  title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", platforms:["YT"],           gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show — strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution.", topItem:"Merino Wool Blazer", newBuyers:38,
     ytAttribution: { method:"mixed", pixel:{ orders:14, confidence:"verified", sessionsCaptured:284 }, timeWindow:{ orders:12, confidence:"high", windowMins:15 }, utm:{ orders:6, link:"strmlive.com/yt/br-2025-02-08", clicks:284 }, manual:{ orders:6, pending:2 }, shopifyOrders:38, unattributed:0 }
   },
+  { id:"sh6",  title:"Valentine's Weekend Drop",         date:"Feb 1, 2025",  platform:"IG", platforms:["IG","TT"],      gmv:16340, buyers:74,  repeatRate:68, duration:"1h 36m", aiDebrief:"Valentine's theme drove strong gifting purchases. Accessories outperformed apparel 2:1. Email pre-campaign drove 38% of attendance.", topItem:"Leather Crossbody Bag", newBuyers:19 },
+  // ── Last 90 days (not in 30d) ────────────────────────────────────────────────
+  { id:"sh7",  title:"Whatnot VIP Members Night",        date:"Jan 18, 2025", platform:"WN", platforms:["WN"],           gmv:11280, buyers:52,  repeatRate:81, duration:"1h 04m", aiDebrief:"Highest repeat rate of the quarter. VIP-only format drove intense engagement and 4.2x avg order vs standard shows.", topItem:"Merino Wool Blazer", newBuyers:6 },
+  { id:"sh8",  title:"New Year New Wardrobe",            date:"Jan 5, 2025",  platform:"TT", platforms:["TT","IG"],      gmv:8920,  buyers:44,  repeatRate:48, duration:"1h 18m", aiDebrief:"Post-holiday buyers are in value mode. Bundle pricing outperformed single items. TikTok LIVE traffic spiked mid-show after a comment went viral.", topItem:"Slim Chino Shorts", newBuyers:33 },
+  { id:"sh9",  title:"Holiday Gifts Last Call",          date:"Dec 21, 2024", platform:"IG", platforms:["IG","AM"],      gmv:24600, buyers:112, repeatRate:62, duration:"2h 14m", aiDebrief:"Best GMV show of Q4. Gifting urgency drove rapid checkout. Amazon simulcast added 28 incremental buyers. Repeat rate softer as many were one-time holiday shoppers.", topItem:"Spring Style Bundle (3pc)", newBuyers:48 },
+  { id:"sh10", title:"TikTok Holiday Countdown #3",      date:"Dec 14, 2024", platform:"TT", platforms:["TT"],           gmv:6840,  buyers:36,  repeatRate:41, duration:"58m",    aiDebrief:"Third holiday TikTok show — audience fatigue showing vs show #1. Shorter runtime matched engagement curve. SMS follow-up captured 18 new subscribers.", topItem:"Linen Button-Down Shirt", newBuyers:29 },
+  // ── All time (not in 90d) ─────────────────────────────────────────────────────
+  { id:"sh11", title:"Fall Collection Preview",          date:"Nov 20, 2024", platform:"IG", platforms:["IG","TT","AM"], gmv:14200, buyers:68,  repeatRate:65, duration:"1h 42m", aiDebrief:"Strong fall debut. Layering pieces drove bundles. Instagram simulcast outperformed TikTok 3:1 in revenue per viewer. First time using Show Planner — run order AI suggestion was accurate.", topItem:"Tailored Wool Overcoat", newBuyers:24 },
+  { id:"sh12", title:"Whatnot Flash: Outerwear Drop",    date:"Nov 8, 2024",  platform:"WN", platforms:["WN"],           gmv:9480,  buyers:46,  repeatRate:76, duration:"52m",    aiDebrief:"Compact high-intensity show. Whatnot buyers responded to scarcity messaging. Sold out 2 SKUs within 10 minutes. Repeat rate strong — core audience engaged.", topItem:"Tailored Wool Overcoat", newBuyers:8 },
+  { id:"sh13", title:"Back to School TikTok Live",       date:"Oct 12, 2024", platform:"TT", platforms:["TT","IG"],      gmv:5620,  buyers:31,  repeatRate:38, duration:"1h 02m", aiDebrief:"Seasonal relevance helped with discovery. Lower repeat rate expected for back-to-school demographic. 31 new buyers — good acquisition show.", topItem:"Slim Chino Shorts", newBuyers:31 },
 ];
 
 // ─── CAMPAIGNS DATA ───────────────────────────────────────────────────────────
 const CAMPAIGNS = [
-  { id:"c1", name:"Spring Launch Reminder",          type:"email",  status:"sent",  sentAt:"Feb 21, 2025", recipients:3420, opened:64, clicked:41, converted:28, gmv:8840  },
-  { id:"c2", name:"VIP Members Early Access",        type:"sms",    status:"sent",  sentAt:"Feb 19, 2025", recipients:480,  opened:91, clicked:68, converted:52, gmv:12600 },
-  { id:"c3", name:"Win-Back: 30-Day Inactive",       type:"email",  status:"sent",  sentAt:"Feb 8, 2025",  recipients:820,  opened:36, clicked:19, converted:11, gmv:2140  },
-  { id:"c4", name:"New Arrivals Drop Alert",         type:"sms",    status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
-  { id:"c5", name:"IG Keyword: DM STYLE",            type:"ig_dm",  status:"sent",  sentAt:"Feb 20, 2025", recipients:1840, opened:96, clicked:74, converted:44, gmv:9820  },
-  { id:"c6", name:"TikTok Drop Announcement",        type:"tt_dm",  status:"sent",  sentAt:"Feb 15, 2025", recipients:1120, opened:89, clicked:66, converted:31, gmv:5640  },
-  { id:"c7", name:"Amazon Deal Notification",        type:"am_msg", status:"sent",  sentAt:"Feb 11, 2025", recipients:640,  opened:71, clicked:48, converted:24, gmv:3980  },
-  { id:"c8", name:"IG: Bundle Drop Teaser",          type:"ig_dm",  status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
+  // ── Last 7 days ──────────────────────────────────────────────────────────────
+  { id:"c1",  name:"Spring Launch Reminder",          type:"email",  status:"sent",  sentAt:"Feb 21, 2025", recipients:3420, opened:64, clicked:41, converted:28, gmv:8840  },
+  { id:"c2",  name:"VIP Members Early Access",        type:"sms",    status:"sent",  sentAt:"Feb 19, 2025", recipients:480,  opened:91, clicked:68, converted:52, gmv:12600 },
+  { id:"c5",  name:"IG Keyword: DM STYLE",            type:"ig_dm",  status:"sent",  sentAt:"Feb 20, 2025", recipients:1840, opened:96, clicked:74, converted:44, gmv:9820  },
+  // ── Last 30 days (not in 7d) ─────────────────────────────────────────────────
+  { id:"c3",  name:"Win-Back: 30-Day Inactive",       type:"email",  status:"sent",  sentAt:"Feb 8, 2025",  recipients:820,  opened:36, clicked:19, converted:11, gmv:2140  },
+  { id:"c6",  name:"TikTok Drop Announcement",        type:"tt_dm",  status:"sent",  sentAt:"Feb 15, 2025", recipients:1120, opened:89, clicked:66, converted:31, gmv:5640  },
+  { id:"c7",  name:"Amazon Deal Notification",        type:"am_msg", status:"sent",  sentAt:"Feb 11, 2025", recipients:640,  opened:71, clicked:48, converted:24, gmv:3980  },
+  { id:"c9",  name:"Valentine's VIP Teaser",          type:"sms",    status:"sent",  sentAt:"Jan 30, 2025", recipients:520,  opened:88, clicked:62, converted:41, gmv:7280  },
+  { id:"c10", name:"February Buyers Newsletter",      type:"email",  status:"sent",  sentAt:"Feb 2, 2025",  recipients:2840, opened:48, clicked:29, converted:16, gmv:3620  },
+  // ── Last 90 days (not in 30d) ────────────────────────────────────────────────
+  { id:"c11", name:"January New Arrivals",            type:"email",  status:"sent",  sentAt:"Jan 12, 2025", recipients:3100, opened:41, clicked:24, converted:14, gmv:3180  },
+  { id:"c12", name:"VIP Winter Preview SMS",          type:"sms",    status:"sent",  sentAt:"Jan 6, 2025",  recipients:440,  opened:84, clicked:61, converted:38, gmv:6840  },
+  { id:"c13", name:"Holiday Win-Back",                type:"email",  status:"sent",  sentAt:"Dec 28, 2024", recipients:1240, opened:39, clicked:21, converted:13, gmv:2640  },
+  { id:"c14", name:"Christmas Last Call SMS",         type:"sms",    status:"sent",  sentAt:"Dec 23, 2024", recipients:560,  opened:94, clicked:72, converted:55, gmv:11400 },
+  { id:"c15", name:"Holiday IG Automation",           type:"ig_dm",  status:"sent",  sentAt:"Dec 18, 2024", recipients:2240, opened:91, clicked:68, converted:39, gmv:8420  },
+  // ── All time (not in 90d) ─────────────────────────────────────────────────────
+  { id:"c16", name:"Fall Collection Announcement",    type:"email",  status:"sent",  sentAt:"Nov 18, 2024", recipients:2680, opened:44, clicked:26, converted:15, gmv:3840  },
+  { id:"c17", name:"Black Friday VIP Early Access",   type:"sms",    status:"sent",  sentAt:"Nov 27, 2024", recipients:510,  opened:96, clicked:81, converted:64, gmv:14200 },
+  { id:"c18", name:"Back to School TikTok Push",      type:"tt_dm",  status:"sent",  sentAt:"Oct 10, 2024", recipients:980,  opened:77, clicked:54, converted:28, gmv:4120  },
+  // ── Drafts ───────────────────────────────────────────────────────────────────
+  { id:"c4",  name:"New Arrivals Drop Alert",         type:"sms",    status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
+  { id:"c8",  name:"IG: Bundle Drop Teaser",          type:"ig_dm",  status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
 ];
 
 
@@ -8195,12 +8222,14 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
   const catSpend = {};
   filteredBuyers.forEach(b=>{ catSpend[b.category]=(catSpend[b.category]||0)+b.spend; });
 
-  // GMV trend chart — slice to match range
-  const ALL_GMV_TREND  = [2800,3100,2600,3800,4200,3900,4820,5100];
-  const ALL_GMV_WEEKS  = ["Jan 2","Jan 9","Jan 16","Jan 23","Jan 30","Feb 6","Feb 13","Feb 20"];
-  const trendSlice     = dateRange==="7d" ? 2 : dateRange==="30d" ? 5 : dateRange==="90d" ? 7 : 8;
-  const gmvTrend       = ALL_GMV_TREND.slice(-trendSlice);
-  const gmvWeeks       = ALL_GMV_WEEKS.slice(-trendSlice);
+  // GMV trend chart — different data per range to show accurate picture
+  const TREND_7D   = { data:[12840,18420],             weeks:["Feb 17","Feb 22"] };
+  const TREND_30D  = { data:[7640,21800,9210,12840,16340,18420],  weeks:["Feb 8","Feb 10","Feb 12","Feb 15","Feb 17","Feb 22"] };
+  const TREND_90D  = { data:[8920,11280,16340,7640,21800,9210,12840,18420], weeks:["Jan 5","Jan 18","Feb 1","Feb 8","Feb 10","Feb 12","Feb 17","Feb 22"] };
+  const TREND_ALL  = { data:[5620,9480,14200,24600,6840,8920,11280,16340,7640,21800,12840,18420], weeks:["Oct","Nov 8","Nov 20","Dec 21","Dec 14","Jan 5","Jan 18","Feb 1","Feb 8","Feb 10","Feb 17","Feb 22"] };
+  const activeTrend = dateRange==="7d" ? TREND_7D : dateRange==="30d" ? TREND_30D : dateRange==="90d" ? TREND_90D : TREND_ALL;
+  const gmvTrend    = activeTrend.data;
+  const gmvWeeks    = activeTrend.weeks;
 
   // Show platform colors
   const PC = { WN:"#7c3aed", TT:"#f43f5e", IG:"#ec4899", AM:"#f59e0b", YT:"#ff0000" };
