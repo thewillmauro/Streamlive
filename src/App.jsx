@@ -223,7 +223,7 @@ function Landing() {
     return () => clearTimeout(t)
   }, [])
 
-  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwgOLHc642bZ-iHn5djlMWE4zqUHd06apowDVVj8Nk_96w-xal6QjSMyc6W_aYRm-ePrw/exec'
 
   const openDemo = () => {
     setDemoEmailSent(false)
@@ -242,7 +242,7 @@ function Landing() {
   }
 
   const openSales = () => {
-    setSalesForm({ firstName:'', lastName:'', email:'', phone:'' })
+    setSalesForm({ firstName:'', lastName:'', email:'', phone:'', store:'', platforms:[], message:'' })
     setSalesSent(false)
     setSalesModal(true)
   }
@@ -998,7 +998,7 @@ function Landing() {
       {/* ── CONTACT SALES MODAL ── */}
       {salesModal && (
         <div onClick={e=>{ if(e.target===e.currentTarget) setSalesModal(false) }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.88)', backdropFilter:'blur(14px)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-          <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #2a2a4a', borderRadius:22, padding:'40px 36px', maxWidth:440, width:'100%', position:'relative', boxShadow:'0 40px 100px rgba(0,0,0,.9)' }}>
+          <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #2a2a4a', borderRadius:22, padding:'40px 36px', maxWidth:440, width:'100%', position:'relative', boxShadow:'0 40px 100px rgba(0,0,0,.9)', maxHeight:'90vh', overflowY:'auto' }}>
             <button onClick={()=>setSalesModal(false)} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'#4b5563', fontSize:20, cursor:'pointer', lineHeight:1, padding:'4px 8px' }}>✕</button>
             <div style={{ position:'absolute', top:-60, left:'50%', transform:'translateX(-50%)', width:200, height:200, borderRadius:'50%', background:'#a78bfa', opacity:0.07, filter:'blur(60px)', pointerEvents:'none' }}/>
             {salesSent ? (
@@ -1070,7 +1070,7 @@ function Landing() {
                 <div style={{ marginBottom:12 }}>
                   <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Platforms you sell on</label>
                   <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-                    {[['WN','Whatnot',(167,139,250)],['TT','TikTok',(200,200,200)],['IG','Instagram',(236,72,153)],['AM','Amazon',(245,158,11)],['YT','YouTube',(248,68,68)]].map(([code,label,col])=>{
+                    {[['WN','Whatnot','167,139,250'],['TT','TikTok','244,63,94'],['IG','Instagram','236,72,153'],['AM','Amazon','245,158,11'],['YT','YouTube','248,68,68']].map(([code,label,col])=>{
                       const sel = salesForm.platforms.includes(code)
                       const c = `rgb(${col})`
                       return (
@@ -1577,7 +1577,7 @@ We reserve the right to change pricing with 30 days' advance notice. If payment 
 function ContactPage() {
   const [form, setForm] = useState({name:'',email:'',subject:'',message:''})
   const [sent, setSent] = useState(false)
-  const SHEET_URL_C = 'https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec'
+  const SHEET_URL_C = 'https://script.google.com/macros/s/AKfycbwgOLHc642bZ-iHn5djlMWE4zqUHd06apowDVVj8Nk_96w-xal6QjSMyc6W_aYRm-ePrw/exec'
   const ready = form.name && form.email.includes('@') && form.message
   const handleSend = async () => {
     if (!ready) return
