@@ -6394,6 +6394,10 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
   const [platforms, setPlatforms]   = useState(
     persona.platforms.map(p => ({ id:p, connected:true }))
   );
+  // ── Sales modal (billing tab) ──────────────────────────────────────────────
+  const [sModal,  setSModal]  = useState(false);
+  const [sSent,   setSSent]   = useState(false);
+  const [sForm,   setSForm]   = useState({ firstName:"", lastName:"", email:"", phone:"", store:"", platforms:[], message:"" });
 
   // ── Load persisted connections on mount ───────────────────────────────────
   useEffect(() => {
@@ -7129,11 +7133,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
           { id:"enterprise", name:"Enterprise", price:"Custom", period:"",    color:"#a78bfa", tagline:"For agencies managing multiple seller accounts",
             features:["Everything in Pro","Up to 12 seller accounts","Team management & roles","White-label branding","Dedicated account manager","Custom integrations","SLA & uptime guarantee"] },
         ];
-        const [sModal,  setSModal]  = React.useState(false);
-        const [sSent,   setSSent]   = React.useState(false);
-        const [sForm,   setSForm]   = React.useState({ firstName:"", lastName:"", email:"", phone:"", store:"", platforms:[], message:"" });
         const canSubmit = sForm.firstName && sForm.email.includes("@");
-
         const openSales = () => { setSSent(false); setSForm({ firstName:"", lastName:"", email:"", phone:"", store:"", platforms:[], message:"" }); setSModal(true); };
         const submitSales = async () => {
           if (!canSubmit) return;
