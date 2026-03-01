@@ -7205,6 +7205,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
         const currentIdx  = planOrder.indexOf(currentPlan);
 
         return (
+          <>
           <div className="fade-up">
             {/* Header */}
             <div style={{ marginBottom:22 }}>
@@ -7409,6 +7410,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
               </div>
             </div>
           )}
+          </>
         );
       })()}
 
