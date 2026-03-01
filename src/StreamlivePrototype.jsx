@@ -3292,6 +3292,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               { id:"production", label:"Production" },
               { id:"scene",      label:"Scene" },
               { id:"catalog",    label:"Catalog" },
+              { id:"perks",      label:"Perks" },
               { id:"briefing",   label:"Briefing" },
               { id:"platforms",  label:"Platforms" },
             ].map(t=>(
@@ -3709,6 +3710,113 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               setCatalogSearch={setCatalogSearch}
               persona={params?.persona || personaProp}
             />
+          )}
+
+          {/* ── PERKS TAB ── */}
+          {liveTab === "perks" && (
+            <div style={{ flex:1, overflowY:"auto", padding:"16px 20px" }}>
+
+              {/* Active Perks Header */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.text }}>Live Perks & Automations</div>
+                  <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>These perks are active for this show. Toggle them on or off in real time.</div>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <div style={{ width:8, height:8, borderRadius:"50%", background:"#10b981", boxShadow:"0 0 6px #10b981" }} />
+                  <span style={{ fontSize:11, fontWeight:700, color:"#10b981" }}>Show Live</span>
+                </div>
+              </div>
+
+              {/* Always-On Perks Grid */}
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Always-On Perks</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:20 }}>
+                {[
+                  { key:"earlyAccess",      icon:"⏰", label:"VIP Early Access",         sub: params?.perks?.earlyAccess ? `${params?.perks?.earlyMinutes||15}min head start` : "Off",          color:"#a78bfa" },
+                  { key:"doublePoints",     icon:"⚡", label:"Double Points",             sub: params?.perks?.doublePoints ? "2x points on every order" : "Off",                                 color:"#f59e0b" },
+                  { key:"vipFirstPick",     icon:"👑", label:"VIP First Pick",            sub: params?.perks?.vipFirstPick ? "60s exclusive window per product" : "Off",                         color:"#7c3aed" },
+                  { key:"newBuyerDiscount", icon:"🎁", label:"New Buyer Discount",        sub: params?.perks?.newBuyerDiscount ? `${params?.perks?.newBuyerPct||10}% off first order` : "Off",  color:"#10b981" },
+                ].map(p=>{
+                  const on = params?.perks?.[p.key];
+                  return (
+                    <div key={p.key} style={{ background:on?`${p.color}10`:C.surface, border:`1px solid ${on?p.color+"44":C.border}`, borderRadius:11, padding:"12px 14px", display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ width:32, height:32, borderRadius:8, background:on?`${p.color}20`:C.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>{p.icon}</div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:11, fontWeight:700, color:on?C.text:C.muted }}>{p.label}</div>
+                        <div style={{ fontSize:10, color:on?p.color:C.muted, marginTop:1 }}>{p.sub}</div>
+                      </div>
+                      <div style={{ width:8, height:8, borderRadius:"50%", background:on?"#10b981":C.border2, flexShrink:0 }} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* If/Then Rules */}
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>If / Then Rules</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
+                {[
+                  { id:"r1", enabled: params?.perks?.mysteryBonus,      icon:"🎲", trigger:`Buyer purchases ${params?.perks?.mysteryThreshold||3}+ items`,     action:"Mystery bonus added to order",           color:"#f43f5e", fires:3 },
+                  { id:"r2", enabled: params?.perks?.winbackAfterShow,  icon:"📩", trigger:"Buyer views but does NOT purchase",                                action:"Win-back DM sent 2h after show",          color:"#3b82f6", fires:0 },
+                  { id:"r3", enabled: params?.perks?.tierUpAlert,       icon:"🏅", trigger:"Buyer reaches loyalty tier milestone",                              action:"Tier-up congratulations DM sent instantly",color:"#a78bfa", fires:1 },
+                  ...((params?.perks?.rules||[]).filter(r=>r.enabled).map(r=>({
+                    id:r.id, enabled:true, icon:"⚡",
+                    trigger: r.trigger==="order_placed"?"Buyer places an order"
+                           : r.trigger==="first_order"?"Buyer makes first purchase"
+                           : r.trigger==="spend_threshold"?`Buyer spends over $${r.triggerVal}`
+                           : r.trigger==="tier_vip"?"Buyer is VIP tier"
+                           : r.trigger==="show_join"?"Buyer joins show"
+                           : r.trigger,
+                    action: r.action==="send_dm"?`DM: "${(r.actionVal||"").slice(0,40)}${(r.actionVal||"").length>40?"...":""}"`
+                          : r.action==="apply_discount"?`Apply ${r.actionVal||10}% discount`
+                          : r.action==="add_bonus_points"?`Add ${r.actionVal||100} loyalty points`
+                          : r.action==="mystery_item"?"Add mystery bonus item"
+                          : r.action==="free_shipping"?"Apply free shipping"
+                          : r.action,
+                    color:"#7c3aed", fires:0
+                  }))),
+                ].filter(r=>r.enabled!==undefined).map(rule=>(
+                  <div key={rule.id} style={{ background:rule.enabled?C.surface:C.surface, border:`1px solid ${rule.enabled?"#10b98133":C.border}`, borderRadius:11, padding:"10px 14px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ width:30, height:30, borderRadius:8, background:`${rule.color}18`, border:`1px solid ${rule.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, flexShrink:0 }}>{rule.icon}</div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ display:"flex", gap:5, alignItems:"baseline", flexWrap:"wrap" }}>
+                          <span style={{ fontSize:9, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"1px 6px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em", flexShrink:0 }}>IF</span>
+                          <span style={{ fontSize:11, color:C.text, fontWeight:600 }}>{rule.trigger}</span>
+                        </div>
+                        <div style={{ display:"flex", gap:5, alignItems:"baseline", flexWrap:"wrap", marginTop:3 }}>
+                          <span style={{ fontSize:9, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"1px 6px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em", flexShrink:0 }}>THEN</span>
+                          <span style={{ fontSize:11, color:C.muted }}>{rule.action}</span>
+                        </div>
+                      </div>
+                      <div style={{ textAlign:"right", flexShrink:0 }}>
+                        {rule.fires>0 && <div style={{ fontSize:10, fontWeight:700, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"2px 8px", borderRadius:10, marginBottom:3 }}>Fired {rule.fires}x</div>}
+                        <div style={{ width:8, height:8, borderRadius:"50%", background:rule.enabled?"#10b981":C.border2, marginLeft:"auto" }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Live Activity Feed */}
+              <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Activity This Show</div>
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:11, overflow:"hidden" }}>
+                {[
+                  { time:"0:42", icon:"🎲", text:"Mystery bonus added for Olivia B. (4 items)", color:"#f43f5e" },
+                  { time:"0:38", icon:"🏅", text:"Claire F. reached Gold tier - DM sent", color:"#a78bfa" },
+                  { time:"0:31", icon:"🎁", text:"New buyer discount applied for Marcus D. (-10%)", color:"#10b981" },
+                  { time:"0:19", icon:"⚡", text:"Double points active - all orders this show", color:"#f59e0b" },
+                  { time:"0:02", icon:"⏰", text:"VIP early access window opened (15 min)", color:"#7c3aed" },
+                ].map((e,i)=>(
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", borderBottom:i<4?`1px solid ${C.border}`:"none" }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.muted, flexShrink:0, width:30 }}>{e.time}</span>
+                    <span style={{ fontSize:13, flexShrink:0 }}>{e.icon}</span>
+                    <span style={{ fontSize:11, color:C.text }}>{e.text}</span>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:e.color, flexShrink:0, marginLeft:"auto" }} />
+                  </div>
+                ))}
+              </div>
+
+            </div>
           )}
 
           {/* ── BRIEFING TAB ── */}
@@ -7715,29 +7823,207 @@ function ScreenShowPlanner({ navigate, persona }) {
           </div>
         )}
         {step===4 && (
-          <div style={{ maxWidth:680 }}>
-            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Configure perks for this show</div>
-            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>These apply only to this show. Your default loyalty tiers always apply.</div>
-            {[
-              { key:"earlyAccess",     icon:"⏰", title:"VIP Early Access",           desc:"Let VIP buyers into the show early" },
-              { key:"newBuyerDiscount",icon:"🎁", title:"New Buyer Welcome Discount",  desc:"First-time buyers get an instant discount" },
-              { key:"vipFirstPick",    icon:"👑", title:"VIP First Pick",              desc:"VIP tier buyers get first pick on limited items" },
-              { key:"doublePoints",    icon:"⚡", title:"Double Points Show",          desc:"All buyers earn 2× loyalty points tonight" },
-              { key:"mysteryBonus",    icon:"🎲", title:"Mystery Bonus at Threshold",  desc:"Buyers who purchase X+ items get a mystery bonus" },
-            ].map(perk=>(
-              <div key={perk.key} style={{ background:perks[perk.key]?`${C.accent}08`:C.surface, border:`1px solid ${perks[perk.key]?C.accent+"44":C.border}`, borderRadius:13, padding:"14px 16px", marginBottom:10 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <div style={{ width:36, height:36, borderRadius:9, background:perks[perk.key]?`${C.accent}22`:C.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{perk.icon}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{perk.title}</div>
-                    <div style={{ fontSize:11, color:C.muted }}>{perk.desc}</div>
+          <div style={{ maxWidth:780 }}>
+            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Show Perks & Automations</div>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Configure always-on perks and if/then rules that fire automatically during this show.</div>
+
+            {/* ── ALWAYS-ON PERKS ── */}
+            <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Always-On Perks</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:24 }}>
+              {[
+                { key:"earlyAccess",      icon:"⏰", title:"VIP Early Access",           desc:"VIP buyers get access before show goes public",
+                  extra: perks.earlyAccess && (
+                    <div style={{ marginTop:10, display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:11, color:C.muted }}>Minutes early:</span>
+                      {[5,10,15,30].map(m=>(
+                        <button key={m} onClick={e=>{e.stopPropagation();setPerks(p=>({...p,earlyMinutes:m}))}}
+                          style={{ padding:"3px 10px", borderRadius:6, fontSize:11, fontWeight:700, cursor:"pointer",
+                            background:perks.earlyMinutes===m?C.accent:"transparent",
+                            border:`1px solid ${perks.earlyMinutes===m?C.accent:C.border}`,
+                            color:perks.earlyMinutes===m?"#fff":C.muted }}>{m}m</button>
+                      ))}
+                    </div>
+                  )
+                },
+                { key:"doublePoints",     icon:"⚡", title:"Double Points Show",          desc:"All buyers earn 2x loyalty points on every order", extra:null },
+                { key:"vipFirstPick",     icon:"👑", title:"VIP First Pick",              desc:"VIPs get 60s exclusive window before each product opens", extra:null },
+                { key:"newBuyerDiscount", icon:"🎁", title:"New Buyer Welcome Discount",  desc:"First-time buyers get an instant discount at checkout",
+                  extra: perks.newBuyerDiscount && (
+                    <div style={{ marginTop:10, display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:11, color:C.muted }}>Discount:</span>
+                      {[5,10,15,20].map(pct=>(
+                        <button key={pct} onClick={e=>{e.stopPropagation();setPerks(p=>({...p,newBuyerPct:pct}))}}
+                          style={{ padding:"3px 10px", borderRadius:6, fontSize:11, fontWeight:700, cursor:"pointer",
+                            background:perks.newBuyerPct===pct?C.green:"transparent",
+                            border:`1px solid ${perks.newBuyerPct===pct?C.green:C.border}`,
+                            color:perks.newBuyerPct===pct?"#fff":C.muted }}>{pct}%</button>
+                      ))}
+                    </div>
+                  )
+                },
+              ].map(perk=>(
+                <div key={perk.key} onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))}
+                  style={{ background:perks[perk.key]?`${C.accent}08`:C.surface, border:`1px solid ${perks[perk.key]?C.accent+"55":C.border}`, borderRadius:13, padding:"14px 16px", cursor:"pointer", transition:"all .15s" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <div style={{ width:34, height:34, borderRadius:9, background:perks[perk.key]?`${C.accent}22`:C.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>{perk.icon}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{perk.title}</div>
+                      <div style={{ fontSize:10, color:C.muted, lineHeight:1.4 }}>{perk.desc}</div>
+                    </div>
+                    <div onClick={e=>e.stopPropagation()} style={{ width:38, height:21, borderRadius:10, background:perks[perk.key]?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}
+                      onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))}>
+                      <div style={{ position:"absolute", top:2, left:perks[perk.key]?18:2, width:17, height:17, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                    </div>
                   </div>
-                  <div onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))} style={{ width:40, height:22, borderRadius:11, background:perks[perk.key]?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}>
-                    <div style={{ position:"absolute", top:3, left:perks[perk.key]?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                  {perk.extra}
+                </div>
+              ))}
+            </div>
+
+            {/* ── IF / THEN AUTOMATION RULES ── */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em" }}>If / Then Rules</div>
+              <button onClick={()=>setPerks(p=>({...p, rules:[...(p.rules||[]),{ id:Date.now(), trigger:"order_placed", triggerVal:"1", action:"send_dm", actionVal:"Thanks for your order! Your item ships within 2 days.", enabled:true }]}))}
+                style={{ fontSize:11, fontWeight:700, color:C.accent, background:`${C.accent}12`, border:`1px solid ${C.accent}33`, padding:"5px 12px", borderRadius:8, cursor:"pointer" }}>
+                + Add Rule
+              </button>
+            </div>
+
+            {/* Default rules always shown */}
+            {[
+              { id:"r_default_1", enabled: perks.mysteryBonus,
+                triggerLabel:"Buyer purchases", triggerVal:`${perks.mysteryThreshold || 3}+ items`,
+                actionLabel:"Add mystery bonus to their order",
+                onToggle:()=>setPerks(p=>({...p,mysteryBonus:!p.mysteryBonus})),
+                isDefault:true,
+                extra: (
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
+                    <span style={{ fontSize:11, color:C.muted }}>Threshold:</span>
+                    {[2,3,4,5].map(n=>(
+                      <button key={n} onClick={e=>{e.stopPropagation();setPerks(p=>({...p,mysteryThreshold:n}))}}
+                        style={{ padding:"3px 10px", borderRadius:6, fontSize:11, fontWeight:700, cursor:"pointer",
+                          background:perks.mysteryThreshold===n?"#f43f5e":"transparent",
+                          border:`1px solid ${perks.mysteryThreshold===n?"#f43f5e":C.border}`,
+                          color:perks.mysteryThreshold===n?"#fff":C.muted }}>{n}+ items</button>
+                    ))}
+                  </div>
+                )
+              },
+              { id:"r_default_2", enabled: perks.winbackAfterShow,
+                triggerLabel:"Buyer views but does NOT purchase",
+                actionLabel:"Send win-back DM 2 hours after show ends",
+                onToggle:()=>setPerks(p=>({...p,winbackAfterShow:!p.winbackAfterShow})),
+                isDefault:true, extra:null
+              },
+              { id:"r_default_3", enabled: perks.tierUpAlert,
+                triggerLabel:"Buyer reaches loyalty tier milestone during show",
+                actionLabel:"Send tier-up congratulations DM instantly",
+                onToggle:()=>setPerks(p=>({...p,tierUpAlert:!p.tierUpAlert})),
+                isDefault:true, extra:null
+              },
+            ].map(rule=>(
+              <div key={rule.id} style={{ background:rule.enabled?`#10b98108`:C.surface, border:`1px solid ${rule.enabled?"#10b98144":C.border}`, borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
+                <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>IF</span>
+                      <span style={{ fontSize:12, color:C.text, fontWeight:600 }}>{rule.triggerLabel}</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>THEN</span>
+                      <span style={{ fontSize:12, color:C.muted }}>{rule.actionLabel}</span>
+                    </div>
+                    {rule.extra}
+                  </div>
+                  <div onClick={rule.onToggle} style={{ width:38, height:21, borderRadius:10, background:rule.enabled?"#10b981":C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0, marginTop:2 }}>
+                    <div style={{ position:"absolute", top:2, left:rule.enabled?18:2, width:17, height:17, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
                   </div>
                 </div>
               </div>
             ))}
+
+            {/* Custom rules added by user */}
+            {(perks.rules||[]).map((rule,ri)=>(
+              <div key={rule.id} style={{ background:rule.enabled?`${C.accent}08`:C.surface, border:`1px solid ${rule.enabled?C.accent+"44":C.border}`, borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
+                <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"56px 1fr 56px 1fr", gap:8, alignItems:"center", marginBottom:6 }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"3px 7px", borderRadius:4, textTransform:"uppercase", textAlign:"center" }}>IF</span>
+                      <select value={rule.trigger} onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,trigger:e.target.value}:r)}))}
+                        style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
+                        <option value="order_placed">Buyer places an order</option>
+                        <option value="first_order">Buyer makes first-ever purchase</option>
+                        <option value="order_count">Buyer hits order count</option>
+                        <option value="spend_threshold">Buyer spends over amount</option>
+                        <option value="tier_vip">Buyer is VIP tier</option>
+                        <option value="tier_gold">Buyer is Gold tier</option>
+                        <option value="show_join">Buyer joins the show</option>
+                        <option value="no_purchase">Show ends, buyer did not buy</option>
+                      </select>
+                      {rule.trigger==="order_count" && (
+                        <input type="number" min="1" max="20" value={rule.triggerVal||2}
+                          onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,triggerVal:e.target.value}:r)}))}
+                          style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, width:"60px", outline:"none" }} />
+                      )}
+                      {rule.trigger==="spend_threshold" && (
+                        <input type="number" min="0" value={rule.triggerVal||100}
+                          onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,triggerVal:e.target.value}:r)}))}
+                          style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, width:"80px", outline:"none" }} />
+                      )}
+                      {!["order_count","spend_threshold"].includes(rule.trigger) && <div />}
+                      <span style={{ fontSize:10, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"3px 7px", borderRadius:4, textTransform:"uppercase", textAlign:"center" }}>THEN</span>
+                      <select value={rule.action} onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,action:e.target.value}:r)}))}
+                        style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
+                        <option value="send_dm">Send buyer a DM</option>
+                        <option value="apply_discount">Apply a discount</option>
+                        <option value="add_bonus_points">Add bonus loyalty points</option>
+                        <option value="mystery_item">Add a mystery bonus item</option>
+                        <option value="free_shipping">Apply free shipping</option>
+                        <option value="flag_for_review">Flag order for review</option>
+                        <option value="notify_host">Alert the host</option>
+                      </select>
+                    </div>
+                    {rule.action==="send_dm" && (
+                      <textarea value={rule.actionVal||""} rows={2}
+                        onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,actionVal:e.target.value}:r)}))}
+                        placeholder="Type the DM message..."
+                        style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"7px 10px", color:C.text, fontSize:11, outline:"none", resize:"vertical", fontFamily:"inherit", boxSizing:"border-box", marginTop:4 }} />
+                    )}
+                    {rule.action==="apply_discount" && (
+                      <div style={{ display:"flex", gap:6, marginTop:6 }}>
+                        {[5,10,15,20,25].map(pct=>(
+                          <button key={pct} onClick={()=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,actionVal:pct}:r)}))}
+                            style={{ padding:"4px 10px", borderRadius:6, fontSize:11, fontWeight:700, cursor:"pointer",
+                              background:rule.actionVal===pct?C.accent:"transparent",
+                              border:`1px solid ${rule.actionVal===pct?C.accent:C.border}`,
+                              color:rule.actionVal===pct?"#fff":C.muted }}>{pct}% off</button>
+                        ))}
+                      </div>
+                    )}
+                    {rule.action==="add_bonus_points" && (
+                      <div style={{ display:"flex", gap:6, marginTop:6 }}>
+                        {[50,100,250,500].map(pts=>(
+                          <button key={pts} onClick={()=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,actionVal:pts}:r)}))}
+                            style={{ padding:"4px 10px", borderRadius:6, fontSize:11, fontWeight:700, cursor:"pointer",
+                              background:rule.actionVal===pts?"#a78bfa":"transparent",
+                              border:`1px solid ${rule.actionVal===pts?"#a78bfa":C.border}`,
+                              color:rule.actionVal===pts?"#fff":C.muted }}>+{pts} pts</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6, alignItems:"center", flexShrink:0 }}>
+                    <div onClick={()=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,enabled:!r.enabled}:r)}))}
+                      style={{ width:38, height:21, borderRadius:10, background:rule.enabled?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s" }}>
+                      <div style={{ position:"absolute", top:2, left:rule.enabled?18:2, width:17, height:17, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                    </div>
+                    <button onClick={()=>setPerks(p=>({...p,rules:p.rules.filter((_,i)=>i!==ri)}))}
+                      style={{ background:"transparent", border:"none", color:C.muted, fontSize:14, cursor:"pointer", lineHeight:1, padding:"2px 4px" }}>✕</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
             <div style={{ marginTop:20, display:"flex", gap:10, justifyContent:"flex-end" }}>
               <button onClick={()=>setStep(3)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>← Back</button>
               <button onClick={()=>setStep(5)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer" }}>Review & Confirm →</button>
@@ -7776,7 +8062,7 @@ function ScreenShowPlanner({ navigate, persona }) {
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={()=>setStep(4)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,showStartTime:Date.now()})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now()})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
                 🔴 Go Live Now
               </button>
             </div>
