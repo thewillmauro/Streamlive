@@ -7266,6 +7266,16 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                         fontSize:11, fontWeight:700, color:plan.color }}>
                         ✓ Active
                       </div>
+                    ) : plan.id === "enterprise" ? (
+                      <a href="mailto:sales@strmlive.com?subject=Enterprise%20Plan%20Inquiry"
+                        style={{ display:"block", width:"100%", boxSizing:"border-box",
+                          background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`,
+                          border:"none", borderRadius:8, padding:"9px",
+                          fontSize:12, fontWeight:800, color:"#fff", cursor:"pointer",
+                          textAlign:"center", textDecoration:"none",
+                          boxShadow:`0 4px 16px ${plan.color}33` }}>
+                        Contact Sales →
+                      </a>
                     ) : isDowngrade ? (
                       <button onClick={()=>openCheckout&&openCheckout(plan.id)}
                         style={{ width:"100%", background:"transparent", border:`1px solid ${C.border}`,
