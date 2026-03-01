@@ -8677,18 +8677,21 @@ function ScreenShowPlanner({ navigate, persona }) {
               </div>
             </div>
 
-            {/* ── GO LIVE FOOTER ── */}
-            <div style={{ display:"flex", gap:10, paddingBottom:8 }}>
-              <button onClick={()=>setStep(4)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"12px 20px", borderRadius:10, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now()})}
-                style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:15, fontWeight:800, padding:"14px", borderRadius:10, cursor:"pointer", letterSpacing:".02em" }}>
-                🔴 Go Live Now
-              </button>
-            </div>
           </div>
           );
         })()}
       </div>
+
+      {/* ── GO LIVE FOOTER — outside scroll area so it's always visible ── */}
+      {step===5 && (
+        <div style={{ padding:"14px 28px", borderTop:`1px solid ${C.border}`, background:C.surface, flexShrink:0, display:"flex", gap:10 }}>
+          <button onClick={()=>setStep(4)} style={{ background:"transparent", border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"12px 20px", borderRadius:10, cursor:"pointer" }}>← Edit</button>
+          <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now()})}
+            style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:15, fontWeight:800, padding:"14px", borderRadius:10, cursor:"pointer", letterSpacing:".02em", boxShadow:"0 4px 20px #10b98144" }}>
+            🔴 Go Live Now
+          </button>
+        </div>
+      )}
     </div>
   );
 }
