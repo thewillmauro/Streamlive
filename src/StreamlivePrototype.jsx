@@ -7521,10 +7521,12 @@ function ScreenShowPlanner({ navigate, persona }) {
     UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
   );
   const [perks, setPerks] = useState({
-    earlyAccess: true, earlyMinutes: 15,
-    newBuyerDiscount: true, newBuyerPct: 10,
-    vipFirstPick: true, doublePoints: false,
-    mysteryBonus: true, mysteryThreshold: 3,
+    earlyAccess: false, earlyMinutes: 15,
+    newBuyerDiscount: false, newBuyerPct: 10,
+    vipFirstPick: false, doublePoints: false,
+    mysteryBonus: false, mysteryThreshold: 3,
+    winbackAfterShow: false, tierUpAlert: false,
+    rules: [],
   });
 
   const togglePlatform = (pid) => setSelectedPlatforms(prev =>
@@ -7862,20 +7864,20 @@ function ScreenShowPlanner({ navigate, persona }) {
                   )
                 },
               ].map(perk=>(
-                <div key={perk.key} onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))}
-                  style={{ background:perks[perk.key]?`${C.accent}08`:C.surface, border:`1px solid ${perks[perk.key]?C.accent+"55":C.border}`, borderRadius:13, padding:"14px 16px", cursor:"pointer", transition:"all .15s" }}>
+                <div key={perk.key}
+                  style={{ background:perks[perk.key]?`${C.accent}08`:C.surface, border:`1px solid ${perks[perk.key]?C.accent+"55":C.border}`, borderRadius:13, padding:"14px 16px", transition:"all .15s" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                     <div style={{ width:34, height:34, borderRadius:9, background:perks[perk.key]?`${C.accent}22`:C.surface2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>{perk.icon}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{perk.title}</div>
                       <div style={{ fontSize:10, color:C.muted, lineHeight:1.4 }}>{perk.desc}</div>
                     </div>
-                    <div onClick={e=>e.stopPropagation()} style={{ width:38, height:21, borderRadius:10, background:perks[perk.key]?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}
-                      onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))}>
-                      <div style={{ position:"absolute", top:2, left:perks[perk.key]?18:2, width:17, height:17, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                    <div onClick={()=>setPerks(p=>({...p,[perk.key]:!p[perk.key]}))}
+                      style={{ width:44, height:24, borderRadius:12, background:perks[perk.key]?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0 }}>
+                      <div style={{ position:"absolute", top:3, left:perks[perk.key]?20:3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 4px rgba(0,0,0,.4)" }} />
                     </div>
                   </div>
-                  {perk.extra}
+                  {perk.extra && <div onClick={e=>e.stopPropagation()}>{perk.extra}</div>}
                 </div>
               ))}
             </div>
@@ -7933,10 +7935,10 @@ function ScreenShowPlanner({ navigate, persona }) {
                       <span style={{ fontSize:10, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>THEN</span>
                       <span style={{ fontSize:12, color:C.muted }}>{rule.actionLabel}</span>
                     </div>
-                    {rule.extra}
+                    {rule.extra && <div onClick={e=>e.stopPropagation()}>{rule.extra}</div>}
                   </div>
-                  <div onClick={rule.onToggle} style={{ width:38, height:21, borderRadius:10, background:rule.enabled?"#10b981":C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0, marginTop:2 }}>
-                    <div style={{ position:"absolute", top:2, left:rule.enabled?18:2, width:17, height:17, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                  <div onClick={rule.onToggle} style={{ width:44, height:24, borderRadius:12, background:rule.enabled?"#10b981":C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0, marginTop:2 }}>
+                    <div style={{ position:"absolute", top:3, left:rule.enabled?20:3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 4px rgba(0,0,0,.4)" }} />
                   </div>
                 </div>
               </div>
