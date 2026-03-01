@@ -6373,6 +6373,7 @@ function TeamTab({ persona, openCheckout }) {
   );
 }
 
+
 function ScreenSettings({ persona, initialTab, openCheckout }) {
   const [tab, setTab]           = useState(initialTab || "platforms");
   const [connections, setConnections] = useState({});
@@ -7119,85 +7120,28 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       {/* ── BILLING TAB ── */}
       {tab==="billing" && (() => {
         const PLANS = [
-          {
-            id: "starter",
-            name: "Starter",
-            price: "$79",
-            period: "/mo",
-            color: "#10b981",
-            tagline: "For sellers just getting started with live commerce",
-            features: [
-              "Up to 2 live shows/month",
-              "Buyers CRM & profiles",
-              "Catalog management",
-              "Campaign tools",
-              "Subscriber list",
-              "Basic analytics",
-            ],
-          },
-          {
-            id: "growth",
-            name: "Growth",
-            price: "$199",
-            period: "/mo",
-            color: "#7c3aed",
-            tagline: "For sellers scaling their live business across platforms",
-            badge: "Most Popular",
-            features: [
-              "Everything in Starter",
-              "Unlimited live shows",
-              "Analytics & AI insights",
-              "Loyalty program",
-              "Live Companion",
-              "SMS campaigns",
-              "Show auto-briefings",
-            ],
-          },
-          {
-            id: "pro",
-            name: "Pro",
-            price: "$399",
-            period: "/mo",
-            color: "#f59e0b",
-            tagline: "For professional sellers who want full production control",
-            features: [
-              "Everything in Growth",
-              "Production Suite",
-              "Camera & gimbal control",
-              "Multi-platform stream mgmt",
-              "White-label reports",
-              "Priority support",
-              "Advanced perks automation",
-            ],
-          },
-          {
-            id: "enterprise",
-            name: "Enterprise",
-            price: "Custom",
-            period: "",
-            color: "#a78bfa",
-            tagline: "For agencies managing multiple seller accounts",
-            features: [
-              "Everything in Pro",
-              "Up to 12 seller accounts",
-              "Team management & roles",
-              "White-label branding",
-              "Dedicated account manager",
-              "Custom integrations",
-              "SLA & uptime guarantee",
-            ],
-          },
+          { id:"starter",    name:"Starter",    price:"$79",    period:"/mo", color:"#10b981", tagline:"For sellers just getting started with live commerce",
+            features:["Up to 2 live shows/month","Buyers CRM & profiles","Catalog management","Campaign tools","Subscriber list","Basic analytics"] },
+          { id:"growth",     name:"Growth",     price:"$199",   period:"/mo", color:"#7c3aed", badge:"Most Popular", tagline:"For sellers scaling their live business across platforms",
+            features:["Everything in Starter","Unlimited live shows","Analytics & AI insights","Loyalty program","Live Companion","SMS campaigns","Show auto-briefings"] },
+          { id:"pro",        name:"Pro",        price:"$399",   period:"/mo", color:"#f59e0b", tagline:"For professional sellers who want full production control",
+            features:["Everything in Growth","Production Suite","Camera & gimbal control","Multi-platform stream mgmt","White-label reports","Priority support","Advanced perks automation"] },
+          { id:"enterprise", name:"Enterprise", price:"Custom", period:"",    color:"#a78bfa", tagline:"For agencies managing multiple seller accounts",
+            features:["Everything in Pro","Up to 12 seller accounts","Team management & roles","White-label branding","Dedicated account manager","Custom integrations","SLA & uptime guarantee"] },
         ];
+        const [sModal,  setSModal]  = React.useState(false);
+        const [sSent,   setSSent]   = React.useState(false);
+        const [sForm,   setSForm]   = React.useState({ firstName:"", lastName:"", email:"", phone:"", store:"", platforms:[], message:"" });
+        const canSubmit = sForm.firstName && sForm.email.includes("@");
 
+        const openSales = () => { setSSent(false); setSForm({ firstName:"", lastName:"", email:"", phone:"", store:"", platforms:[], message:"" }); setSModal(true); };
         const submitSales = async () => {
-          if (!salesForm.firstName || !salesForm.email.includes("@")) return;
-          const payload = { ...salesForm, platforms: salesForm.platforms.join(", "), source:"contact_sales_billing", timestamp: new Date().toISOString() };
-          try {
-            await fetch("/api/contact", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
-          } catch(e) {
+          if (!canSubmit) return;
+          const payload = { ...sForm, platforms: sForm.platforms.join(", "), source:"contact_sales_billing", timestamp: new Date().toISOString() };
+          try { await fetch("/api/contact", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) }); } catch(e) {
             try { await fetch("https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec", { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) }); } catch(e2) {}
           }
-          setSalesSent(true);
+          setSSent(true);
         };
 
         const currentPlan = persona.plan;
@@ -7206,210 +7150,140 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
 
         return (
           <>
-          <div className="fade-up">
-            {/* Header */}
-            <div style={{ marginBottom:22 }}>
-              <div style={{ fontSize:16, fontWeight:800, color:C.text, marginBottom:4 }}>Plans & Pricing</div>
-              <div style={{ fontSize:12, color:C.muted }}>
-                You're currently on the <span style={{ color:persona.planColor, fontWeight:700, textTransform:"capitalize" }}>{currentPlan}</span> plan · Renews March 1, 2026
-              </div>
-            </div>
-
-            {/* Plan cards */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14, marginBottom:20 }}>
-              {PLANS.map(plan => {
-                const isCurrent  = plan.id === currentPlan;
-                const isDowngrade = planOrder.indexOf(plan.id) < currentIdx;
-                const isUpgrade   = planOrder.indexOf(plan.id) > currentIdx;
-
-                return (
-                  <div key={plan.id} style={{
-                    background: isCurrent ? `${plan.color}10` : C.surface,
-                    border: `2px solid ${isCurrent ? plan.color+"66" : isUpgrade ? plan.color+"33" : C.border}`,
-                    borderRadius:14,
-                    padding:"18px 18px 16px",
-                    position:"relative",
-                    transition:"all .15s",
-                  }}>
-                    {/* Badge */}
-                    {plan.badge && !isCurrent && (
-                      <div style={{ position:"absolute", top:-10, left:"50%", transform:"translateX(-50%)",
-                        background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`,
-                        color:"#fff", fontSize:9, fontWeight:800, padding:"3px 12px", borderRadius:20,
-                        letterSpacing:".06em", whiteSpace:"nowrap", textTransform:"uppercase" }}>
-                        {plan.badge}
-                      </div>
-                    )}
-                    {isCurrent && (
-                      <div style={{ position:"absolute", top:-10, left:"50%", transform:"translateX(-50%)",
-                        background:plan.color, color:"#fff", fontSize:9, fontWeight:800,
-                        padding:"3px 12px", borderRadius:20, letterSpacing:".06em", whiteSpace:"nowrap", textTransform:"uppercase" }}>
-                        Current Plan
-                      </div>
-                    )}
-
-                    {/* Plan name + price */}
-                    <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:6, marginTop: (isCurrent||plan.badge) ? 4 : 0 }}>
-                      <div style={{ fontSize:14, fontWeight:800, color:isCurrent?plan.color:C.text }}>{plan.name}</div>
-                      <div style={{ display:"flex", alignItems:"baseline", gap:2 }}>
-                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:17, fontWeight:800, color:isCurrent?plan.color:C.text }}>{plan.price}</span>
-                        <span style={{ fontSize:9, color:C.muted }}>{plan.period}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ fontSize:10, color:C.muted, marginBottom:12, lineHeight:1.4 }}>{plan.tagline}</div>
-
-                    {/* Features */}
-                    <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:14 }}>
-                      {plan.features.map((f,i) => (
-                        <div key={i} style={{ display:"flex", alignItems:"center", gap:7 }}>
-                          <div style={{ width:13, height:13, borderRadius:3, background:`${plan.color}20`,
-                            border:`1px solid ${plan.color}44`, display:"flex", alignItems:"center",
-                            justifyContent:"center", fontSize:7, color:plan.color, fontWeight:800, flexShrink:0 }}>✓</div>
-                          <span style={{ fontSize:10, color: f.startsWith("Everything") ? plan.color : "#9ca3af" }}>{f}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* CTA button */}
-                    {isCurrent ? (
-                      <div style={{ width:"100%", background:`${plan.color}10`, border:`1px solid ${plan.color}33`,
-                        borderRadius:8, padding:"8px", textAlign:"center",
-                        fontSize:11, fontWeight:700, color:plan.color }}>
-                        ✓ Active
-                      </div>
-                    ) : plan.id === "enterprise" ? (
-                      <a href="mailto:sales@strmlive.com?subject=Enterprise%20Plan%20Inquiry"
-                        style={{ display:"block", width:"100%", boxSizing:"border-box",
-                          background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`,
-                          border:"none", borderRadius:8, padding:"9px",
-                          fontSize:12, fontWeight:800, color:"#fff", cursor:"pointer",
-                          textAlign:"center", textDecoration:"none",
-                          boxShadow:`0 4px 16px ${plan.color}33` }}>
-                        Contact Sales →
-                      </a>
-                    ) : isDowngrade ? (
-                      <button onClick={()=>openCheckout&&openCheckout(plan.id)}
-                        style={{ width:"100%", background:"transparent", border:`1px solid ${C.border}`,
-                          borderRadius:8, padding:"8px", fontSize:11, fontWeight:600,
-                          color:C.muted, cursor:"pointer" }}>
-                        Switch to {plan.name}
-                      </button>
-                    ) : (
-                      <button onClick={()=>openCheckout&&openCheckout(plan.id)}
-                        style={{ width:"100%", background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`,
-                          border:"none", borderRadius:8, padding:"9px",
-                          fontSize:12, fontWeight:800, color:"#fff", cursor:"pointer",
-                          boxShadow:`0 4px 16px ${plan.color}33` }}>
-                        Upgrade to {plan.name} →
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Footer */}
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-              {[
-                { icon:"🔒", label:"Secured by Stripe" },
-                { icon:"↩️", label:"Cancel anytime" },
-                { icon:"📞", label:"Support included" },
-                { icon:"🚫", label:"No setup fees" },
-              ].map((b,i) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
-                  <span style={{ fontSize:11 }}>{b.icon}</span>
-                  <span style={{ fontSize:10, fontWeight:600, color:C.muted }}>{b.label}</span>
+            <div className="fade-up">
+              {/* Header */}
+              <div style={{ marginBottom:22 }}>
+                <div style={{ fontSize:16, fontWeight:800, color:C.text, marginBottom:4 }}>Plans & Pricing</div>
+                <div style={{ fontSize:12, color:C.muted }}>
+                  You're currently on the <span style={{ color:persona.planColor, fontWeight:700, textTransform:"capitalize" }}>{currentPlan}</span> plan · Renews March 1, 2026
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* ── ENTERPRISE CONTACT SALES MODAL ── */}
-          {salesModal && (
-            <div onClick={e=>{ if(e.target===e.currentTarget) setSalesModal(false) }}
-              style={{ position:"fixed", inset:0, background:"rgba(4,4,18,.9)", backdropFilter:"blur(14px)", zIndex:9000, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-              <div style={{ background:"linear-gradient(160deg,#0d0d1e,#0a0a16)", border:"1px solid #2a2a4a", borderRadius:22, padding:"36px 32px", maxWidth:440, width:"100%", position:"relative", maxHeight:"85vh", overflowY:"auto", boxShadow:"0 40px 100px rgba(0,0,0,.9)" }}>
-                <button onClick={()=>setSalesModal(false)} style={{ position:"absolute", top:14, right:16, background:"none", border:"none", color:"#4b5563", fontSize:20, cursor:"pointer", lineHeight:1, padding:"4px 8px" }}>✕</button>
-                <div style={{ position:"absolute", top:-60, left:"50%", transform:"translateX(-50%)", width:200, height:200, borderRadius:"50%", background:"#a78bfa", opacity:0.07, filter:"blur(60px)", pointerEvents:"none" }}/>
-                {salesSent ? (
-                  <div style={{ textAlign:"center", padding:"20px 0" }}>
-                    <div style={{ fontSize:48, marginBottom:16 }}>🎉</div>
-                    <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:"#fff", marginBottom:10 }}>We'll be in touch!</div>
-                    <div style={{ fontSize:14, color:"#6b7280", lineHeight:1.65 }}>Thanks for reaching out. Our team will contact you within one business day.</div>
-                    <button onClick={()=>setSalesModal(false)} style={{ marginTop:24, background:"#1a1a2e", border:"1px solid #2a2a4a", color:"#9ca3af", fontSize:13, fontWeight:600, padding:"10px 24px", borderRadius:10, cursor:"pointer" }}>Close</button>
+              {/* Plan cards */}
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14, marginBottom:20 }}>
+                {PLANS.map(plan => {
+                  const isCurrent   = plan.id === currentPlan;
+                  const isDowngrade = planOrder.indexOf(plan.id) < currentIdx;
+                  const isUpgrade   = planOrder.indexOf(plan.id) > currentIdx;
+                  return (
+                    <div key={plan.id} style={{ background: isCurrent ? `${plan.color}10` : C.surface, border:`2px solid ${isCurrent ? plan.color+"66" : isUpgrade ? plan.color+"33" : C.border}`, borderRadius:14, padding:"18px 18px 16px", position:"relative", transition:"all .15s" }}>
+                      {plan.badge && !isCurrent && (
+                        <div style={{ position:"absolute", top:-10, left:"50%", transform:"translateX(-50%)", background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`, color:"#fff", fontSize:9, fontWeight:800, padding:"3px 12px", borderRadius:20, letterSpacing:".06em", whiteSpace:"nowrap", textTransform:"uppercase" }}>{plan.badge}</div>
+                      )}
+                      {isCurrent && (
+                        <div style={{ position:"absolute", top:-10, left:"50%", transform:"translateX(-50%)", background:plan.color, color:"#fff", fontSize:9, fontWeight:800, padding:"3px 12px", borderRadius:20, letterSpacing:".06em", whiteSpace:"nowrap", textTransform:"uppercase" }}>Current Plan</div>
+                      )}
+                      <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:6, marginTop:(isCurrent||plan.badge)?4:0 }}>
+                        <div style={{ fontSize:14, fontWeight:800, color:isCurrent?plan.color:C.text }}>{plan.name}</div>
+                        <div style={{ display:"flex", alignItems:"baseline", gap:2 }}>
+                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:17, fontWeight:800, color:isCurrent?plan.color:C.text }}>{plan.price}</span>
+                          <span style={{ fontSize:9, color:C.muted }}>{plan.period}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize:10, color:C.muted, marginBottom:12, lineHeight:1.4 }}>{plan.tagline}</div>
+                      <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:14 }}>
+                        {plan.features.map((f,i) => (
+                          <div key={i} style={{ display:"flex", alignItems:"center", gap:7 }}>
+                            <div style={{ width:13, height:13, borderRadius:3, background:`${plan.color}20`, border:`1px solid ${plan.color}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:7, color:plan.color, fontWeight:800, flexShrink:0 }}>✓</div>
+                            <span style={{ fontSize:10, color: f.startsWith("Everything") ? plan.color : "#9ca3af" }}>{f}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {isCurrent ? (
+                        <div style={{ width:"100%", background:`${plan.color}10`, border:`1px solid ${plan.color}33`, borderRadius:8, padding:"8px", textAlign:"center", fontSize:11, fontWeight:700, color:plan.color }}>✓ Active</div>
+                      ) : plan.id === "enterprise" ? (
+                        <button onClick={openSales} style={{ width:"100%", background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`, border:"none", borderRadius:8, padding:"9px", fontSize:12, fontWeight:800, color:"#fff", cursor:"pointer", boxShadow:`0 4px 16px ${plan.color}33` }}>Contact Sales →</button>
+                      ) : isDowngrade ? (
+                        <button onClick={()=>openCheckout&&openCheckout(plan.id)} style={{ width:"100%", background:"transparent", border:`1px solid ${C.border}`, borderRadius:8, padding:"8px", fontSize:11, fontWeight:600, color:C.muted, cursor:"pointer" }}>Switch to {plan.name}</button>
+                      ) : (
+                        <button onClick={()=>openCheckout&&openCheckout(plan.id)} style={{ width:"100%", background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`, border:"none", borderRadius:8, padding:"9px", fontSize:12, fontWeight:800, color:"#fff", cursor:"pointer", boxShadow:`0 4px 16px ${plan.color}33` }}>Upgrade to {plan.name} →</button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer badges */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+                {[{icon:"🔒",label:"Secured by Stripe"},{icon:"↩️",label:"Cancel anytime"},{icon:"📞",label:"Support included"},{icon:"🚫",label:"No setup fees"}].map((b,i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    <span style={{ fontSize:11 }}>{b.icon}</span>
+                    <span style={{ fontSize:10, fontWeight:600, color:C.muted }}>{b.label}</span>
                   </div>
-                ) : (
-                  <div>
-                    <div style={{ textAlign:"center", marginBottom:24 }}>
-                      <div style={{ width:52, height:52, borderRadius:14, background:"#a78bfa22", border:"1px solid #a78bfa44", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 14px" }}>🏢</div>
-                      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:"#fff", letterSpacing:"-0.4px", marginBottom:6 }}>Talk to Sales</div>
-                      <div style={{ fontSize:13, color:"#6b7280", lineHeight:1.6 }}>Tell us about your team. We'll reach out with custom pricing and a walkthrough.</div>
-                    </div>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
-                      <div>
-                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>First Name *</label>
-                        <input type="text" value={salesForm.firstName} onChange={e=>setSalesForm(f=>({...f,firstName:e.target.value}))} placeholder="Jamie"
-                          style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
-                      </div>
-                      <div>
-                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Last Name</label>
-                        <input type="text" value={salesForm.lastName} onChange={e=>setSalesForm(f=>({...f,lastName:e.target.value}))} placeholder="Ellis"
-                          style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
-                      </div>
-                    </div>
-                    <div style={{ marginBottom:10 }}>
-                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Work Email *</label>
-                      <input type="email" value={salesForm.email} onChange={e=>setSalesForm(f=>({...f,email:e.target.value}))} placeholder="jamie@company.com"
-                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
-                    </div>
-                    <div style={{ marginBottom:10 }}>
-                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Phone Number</label>
-                      <input type="tel" value={salesForm.phone} onChange={e=>setSalesForm(f=>({...f,phone:e.target.value}))} placeholder="(555) 000-0000"
-                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
-                    </div>
-                    <div style={{ marginBottom:10 }}>
-                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Store / Shop Name</label>
-                      <input type="text" value={salesForm.store} onChange={e=>setSalesForm(f=>({...f,store:e.target.value}))} placeholder="Your store or agency name…"
-                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
-                    </div>
-                    <div style={{ marginBottom:10 }}>
-                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Platforms you sell on</label>
-                      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
-                        {[["WN","Whatnot","167,139,250"],["TT","TikTok","244,63,94"],["IG","Instagram","236,72,153"],["AM","Amazon","245,158,11"],["YT","YouTube","248,68,68"]].map(([code,label,rgb])=>{
-                          const sel = salesForm.platforms.includes(code);
-                          const c = `rgb(${rgb})`;
-                          return (
-                            <button key={code} onClick={()=>setSalesForm(f=>({...f,platforms:sel?f.platforms.filter(p=>p!==code):[...f.platforms,code]}))}
-                              style={{ padding:"5px 11px", borderRadius:7, fontSize:11, fontWeight:700, cursor:"pointer", transition:"all .12s",
-                                background:sel?`rgba(${rgb},0.15)`:"#0a0a18",
-                                border:`1px solid ${sel?c:"#2a2a4a"}`,
-                                color:sel?c:"#6b7280" }}>
-                              {code} · {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div style={{ marginBottom:18 }}>
-                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Anything else? <span style={{fontWeight:400,textTransform:"none"}}>(optional)</span></label>
-                      <textarea value={salesForm.message} onChange={e=>setSalesForm(f=>({...f,message:e.target.value}))}
-                        placeholder="Tell us about your show schedule, volume, what you're looking to solve…" rows={3}
-                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif", resize:"vertical", lineHeight:1.6 }}/>
-                    </div>
-                    <button onClick={submitSales}
-                      style={{ width:"100%", background:(salesForm.firstName&&salesForm.email.includes("@"))?"linear-gradient(135deg,#7c3aed,#4f46e5)":"#141428",
-                        border:"none", color:(salesForm.firstName&&salesForm.email.includes("@"))?"#fff":"#374151",
-                        fontSize:14, fontWeight:700, padding:"13px", borderRadius:10,
-                        cursor:(salesForm.firstName&&salesForm.email.includes("@"))?"pointer":"default", transition:"all .15s" }}>
-                      Get in Touch →
-                    </button>
-                    <div style={{ fontSize:11, color:"#374151", textAlign:"center", marginTop:10 }}>We respond within one business day.</div>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
-          )}
+
+            {/* Contact Sales Modal */}
+            {sModal && (
+              <div onClick={e=>{ if(e.target===e.currentTarget) setSModal(false); }} style={{ position:"fixed", inset:0, background:"rgba(4,4,18,.9)", backdropFilter:"blur(14px)", zIndex:9000, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+                <div style={{ background:"linear-gradient(160deg,#0d0d1e,#0a0a16)", border:"1px solid #2a2a4a", borderRadius:22, padding:"36px 32px", maxWidth:440, width:"100%", position:"relative", maxHeight:"85vh", overflowY:"auto", boxShadow:"0 40px 100px rgba(0,0,0,.9)" }}>
+                  <button onClick={()=>setSModal(false)} style={{ position:"absolute", top:14, right:16, background:"none", border:"none", color:"#4b5563", fontSize:20, cursor:"pointer", lineHeight:1, padding:"4px 8px" }}>✕</button>
+                  {sSent ? (
+                    <div style={{ textAlign:"center", padding:"20px 0" }}>
+                      <div style={{ fontSize:48, marginBottom:16 }}>🎉</div>
+                      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:"#fff", marginBottom:10 }}>We'll be in touch!</div>
+                      <div style={{ fontSize:14, color:"#6b7280", lineHeight:1.65 }}>Our team will contact you within one business day.</div>
+                      <button onClick={()=>setSModal(false)} style={{ marginTop:24, background:"#1a1a2e", border:"1px solid #2a2a4a", color:"#9ca3af", fontSize:13, fontWeight:600, padding:"10px 24px", borderRadius:10, cursor:"pointer" }}>Close</button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ textAlign:"center", marginBottom:24 }}>
+                        <div style={{ width:52, height:52, borderRadius:14, background:"#a78bfa22", border:"1px solid #a78bfa44", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 14px" }}>🏢</div>
+                        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:"#fff", letterSpacing:"-0.4px", marginBottom:6 }}>Talk to Sales</div>
+                        <div style={{ fontSize:13, color:"#6b7280", lineHeight:1.6 }}>Tell us about your team. We'll reach out with custom pricing and a walkthrough.</div>
+                      </div>
+                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+                        <div>
+                          <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>First Name *</label>
+                          <input type="text" value={sForm.firstName} onChange={e=>setSForm(f=>({...f,firstName:e.target.value}))} placeholder="Jamie" style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box" }}/>
+                        </div>
+                        <div>
+                          <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Last Name</label>
+                          <input type="text" value={sForm.lastName} onChange={e=>setSForm(f=>({...f,lastName:e.target.value}))} placeholder="Ellis" style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box" }}/>
+                        </div>
+                      </div>
+                      <div style={{ marginBottom:10 }}>
+                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Work Email *</label>
+                        <input type="email" value={sForm.email} onChange={e=>setSForm(f=>({...f,email:e.target.value}))} placeholder="jamie@company.com" style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box" }}/>
+                      </div>
+                      <div style={{ marginBottom:10 }}>
+                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Phone Number</label>
+                        <input type="tel" value={sForm.phone} onChange={e=>setSForm(f=>({...f,phone:e.target.value}))} placeholder="(555) 000-0000" style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box" }}/>
+                      </div>
+                      <div style={{ marginBottom:10 }}>
+                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Store / Shop Name</label>
+                        <input type="text" value={sForm.store} onChange={e=>setSForm(f=>({...f,store:e.target.value}))} placeholder="Your store or agency name…" style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box" }}/>
+                      </div>
+                      <div style={{ marginBottom:10 }}>
+                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Platforms you sell on</label>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                          {[["WN","Whatnot","167,139,250"],["TT","TikTok","244,63,94"],["IG","Instagram","236,72,153"],["AM","Amazon","245,158,11"],["YT","YouTube","248,68,68"]].map(([code,label,rgb]) => {
+                            const sel = sForm.platforms.includes(code);
+                            const c = `rgb(${rgb})`;
+                            return (
+                              <button key={code} onClick={()=>setSForm(f=>({...f,platforms:sel?f.platforms.filter(p=>p!==code):[...f.platforms,code]}))}
+                                style={{ padding:"5px 11px", borderRadius:7, fontSize:11, fontWeight:700, cursor:"pointer", background:sel?`rgba(${rgb},0.15)`:"#0a0a18", border:`1px solid ${sel?c:"#2a2a4a"}`, color:sel?c:"#6b7280" }}>
+                                {code} · {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div style={{ marginBottom:18 }}>
+                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Anything else? <span style={{fontWeight:400,textTransform:"none"}}>(optional)</span></label>
+                        <textarea value={sForm.message} onChange={e=>setSForm(f=>({...f,message:e.target.value}))} placeholder="Tell us about your show schedule, volume, what you're looking to solve…" rows={3}
+                          style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", resize:"vertical", lineHeight:1.6 }}/>
+                      </div>
+                      <button onClick={submitSales} style={{ width:"100%", background:canSubmit?"linear-gradient(135deg,#7c3aed,#4f46e5)":"#141428", border:"none", color:canSubmit?"#fff":"#374151", fontSize:14, fontWeight:700, padding:"13px", borderRadius:10, cursor:canSubmit?"pointer":"default" }}>
+                        Get in Touch →
+                      </button>
+                      <div style={{ fontSize:11, color:"#374151", textAlign:"center", marginTop:10 }}>We respond within one business day.</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         );
       })()}
