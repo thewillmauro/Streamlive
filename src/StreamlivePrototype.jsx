@@ -7189,6 +7189,17 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
           },
         ];
 
+        const submitSales = async () => {
+          if (!salesForm.firstName || !salesForm.email.includes("@")) return;
+          const payload = { ...salesForm, platforms: salesForm.platforms.join(", "), source:"contact_sales_billing", timestamp: new Date().toISOString() };
+          try {
+            await fetch("/api/contact", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+          } catch(e) {
+            try { await fetch("https://script.google.com/macros/s/AKfycbw8rtlHDPcvCeV72NuAWWwJqig2mflATPpCt8G5PHUQQUB6KxaXKSVG5F6hxc3GJd8v7Q/exec", { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) }); } catch(e2) {}
+          }
+          setSalesSent(true);
+        };
+
         const currentPlan = persona.plan;
         const planOrder   = ["starter","growth","pro","enterprise"];
         const currentIdx  = planOrder.indexOf(currentPlan);
@@ -7312,6 +7323,92 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
               ))}
             </div>
           </div>
+
+          {/* ── ENTERPRISE CONTACT SALES MODAL ── */}
+          {salesModal && (
+            <div onClick={e=>{ if(e.target===e.currentTarget) setSalesModal(false) }}
+              style={{ position:"fixed", inset:0, background:"rgba(4,4,18,.9)", backdropFilter:"blur(14px)", zIndex:9000, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+              <div style={{ background:"linear-gradient(160deg,#0d0d1e,#0a0a16)", border:"1px solid #2a2a4a", borderRadius:22, padding:"36px 32px", maxWidth:440, width:"100%", position:"relative", maxHeight:"85vh", overflowY:"auto", boxShadow:"0 40px 100px rgba(0,0,0,.9)" }}>
+                <button onClick={()=>setSalesModal(false)} style={{ position:"absolute", top:14, right:16, background:"none", border:"none", color:"#4b5563", fontSize:20, cursor:"pointer", lineHeight:1, padding:"4px 8px" }}>✕</button>
+                <div style={{ position:"absolute", top:-60, left:"50%", transform:"translateX(-50%)", width:200, height:200, borderRadius:"50%", background:"#a78bfa", opacity:0.07, filter:"blur(60px)", pointerEvents:"none" }}/>
+                {salesSent ? (
+                  <div style={{ textAlign:"center", padding:"20px 0" }}>
+                    <div style={{ fontSize:48, marginBottom:16 }}>🎉</div>
+                    <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:"#fff", marginBottom:10 }}>We'll be in touch!</div>
+                    <div style={{ fontSize:14, color:"#6b7280", lineHeight:1.65 }}>Thanks for reaching out. Our team will contact you within one business day.</div>
+                    <button onClick={()=>setSalesModal(false)} style={{ marginTop:24, background:"#1a1a2e", border:"1px solid #2a2a4a", color:"#9ca3af", fontSize:13, fontWeight:600, padding:"10px 24px", borderRadius:10, cursor:"pointer" }}>Close</button>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ textAlign:"center", marginBottom:24 }}>
+                      <div style={{ width:52, height:52, borderRadius:14, background:"#a78bfa22", border:"1px solid #a78bfa44", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 14px" }}>🏢</div>
+                      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:"#fff", letterSpacing:"-0.4px", marginBottom:6 }}>Talk to Sales</div>
+                      <div style={{ fontSize:13, color:"#6b7280", lineHeight:1.6 }}>Tell us about your team. We'll reach out with custom pricing and a walkthrough.</div>
+                    </div>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+                      <div>
+                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>First Name *</label>
+                        <input type="text" value={salesForm.firstName} onChange={e=>setSalesForm(f=>({...f,firstName:e.target.value}))} placeholder="Jamie"
+                          style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
+                      </div>
+                      <div>
+                        <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Last Name</label>
+                        <input type="text" value={salesForm.lastName} onChange={e=>setSalesForm(f=>({...f,lastName:e.target.value}))} placeholder="Ellis"
+                          style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom:10 }}>
+                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Work Email *</label>
+                      <input type="email" value={salesForm.email} onChange={e=>setSalesForm(f=>({...f,email:e.target.value}))} placeholder="jamie@company.com"
+                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
+                    </div>
+                    <div style={{ marginBottom:10 }}>
+                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Phone Number</label>
+                      <input type="tel" value={salesForm.phone} onChange={e=>setSalesForm(f=>({...f,phone:e.target.value}))} placeholder="(555) 000-0000"
+                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
+                    </div>
+                    <div style={{ marginBottom:10 }}>
+                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Store / Shop Name</label>
+                      <input type="text" value={salesForm.store} onChange={e=>setSalesForm(f=>({...f,store:e.target.value}))} placeholder="Your store or agency name…"
+                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif" }}/>
+                    </div>
+                    <div style={{ marginBottom:10 }}>
+                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Platforms you sell on</label>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                        {[["WN","Whatnot","167,139,250"],["TT","TikTok","244,63,94"],["IG","Instagram","236,72,153"],["AM","Amazon","245,158,11"],["YT","YouTube","248,68,68"]].map(([code,label,rgb])=>{
+                          const sel = salesForm.platforms.includes(code);
+                          const c = `rgb(${rgb})`;
+                          return (
+                            <button key={code} onClick={()=>setSalesForm(f=>({...f,platforms:sel?f.platforms.filter(p=>p!==code):[...f.platforms,code]}))}
+                              style={{ padding:"5px 11px", borderRadius:7, fontSize:11, fontWeight:700, cursor:"pointer", transition:"all .12s",
+                                background:sel?`rgba(${rgb},0.15)`:"#0a0a18",
+                                border:`1px solid ${sel?c:"#2a2a4a"}`,
+                                color:sel?c:"#6b7280" }}>
+                              {code} · {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div style={{ marginBottom:18 }}>
+                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>Anything else? <span style={{fontWeight:400,textTransform:"none"}}>(optional)</span></label>
+                      <textarea value={salesForm.message} onChange={e=>setSalesForm(f=>({...f,message:e.target.value}))}
+                        placeholder="Tell us about your show schedule, volume, what you're looking to solve…" rows={3}
+                        style={{ width:"100%", background:"#0a0a18", border:"1px solid #2a2a4a", borderRadius:9, padding:"10px 12px", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif", resize:"vertical", lineHeight:1.6 }}/>
+                    </div>
+                    <button onClick={submitSales}
+                      style={{ width:"100%", background:(salesForm.firstName&&salesForm.email.includes("@"))?"linear-gradient(135deg,#7c3aed,#4f46e5)":"#141428",
+                        border:"none", color:(salesForm.firstName&&salesForm.email.includes("@"))?"#fff":"#374151",
+                        fontSize:14, fontWeight:700, padding:"13px", borderRadius:10,
+                        cursor:(salesForm.firstName&&salesForm.email.includes("@"))?"pointer":"default", transition:"all .15s" }}>
+                      Get in Touch →
+                    </button>
+                    <div style={{ fontSize:11, color:"#374151", textAlign:"center", marginTop:10 }}>We respond within one business day.</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         );
       })()}
 
