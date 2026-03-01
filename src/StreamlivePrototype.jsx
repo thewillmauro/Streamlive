@@ -2089,13 +2089,15 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
             </div>
           )}
 
-          {liveRunOrder.map((p, i) => {
+          {liveRunOrder.filter(p => p && p.id && p.name).map((p, i) => {
             const timing    = productTimings[p.id] || 90;
             const mins      = Math.floor(timing / 60);
             const secs      = timing % 60;
-            const invColor  = p.inventory < 25 ? "#ef4444" : p.inventory < 60 ? "#f59e0b" : "#10b981";
-            const presented = i < activeIdx;   // already spoken about — lock it
-            const isCurrent = i === activeIdx; // currently live on air
+            const inv       = (p.inventory !== null && p.inventory !== undefined) ? p.inventory : 999;
+            const invColor  = inv < 25 ? "#ef4444" : inv < 60 ? "#f59e0b" : "#10b981";
+            const safeIdx   = (typeof activeIdx === "number" && !isNaN(activeIdx)) ? activeIdx : 0;
+            const presented = i < safeIdx;   // already spoken about — lock it
+            const isCurrent = i === safeIdx; // currently live on air
 
             return (
               <div key={p.id}
@@ -2105,7 +2107,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
                   opacity: presented ? 0.6 : 1 }}>
 
                 {/* Top row */}
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom: presented ? 0 : 8 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom: presented ? "0px" : 8 }}>
 
                   {/* Reorder arrows — locked when presented */}
                   <div style={{ display:"flex", flexDirection:"column", gap:2, flexShrink:0 }}>
@@ -2152,7 +2154,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
                     <div style={{ display:"flex", gap:8, alignItems:"center", marginTop:2 }}>
                       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11,
                         fontWeight:700, color:"#10b981" }}>${p.price}</span>
-                      <span style={{ fontSize:9, color:invColor }}>{p.inventory} in stock</span>
+                      <span style={{ fontSize:9, color:invColor }}>{inv} in stock</span>
                       {presented && (
                         <span style={{ fontSize:9, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>
                           {mins > 0 ? `${mins}m ` : ""}{secs}s on air
