@@ -7117,33 +7117,193 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       )}
 
       {/* ── BILLING TAB ── */}
-      {tab==="billing" && (
-        <div className="fade-up" style={{ maxWidth:560 }}>
-          <div style={{ background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}44`, borderRadius:14, padding:"20px 22px", marginBottom:20 }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-              <div>
-                <div style={{ fontSize:10, color:persona.planColor, textTransform:"uppercase", letterSpacing:"0.09em", fontWeight:700, marginBottom:4 }}>Current Plan</div>
-                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, textTransform:"capitalize" }}>{persona.plan}</div>
-                <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>${persona.plan==="starter"?"$79":persona.plan==="growth"?"$199":persona.plan==="pro"?"$399":"$999"}/month · Renews March 1</div>
+      {tab==="billing" && (() => {
+        const PLANS = [
+          {
+            id: "starter",
+            name: "Starter",
+            price: "$79",
+            period: "/mo",
+            color: "#10b981",
+            tagline: "For sellers just getting started with live commerce",
+            features: [
+              "Up to 2 live shows/month",
+              "Buyers CRM & profiles",
+              "Catalog management",
+              "Campaign tools",
+              "Subscriber list",
+              "Basic analytics",
+            ],
+          },
+          {
+            id: "growth",
+            name: "Growth",
+            price: "$199",
+            period: "/mo",
+            color: "#7c3aed",
+            tagline: "For sellers scaling their live business across platforms",
+            badge: "Most Popular",
+            features: [
+              "Everything in Starter",
+              "Unlimited live shows",
+              "Analytics & AI insights",
+              "Loyalty program",
+              "Live Companion",
+              "SMS campaigns",
+              "Show auto-briefings",
+            ],
+          },
+          {
+            id: "pro",
+            name: "Pro",
+            price: "$399",
+            period: "/mo",
+            color: "#f59e0b",
+            tagline: "For professional sellers who want full production control",
+            features: [
+              "Everything in Growth",
+              "Production Suite",
+              "Camera & gimbal control",
+              "Multi-platform stream mgmt",
+              "White-label reports",
+              "Priority support",
+              "Advanced perks automation",
+            ],
+          },
+          {
+            id: "enterprise",
+            name: "Enterprise",
+            price: "$999",
+            period: "/mo",
+            color: "#a78bfa",
+            tagline: "For agencies managing multiple seller accounts",
+            features: [
+              "Everything in Pro",
+              "Up to 12 seller accounts",
+              "Team management & roles",
+              "White-label branding",
+              "Dedicated account manager",
+              "Custom integrations",
+              "SLA & uptime guarantee",
+            ],
+          },
+        ];
+
+        const currentPlan = persona.plan;
+        const planOrder   = ["starter","growth","pro","enterprise"];
+        const currentIdx  = planOrder.indexOf(currentPlan);
+
+        return (
+          <div className="fade-up">
+            {/* Header */}
+            <div style={{ marginBottom:22 }}>
+              <div style={{ fontSize:16, fontWeight:800, color:C.text, marginBottom:4 }}>Plans & Pricing</div>
+              <div style={{ fontSize:12, color:C.muted }}>
+                You're currently on the <span style={{ color:persona.planColor, fontWeight:700, textTransform:"capitalize" }}>{currentPlan}</span> plan · Renews March 1, 2026
               </div>
-              <button onClick={()=>openCheckout&&openCheckout(persona.plan)} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"8px 16px", borderRadius:8, cursor:"pointer" }}>Manage Plan</button>
+            </div>
+
+            {/* Plan cards */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14, marginBottom:20 }}>
+              {PLANS.map(plan => {
+                const isCurrent  = plan.id === currentPlan;
+                const isDowngrade = planOrder.indexOf(plan.id) < currentIdx;
+                const isUpgrade   = planOrder.indexOf(plan.id) > currentIdx;
+
+                return (
+                  <div key={plan.id} style={{
+                    background: isCurrent ? `${plan.color}10` : C.surface,
+                    border: `2px solid ${isCurrent ? plan.color+"66" : isUpgrade ? plan.color+"33" : C.border}`,
+                    borderRadius:14,
+                    padding:"18px 18px 16px",
+                    position:"relative",
+                    transition:"all .15s",
+                  }}>
+                    {/* Badge */}
+                    {plan.badge && !isCurrent && (
+                      <div style={{ position:"absolute", top:-10, left:"50%", transform:"translateX(-50%)",
+                        background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`,
+                        color:"#fff", fontSize:9, fontWeight:800, padding:"3px 12px", borderRadius:20,
+                        letterSpacing:".06em", whiteSpace:"nowrap", textTransform:"uppercase" }}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    {isCurrent && (
+                      <div style={{ position:"absolute", top:-10, left:"50%", transform:"translateX(-50%)",
+                        background:plan.color, color:"#fff", fontSize:9, fontWeight:800,
+                        padding:"3px 12px", borderRadius:20, letterSpacing:".06em", whiteSpace:"nowrap", textTransform:"uppercase" }}>
+                        Current Plan
+                      </div>
+                    )}
+
+                    {/* Plan name + price */}
+                    <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:6, marginTop: (isCurrent||plan.badge) ? 4 : 0 }}>
+                      <div style={{ fontSize:14, fontWeight:800, color:isCurrent?plan.color:C.text }}>{plan.name}</div>
+                      <div style={{ display:"flex", alignItems:"baseline", gap:2 }}>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:17, fontWeight:800, color:isCurrent?plan.color:C.text }}>{plan.price}</span>
+                        <span style={{ fontSize:9, color:C.muted }}>{plan.period}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize:10, color:C.muted, marginBottom:12, lineHeight:1.4 }}>{plan.tagline}</div>
+
+                    {/* Features */}
+                    <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:14 }}>
+                      {plan.features.map((f,i) => (
+                        <div key={i} style={{ display:"flex", alignItems:"center", gap:7 }}>
+                          <div style={{ width:13, height:13, borderRadius:3, background:`${plan.color}20`,
+                            border:`1px solid ${plan.color}44`, display:"flex", alignItems:"center",
+                            justifyContent:"center", fontSize:7, color:plan.color, fontWeight:800, flexShrink:0 }}>✓</div>
+                          <span style={{ fontSize:10, color: f.startsWith("Everything") ? plan.color : "#9ca3af" }}>{f}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* CTA button */}
+                    {isCurrent ? (
+                      <div style={{ width:"100%", background:`${plan.color}10`, border:`1px solid ${plan.color}33`,
+                        borderRadius:8, padding:"8px", textAlign:"center",
+                        fontSize:11, fontWeight:700, color:plan.color }}>
+                        ✓ Active
+                      </div>
+                    ) : isDowngrade ? (
+                      <button onClick={()=>openCheckout&&openCheckout(plan.id)}
+                        style={{ width:"100%", background:"transparent", border:`1px solid ${C.border}`,
+                          borderRadius:8, padding:"8px", fontSize:11, fontWeight:600,
+                          color:C.muted, cursor:"pointer" }}>
+                        Switch to {plan.name}
+                      </button>
+                    ) : (
+                      <button onClick={()=>openCheckout&&openCheckout(plan.id)}
+                        style={{ width:"100%", background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`,
+                          border:"none", borderRadius:8, padding:"9px",
+                          fontSize:12, fontWeight:800, color:"#fff", cursor:"pointer",
+                          boxShadow:`0 4px 16px ${plan.color}33` }}>
+                        Upgrade to {plan.name} →
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+              {[
+                { icon:"🔒", label:"Secured by Stripe" },
+                { icon:"↩️", label:"Cancel anytime" },
+                { icon:"📞", label:"Support included" },
+                { icon:"🚫", label:"No setup fees" },
+              ].map((b,i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                  <span style={{ fontSize:11 }}>{b.icon}</span>
+                  <span style={{ fontSize:10, fontWeight:600, color:C.muted }}>{b.label}</span>
+                </div>
+              ))}
             </div>
           </div>
-          {persona.plan !== "pro" && (
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Upgrade to {persona.plan==="starter"?"Growth":"Pro"}</div>
-              <div style={{ fontSize:11, color:C.muted, marginBottom:14 }}>
-                {persona.plan==="starter"
-                  ? "Unlock real-time Live Companion, AI weekly briefings, and SMS campaigns."
-                  : "Unlock advanced AI automation, white-label reports, and priority support."}
-              </div>
-              <button onClick={()=>openCheckout&&openCheckout(persona.plan==="starter"?"growth":"pro")} style={{ display:"inline-block", fontSize:12, fontWeight:700, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, padding:"9px 22px", borderRadius:9, border:"none", cursor:"pointer" }}>
-                Upgrade Now →
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── TEAM TAB ── */}
       {tab==="team" && (
