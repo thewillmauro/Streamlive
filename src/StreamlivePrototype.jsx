@@ -790,7 +790,7 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
 
   const insights = [
     { icon:"↑", text:`Thursday shows drive 2.3× more repeat buyers than weekends`, type:"opportunity", color:C.green },
-    { icon:"⚠", text:`${atRisk} buyers haven't ordered in 28+ days — a campaign now could recover ~$${(atRisk*320).toLocaleString()}`, type:"alert", color:C.amber },
+    { icon:"⚠", text:`${atRisk} buyers haven't ordered in 28+ days  -  a campaign now could recover ~$${(atRisk*320).toLocaleString()}`, type:"alert", color:C.amber },
     { icon:"★", text:`${vip} VIP buyers account for 61% of your total GMV`, type:"insight", color:"#a78bfa" },
   ];
 
@@ -2228,7 +2228,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
 
 
 // ── SceneTab — drag-and-drop set layout diagram ────────────────────────────────
-function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, audioLevel }) {
+function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, audioLevel, deviceConnections={}, onToggleDevice }) {
   const lightGlow = lightPattern==="celebrate" ? "hsl(300,100%,60%)"
     : lightPattern==="fire"    ? "#f97316"
     : lightPattern==="police"  ? "#ef4444"
@@ -2240,14 +2240,20 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
   const fx3Active = activeScene.includes("FX3") || activeScene.includes("Wide");
   const fx6Active = activeScene.includes("FX6") || activeScene.includes("Close");
 
+  // Use prop directly — no localStorage polling, updates instantly from Production tab
+  const isConnected = (id) => !!deviceConnections[id]?.connected;
+
+  // Map production device IDs to scene equipment IDs
+  const DEVICE_MAP = { fx3:"fx3", fx6:"fx6", elgato:"elgato", aputure:"aputure", ipad:"monitor", rode:"host" };
+
   const DEFAULT_POSITIONS = [
-    { id:"fx3",     label:"📷 FX3",       color:"#7c3aed", x:12,  y:66, w:52, h:36 },
-    { id:"fx6",     label:"🎥 FX6",       color:"#a78bfa", x:76,  y:66, w:52, h:36 },
-    { id:"elgato",  label:"💡 Key Light",  color:"#10b981", x:12,  y:8,  w:58, h:32 },
-    { id:"aputure", label:"🔆 Aputure",    color:"#4b5563", x:76,  y:8,  w:58, h:32 },
-    { id:"host",    label:"🧑 Host",       color:"#f59e0b", x:62,  y:42, w:44, h:38 },
-    { id:"products",label:"📦 Products",   color:"#38bdf8", x:108, y:43, w:46, h:32 },
-    { id:"monitor", label:"📱 Monitor",    color:"#3b82f6", x:18,  y:43, w:40, h:30 },
+    { id:"fx3",     label:"📷 FX3",        devId:"fx3",     color:"#7c3aed", x:10,  y:60, w:60, h:44 },
+    { id:"fx6",     label:"🎥 FX6",        devId:"fx6",     color:"#a78bfa", x:72,  y:60, w:60, h:44 },
+    { id:"elgato",  label:"💡 Key Light",   devId:"elgato",  color:"#10b981", x:10,  y:6,  w:66, h:38 },
+    { id:"aputure", label:"🔆 Aputure",     devId:"aputure", color:"#f59e0b", x:72,  y:6,  w:66, h:38 },
+    { id:"host",    label:"🧑 Host",        devId:"rode",    color:"#f43f5e", x:58,  y:38, w:52, h:44 },
+    { id:"products",label:"📦 Products",    devId:null,      color:"#38bdf8", x:112, y:40, w:52, h:38 },
+    { id:"monitor", label:"📱 iPad",        devId:"ipad",    color:"#3b82f6", x:14,  y:40, w:46, h:36 },
   ];
 
   const [equipment, setEquipment] = useState(() => DEFAULT_POSITIONS.map(d=>({...d})));
@@ -2284,63 +2290,76 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
     return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
   }, [dragging, dragOffset, equipment]);
 
-  const getStatus = (id) => {
-    if (id==="fx3")     return fx3Active  ? "● WIDE"    : "Standby";
-    if (id==="fx6")     return fx6Active  ? "● CLOSE"   : "Standby";
-    if (id==="elgato")  return lightGlow  ? "● ON"      : `${lightTemp}K`;
-    if (id==="aputure") return "✕ Offline";
-    if (id==="host")    return micMuted   ? "🔇 Muted"  : "🎙 On";
-    return "";
+  const getItemStatus = (item) => {
+    const connected = item.devId ? isConnected(item.devId) : true;
+    if (!connected) return { label:"✕ Not connected", color:"#4b5563" };
+    if (item.id==="fx3")      return fx3Active ? { label:"● WIDE", color:"#10b981" } : { label:"◉ Standby", color:"#7c3aed" };
+    if (item.id==="fx6")      return fx6Active ? { label:"● CLOSE-UP", color:"#10b981" } : { label:"◉ Standby", color:"#a78bfa" };
+    if (item.id==="elgato")   return lightGlow ? { label:"● ON", color:"#10b981" } : { label:`◉ ${lightTemp}K`, color:"#10b981" };
+    if (item.id==="aputure")  return { label:"◉ Connected", color:"#f59e0b" };
+    if (item.id==="host")     return micMuted ? { label:"🔇 Muted", color:"#ef4444" } : { label:"🎙 Live", color:"#10b981" };
+    if (item.id==="monitor")  return { label:"◉ AirPlay", color:"#3b82f6" };
+    if (item.id==="products") return { label:"📦 Active", color:"#38bdf8" };
+    return { label:"", color:C.muted };
   };
-  const isActive = (id) =>
-    (id==="fx3"    && fx3Active) ||
-    (id==="fx6"    && fx6Active) ||
-    (id==="elgato" && (lightGlow || lightPattern || lightColor!==null)) ||
-    (id==="host")  || (id==="products") || (id==="monitor");
+
+  const isActiveItem = (item) => {
+    if (item.devId && !isConnected(item.devId)) return false;
+    if (item.id==="fx3")     return fx3Active;
+    if (item.id==="fx6")     return fx6Active;
+    if (item.id==="elgato")  return true;
+    return true;
+  };
 
   return (
-    <div style={{ flex:1, overflowY:"auto", padding:"14px" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+    <div style={{ flex:1, display:"flex", flexDirection:"column", padding:"14px", overflow:"hidden" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10, flexShrink:0 }}>
         <div>
-          <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Set Layout</div>
-          <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>Drag equipment to match your real-world set</div>
+          <div style={{ fontSize:12, fontWeight:700, color:C.text }}>Set Layout</div>
+          <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>Drag equipment · Connect devices in Production tab</div>
         </div>
-        <button onClick={()=>setEquipment(DEFAULT_POSITIONS.map(d=>({...d})))}
-          style={{ fontSize:9, color:C.muted, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:6, padding:"4px 10px", cursor:"pointer" }}>
-          Reset
-        </button>
+        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          <span style={{ fontSize:9, color:C.muted }}>{Object.values(deviceConnections).filter(d=>d?.connected).length} connected</span>
+          <button onClick={()=>setEquipment(DEFAULT_POSITIONS.map(d=>({...d})))}
+            style={{ fontSize:9, color:C.muted, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:6, padding:"4px 10px", cursor:"pointer" }}>
+            Reset
+          </button>
+        </div>
       </div>
 
-      {/* Diagram */}
-      <div ref={diagramRef} style={{ position:"relative", width:"100%", height:244,
-        background:"#07070f", border:"1px solid #1a1a2e", borderRadius:12,
-        overflow:"hidden", marginBottom:12, userSelect:"none", cursor:dragging?"grabbing":"default" }}>
+      {/* Diagram — fills all remaining space */}
+      <div ref={diagramRef} style={{ position:"relative", width:"100%", flex:1, minHeight:0,
+        background:"#07070f", border:"1px solid #1a1a2e", borderRadius:14,
+        overflow:"hidden", userSelect:"none", cursor:dragging?"grabbing":"default" }}>
 
         {/* Grid lines */}
         {[1,2,3,4].map(i=><div key={"v"+i} style={{ position:"absolute", left:`${i*20}%`, top:0, bottom:0, width:1, background:"#0d0d1a" }}/>)}
         {[1,2,3,4].map(i=><div key={"h"+i} style={{ position:"absolute", top:`${i*20}%`, left:0, right:0, height:1, background:"#0d0d1a" }}/>)}
-        <div style={{ position:"absolute", bottom:5, left:"50%", transform:"translateX(-50%)", fontSize:7, fontWeight:700, color:"#1a1a2e", textTransform:"uppercase", letterSpacing:".1em", whiteSpace:"nowrap" }}>← STAGE FLOOR · AUDIENCE ▼ →</div>
+        <div style={{ position:"absolute", bottom:6, left:"50%", transform:"translateX(-50%)", fontSize:8, fontWeight:700, color:"#1a1a2e", textTransform:"uppercase", letterSpacing:".12em", whiteSpace:"nowrap" }}>← STAGE FLOOR &nbsp; AUDIENCE ▼ →</div>
 
         {/* Active scene badge */}
-        <div style={{ position:"absolute", top:6, left:"50%", transform:"translateX(-50%)", zIndex:10, whiteSpace:"nowrap" }}>
-          <div style={{ background:"#0d0d1a", border:"1px solid #a78bfa33", borderRadius:5, padding:"2px 9px", display:"flex", alignItems:"center", gap:5 }}>
-            <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite" }}/>
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, fontWeight:700, color:"#a78bfa" }}>{activeScene}</span>
+        <div style={{ position:"absolute", top:8, left:"50%", transform:"translateX(-50%)", zIndex:10, whiteSpace:"nowrap" }}>
+          <div style={{ background:"#0d0d1a", border:"1px solid #a78bfa44", borderRadius:6, padding:"3px 12px", display:"flex", alignItems:"center", gap:6 }}>
+            <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444" }}/>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, fontWeight:700, color:"#a78bfa" }}>{activeScene}</span>
           </div>
         </div>
 
         {/* Light glow */}
-        {lightGlow && (() => {
+        {lightGlow && isConnected("elgato") && (() => {
           const l = equipment.find(i=>i.id==="elgato");
           if (!l) return null;
           return <div style={{ position:"absolute", left:`${l.x + l.w/2}%`, top:`${l.y + l.h/2}%`,
-            width:200, height:200, borderRadius:"50%", transform:"translate(-50%,-50%)",
+            width:280, height:280, borderRadius:"50%", transform:"translate(-50%,-50%)",
             background:`radial-gradient(circle, ${lightGlow}22 0%, transparent 65%)`,
             pointerEvents:"none", transition:"all .4s" }}/>;
         })()}
 
-        {/* Camera sight lines */}
-        {[{id:"fx3",color:"#7c3aed",active:fx3Active},{id:"fx6",color:"#a78bfa",active:fx6Active}].map(cam=>{
+        {/* Camera sight lines — only when camera is connected */}
+        {[
+          {id:"fx3",color:"#7c3aed",active:fx3Active && isConnected("fx3")},
+          {id:"fx6",color:"#a78bfa",active:fx6Active && isConnected("fx6")}
+        ].map(cam=>{
           const c = equipment.find(i=>i.id===cam.id);
           const h = equipment.find(i=>i.id==="host");
           if (!c||!h) return null;
@@ -2348,60 +2367,75 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
           return (
             <svg key={cam.id} style={{ position:"absolute", inset:0, width:"100%", height:"100%", overflow:"visible", pointerEvents:"none" }}>
               <line x1={`${x1}%`} y1={`${y1}%`} x2={`${x2}%`} y2={`${y2}%`}
-                stroke={cam.active?cam.color+"88":"#1e1e3a33"} strokeWidth={1.5} strokeDasharray="5 3"/>
+                stroke={cam.active?cam.color+"88":"#1e1e3a22"} strokeWidth={cam.active?2:1} strokeDasharray="6 4"/>
             </svg>
           );
         })}
 
-        {/* Draggable items */}
+        {/* Draggable equipment items */}
         {equipment.map(item=>{
-          const isDrag  = dragging===item.id;
-          const active  = isActive(item.id);
-          const status  = getStatus(item.id);
+          const isDrag    = dragging===item.id;
+          const connected = item.devId ? isConnected(item.devId) : true;
+          const active    = isActiveItem(item);
+          const status    = getItemStatus(item);
           return (
             <div key={item.id} onMouseDown={e=>onMouseDown(e,item.id)}
               style={{ position:"absolute", left:`${item.x}%`, top:`${item.y}%`,
                 width:item.w, height:item.h,
-                background: isDrag?`${item.color}30`:active?`${item.color}18`:"#0a0a14",
-                border:`1.5px solid ${isDrag?item.color:active?item.color+"77":"#1e1e3a"}`,
-                borderRadius:8, cursor:isDrag?"grabbing":"grab",
-                boxShadow:isDrag?`0 6px 20px ${item.color}55`:active?`0 0 12px ${item.color}33`:"none",
-                transition:isDrag?"none":"box-shadow .2s, border-color .2s",
-                zIndex:isDrag?20:5,
+                background: isDrag?`${item.color}30`:connected?`${item.color}18`:"#0a0a14",
+                border:`1.5px solid ${isDrag?item.color:connected?item.color+(active?"aa":"44"):"#1e1e2e"}`,
+                borderRadius:10, cursor:isDrag?"grabbing":"grab",
+                boxShadow:isDrag?`0 8px 24px ${item.color}55`:connected&&active?`0 0 16px ${item.color}33`:"none",
+                transition:isDrag?"none":"all .25s",
+                zIndex:isDrag?20:5, opacity:connected?1:0.45,
                 display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-                padding:"2px", userSelect:"none" }}>
-              <span style={{ fontSize:13, lineHeight:1, marginBottom:1 }}>{item.label.split(" ")[0]}</span>
-              <span style={{ fontSize:7, fontWeight:700, color:active?item.color:"#374151",
+                padding:"4px", userSelect:"none" }}>
+              <span style={{ fontSize:16, lineHeight:1, marginBottom:2 }}>{item.label.split(" ")[0]}</span>
+              <span style={{ fontSize:9, fontWeight:700, color:connected?item.color:"#374151",
                 textAlign:"center", lineHeight:1.2, whiteSpace:"nowrap",
-                maxWidth:item.w-6, overflow:"hidden", textOverflow:"ellipsis" }}>
+                maxWidth:item.w-8, overflow:"hidden", textOverflow:"ellipsis" }}>
                 {item.label.replace(/^[^ ]+ /,"")}
               </span>
-              {status && <span style={{ fontSize:6, color:status.includes("●")?"#10b981":status.includes("✕")?"#ef4444":"#6b7280",
-                marginTop:1, textAlign:"center" }}>{status}</span>}
+              <span style={{ fontSize:7, color:status.color, marginTop:2, textAlign:"center", fontWeight:600 }}>{status.label}</span>
+              {!connected && (
+                <span style={{ position:"absolute", top:-4, right:-4, width:14, height:14, borderRadius:"50%",
+                  background:"#ef4444", border:"2px solid #07070f", display:"flex", alignItems:"center", justifyContent:"center", fontSize:7, color:"#fff", fontWeight:900 }}>✕</span>
+              )}
+              {connected && (
+                <span style={{ position:"absolute", top:-4, right:-4, width:14, height:14, borderRadius:"50%",
+                  background:"#10b981", border:"2px solid #07070f", display:"flex", alignItems:"center", justifyContent:"center", fontSize:7, color:"#fff", fontWeight:900 }}>✓</span>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Legend */}
-      <div style={{ background:"#07070f", border:"1px solid #1a1a2e", borderRadius:10, padding:"10px 12px" }}>
-        <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>Status</div>
-        <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
-          {[
-            { icon:"📷", color:"#7c3aed", label:"Sony FX3",  status:fx3Active?"● Wide — active":"Standby" },
-            { icon:"🎥", color:"#a78bfa", label:"Sony FX6",  status:fx6Active?"● Close-up — active":"Standby" },
-            { icon:"💡", color:lightGlow||"#10b981", label:"Key Light",
-              status:lightPattern?`◉ Pattern: ${lightPattern}`:lightColor!==null?`◉ Color: ${Math.round(lightColor)}°`:`White · ${lightTemp}K` },
-            { icon:"🎙", color:micMuted?"#ef4444":"#10b981", label:"Rode GO II",
-              status:micMuted?"🔇 Muted":`● Live · ${audioLevel}%` },
-          ].map((item,i)=>(
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span style={{ fontSize:12, width:18, textAlign:"center", flexShrink:0 }}>{item.icon}</span>
-              <span style={{ fontSize:10, fontWeight:600, color:item.color, width:96, flexShrink:0 }}>{item.label}</span>
-              <span style={{ fontSize:9, color:C.muted }}>{item.status}</span>
+      {/* Compact device status bar */}
+      <div style={{ flexShrink:0, display:"flex", gap:6, alignItems:"center", paddingTop:8, flexWrap:"wrap" }}>
+        {[
+          { icon:"📷", devId:"fx3",     label:"FX3",     color:"#7c3aed" },
+          { icon:"🎥", devId:"fx6",     label:"FX6",     color:"#a78bfa" },
+          { icon:"💡", devId:"elgato",  label:"Key",     color:"#10b981" },
+          { icon:"🔆", devId:"aputure", label:"Aputure", color:"#f59e0b" },
+          { icon:"🎙", devId:"rode",    label:"Mic",     color:"#f43f5e" },
+          { icon:"📱", devId:"ipad",    label:"iPad",    color:"#3b82f6" },
+          { icon:"🎛", devId:"rs4pro",  label:"Gimbal",  color:"#38bdf8" },
+          { icon:"💻", devId:"macbook", label:"OBS",     color:"#6b7280" },
+        ].map(item=>{
+          const on = isConnected(item.devId);
+          return (
+            <div key={item.devId} onClick={()=>onToggleDevice&&onToggleDevice(item.devId)}
+              title={on?"Click to disconnect":"Click to connect"}
+              style={{ display:"flex", alignItems:"center", gap:4, padding:"4px 9px",
+                background:on?`${item.color}15`:"#07070f",
+                border:`1px solid ${on?item.color+"44":"#1a1a2e"}`,
+                borderRadius:20, cursor:"pointer", transition:"all .15s" }}>
+              <span style={{ fontSize:11, opacity:on?1:0.35 }}>{item.icon}</span>
+              <span style={{ fontSize:9, fontWeight:700, color:on?item.color:"#374151" }}>{item.label}</span>
+              <div style={{ width:5, height:5, borderRadius:"50%", background:on?"#10b981":"#374151", flexShrink:0 }}/>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -3080,6 +3114,22 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const [audioLevel,    setAudioLevel]    = useState(72);
   const [streamHealth,  setStreamHealth]  = useState({ WN:true, TT:true, IG:true, AM:true, YT:true });
 
+  // Device connection state — always starts all-disconnected, user must connect manually
+  // Cleared from localStorage on every show start so state is intentional
+  const [liveDevices, setLiveDevices] = useState({});
+  useEffect(() => {
+    // Clear any saved device state so every show starts fresh (all disconnected)
+    try { localStorage.removeItem("STRMLIVE_DEVICES"); } catch(e) {}
+  }, []);
+  const toggleLiveDevice = (id) => {
+    setLiveDevices(prev => {
+      const wasConnected = prev[id]?.connected;
+      const updated = { ...prev, [id]: { connected: !wasConnected } };
+      try { localStorage.setItem("STRMLIVE_DEVICES", JSON.stringify(updated)); } catch(e) {}
+      return updated;
+    });
+  };
+
   // Simulate fluctuating audio level
   useEffect(()=>{
     const t = setInterval(()=>{
@@ -3364,6 +3414,41 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
           {/* ── PRODUCTION TAB ── */}
           {liveTab === "production" && (
             <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
+
+              {/* ── DEVICE CONNECTIONS ── */}
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Devices</div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
+                  {[
+                    { id:"fx3",     label:"Sony FX3",          icon:"📷", color:"#7c3aed" },
+                    { id:"fx6",     label:"Sony FX6",          icon:"🎥", color:"#a78bfa" },
+                    { id:"elgato",  label:"Elgato Key Light",  icon:"💡", color:"#10b981" },
+                    { id:"aputure", label:"Aputure 600d",      icon:"🔆", color:"#f59e0b" },
+                    { id:"rode",    label:"Rode GO II",        icon:"🎙", color:"#f43f5e" },
+                    { id:"rs4pro",  label:"DJI RS4 Pro",       icon:"🎛", color:"#38bdf8" },
+                    { id:"ipad",    label:"iPad Pro",          icon:"📱", color:"#3b82f6" },
+                    { id:"macbook", label:"MacBook / OBS",     icon:"💻", color:"#6b7280" },
+                  ].map(dev => {
+                    const on = liveDevices[dev.id]?.connected;
+                    return (
+                      <div key={dev.id} onClick={()=>toggleLiveDevice(dev.id)}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px",
+                          background:on?`${dev.color}12`:"#0a0a14",
+                          border:`1px solid ${on?dev.color+"44":"#1e1e3a"}`,
+                          borderRadius:9, cursor:"pointer", transition:"all .15s" }}>
+                        <span style={{ fontSize:14, flexShrink:0 }}>{dev.icon}</span>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:10, fontWeight:700, color:on?C.text:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{dev.label}</div>
+                          <div style={{ fontSize:9, color:on?dev.color:"#374151", marginTop:1, fontWeight:600 }}>{on?"● Connected":"○ Disconnected"}</div>
+                        </div>
+                        <div style={{ width:32, height:18, borderRadius:9, background:on?dev.color:"#1e1e3a", position:"relative", transition:"background .2s", flexShrink:0 }}>
+                          <div style={{ position:"absolute", top:2, left:on?14:2, width:14, height:14, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.4)" }}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* ── CAMERA FEEDS ── */}
               <div style={{ marginBottom:20 }}>
@@ -3696,6 +3781,8 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               lightTemp={lightTemp}
               micMuted={micMuted}
               audioLevel={audioLevel}
+              deviceConnections={liveDevices}
+              onToggleDevice={toggleLiveDevice}
             />
           )}
 
@@ -4230,7 +4317,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                             </div>
                             <div style={{ textAlign:"right" }}>
                               <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:800, color:mc }}>
-                                {avgMargin !== null ? `${(avgMargin*100).toFixed(1)}%` : "—"}
+                                {avgMargin !== null ? `${(avgMargin*100).toFixed(1)}%` : " - "}
                               </div>
                               <div style={{ fontSize:8, fontWeight:700, color:mc, textTransform:"uppercase", letterSpacing:"0.06em" }}>{ml}</div>
                             </div>
@@ -6945,7 +7032,7 @@ function LivePixelTab({ persona }) {
 <!-- End Live Pixel -->`;
 
   const shopifySnippet =
-`{% comment %} Live Pixel — paste in theme.liquid before </head> {% endcomment %}
+`{% comment %} Live Pixel  -  paste in theme.liquid before </head> {% endcomment %}
 <script>
 (function(w,d,s,l,i){
   w[l]=w[l]||[];
@@ -8132,7 +8219,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
     })();
     return {
       id:      `sh_live_${Date.now()}`,
-      title:   params?.showName ? params.showName : `Live Show — ${dateStr}`,
+      title:   params?.showName ? params.showName : `Live Show  -  ${dateStr}`,
       date:    dateStr,
       platform,
       platforms,
@@ -8142,7 +8229,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
       duration: durationStr,
       newBuyers,
       topItem: topItemId,
-      aiDebrief: `Show completed — ${liveBuyers.length} buyers, $${finalGMV.toLocaleString()} GMV, ${totalChanges} order${totalChanges!==1?"s":""} processed.`,
+      aiDebrief: `Show completed  -  ${liveBuyers.length} buyers, $${finalGMV.toLocaleString()} GMV, ${totalChanges} order${totalChanges!==1?"s":""} processed.`,
       isNew:   true,
     };
   };
@@ -8191,7 +8278,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
               onClick={totalChanges > 0 ? processAll : () => { if (onShowComplete) onShowComplete(buildCompletedShow()); navigate("shows"); }}
               disabled={processing}
               style={{ background: totalChanges > 0 ? `linear-gradient(135deg,${C.green},#059669)` : `linear-gradient(135deg,#a78bfa,#7c3aed)`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer", minWidth:180 }}>
-              {processing ? "Processing…" : totalChanges > 0 ? `Process All Changes (${totalChanges})` : "Done — View Shows →"}
+              {processing ? "Processing…" : totalChanges > 0 ? `Process All Changes (${totalChanges})` : "Done  -  View Shows →"}
             </button>
           )}
           {processed && <div style={{ display:"flex", alignItems:"center", gap:8, background:"#0a1e16", border:"1px solid #10b98144", borderRadius:10, padding:"10px 18px" }}><span style={{ fontSize:14, color:C.green }}>✓</span><span style={{ fontSize:13, fontWeight:700, color:C.green }}>All changes processed!</span></div>}
@@ -9064,43 +9151,75 @@ function ScreenProduction({ persona, navigate }) {
   const [tab, setTab] = useState("equipment");
 
   // ── EQUIPMENT STATE ──────────────────────────────────────────────────────────
-  const [devices, setDevices] = useState([
-    { id:"fx3",    name:"Sony FX3",        category:"camera",  icon:"📷", brand:"Sony",   connected:true,  battery:null, signal:5,
+  const DEFAULT_DEVICES = [
+    { id:"fx3",    name:"Sony FX3",        category:"camera",  icon:"📷", brand:"Sony",   connected:false, battery:null, signal:0,
       settings:{ iso:800,  aperture:"f/2.8", shutter:"1/60",  wb:"5600K", focus:"AF-C",  rec:false },
-      sdk:"Sony Camera Remote SDK", sdkStatus:"connected" },
-    { id:"fx6",    name:"Sony FX6",        category:"camera",  icon:"🎥", brand:"Sony",   connected:true,  battery:null, signal:5,
+      sdk:"Sony Camera Remote SDK", sdkStatus:"disconnected" },
+    { id:"fx6",    name:"Sony FX6",        category:"camera",  icon:"🎥", brand:"Sony",   connected:false, battery:null, signal:0,
       settings:{ iso:1600, aperture:"f/4",   shutter:"1/120", wb:"5600K", focus:"AF-S",  rec:false },
-      sdk:"Sony Camera Remote SDK", sdkStatus:"connected" },
-    { id:"rs4pro", name:"DJI RS4 Pro",     category:"gimbal",  icon:"🎛", brand:"DJI",    connected:true,  battery:81,   signal:4,
+      sdk:"Sony Camera Remote SDK", sdkStatus:"disconnected" },
+    { id:"rs4pro", name:"DJI RS4 Pro",     category:"gimbal",  icon:"🎛", brand:"DJI",    connected:false, battery:null, signal:0,
       settings:{ mode:"Pan Follow", tilt:0, pan:0, roll:0, speed:60, tracking:false },
-      sdk:"DJI Ronin SDK", sdkStatus:"connected" },
-    { id:"ipad",   name:"iPad Pro 12.9in", category:"monitor", icon:"📱", brand:"Apple",  connected:true,  battery:84,   signal:5,
+      sdk:"DJI Ronin SDK", sdkStatus:"disconnected" },
+    { id:"ipad",   name:"iPad Pro 12.9in", category:"monitor", icon:"📱", brand:"Apple",  connected:false, battery:null, signal:0,
       settings:{ brightness:80, app:"Streamlive Chat" },
-      sdk:"AirPlay / USB", sdkStatus:"connected" },
-    { id:"lg27",   name:"LG 27in Monitor", category:"monitor", icon:"🖥", brand:"LG",     connected:true,  battery:null, signal:5,
+      sdk:"AirPlay / USB", sdkStatus:"disconnected" },
+    { id:"lg27",   name:"LG 27in Monitor", category:"monitor", icon:"🖥", brand:"LG",     connected:false, battery:null, signal:0,
       settings:{ brightness:75, input:"HDMI 2" },
-      sdk:"HDMI", sdkStatus:"connected" },
-    { id:"elgato", name:"Elgato Key Light", category:"light",  icon:"💡", brand:"Elgato", connected:true,  battery:null, signal:5,
-      settings:{ brightness:80, temp:5500, on:true },
-      sdk:"Elgato HTTP API", sdkStatus:"connected" },
+      sdk:"HDMI", sdkStatus:"disconnected" },
+    { id:"elgato", name:"Elgato Key Light", category:"light",  icon:"💡", brand:"Elgato", connected:false, battery:null, signal:0,
+      settings:{ brightness:80, temp:5500, on:false },
+      sdk:"Elgato HTTP API", sdkStatus:"disconnected" },
     { id:"aputure",name:"Aputure 600d",    category:"light",   icon:"🔆", brand:"Aputure",connected:false, battery:null, signal:0,
       settings:{ brightness:100, temp:5600, on:false, effect:"none" },
       sdk:"Sidus Link SDK", sdkStatus:"disconnected" },
-    { id:"rode",   name:"Rode Wireless GO II", category:"audio", icon:"🎙", brand:"Rode", connected:true,  battery:72,   signal:4,
+    { id:"rode",   name:"Rode Wireless GO II", category:"audio", icon:"🎙", brand:"Rode", connected:false, battery:null, signal:0,
       settings:{ gain:0, mute:false, channel:"A+B" },
-      sdk:"USB Audio", sdkStatus:"connected" },
-    { id:"macbook",name:"MacBook Pro M3",  category:"encoder", icon:"💻", brand:"Apple",  connected:true,  battery:91,   signal:5,
-      settings:{ encoder:"Apple VT H.264", bitrate:6000, fps:60, res:"1920×1080" },
-      sdk:"OBS WebSocket v5", sdkStatus:"connected" },
-  ]);
+      sdk:"USB Audio", sdkStatus:"disconnected" },
+    { id:"macbook",name:"MacBook Pro M3",  category:"encoder", icon:"💻", brand:"Apple",  connected:false, battery:null, signal:0,
+      settings:{ encoder:"Apple VT H.264", bitrate:6000, fps:60, res:"1920x1080" },
+      sdk:"OBS WebSocket v5", sdkStatus:"disconnected" },
+  ];
 
-  const [selectedDevice, setSelectedDevice] = useState("fx3");
+  // Always start all devices disconnected — user must connect manually each session
+  const [devices, setDevices] = useState(() => DEFAULT_DEVICES);
+
+  // Persist device connection state whenever it changes
+  const saveDevices = (updated) => {
+    try {
+      const toSave = Object.fromEntries(updated.map(d => [d.id, { connected: d.connected, battery: d.battery, signal: d.signal }]));
+      localStorage.setItem("STRMLIVE_DEVICES", JSON.stringify(toSave));
+    } catch(e) {}
+  };
+
+  const connectDevice = (id) => {
+    const batteryMap = { rs4pro:81, ipad:84, rode:72, macbook:91 };
+    const signalMap  = { fx3:5, fx6:5, rs4pro:4, ipad:5, lg27:5, elgato:5, rode:4, macbook:5 };
+    setDevices(prev => {
+      const updated = prev.map(d => d.id===id
+        ? { ...d, connected:true, sdkStatus:"connected", battery: batteryMap[id] ?? d.battery, signal: signalMap[id] ?? 5 }
+        : d
+      );
+      saveDevices(updated);
+      return updated;
+    });
+  };
+
+  const disconnectDevice = (id) => {
+    setDevices(prev => {
+      const updated = prev.map(d => d.id===id ? { ...d, connected:false, sdkStatus:"disconnected", signal:0 } : d);
+      saveDevices(updated);
+      return updated;
+    });
+  };
+
+  const [selectedDevice, setSelectedDevice] = useState(null);
   const [addingDevice, setAddingDevice]     = useState(false);
   const [scanning, setScanning]             = useState(false);
   const [scannedDevices, setScannedDevices] = useState([]);
 
   // ── OBS / SCENE STATE ────────────────────────────────────────────────────────
-  const [obsConnected, setObsConnected]   = useState(true);
+  const [obsConnected, setObsConnected]   = useState(false);
   const [activeScene, setActiveScene]     = useState("Wide — FX3");
   const [transitionType, setTransitionType] = useState("Cut");
   const [scenes, setScenes] = useState([
@@ -9140,7 +9259,9 @@ function ScreenProduction({ persona, navigate }) {
   };
 
   const toggleDeviceConnected = (devId) => {
-    setDevices(prev=>prev.map(d=>d.id===devId?{...d,connected:!d.connected,sdkStatus:d.connected?"disconnected":"connected"}:d));
+    const dev = devices.find(d => d.id === devId);
+    if (dev?.connected) disconnectDevice(devId);
+    else connectDevice(devId);
   };
 
   const scanForDevices = () => {
