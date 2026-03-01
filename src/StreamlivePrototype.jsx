@@ -8250,26 +8250,18 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
         {tab==="overview" && (
           <div>
             {/* KPI row */}
-            {noData ? (
-              <div style={{ textAlign:"center", padding:"60px 0", color:C.muted }}>
-                <div style={{ fontSize:32, marginBottom:12 }}>📊</div>
-                <div style={{ fontSize:14, fontWeight:600, color:C.text, marginBottom:6 }}>No data for this period</div>
-                <div style={{ fontSize:12 }}>Try selecting a wider date range.</div>
-              </div>
-            ) : (<>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <KPI label="Total GMV"        value={`$${totalGMV.toLocaleString()}`}  color={C.green}    trend={gmvTrend_pct}  sub={`${filteredShows.length} show${filteredShows.length!==1?"s":""}`} />
-              <KPI label="Avg Order Value"  value={`$${avgOrderValue}`}              color={C.accent}   trend={null}          sub="per transaction" />
-              <KPI label="Avg Customer LTV" value={`$${avgLTV}`}                     color="#f59e0b"    trend={ltvTrend_pct}  sub="per buyer" />
-              <KPI label="Repeat Rate"      value={`${avgRepeatRate}%`}              color="#a78bfa"    trend={null}          sub="across shows" />
+              <KPI label="Total GMV"        value={totalGMV>0?`$${totalGMV.toLocaleString()}`:"—"}  color={C.green}    trend={gmvTrend_pct}  sub={`${filteredShows.length} show${filteredShows.length!==1?"s":""}`} />
+              <KPI label="Avg Order Value"  value={avgOrderValue>0?`$${avgOrderValue}`:"—"}          color={C.accent}   trend={null}          sub="per transaction" />
+              <KPI label="Avg Customer LTV" value={avgLTV>0?`$${avgLTV}`:"—"}                        color="#f59e0b"    trend={ltvTrend_pct}  sub="per buyer" />
+              <KPI label="Repeat Rate"      value={avgRepeatRate>0?`${avgRepeatRate}%`:"—"}          color="#a78bfa"    trend={null}          sub="across shows" />
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
-              <KPI label="Total Buyers"     value={totalBuyers}                       color={C.text}     trend={buyerTrend_pct} sub={`${vipBuyers.length} VIP`} />
-              <KPI label="Total Orders"     value={totalOrders}                       color={C.text}     trend={null}           sub={`${filteredShows.length} shows`} />
-              <KPI label="Campaign GMV"     value={`$${campaignGMV.toLocaleString()}`} color={C.green}  trend={null}           sub={`${filteredCampaigns.length} campaigns`} />
-              <KPI label="Avg Conv. Rate"   value={`${avgConvRate}%`}                color="#f59e0b"    trend={null}           sub="campaign avg" />
+              <KPI label="Total Buyers"     value={totalBuyers||"—"}                                   color={C.text}     trend={buyerTrend_pct} sub={`${vipBuyers.length} VIP`} />
+              <KPI label="Total Orders"     value={totalOrders||"—"}                                   color={C.text}     trend={null}           sub={`${filteredShows.length} shows`} />
+              <KPI label="Campaign GMV"     value={filteredCampaigns.length>0?`$${campaignGMV.toLocaleString()}`:"—"} color={C.green}  trend={null}  sub={`${filteredCampaigns.length} campaigns`} />
+              <KPI label="Avg Conv. Rate"   value={avgConvRate>0?`${avgConvRate}%`:"—"}              color="#f59e0b"    trend={null}           sub="campaign avg" />
             </div>
-            </>)}
 
             {/* GMV Trend + Platform split */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16, marginBottom:20 }}>
@@ -8635,7 +8627,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   icon:"💰",
                   color:C.green,
                   title:"Your VIP segment is underserved",
-                  insight:`${vipBuyers.length} VIP buyers generate ${Math.round(vipGMV/totalGMV*100)}% of total GMV but haven't had a dedicated VIP-only show in 30+ days. Based on their average spend of $${Math.round(vipGMV/vipBuyers.length).toLocaleString()}/buyer, a private VIP show could generate an estimated $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length/2).toLocaleString()}–$${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length).toLocaleString()} in a single session.`,
+                  insight:`${vipBuyers.length} VIP buyers generate ${Math.round(vipGMV/totalGMV*100)}% of total GMV but haven't had a dedicated VIP-only show in 30+ days. Based on their average spend of $${Math.round(vipGMV/vipBuyers.length).toLocaleString()}/buyer, a private VIP show could generate an estimated $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length/2).toLocaleString()} to $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length).toLocaleString()} in a single session.`,
                   action:"Schedule VIP Show",
                   impact:"$2,400–$4,820 est. GMV",
                   confidence:91,
