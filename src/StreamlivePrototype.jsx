@@ -3198,18 +3198,49 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const [audioLevel,    setAudioLevel]    = useState(72);
   const [streamHealth,  setStreamHealth]  = useState({ WN:true, TT:true, IG:true, AM:true, YT:true });
 
-  // Device connection state — always starts all-disconnected, user must connect manually
-  // Cleared from localStorage on every show start so state is intentional
-  const [liveDevices, setLiveDevices] = useState({});
+  // Sync stream health with platform connections loaded from Settings
   useEffect(() => {
-    // Clear any saved device state so every show starts fresh (all disconnected)
-    try { localStorage.removeItem("STRMLIVE_DEVICES"); } catch(e) {}
+    if (Object.keys(platformConnections).length === 0) return;
+    const PLATFORM_KEYS = { wn:"WN", tt:"TT", ig:"IG", am:"AM", yt:"YT" };
+    setStreamHealth(prev => {
+      const updated = { ...prev };
+      Object.entries(PLATFORM_KEYS).forEach(([connKey, streamKey]) => {
+        // If platform is connected in Settings, default to live; if not connected, mark offline
+        if (platformConnections[connKey]) updated[streamKey] = true;
+        else updated[streamKey] = false;
+      });
+      return updated;
+    });
+  }, [platformConnections]);
+
+  // Device connection state — loaded from shared storage (Production Suite writes here)
+  const [liveDevices, setLiveDevices] = useState({});
+  const [platformConnections, setPlatformConnections] = useState({});
+
+  useEffect(() => {
+    (async () => {
+      // Load physical device connections set in Production Suite
+      try {
+        const devResult = await window.storage.get("strmlive:devices");
+        if (devResult?.value) {
+          const saved = JSON.parse(devResult.value);
+          setLiveDevices(saved);
+        }
+      } catch(e) {}
+      // Load platform connections set in Settings
+      try {
+        const connResult = await window.storage.get("strmlive:connections");
+        if (connResult?.value) setPlatformConnections(JSON.parse(connResult.value));
+      } catch(e) {}
+    })();
   }, []);
+
   const toggleLiveDevice = (id) => {
     setLiveDevices(prev => {
       const wasConnected = prev[id]?.connected;
       const updated = { ...prev, [id]: { connected: !wasConnected } };
-      try { localStorage.setItem("STRMLIVE_DEVICES", JSON.stringify(updated)); } catch(e) {}
+      // Write back to shared storage so Production Suite stays in sync
+      window.storage.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{});
       return updated;
     });
   };
@@ -3557,7 +3588,14 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
 
               {/* ── DEVICE CONNECTIONS ── */}
               <div style={{ marginBottom:20 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Devices</div>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em" }}>Devices</div>
+                  {Object.values(liveDevices).filter(d=>d?.connected).length > 0 && (
+                    <div style={{ fontSize:9, fontWeight:700, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"3px 8px", borderRadius:6 }}>
+                      ⚡ {Object.values(liveDevices).filter(d=>d?.connected).length} synced from Production
+                    </div>
+                  )}
+                </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
                   {[
                     { id:"fx3",     label:"Sony FX3",          icon:"📷", color:"#7c3aed" },
@@ -4100,6 +4138,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                               <span style={{ fontSize:13, fontWeight:700, color:pm.color }}>{pm.label}</span>
                               <span style={{ fontSize:9, fontWeight:800, color:up?"#10b981":"#ef4444", background:up?"#0a1e16":"#1e0808", border:`1px solid ${up?"#10b98133":"#ef444433"}`, padding:"2px 8px", borderRadius:4 }}>{up?"● LIVE":"✕ OFFLINE"}</span>
+                              {platformConnections[pid.toLowerCase()] && <span style={{ fontSize:8, fontWeight:700, color:"#38bdf8", background:"#0c1a2e", border:"1px solid #38bdf822", padding:"2px 6px", borderRadius:4 }}>⚡ Auth'd</span>}
                             </div>
                           </div>
                           <button onClick={()=>setStreamHealth(prev=>({...prev,[pid]:!prev[pid]}))}
@@ -9673,14 +9712,29 @@ function ScreenProduction({ persona, navigate }) {
       sdk:"OBS WebSocket v5", sdkStatus:"disconnected" },
   ];
 
-  // Always start all devices disconnected — user must connect manually each session
   const [devices, setDevices] = useState(() => DEFAULT_DEVICES);
 
-  // Persist device connection state whenever it changes
-  const saveDevices = (updated) => {
+  // Load persisted device connections from shared storage on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await window.storage.get("strmlive:devices");
+        if (result?.value) {
+          const saved = JSON.parse(result.value);
+          setDevices(prev => prev.map(d => saved[d.id]
+            ? { ...d, connected: saved[d.id].connected, battery: saved[d.id].battery ?? d.battery, signal: saved[d.id].signal ?? d.signal, sdkStatus: saved[d.id].connected ? "connected" : "disconnected" }
+            : d
+          ));
+        }
+      } catch(e) {}
+    })();
+  }, []);
+
+  // Persist device connection state to shared storage (window.storage) so Live Show can read it
+  const saveDevices = async (updated) => {
     try {
       const toSave = Object.fromEntries(updated.map(d => [d.id, { connected: d.connected, battery: d.battery, signal: d.signal }]));
-      localStorage.setItem("STRMLIVE_DEVICES", JSON.stringify(toSave));
+      await window.storage.set("strmlive:devices", JSON.stringify(toSave));
     } catch(e) {}
   };
 
