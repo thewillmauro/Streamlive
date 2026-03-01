@@ -7634,12 +7634,8 @@ function ScreenShowPlanner({ navigate, persona }) {
   const [step, setStep] = useState(1);
   const [showName, setShowName] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState(["WN"]);
-  const [selectedProducts, setSelectedProducts] = useState(
-    UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
-  );
-  const [runOrder, setRunOrder] = useState(
-    UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)
-  );
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [runOrder, setRunOrder] = useState([]);
   const [perks, setPerks] = useState({
     earlyAccess: false, earlyMinutes: 15,
     newBuyerDiscount: false, newBuyerPct: 10,
@@ -7798,36 +7794,100 @@ function ScreenShowPlanner({ navigate, persona }) {
             </div>
           </div>
         )}
-        {step===2 && (
+        {step===2 && (() => {
+          const allSelected = showReadyProducts.length > 0 && showReadyProducts.every(p => selectedProducts.find(s=>s.id===p.id));
+          const toggleAll = () => {
+            if (allSelected) {
+              setSelectedProducts([]);
+              setRunOrder([]);
+            } else {
+              setSelectedProducts(showReadyProducts);
+              setRunOrder(showReadyProducts);
+            }
+          };
+          const toggleOne = (p) => {
+            const sel = selectedProducts.find(s=>s.id===p.id);
+            setSelectedProducts(prev => sel ? prev.filter(s=>s.id!==p.id) : [...prev, p]);
+            setRunOrder(prev => sel ? prev.filter(s=>s.id!==p.id) : [...prev, p]);
+          };
+          return (
           <div>
-            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Choose products for this show</div>
-            <div style={{ fontSize:12, color:C.muted, marginBottom:16 }}>{selectedProducts.length} selected · AI recommends your show-ready items ranked by performance</div>
+            {/* Header row */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:C.text }}>Choose products for this show</div>
+                <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>
+                  {selectedProducts.length === 0
+                    ? "No products selected — tap to add"
+                    : `${selectedProducts.length} of ${showReadyProducts.length} selected`}
+                </div>
+              </div>
+              {/* Select All toggle */}
+              <div onClick={toggleAll} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 14px",
+                background: allSelected ? `${C.accent}15` : C.surface,
+                border:`1px solid ${allSelected ? C.accent+"55" : C.border}`,
+                borderRadius:9, cursor:"pointer", transition:"all .15s", flexShrink:0 }}>
+                <div style={{ width:36, height:20, borderRadius:10,
+                  background: allSelected ? C.accent : C.border2,
+                  position:"relative", transition:"background .2s", flexShrink:0 }}>
+                  <div style={{ position:"absolute", top:2, left: allSelected ? 17 : 2,
+                    width:16, height:16, borderRadius:"50%", background:"#fff",
+                    transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+                </div>
+                <span style={{ fontSize:11, fontWeight:700, color: allSelected ? C.accent : C.muted }}>
+                  {allSelected ? "Deselect All" : "Select All"}
+                </span>
+              </div>
+            </div>
+
+            {/* Product grid */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-              {showReadyProducts.map(p=>{
-                const sel = selectedProducts.find(s=>s.id===p.id);
+              {showReadyProducts.map(p => {
+                const sel = !!selectedProducts.find(s=>s.id===p.id);
                 return (
-                  <div key={p.id} onClick={()=>{ setSelectedProducts(prev=>sel?prev.filter(s=>s.id!==p.id):[...prev,p]); setRunOrder(prev=>sel?prev.filter(s=>s.id!==p.id):[...prev,p]); }} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:sel?`${C.accent}12`:C.surface, border:`1px solid ${sel?C.accent+"55":C.border}`, borderRadius:12, cursor:"pointer", transition:"all .15s" }}>
+                  <div key={p.id} onClick={()=>toggleOne(p)}
+                    style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px",
+                      background: sel ? `${C.accent}12` : C.surface,
+                      border:`1px solid ${sel ? C.accent+"55" : C.border}`,
+                      borderRadius:12, cursor:"pointer", transition:"all .15s" }}>
                     <div style={{ fontSize:20 }}>{p.image}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:2 }}>{p.name}</div>
-                      <div style={{ display:"flex", gap:8 }}>
+                      <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green }}>${p.price}</span>
                         <span style={{ fontSize:10, color:C.muted }}>{p.inventory} in stock</span>
                         <span style={{ fontSize:10, color:"#a78bfa" }}>AI: {p.aiScore}</span>
                       </div>
                     </div>
-                    <div style={{ width:20, height:20, borderRadius:"50%", background:sel?C.accent:C.surface2, border:`2px solid ${sel?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:"#fff", flexShrink:0 }}>{sel?"✓":""}</div>
+                    <div style={{ width:22, height:22, borderRadius:"50%", flexShrink:0,
+                      background: sel ? C.accent : C.surface2,
+                      border:`2px solid ${sel ? C.accent : C.border2}`,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:11, color:"#fff", transition:"all .15s" }}>
+                      {sel ? "✓" : ""}
+                    </div>
                   </div>
                 );
               })}
             </div>
-            <div style={{ marginTop:20, display:"flex", justifyContent:"flex-end" }}>
-              <button onClick={()=>setStep(3)} disabled={selectedProducts.length===0} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:"pointer", opacity:selectedProducts.length===0?0.4:1 }}>
-                Set Run Order ({selectedProducts.length} products) →
+
+            {/* Footer */}
+            <div style={{ marginTop:20, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              {selectedProducts.length === 0
+                ? <span style={{ fontSize:11, color:C.muted }}>Select at least one product to continue</span>
+                : <span style={{ fontSize:11, color:C.muted }}>{selectedProducts.length} product{selectedProducts.length!==1?"s":""} · est. ${selectedProducts.reduce((a,p)=>a+p.price,0).toLocaleString()} potential GMV</span>
+              }
+              <button onClick={()=>setStep(3)} disabled={selectedProducts.length===0}
+                style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`,
+                  border:"none", color:"#fff", fontSize:13, fontWeight:700,
+                  padding:"10px 28px", borderRadius:10, cursor: selectedProducts.length===0 ? "default" : "pointer",
+                  opacity: selectedProducts.length===0 ? 0.35 : 1 }}>
+                Set Run Order ({selectedProducts.length}) →
               </button>
             </div>
           </div>
-        )}
+          );
+        })()}
         {step===3 && (
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
