@@ -8236,7 +8236,7 @@ function ScreenShowPlanner({ navigate, persona }) {
                      : r.trigger==="tier_vip"?"Buyer is VIP tier"
                      : r.trigger==="show_join"?"Buyer joins the show"
                      : r.trigger,
-              action: r.action==="send_dm"?"DM: ""+(r.actionVal||"").slice(0,36)+((r.actionVal||"").length>36?"...":""")
+              action: r.action==="send_dm"?("DM: " + (r.actionVal||"").slice(0,36) + ((r.actionVal||"").length>36?"...":""))
                     : r.action==="apply_discount"?"Apply "+r.actionVal+"% discount"
                     : r.action==="add_bonus_points"?"Add "+r.actionVal+" loyalty points"
                     : r.action==="mystery_item"?"Add mystery bonus item"
