@@ -4010,10 +4010,10 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                     <div style={{ fontSize:10, color:C.muted, marginBottom:12 }}>Apply one-time perks to <strong style={{ color:C.text }}>{selectedBuyer.name}</strong>'s current order</div>
                     {[
                       { key:"bonusPoints", icon:"⚡", label:"2× Loyalty Points",        desc:"Double points on this order" },
-                      { key:"earlyAccess", icon:"⏰", label:"VIP Early Access – Next Show", desc:"DM them a private invite link" },
+                      { key:"earlyAccess", icon:"⏰", label:"VIP Early Access  to  Next Show", desc:"DM them a private invite link" },
                       { key:"mysteryItem", icon:"🎁", label:"Mystery Bonus Item",         desc:"Add a surprise to their order" },
                       { key:"freeShipping",icon:"📦", label:"Free Shipping Override",     desc:"Waive shipping on this order" },
-                      { key:"firstPick",   icon:"👑", label:"First Pick – Next Show",     desc:"Reserve first pick rights" },
+                      { key:"firstPick",   icon:"👑", label:"First Pick  to  Next Show",     desc:"Reserve first pick rights" },
                     ].map(perk=>(
                       <div
                         key={perk.key}
@@ -4833,7 +4833,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "🥇",
     color: "#d97706",
     bg: "#261a06",
-    description: "Gold loyalty members — 2,000–4,999 pts",
+    description: "Gold loyalty members — 2,000 to 4,999 pts",
     filter: b => b.loyalty.tier === "gold",
     category: "Loyalty",
   },
@@ -4843,7 +4843,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "🥈",
     color: "#9ca3af",
     bg: "#1c2028",
-    description: "Silver loyalty members — 500–1,999 pts",
+    description: "Silver loyalty members — 500 to 1,999 pts",
     filter: b => b.loyalty.tier === "silver",
     category: "Loyalty",
   },
@@ -4853,7 +4853,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "⚠️",
     color: "#f59e0b",
     bg: "#2e1f0a",
-    description: "Buyers who haven't ordered in 28–60 days",
+    description: "Buyers who haven't ordered in 28 to 60 days",
     filter: b => b.status === "risk",
     category: "Engagement",
   },
@@ -4873,7 +4873,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "✨",
     color: "#3b82f6",
     bg: "#0f1e2e",
-    description: "Joined in the last 30 days or first 1–2 orders",
+    description: "Joined in the last 30 days or first 1 to 2 orders",
     filter: b => b.status === "new" || b.orders <= 2,
     category: "Engagement",
   },
@@ -4903,7 +4903,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "💵",
     color: "#6ee7b7",
     bg: "#0a2016",
-    description: "Lifetime spend $250–$999",
+    description: "Lifetime spend $250 to $999",
     filter: b => b.spend >= 250 && b.spend < 1000,
     category: "Spend",
   },
@@ -8280,16 +8280,16 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
           <div>
             {/* KPI row */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <KPI label="Total GMV"        value={totalGMV>0?`$${totalGMV.toLocaleString()}`:"—"}  color={C.green}    trend={gmvTrend_pct}  sub={`${filteredShows.length} show${filteredShows.length!==1?"s":""}`} />
-              <KPI label="Avg Order Value"  value={avgOrderValue>0?`$${avgOrderValue}`:"—"}          color={C.accent}   trend={null}          sub="per transaction" />
-              <KPI label="Avg Customer LTV" value={avgLTV>0?`$${avgLTV}`:"—"}                        color="#f59e0b"    trend={ltvTrend_pct}  sub="per buyer" />
-              <KPI label="Repeat Rate"      value={avgRepeatRate>0?`${avgRepeatRate}%`:"—"}          color="#a78bfa"    trend={null}          sub="across shows" />
+              <KPI label="Total GMV"        value={totalGMV>0?`$${totalGMV.toLocaleString()}`:" - "}  color={C.green}    trend={gmvTrend_pct}  sub={`${filteredShows.length} show${filteredShows.length!==1?"s":""}`} />
+              <KPI label="Avg Order Value"  value={avgOrderValue>0?`$${avgOrderValue}`:" - "}          color={C.accent}   trend={null}          sub="per transaction" />
+              <KPI label="Avg Customer LTV" value={avgLTV>0?`$${avgLTV}`:" - "}                        color="#f59e0b"    trend={ltvTrend_pct}  sub="per buyer" />
+              <KPI label="Repeat Rate"      value={avgRepeatRate>0?`${avgRepeatRate}%`:" - "}          color="#a78bfa"    trend={null}          sub="across shows" />
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
-              <KPI label="Total Buyers"     value={totalBuyers||"—"}                                   color={C.text}     trend={buyerTrend_pct} sub={`${vipBuyers.length} VIP`} />
-              <KPI label="Total Orders"     value={totalOrders||"—"}                                   color={C.text}     trend={null}           sub={`${filteredShows.length} shows`} />
-              <KPI label="Campaign GMV"     value={filteredCampaigns.length>0?`$${campaignGMV.toLocaleString()}`:"—"} color={C.green}  trend={null}  sub={`${filteredCampaigns.length} campaigns`} />
-              <KPI label="Avg Conv. Rate"   value={avgConvRate>0?`${avgConvRate}%`:"—"}              color="#f59e0b"    trend={null}           sub="campaign avg" />
+              <KPI label="Total Buyers"     value={totalBuyers||" - "}                                   color={C.text}     trend={buyerTrend_pct} sub={`${vipBuyers.length} VIP`} />
+              <KPI label="Total Orders"     value={totalOrders||" - "}                                   color={C.text}     trend={null}           sub={`${filteredShows.length} shows`} />
+              <KPI label="Campaign GMV"     value={filteredCampaigns.length>0?`$${campaignGMV.toLocaleString()}`:" - "} color={C.green}  trend={null}  sub={`${filteredCampaigns.length} campaigns`} />
+              <KPI label="Avg Conv. Rate"   value={avgConvRate>0?`${avgConvRate}%`:" - "}              color="#f59e0b"    trend={null}           sub="campaign avg" />
             </div>
 
             {/* GMV Trend + Platform split */}
@@ -8343,8 +8343,6 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                 ))}
               </div>
             </div>
-          </>
-          )}
           </div>
         )}
 
@@ -8392,7 +8390,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                     <div key={`cv${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
                       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:convRate>30?C.green:convRate>15?"#f59e0b":"#9ca3af" }}>{convRate}%</span>
                     </div>,
-                    <div key={`g${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.green, display:"flex", alignItems:"center" }}>{c.gmv>0?`$${c.gmv.toLocaleString()}`:"—"}</div>,
+                    <div key={`g${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.green, display:"flex", alignItems:"center" }}>{c.gmv>0?`$${c.gmv.toLocaleString()}`:" - "}</div>,
                   ];
                 })}
               </div>
@@ -8524,13 +8522,13 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                 <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Orders per buyer bucket</div>
                 <BarChart height={90} data={[
                   { label:"1 order",  value:buyers.filter(b=>b.orders===1).length,          color:"#4b5563" },
-                  { label:"2–5",      value:buyers.filter(b=>b.orders>=2&&b.orders<=5).length, color:"#7c3aed" },
-                  { label:"6–15",     value:buyers.filter(b=>b.orders>=6&&b.orders<=15).length, color:"#a78bfa" },
-                  { label:"16–30",    value:buyers.filter(b=>b.orders>=16&&b.orders<=30).length, color:C.green  },
+                  { label:"2 to 5",      value:buyers.filter(b=>b.orders>=2&&b.orders<=5).length, color:"#7c3aed" },
+                  { label:"6 to 15",     value:buyers.filter(b=>b.orders>=6&&b.orders<=15).length, color:"#a78bfa" },
+                  { label:"16 to 30",    value:buyers.filter(b=>b.orders>=16&&b.orders<=30).length, color:C.green  },
                   { label:"30+",      value:buyers.filter(b=>b.orders>30).length,            color:"#10b981" },
                 ]} />
                 <div style={{ marginTop:12, fontSize:11, color:C.muted }}>
-                  Avg <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:C.text }}>{Math.round(totalOrders/totalBuyers)}</span> orders/buyer · Most valuable segment: <span style={{ color:C.green, fontWeight:700 }}>6–15 orders</span>
+                  Avg <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:C.text }}>{Math.round(totalOrders/totalBuyers)}</span> orders/buyer · Most valuable segment: <span style={{ color:C.green, fontWeight:700 }}>6 to 15 orders</span>
                 </div>
               </div>
             </div>
@@ -8549,7 +8547,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                       <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, fontWeight:800, color:C.text, marginBottom:2 }}>{tierBuyers.length}</div>
                       <div style={{ fontSize:10, color:C.muted }}>buyers</div>
                       {tierGMV>0 && <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.green, marginTop:6 }}>${tierGMV.toLocaleString()} GMV</div>}
-                      <div style={{ fontSize:10, color:C.subtle, marginTop:4 }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?`–${tier.maxPoints.toLocaleString()}`:"+"} pts</div>
+                      <div style={{ fontSize:10, color:C.subtle, marginTop:4 }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?` to ${tier.maxPoints.toLocaleString()}`:"+"} pts</div>
                     </div>
                   );
                 })}
@@ -8562,8 +8560,8 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
         {tab==="shows" && (
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <KPI label="Best GMV"       value={filteredShows.length>0?`$${Math.max(...filteredShows.map(s=>s.gmv)).toLocaleString()}`:"—"} color={C.green} sub="single show" />
-              <KPI label="Avg Show GMV"   value={filteredShows.length>0?`$${Math.round(filteredShows.reduce((a,s)=>a+s.gmv,0)/filteredShows.length).toLocaleString()}`:"—"} color={C.accent} />
+              <KPI label="Best GMV"       value={filteredShows.length>0?`$${Math.max(...filteredShows.map(s=>s.gmv)).toLocaleString()}`:" - "} color={C.green} sub="single show" />
+              <KPI label="Avg Show GMV"   value={filteredShows.length>0?`$${Math.round(filteredShows.reduce((a,s)=>a+s.gmv,0)/filteredShows.length).toLocaleString()}`:" - "} color={C.accent} />
               <KPI label="Avg Buyers/Show" value={filteredShows.length>0?Math.round(filteredShows.reduce((a,s)=>a+s.buyers,0)/filteredShows.length):"—"} color="#a78bfa" />
               <KPI label="Best Platform"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]?PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]:"—"} color="#f59e0b" sub="by GMV" />
             </div>
@@ -8658,7 +8656,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   title:"Your VIP segment is underserved",
                   insight:`${vipBuyers.length} VIP buyers generate ${Math.round(vipGMV/totalGMV*100)}% of total GMV but haven't had a dedicated VIP-only show in 30+ days. Based on their average spend of $${Math.round(vipGMV/vipBuyers.length).toLocaleString()}/buyer, a private VIP show could generate an estimated $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length/2).toLocaleString()} to $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length).toLocaleString()} in a single session.`,
                   action:"Schedule VIP Show",
-                  impact:"$2,400–$4,820 est. GMV",
+                  impact:"$2,400 to $4,820 est. GMV",
                   confidence:91,
                 },
                 {
@@ -8668,7 +8666,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   icon:"⚠️",
                   color:"#f59e0b",
                   title:`${buyers.filter(b=>b.status==="risk").length} at-risk buyers need immediate re-engagement`,
-                  insight:`${buyers.filter(b=>b.status==="risk").map(b=>b.name).join(", ")} haven't purchased in 28–44 days. Their combined historical spend is $${buyers.filter(b=>b.status==="risk").reduce((a,b)=>a+b.spend,0).toLocaleString()}. Win-back campaigns sent within 45 days have a ${avgConvRate+8}% conversion rate on your account — 8 points above average.`,
+                  insight:`${buyers.filter(b=>b.status==="risk").map(b=>b.name).join(", ")} haven't purchased in 28 to 44 days. Their combined historical spend is $${buyers.filter(b=>b.status==="risk").reduce((a,b)=>a+b.spend,0).toLocaleString()}. Win-back campaigns sent within 45 days have a ${avgConvRate+8}% conversion rate on your account  -  8 points above average.`,
                   action:"Launch Win-Back Campaign",
                   impact:`${buyers.filter(b=>b.status==="risk").length} buyers · potential $${Math.round(buyers.filter(b=>b.status==="risk").reduce((a,b)=>a+b.spend,0)*0.3).toLocaleString()} recovered`,
                   confidence:84,
@@ -8716,7 +8714,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   icon:"🕐",
                   color:"#10b981",
                   title:"Thursday shows outperform other days by $900 avg GMV",
-                  insight:`Your 2 Thursday shows averaged $${Math.round((4820+5100)/2).toLocaleString()} GMV with ${Math.round((68+72)/2)}% repeat rate. Non-Thursday shows averaged $${Math.round((3210+2100)/2).toLocaleString()} GMV with ${Math.round((55+43)/2)}% repeat rate. Your audience has formed a habit around Thursday nights. Consistency in timing increases repeat attendance — consider locking Thursday 8pm EST as your primary show slot and promoting it as a recurring event.`,
+                  insight:`Your 2 Thursday shows averaged $${Math.round((4820+5100)/2).toLocaleString()} GMV with ${Math.round((68+72)/2)}% repeat rate. Non-Thursday shows averaged $${Math.round((3210+2100)/2).toLocaleString()} GMV with ${Math.round((55+43)/2)}% repeat rate. Your audience has formed a habit around Thursday nights. Consistency in timing increases repeat attendance  -  consider locking Thursday 8pm EST as your primary show slot and promoting it as a recurring event.`,
                   action:"Set Recurring Show Schedule",
                   impact:"$900/show uplift vs other days",
                   confidence:76,
@@ -9534,7 +9532,7 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
                   <span style={{ fontSize:10, fontWeight:700, color:tier.color, fontFamily:"'JetBrains Mono',monospace" }}>{count}</span>
                 </div>
                 <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:2 }}>{tier.label}</div>
-                <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?`–${tier.maxPoints.toLocaleString()}`:"+"}  pts</div>
+                <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?` to ${tier.maxPoints.toLocaleString()}`:"+"}  pts</div>
                 <div style={{ height:3, background:`${tier.color}22`, borderRadius:2 }}>
                   <div style={{ height:"100%", width:`${pct}%`, background:tier.color, borderRadius:2 }} />
                 </div>
@@ -9653,7 +9651,7 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
                   <span style={{ fontSize:26 }}>{tier.icon}</span>
                   <div>
                     <div style={{ fontSize:15, fontWeight:700, color:C.text }}>{tier.label}</div>
-                    <div style={{ fontSize:11, color:tier.color }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?` – ${tier.maxPoints.toLocaleString()}`:"+"}  points</div>
+                    <div style={{ fontSize:11, color:tier.color }}>{tier.minPoints.toLocaleString()}{tier.maxPoints?`  to  ${tier.maxPoints.toLocaleString()}`:"+"}  points</div>
                   </div>
                   <div style={{ marginLeft:"auto", fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:tier.color }}>
                     {tierCounts[tier.id] || 0} members
@@ -10324,7 +10322,7 @@ function ScreenSellerDetail({ persona, params, navigate }) {
             {[
               { label:"VIP Buyers",     count:vipCount,     color:"#7c3aed", desc:"Lifetime spend > $1k, loyal repeat buyers" },
               { label:"Active",          count:activeCount,  color:"#10b981", desc:"Purchased in last 30 days" },
-              { label:"At-Risk",         count:atRiskCount,  color:"#f59e0b", desc:"28–60 days since last order — needs re-engagement" },
+              { label:"At-Risk",         count:atRiskCount,  color:"#f59e0b", desc:"28 to 60 days since last order — needs re-engagement" },
               { label:"Dormant",         count:dormantCount, color:"#374151", desc:"60+ days inactive" },
             ].map(seg=>(
               <div key={seg.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
