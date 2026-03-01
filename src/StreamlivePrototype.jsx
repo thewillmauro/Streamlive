@@ -8130,41 +8130,84 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
   const [aiExpanded, setAiExpanded] = useState(null);
   const [dateRange, setDateRange]   = useState("30d");
 
-  // ── DERIVED METRICS ──────────────────────────────────────────────────────────
-  const totalGMV       = SHOWS.reduce((a,s)=>a+s.gmv,0);
-  const totalBuyers    = buyers.length;
-  const totalOrders    = buyers.reduce((a,b)=>a+b.orders,0);
-  const avgOrderValue  = Math.round(totalGMV / totalOrders);
-  const avgRepeatRate  = Math.round(SHOWS.reduce((a,s)=>a+s.repeatRate,0)/SHOWS.length);
-  const vipBuyers      = buyers.filter(b=>b.status==="vip");
-  const vipGMV         = vipBuyers.reduce((a,b)=>a+b.spend,0);
-  const avgLTV         = Math.round(buyers.reduce((a,b)=>a+b.spend,0)/buyers.length);
-  const topLTV         = Math.max(...buyers.map(b=>b.spend));
-  const campaignGMV    = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.gmv,0);
-  const totalCampaignRecipients = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.recipients,0);
-  const avgConvRate    = Math.round(CAMPAIGNS.filter(c=>c.status==="sent"&&c.recipients>0).reduce((a,c)=>a+(c.converted/c.recipients*100),0)/CAMPAIGNS.filter(c=>c.status==="sent").length);
+  // ── FILTERING BY DATE RANGE ──────────────────────────────────────────────────
+  // Reference: most recent show is Feb 22 2025 = "today" in the demo dataset
+  const REF_DATE = new Date("Feb 22, 2025");
+  const parseDaysAgo = (str) => {
+    if (!str) return 999;
+    const m = str.match(/(\d+)d ago/);
+    return m ? parseInt(m[1]) : 999;
+  };
+  const parseShowDaysAgo = (dateStr) => {
+    const d = new Date(dateStr);
+    return Math.round((REF_DATE - d) / 86400000);
+  };
+  const parseCampaignDaysAgo = (sentAt) => {
+    if (!sentAt) return 999;
+    return parseShowDaysAgo(sentAt);
+  };
+  const rangeDays = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : dateRange === "90d" ? 90 : 99999;
 
-  // Platform breakdown
-  const platformGMV = { WN:0, TT:0, AM:0, IG:0 };
-  SHOWS.forEach(s=>{ platformGMV[s.platform]=(platformGMV[s.platform]||0)+s.gmv; });
-  const platformBuyers = { WN:0, TT:0, AM:0, IG:0 };
-  buyers.forEach(b=>{ platformBuyers[b.platform]=(platformBuyers[b.platform]||0)+1; });
+  const filteredShows     = SHOWS.filter(s => parseShowDaysAgo(s.date) <= rangeDays);
+  const filteredCampaigns = CAMPAIGNS.filter(c => c.status === "sent" && parseCampaignDaysAgo(c.sentAt) <= rangeDays);
+  const filteredBuyers    = buyers.filter(b => parseDaysAgo(b.lastOrder) <= rangeDays);
 
-  // Status breakdown
+  // Previous period (for trend arrows)
+  const prevShows     = SHOWS.filter(s => { const d = parseShowDaysAgo(s.date); return d > rangeDays && d <= rangeDays * 2; });
+  const prevBuyers    = buyers.filter(b => { const d = parseDaysAgo(b.lastOrder); return d > rangeDays && d <= rangeDays * 2; });
+
+  // ── DERIVED METRICS (all from filtered data) ──────────────────────────────
+  const filteredOrders   = filteredBuyers.reduce((a,b)=>a+b.orders,0);
+  const totalGMV         = filteredShows.reduce((a,s)=>a+s.gmv,0) || 0;
+  const prevGMV          = prevShows.reduce((a,s)=>a+s.gmv,0) || 0;
+  const totalBuyers      = filteredBuyers.length;
+  const prevBuyerCount   = prevBuyers.length;
+  const totalOrders      = filteredOrders;
+  const avgOrderValue    = totalOrders > 0 ? Math.round(totalGMV / totalOrders) : 0;
+  const avgRepeatRate    = filteredShows.length > 0 ? Math.round(filteredShows.reduce((a,s)=>a+s.repeatRate,0)/filteredShows.length) : 0;
+  const vipBuyers        = filteredBuyers.filter(b=>b.status==="vip");
+  const vipGMV           = vipBuyers.reduce((a,b)=>a+b.spend,0);
+  const avgLTV           = filteredBuyers.length > 0 ? Math.round(filteredBuyers.reduce((a,b)=>a+b.spend,0)/filteredBuyers.length) : 0;
+  const prevAvgLTV       = prevBuyers.length > 0 ? Math.round(prevBuyers.reduce((a,b)=>a+b.spend,0)/prevBuyers.length) : avgLTV;
+  const topLTV           = filteredBuyers.length > 0 ? Math.max(...filteredBuyers.map(b=>b.spend)) : 0;
+  const campaignGMV      = filteredCampaigns.reduce((a,c)=>a+c.gmv,0);
+  const totalCampaignRecipients = filteredCampaigns.reduce((a,c)=>a+c.recipients,0);
+  const avgConvRate      = filteredCampaigns.length > 0
+    ? Math.round(filteredCampaigns.reduce((a,c)=>a+(c.recipients>0?c.converted/c.recipients*100:0),0)/filteredCampaigns.length)
+    : 0;
+
+  // Trend %: positive = improvement vs prior period
+  const gmvTrend_pct     = prevGMV > 0 ? Math.round((totalGMV - prevGMV) / prevGMV * 100) : null;
+  const buyerTrend_pct   = prevBuyerCount > 0 ? Math.round((totalBuyers - prevBuyerCount) / prevBuyerCount * 100) : null;
+  const ltvTrend_pct     = prevAvgLTV > 0 ? Math.round((avgLTV - prevAvgLTV) / prevAvgLTV * 100) : null;
+
+  // Platform breakdown — from filtered shows + filtered buyers
+  const platformGMV = { WN:0, TT:0, AM:0, IG:0, YT:0 };
+  filteredShows.forEach(s=>{ platformGMV[s.platform]=(platformGMV[s.platform]||0)+s.gmv; });
+  const platformBuyers = { WN:0, TT:0, AM:0, IG:0, YT:0 };
+  filteredBuyers.forEach(b=>{ platformBuyers[b.platform]=(platformBuyers[b.platform]||0)+1; });
+
+  // Status breakdown — from filtered buyers
   const statusCounts = { vip:0, active:0, risk:0, dormant:0, new:0 };
-  buyers.forEach(b=>{ statusCounts[b.status]=(statusCounts[b.status]||0)+1; });
+  filteredBuyers.forEach(b=>{ statusCounts[b.status]=(statusCounts[b.status]||0)+1; });
 
-  // Category breakdown
+  // Category breakdown — from filtered buyers
   const catSpend = {};
-  buyers.forEach(b=>{ catSpend[b.category]=(catSpend[b.category]||0)+b.spend; });
+  filteredBuyers.forEach(b=>{ catSpend[b.category]=(catSpend[b.category]||0)+b.spend; });
 
-  // 8-week simulated GMV trend
-  const gmvTrend = [2800,3100,2600,3800,4200,3900,4820,5100];
-  const gmvWeeks = ["Jan 2","Jan 9","Jan 16","Jan 23","Jan 30","Feb 6","Feb 13","Feb 20"];
+  // GMV trend chart — slice to match range
+  const ALL_GMV_TREND  = [2800,3100,2600,3800,4200,3900,4820,5100];
+  const ALL_GMV_WEEKS  = ["Jan 2","Jan 9","Jan 16","Jan 23","Jan 30","Feb 6","Feb 13","Feb 20"];
+  const trendSlice     = dateRange==="7d" ? 2 : dateRange==="30d" ? 5 : dateRange==="90d" ? 7 : 8;
+  const gmvTrend       = ALL_GMV_TREND.slice(-trendSlice);
+  const gmvWeeks       = ALL_GMV_WEEKS.slice(-trendSlice);
 
   // Show platform colors
-  const PC = { WN:"#7c3aed", TT:"#f43f5e", IG:"#ec4899", AM:"#f59e0b" };
-  const PN = { WN:"Whatnot", TT:"TikTok", IG:"Instagram", AM:"Amazon" };
+  const PC = { WN:"#7c3aed", TT:"#f43f5e", IG:"#ec4899", AM:"#f59e0b", YT:"#ff0000" };
+  const PN = { WN:"Whatnot", TT:"TikTok", IG:"Instagram", AM:"Amazon", YT:"YouTube" };
+
+  // Empty state label for when range has no data
+  const noData = filteredShows.length === 0 && filteredBuyers.length === 0;
 
 
   // ── TABS ─────────────────────────────────────────────────────────────────────
@@ -8207,18 +8250,26 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
         {tab==="overview" && (
           <div>
             {/* KPI row */}
+            {noData ? (
+              <div style={{ textAlign:"center", padding:"60px 0", color:C.muted }}>
+                <div style={{ fontSize:32, marginBottom:12 }}>📊</div>
+                <div style={{ fontSize:14, fontWeight:600, color:C.text, marginBottom:6 }}>No data for this period</div>
+                <div style={{ fontSize:12 }}>Try selecting a wider date range.</div>
+              </div>
+            ) : (<>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <KPI label="Total GMV"        value={`$${totalGMV.toLocaleString()}`}  color={C.green}    trend={14} sub="last 30 days" />
-              <KPI label="Avg Order Value"  value={`$${avgOrderValue}`}              color={C.accent}   trend={8}  sub="per transaction" />
-              <KPI label="Avg Customer LTV" value={`$${avgLTV}`}                     color="#f59e0b"    trend={22} sub="per buyer" />
-              <KPI label="Repeat Rate"      value={`${avgRepeatRate}%`}              color="#a78bfa"    trend={5}  sub="across all shows" />
+              <KPI label="Total GMV"        value={`$${totalGMV.toLocaleString()}`}  color={C.green}    trend={gmvTrend_pct}  sub={`${filteredShows.length} show${filteredShows.length!==1?"s":""}`} />
+              <KPI label="Avg Order Value"  value={`$${avgOrderValue}`}              color={C.accent}   trend={null}          sub="per transaction" />
+              <KPI label="Avg Customer LTV" value={`$${avgLTV}`}                     color="#f59e0b"    trend={ltvTrend_pct}  sub="per buyer" />
+              <KPI label="Repeat Rate"      value={`${avgRepeatRate}%`}              color="#a78bfa"    trend={null}          sub="across shows" />
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
-              <KPI label="Total Buyers"     value={totalBuyers}                       color={C.text}     sub={`${vipBuyers.length} VIP`} />
-              <KPI label="Total Orders"     value={totalOrders}                       color={C.text}     sub={`${SHOWS.length} shows`} />
-              <KPI label="Campaign GMV"     value={`$${campaignGMV.toLocaleString()}`} color={C.green}  sub="from campaigns" />
-              <KPI label="Avg Conv. Rate"   value={`${avgConvRate}%`}                color="#f59e0b"    sub="campaign avg" />
+              <KPI label="Total Buyers"     value={totalBuyers}                       color={C.text}     trend={buyerTrend_pct} sub={`${vipBuyers.length} VIP`} />
+              <KPI label="Total Orders"     value={totalOrders}                       color={C.text}     trend={null}           sub={`${filteredShows.length} shows`} />
+              <KPI label="Campaign GMV"     value={`$${campaignGMV.toLocaleString()}`} color={C.green}  trend={null}           sub={`${filteredCampaigns.length} campaigns`} />
+              <KPI label="Avg Conv. Rate"   value={`${avgConvRate}%`}                color="#f59e0b"    trend={null}           sub="campaign avg" />
             </div>
+            </>)}
 
             {/* GMV Trend + Platform split */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:16, marginBottom:20 }}>
@@ -8259,7 +8310,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
             <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
               <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Top Buyers by LTV</div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
-                {[...buyers].sort((a,b)=>b.spend-a.spend).slice(0,8).map((b,i)=>(
+                {[...filteredBuyers].sort((a,b)=>b.spend-a.spend).slice(0,8).map((b,i)=>(
                   <div key={b.id} style={{ display:"flex", gap:10, alignItems:"center", padding:"10px 12px", background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10 }}>
                     <div style={{ width:28, height:28, borderRadius:8, background:b.status==="vip"?`${C.accent}33`:C.surface, border:`1px solid ${b.status==="vip"?C.accent+"44":C.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:800, color:C.accent, flexShrink:0 }}>{i+1}</div>
                     <div style={{ flex:1, minWidth:0 }}>
@@ -8271,6 +8322,8 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                 ))}
               </div>
             </div>
+          </>
+          )}
           </div>
         )}
 
@@ -8281,13 +8334,13 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
                 <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>GMV by Show</div>
-                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Revenue per live show · last 4 shows</div>
-                <BarChart height={100} data={SHOWS.map(s=>({ value:s.gmv, label:s.date.split(",")[0], color:PC[s.platform], prefix:"$" }))} />
+                <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Revenue per live show · {dateRange === "All" ? "all shows" : dateRange}</div>
+                <BarChart height={100} data={(filteredShows.length>0?filteredShows:SHOWS).map(s=>({ value:s.gmv, label:s.date.split(",")[0], color:PC[s.platform], prefix:"$" }))} />
               </div>
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
                 <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Buyers per Show</div>
                 <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Unique buyers and repeat breakdown</div>
-                <BarChart height={100} data={SHOWS.map(s=>({ value:s.buyers, label:s.date.split(",")[0], color:"#a78bfa" }))} />
+                <BarChart height={100} data={(filteredShows.length>0?filteredShows:SHOWS).map(s=>({ value:s.buyers, label:s.date.split(",")[0], color:"#a78bfa" }))} />
               </div>
             </div>
 
@@ -8298,7 +8351,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                 {["Campaign","Recipients","Open Rate","Click Rate","Conv. Rate","GMV"].map(h=>(
                   <div key={h} style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", padding:"0 0 10px" }}>{h}</div>
                 ))}
-                {CAMPAIGNS.filter(c=>c.status==="sent").map((c,i)=>{
+                {(filteredCampaigns.length>0?filteredCampaigns:CAMPAIGNS.filter(c=>c.status==="sent")).map((c,i)=>{
                   const openRate  = c.recipients>0?Math.round(c.opened/c.recipients*100):0;
                   const clickRate = c.recipients>0?Math.round(c.clicked/c.recipients*100):0;
                   const convRate  = c.recipients>0?Math.round(c.converted/c.recipients*100):0;
@@ -8326,7 +8379,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
 
             {/* Product revenue */}
             <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Top Products by Revenue (Last 30 Days)</div>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Top Products by Revenue ({dateRange === "All" ? "All Time" : dateRange})</div>
               {[...PRODUCTS].sort((a,b)=>b.soldLast30*b.price - a.soldLast30*a.price).slice(0,6).map((p,i)=>{
                 const rev = p.soldLast30*p.price;
                 const maxRev = PRODUCTS.reduce((a,pr)=>Math.max(a,pr.soldLast30*pr.price),0);
@@ -8488,10 +8541,10 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
         {tab==="shows" && (
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <KPI label="Best GMV"       value={`$${Math.max(...SHOWS.map(s=>s.gmv)).toLocaleString()}`} color={C.green} sub="single show" />
-              <KPI label="Avg Show GMV"   value={`$${Math.round(SHOWS.reduce((a,s)=>a+s.gmv,0)/SHOWS.length).toLocaleString()}`} color={C.accent} />
-              <KPI label="Avg Buyers/Show" value={Math.round(SHOWS.reduce((a,s)=>a+s.buyers,0)/SHOWS.length)} color="#a78bfa" />
-              <KPI label="Best Platform"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]&&PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]} color="#f59e0b" sub="by GMV" />
+              <KPI label="Best GMV"       value={filteredShows.length>0?`$${Math.max(...filteredShows.map(s=>s.gmv)).toLocaleString()}`:"—"} color={C.green} sub="single show" />
+              <KPI label="Avg Show GMV"   value={filteredShows.length>0?`$${Math.round(filteredShows.reduce((a,s)=>a+s.gmv,0)/filteredShows.length).toLocaleString()}`:"—"} color={C.accent} />
+              <KPI label="Avg Buyers/Show" value={filteredShows.length>0?Math.round(filteredShows.reduce((a,s)=>a+s.buyers,0)/filteredShows.length):"—"} color="#a78bfa" />
+              <KPI label="Best Platform"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]?PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]:"—"} color="#f59e0b" sub="by GMV" />
             </div>
 
             {/* Show performance table */}
@@ -8501,7 +8554,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                 {["Show","Platform","Date","GMV","Buyers","Repeat Rate","New Buyers",""].map(h=>(
                   <div key={h} style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", padding:"0 0 10px" }}>{h}</div>
                 ))}
-                {[...SHOWS].sort((a,b)=>new Date(b.date)-new Date(a.date)).map((s,i)=>[
+                {(filteredShows.length>0?[...filteredShows]:[...SHOWS]).sort((a,b)=>new Date(b.date)-new Date(a.date)).map((s,i)=>[
                   <div key={`t${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontSize:12, fontWeight:600, color:C.text }}>{s.title}</div>,
                   <div key={`p${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}><PlatformPill code={s.platform} /></div>,
                   <div key={`d${i}`} style={{ padding:"10px 0", borderTop:`1px solid ${C.border}`, fontSize:11, color:C.muted, display:"flex", alignItems:"center" }}>{s.date}</div>,
@@ -8523,7 +8576,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
                 <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Platform Comparison</div>
                 {Object.entries(platformGMV).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
-                  const shows = SHOWS.filter(s=>s.platform===k);
+                  const shows = (filteredShows.length>0?filteredShows:SHOWS).filter(s=>s.platform===k);
                   const avgRR = shows.length ? Math.round(shows.reduce((a,s)=>a+s.repeatRate,0)/shows.length) : 0;
                   return (
                     <div key={k} style={{ display:"flex", gap:14, alignItems:"center", padding:"12px 0", borderBottom:`1px solid ${C.border}` }}>
@@ -8545,7 +8598,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
                 <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Repeat Rate by Show</div>
                 <div style={{ fontSize:11, color:C.muted, marginBottom:16 }}>Buyer loyalty signal per show</div>
-                <BarChart height={100} data={SHOWS.map(s=>({
+                <BarChart height={100} data={(filteredShows.length>0?filteredShows:SHOWS).map(s=>({
                   value:s.repeatRate,
                   label:s.date.split(",")[0],
                   color:s.repeatRate>=65?C.green:s.repeatRate>=50?"#f59e0b":"#ef4444",
