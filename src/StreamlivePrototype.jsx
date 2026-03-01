@@ -8210,44 +8210,194 @@ function ScreenShowPlanner({ navigate, persona }) {
             </div>
           </div>
         )}
-        {step===5 && (
-          <div style={{ maxWidth:620 }}>
-            <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}44`, borderRadius:16, padding:"22px 24px", marginBottom:16 }}>
-              <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Show Summary</div>
-              <div style={{ display:"flex", gap:20, marginBottom:14 }}>
-                {[
-                  { label:"Products",   value:runOrder.length,   color:C.accent },
-                  { label:"Est. GMV",   value:`$${UPCOMING_SHOW.estimatedGMV.toLocaleString()}`, color:C.green },
-                  { label:"Perks Active", value:Object.values(perks).filter(v=>v===true).length, color:"#a78bfa" },
-                ].map(m=>(
-                  <div key={m.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 16px" }}>
-                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:700, color:m.color }}>{m.value}</div>
-                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{m.label}</div>
+        {step===5 && (() => {
+          const totalSecs   = runOrder.reduce((a,p)=>a+(productTimings[p.id]||90),0);
+          const totalMins   = Math.floor(totalSecs/60);
+          const totalRemSec = totalSecs%60;
+          const estGMV      = runOrder.reduce((a,p)=>a+p.price,0);
+          const PLATFORM_INFO = { WN:{label:"Whatnot",color:"#7c3aed",icon:"🏷"}, TT:{label:"TikTok",color:"#f43f5e",icon:"🎵"}, IG:{label:"Instagram",color:"#ec4899",icon:"📸"}, YT:{label:"YouTube",color:"#ef4444",icon:"▶"}, AM:{label:"Amazon Live",color:"#f59e0b",icon:"📦"} };
+
+          const activeAlwaysOn = [
+            perks.earlyAccess      && { icon:"⏰", label:"VIP Early Access",        detail:`${perks.earlyMinutes||15} min before show opens` },
+            perks.doublePoints     && { icon:"⚡", label:"Double Points",            detail:"2x loyalty points on every order" },
+            perks.vipFirstPick     && { icon:"👑", label:"VIP First Pick",           detail:"60s exclusive window per product" },
+            perks.newBuyerDiscount && { icon:"🎁", label:"New Buyer Discount",       detail:`${perks.newBuyerPct||10}% off first-time buyers` },
+          ].filter(Boolean);
+
+          const activeRules = [
+            perks.mysteryBonus    && { icon:"🎲", trigger:`Buyer purchases ${perks.mysteryThreshold||3}+ items`,    action:"Mystery bonus added to order" },
+            perks.winbackAfterShow && { icon:"📩", trigger:"Buyer views but does not purchase",                     action:"Win-back DM sent 2h after show" },
+            perks.tierUpAlert     && { icon:"🏅", trigger:"Buyer reaches loyalty tier milestone",                   action:"Tier-up congratulations DM sent" },
+            ...(perks.rules||[]).filter(r=>r.enabled).map(r=>({
+              icon:"⚡",
+              trigger: r.trigger==="order_placed"?"Buyer places an order"
+                     : r.trigger==="first_order"?"Buyer makes first purchase"
+                     : r.trigger==="spend_threshold"?"Buyer spends over $"+r.triggerVal
+                     : r.trigger==="tier_vip"?"Buyer is VIP tier"
+                     : r.trigger==="show_join"?"Buyer joins the show"
+                     : r.trigger,
+              action: r.action==="send_dm"?"DM: ""+(r.actionVal||"").slice(0,36)+((r.actionVal||"").length>36?"...":""")
+                    : r.action==="apply_discount"?"Apply "+r.actionVal+"% discount"
+                    : r.action==="add_bonus_points"?"Add "+r.actionVal+" loyalty points"
+                    : r.action==="mystery_item"?"Add mystery bonus item"
+                    : r.action==="free_shipping"?"Apply free shipping"
+                    : r.action,
+            })),
+          ].filter(Boolean);
+
+          return (
+          <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+
+            {/* ── SHOW IDENTITY ── */}
+            <div style={{ background:"linear-gradient(135deg,#1a0f2e,#2d1f5e22)", border:`1px solid ${C.accent}44`, borderRadius:16, padding:"20px 24px" }}>
+              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+                <div>
+                  <div style={{ fontSize:10, fontWeight:700, color:C.accent, textTransform:"uppercase", letterSpacing:".1em", marginBottom:4 }}>Show Ready</div>
+                  <div style={{ fontSize:20, fontWeight:800, color:C.text, marginBottom:6 }}>{showName||"Untitled Show"}</div>
+                  <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                    {selectedPlatforms.map(pid=>{ const pl=PLATFORM_INFO[pid]||{label:pid,color:C.accent,icon:"📡"}; return (
+                      <span key={pid} style={{ fontSize:10, fontWeight:700, color:pl.color, background:pl.color+"18", border:"1px solid "+pl.color+"44", padding:"3px 10px", borderRadius:20 }}>{pl.icon} {pl.label}</span>
+                    );})}
                   </div>
-                ))}
-              </div>
-              {runOrder.map((p,i)=>{
-                const t=productTimings[p.id]||90;
-                const tm=Math.floor(t/60), ts=t%60;
-                return (
-                <div key={p.id} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:6 }}>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.accent, width:18 }}>{i+1}.</span>
-                  <span style={{ fontSize:11 }}>{p.image}</span>
-                  <span style={{ fontSize:12, color:C.text, flex:1 }}>{p.name}</span>
-                  <span style={{ fontSize:9, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5, padding:"2px 7px", fontFamily:"'JetBrains Mono',monospace" }}>⏱ {tm>0?`${tm}m `:""}{ts}s</span>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:C.green }}>${p.price}</span>
                 </div>
-                );
-              })}
+                <div style={{ textAlign:"right", flexShrink:0 }}>
+                  <div style={{ fontSize:10, color:C.muted, marginBottom:2 }}>Scheduled</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>Going live today</div>
+                </div>
+              </div>
             </div>
-            <div style={{ display:"flex", gap:10 }}>
-              <button onClick={()=>setStep(4)} style={{ flex:0, background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now()})} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
+
+            {/* ── STATS ROW ── */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10 }}>
+              {[
+                { label:"Products",     value:runOrder.length,                                              color:C.accent,   icon:"📦" },
+                { label:"Show Length",  value:totalMins+"m "+(totalRemSec?""+totalRemSec+"s":""),           color:"#a78bfa",  icon:"⏱" },
+                { label:"Est. Revenue", value:"$"+estGMV.toLocaleString(),                                  color:C.green,    icon:"💰" },
+                { label:"Perks Active", value:(activeAlwaysOn.length+activeRules.length)+" total",          color:"#f59e0b",  icon:"🎁" },
+              ].map(s=>(
+                <div key={s.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 16px" }}>
+                  <div style={{ fontSize:16, marginBottom:6 }}>{s.icon}</div>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:16, fontWeight:800, color:s.color, marginBottom:2 }}>{s.value}</div>
+                  <div style={{ fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:".06em" }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── RUN ORDER + PERKS side by side ── */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, alignItems:"start" }}>
+
+              {/* Run Order */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
+                <div style={{ padding:"12px 16px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Run Order</div>
+                  <span style={{ fontSize:9, color:C.muted, fontFamily:"'JetBrains Mono',monospace" }}>{runOrder.length} products</span>
+                </div>
+                <div style={{ padding:"8px 0" }}>
+                  {runOrder.map((p,i)=>{
+                    const t=productTimings[p.id]||90;
+                    const tm=Math.floor(t/60), ts=t%60;
+                    const cumSec = runOrder.slice(0,i).reduce((a,q)=>a+(productTimings[q.id]||90),0);
+                    const cumMin = Math.floor(cumSec/60), cumS = cumSec%60;
+                    return (
+                      <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 16px", borderBottom:i<runOrder.length-1?"1px solid "+C.border+"44":"none" }}>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.accent, width:16, flexShrink:0 }}>{i+1}</span>
+                        <span style={{ fontSize:16, flexShrink:0 }}>{p.image}</span>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:11, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{p.name}</div>
+                          <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>
+                            <span style={{ color:C.green, fontFamily:"'JetBrains Mono',monospace" }}>${p.price}</span>
+                            <span style={{ margin:"0 4px" }}>·</span>
+                            <span>AI {p.aiScore}</span>
+                            <span style={{ margin:"0 4px" }}>·</span>
+                            <span style={{ color:C.muted }}>@{cumMin>0?cumMin+"m ":""}{cumS}s</span>
+                          </div>
+                        </div>
+                        <span style={{ fontSize:9, fontWeight:700, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5, padding:"2px 7px", fontFamily:"'JetBrains Mono',monospace", flexShrink:0 }}>{tm>0?tm+"m ":""}{ts}s</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.border}`, background:"#07070f", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontSize:9, color:C.muted }}>Total show time</span>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:"#a78bfa" }}>{totalMins}m {totalRemSec}s</span>
+                </div>
+              </div>
+
+              {/* Perks Panel */}
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+
+                {/* Always-On Perks */}
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
+                  <div style={{ padding:"12px 16px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Always-On Perks</div>
+                    <span style={{ fontSize:9, color:activeAlwaysOn.length>0?"#10b981":C.muted }}>{activeAlwaysOn.length} active</span>
+                  </div>
+                  {activeAlwaysOn.length===0 ? (
+                    <div style={{ padding:"14px 16px", fontSize:11, color:C.muted }}>No always-on perks enabled</div>
+                  ) : activeAlwaysOn.map((pk,i)=>(
+                    <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", borderBottom:i<activeAlwaysOn.length-1?"1px solid "+C.border+"44":"none" }}>
+                      <span style={{ fontSize:15, width:22, textAlign:"center", flexShrink:0 }}>{pk.icon}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:11, fontWeight:600, color:C.text }}>{pk.label}</div>
+                        <div style={{ fontSize:9, color:C.muted, marginTop:1 }}>{pk.detail}</div>
+                      </div>
+                      <span style={{ width:8, height:8, borderRadius:"50%", background:"#10b981", flexShrink:0, display:"inline-block" }} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* If/Then Rules */}
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
+                  <div style={{ padding:"12px 16px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Automation Rules</div>
+                    <span style={{ fontSize:9, color:activeRules.length>0?"#10b981":C.muted }}>{activeRules.length} active</span>
+                  </div>
+                  {activeRules.length===0 ? (
+                    <div style={{ padding:"14px 16px", fontSize:11, color:C.muted }}>No automation rules enabled</div>
+                  ) : activeRules.map((rule,i)=>(
+                    <div key={i} style={{ padding:"10px 16px", borderBottom:i<activeRules.length-1?"1px solid "+C.border+"44":"none" }}>
+                      <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:3 }}>
+                        <span style={{ fontSize:8, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"1px 5px", borderRadius:3, textTransform:"uppercase", letterSpacing:".06em", flexShrink:0 }}>IF</span>
+                        <span style={{ fontSize:10, color:C.text, fontWeight:600 }}>{rule.trigger}</span>
+                      </div>
+                      <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
+                        <span style={{ fontSize:8, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"1px 5px", borderRadius:3, textTransform:"uppercase", letterSpacing:".06em", flexShrink:0 }}>THEN</span>
+                        <span style={{ fontSize:10, color:C.muted }}>{rule.action}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Platform Breakdown */}
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
+                  <div style={{ padding:"12px 16px", borderBottom:`1px solid ${C.border}` }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Streaming To</div>
+                  </div>
+                  <div style={{ padding:"10px 16px", display:"flex", flexDirection:"column", gap:8 }}>
+                    {selectedPlatforms.map(pid=>{ const pl=PLATFORM_INFO[pid]||{label:pid,color:C.accent,icon:"📡"}; return (
+                      <div key={pid} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <span style={{ fontSize:14 }}>{pl.icon}</span>
+                        <span style={{ fontSize:11, fontWeight:600, color:pl.color, flex:1 }}>{pl.label}</span>
+                        <span style={{ fontSize:9, color:"#10b981", fontWeight:700 }}>● Ready</span>
+                      </div>
+                    );})}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── GO LIVE FOOTER ── */}
+            <div style={{ display:"flex", gap:10, paddingBottom:8 }}>
+              <button onClick={()=>setStep(4)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"12px 20px", borderRadius:10, cursor:"pointer" }}>← Edit</button>
+              <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now()})}
+                style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:15, fontWeight:800, padding:"14px", borderRadius:10, cursor:"pointer", letterSpacing:".02em" }}>
                 🔴 Go Live Now
               </button>
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
