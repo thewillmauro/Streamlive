@@ -7649,15 +7649,13 @@ function ScreenShowPlanner({ navigate, persona }) {
     prev.includes(pid) ? prev.filter(p=>p!==pid) : [...prev, pid]
   );
 
-  const [productTimings, setProductTimings] = useState(() =>
-    Object.fromEntries((UPCOMING_SHOW.aiSuggestedOrder.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean)).map(p=>[p.id, 90]))
-  );
+  const [productTimings, setProductTimings] = useState({});
   const [globalTiming, setGlobalTiming] = useState(90);
 
   const setTimingForAll = (secs) => {
     const v = Math.max(30, Math.min(600, Number(secs)||90));
     setGlobalTiming(v);
-    setProductTimings(prev => Object.fromEntries(Object.keys(prev).map(id=>[id, v])));
+    setProductTimings(() => Object.fromEntries(runOrder.map(p=>[p.id, v])));
   };
   const setOneTiming = (id, secs) => {
     const v = Math.max(30, Math.min(600, Number(secs)||90));
