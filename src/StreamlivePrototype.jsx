@@ -7173,8 +7173,8 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
           {
             id: "enterprise",
             name: "Enterprise",
-            price: "$999",
-            period: "/mo",
+            price: "Custom",
+            period: "",
             color: "#a78bfa",
             tagline: "For agencies managing multiple seller accounts",
             features: [
