@@ -1670,35 +1670,56 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
     });
   };
 
-  // Always reads paramsRef.current (never stale) then falls back to localStorage
+  // Compute show state — always prefers localStorage for activeIdx (written by host every 1s)
+  // so consumer page stays perfectly in sync even with manual product overrides
   const computeState = () => {
     const p = paramsRef.current;
     let ro, timings, start;
 
-    if (p?.runOrder?.length > 0) {
-      // In-app: use liveSession directly — always the latest Catalog order
-      ro      = p.runOrder;
-      timings = p.productTimings || {};
-      start   = p.showStartTime  || Date.now();
-    } else {
-      // New tab / external: localStorage is the source of truth
-      try {
-        start   = parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0;
-        timings = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS")||"{}");
-        const ids = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER")||"[]");
-        ro = ids.map(id => PRODUCTS.find(q => q.id === id)).filter(Boolean);
-        if (!ro.length) ro = PRODUCTS.slice(0,5);
-        if (!start) start = Date.now();
-      } catch(e) {
-        ro = PRODUCTS.slice(0,5); timings = {}; start = Date.now();
+    // Always pull latest runOrder + timings from localStorage first (host writes every 1s)
+    // Fall back to in-app params if localStorage is empty (e.g., first load before host has ticked)
+    try {
+      const lsStart   = parseInt(localStorage.getItem("STRMLIVE_SHOW_START") || "0") || 0;
+      const lsTimings = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_TIMINGS") || "{}");
+      const lsIds     = JSON.parse(localStorage.getItem("STRMLIVE_SHOW_ORDER") || "[]");
+      const lsRo      = lsIds.map(id => PRODUCTS.find(q => q.id === id)).filter(Boolean);
+
+      // Prefer localStorage data when it has actual show products
+      if (lsRo.length > 0 && lsStart > 0) {
+        ro      = lsRo;
+        timings = lsTimings;
+        start   = lsStart;
+      } else if (p?.runOrder?.length > 0) {
+        ro      = p.runOrder;
+        timings = p.productTimings || {};
+        start   = p.showStartTime || Date.now();
+      } else {
+        // No show running yet
+        return { idx: 0, runOrder: [], timings: {}, bps: [], total: 90000, start: Date.now() };
+      }
+    } catch(e) {
+      if (p?.runOrder?.length > 0) {
+        ro = p.runOrder; timings = p.productTimings || {}; start = p.showStartTime || Date.now();
+      } else {
+        return { idx: 0, runOrder: [], timings: {}, bps: [], total: 90000, start: Date.now() };
       }
     }
 
+    // Read authoritative activeIdx written by the host every second
+    // This handles manual product overrides in BriefingTab
+    const lsIdx = parseInt(localStorage.getItem("STRMLIVE_ACTIVE_IDX") || "-1");
+    const safeIdx = (lsIdx >= 0 && lsIdx < ro.length) ? lsIdx : (() => {
+      // Fall back to clock-based computation
+      const bps2 = buildBreakpoints(ro, timings);
+      const total2 = bps2.length > 0 ? bps2[bps2.length-1].endMs : 90000;
+      const elapsed2 = (Date.now() - start) % total2;
+      const found2 = bps2.find(b => elapsed2 >= b.startMs && elapsed2 < b.endMs);
+      return found2 ? found2.idx : 0;
+    })();
+
     const bps   = buildBreakpoints(ro, timings);
     const total = bps.length > 0 ? bps[bps.length-1].endMs : 90000;
-    const elapsed = (Date.now() - start) % total;
-    const found   = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
-    return { idx: found ? found.idx : 0, runOrder: ro, timings, bps, total, start };
+    return { idx: safeIdx, runOrder: ro, timings, bps, total, start };
   };
 
   const [showState, setShowState] = useState(() => computeState());
@@ -1793,6 +1814,13 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
               <div style={{ fontSize:10, color:"#6b7280", marginBottom:10, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{showName}</div>
 
               {/* Now Selling hero card */}
+              {runOrder.length === 0 && (
+                <div style={{ background:"#0d0d1e", border:"1px solid #1e1e3a", borderRadius:16, padding:"20px 14px", marginBottom:12, textAlign:"center" }}>
+                  <div style={{ fontSize:20, marginBottom:8 }}>⏳</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", marginBottom:4 }}>Show not started yet</div>
+                  <div style={{ fontSize:9, color:"#374151" }}>Products will appear here once the host goes live</div>
+                </div>
+              )}
               {runOrder[activeIdx] && (() => {
                 const p = runOrder[activeIdx];
                 return (
@@ -1874,6 +1902,13 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
               Products listed in show order. Each "Buy Now" button deeplinks directly to the Shopify product page for {persona.shop} — tracking the order back to this show.
             </div>
 
+            {runOrder.length === 0 && (
+              <div style={{ textAlign:"center", padding:"48px 24px", color:C.muted }}>
+                <div style={{ fontSize:32, marginBottom:12 }}>📡</div>
+                <div style={{ fontSize:16, fontWeight:700, color:C.text, marginBottom:6 }}>No live show running</div>
+                <div style={{ fontSize:12 }}>Start a show from the Show Planner to see products here.</div>
+              </div>
+            )}
             {runOrder.map((p, i) => {
               const isActive = i === activeIdx;
               const isSold   = i < activeIdx;
@@ -3233,6 +3268,43 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
     }, 2000);
     return ()=>clearInterval(t);
   }, [buyers]);
+
+  // ── Compute activeIdx from show clock + write sync keys to localStorage every second ──
+  const computeActiveIdx = () => {
+    const ro = liveRunOrder;
+    const pt = productTimings;
+    const start = showStartTime.current;
+    if (!ro.length) return 0;
+    let cursor = 0;
+    const bps = ro.map((p, i) => {
+      const dur = (pt[p.id] || 90) * 1000;
+      const bp = { idx: i, startMs: cursor, endMs: cursor + dur };
+      cursor += dur;
+      return bp;
+    });
+    const total = bps[bps.length - 1].endMs;
+    const elapsed = (Date.now() - start) % total;
+    const found = bps.find(b => elapsed >= b.startMs && elapsed < b.endMs);
+    return found ? found.idx : 0;
+  };
+
+  const [activeIdx, setActiveIdx] = useState(() => computeActiveIdx());
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      const idx = computeActiveIdx();
+      setActiveIdx(idx);
+      // Write sync keys so consumer Live Shop page stays in real-time sync
+      try {
+        localStorage.setItem("STRMLIVE_ACTIVE_IDX", String(idx));
+        localStorage.setItem("STRMLIVE_ACTIVE_PRODUCT", liveRunOrder[idx]?.id || "");
+        localStorage.setItem("STRMLIVE_SHOW_START", String(showStartTime.current));
+        localStorage.setItem("STRMLIVE_SHOW_ORDER", JSON.stringify(liveRunOrder.map(p => p.id)));
+        localStorage.setItem("STRMLIVE_SHOW_TIMINGS", JSON.stringify(productTimings));
+      } catch(e) {}
+    }, 1000);
+    return () => clearInterval(t);
+  }, [liveRunOrder, productTimings]);
 
   const fmt = (s) => `${String(Math.floor(s/3600)).padStart(2,"0")}:${String(Math.floor((s%3600)/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 
