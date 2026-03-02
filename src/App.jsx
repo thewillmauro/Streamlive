@@ -51,7 +51,7 @@ const PLANS = {
     subline:'You now have real-time Live Companion, Analytics, AI insights, and SMS campaigns.',
     features:[
       'Everything in Starter',
-      'Live Companion — real-time GMV & buyer feed',
+      'Live Companion: real-time GMV & buyer feed',
       'Analytics + 6 AI insights per show',
       'SMS campaigns & DM automations',
       'All 5 platforms simultaneously',
@@ -67,7 +67,7 @@ const PLANS = {
     subline:'Every feature unlocked. Production suite, full AI, and multi-platform at scale.',
     features:[
       'Everything in Growth',
-      'Production Suite — cameras, lights & OBS',
+      'Production Suite: cameras, lights & OBS',
       'Host Briefing auto-advances with show clock',
       'Cross-platform buyer identity matching',
       'Priority support',
@@ -153,7 +153,7 @@ function Landing() {
 
   useEffect(() => {
     // Simulate realistic live show GMV ticking up
-    // Orders come in bursts — sometimes fast, sometimes a pause
+    // Orders come in bursts: sometimes fast, sometimes a pause
     // Viewers fluctuate across all 5 platforms simultaneously (mirrors Live Companion behavior)
     let current = 0
     const seeds = { WN: 234, TT: 891, IG: 312, AM: 156, YT: 420 }
@@ -276,7 +276,7 @@ function Landing() {
     {
       tag:'BEFORE THE SHOW',
       headline:"Broadcast-quality setup.\nOne interface.",
-      desc:"Cameras, lighting, and OBS scenes — all controlled from one panel.",
+      desc:"Cameras, lighting, and OBS scenes: all controlled from one panel.",
       color:'#f59e0b',
       stats:[{ label:'Camera feeds', value:'Multi' },{ label:'Lighting brands', value:'3' },{ label:'OBS control', value:'Live' }],
       side:'left',
@@ -284,7 +284,7 @@ function Landing() {
     {
       tag:'PLAN THE SHOW',
       headline:"Name it. Build it.\nLaunch it.",
-      desc:"AI-ranked run order, perks configured, platforms selected — before you go live.",
+      desc:"AI-ranked run order, perks configured, platforms selected: before you go live.",
       color:'#7c3aed',
       stats:[{ label:'AI product ranking', value:'✓' },{ label:'Show perks', value:'✓' },{ label:'Platforms', value:'5' }],
       side:'right',
@@ -300,7 +300,7 @@ function Landing() {
     {
       tag:'HOST BRIEFING',
       headline:"Your script.\nLive and in sync.",
-      desc:"The Briefing opens alongside your Live Companion — run order, countdown timer, and AI talking points auto-advance with the show clock.",
+      desc:"The Briefing opens alongside your Live Companion: run order, countdown timer, and AI talking points auto-advance with the show clock.",
       color:'#38bdf8',
       stats:[{ label:'Auto-advances', value:'✓' },{ label:'Talking points', value:'AI' },{ label:'Sync', value:'Live' }],
       side:'right',
@@ -308,7 +308,7 @@ function Landing() {
     {
       tag:'AFTER THE SHOW',
       headline:"Insights and analytics.\nEvery single show.",
-      desc:"AI recommendations, revenue trends, and platform breakdowns — all waiting when you go offline.",
+      desc:"AI recommendations, revenue trends, and platform breakdowns: all waiting when you go offline.",
       color:'#a78bfa',
       stats:[{ label:'Insights/show', value:'6+' },{ label:'Analytics', value:'✓' },{ label:'Data sources', value:'5' }],
       side:'left',
@@ -316,7 +316,7 @@ function Landing() {
   ]
 
   const FAQS = [
-    { q:'Free during beta?', a:'Yes. Full access, no credit card. Paid plans launch at MVP — join now to lock in founding-member pricing.' },
+    { q:'Free during beta?', a:'Yes. Full access, no credit card. Paid plans launch at MVP: join now to lock in founding-member pricing.' },
     { q:'Which platforms?', a:'Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. Stream all five simultaneously. One buyer CRM for all of them.' },
   ]
 
@@ -440,7 +440,7 @@ function Landing() {
           </h1>
 
           <p className="fade-a2" style={{ fontSize:'clamp(14px,1.8vw,17px)', color:'#4b5563', lineHeight:1.6, maxWidth:480, margin:'0 auto 32px', fontWeight:400 }}>
-            One command center for Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live — simultaneously.
+            One command center for Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live: simultaneously.
           </p>
 
           <div className="fade-a3 hero-input-row" style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:12, flexWrap:'wrap' }}>
@@ -467,7 +467,7 @@ function Landing() {
           </div>
           <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:24 }}>Free during beta · No credit card required</p>
 
-          {/* Live viewer count — mirrors Live Companion platform strip behavior */}
+          {/* Live viewer count: mirrors Live Companion platform strip behavior */}
           <div style={{ display:'flex', justifyContent:'center', marginBottom:0 }}>
             <div className="fade-a4" style={{ display:'inline-flex', flexDirection:'column', alignItems:'center', gap:9, background:'#0a0a16', border:'1px solid #1e1e3a', borderRadius:14, padding:'11px 18px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:7 }}>
@@ -759,8 +759,8 @@ function Landing() {
                         <div style={{ background:'#07070f', border:'1px solid #1e1e3a', borderRadius:9, padding:'10px 12px' }}>
                           <div style={{ fontSize:8,fontWeight:800,color:'#4b5563',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:8 }}>Talking Points</div>
                           {[
-                            {icon:'✨',pt:'100% mulberry silk — mention the weight and drape'},
-                            {icon:'📦',pt:'Only 8 left — create urgency naturally'},
+                            {icon:'✨',pt:'100% mulberry silk: mention the weight and drape'},
+                            {icon:'📦',pt:'Only 8 left: create urgency naturally'},
                             {icon:'🎁',pt:'Pairs with the Merino Blazer (next up)'},
                           ].map((tp,ti)=>(
                             <div key={ti} style={{ display:'flex',gap:8,alignItems:'flex-start',marginBottom:6,paddingBottom:6,borderBottom:ti<2?'1px solid #1e1e3a11':'none' }}>
@@ -800,7 +800,7 @@ function Landing() {
                       {/* AI insights */}
                       {[
                         {icon:'💰',pri:'HIGH',title:'TikTok drives 42% of revenue',impact:'+$800 vs last show',c:'#10b981'},
-                        {icon:'⚠️',pri:'HIGH',title:'3 at-risk buyers — re-engage now',impact:'$680 at stake',c:'#f59e0b'},
+                        {icon:'⚠️',pri:'HIGH',title:'3 at-risk buyers: re-engage now',impact:'$680 at stake',c:'#f59e0b'},
                         {icon:'📊',pri:'MED',title:'Thursday shows outperform by +$900',impact:'Schedule more Thurs',c:'#a78bfa'},
                       ].map(ins=>(
                         <div key={ins.title} style={{ padding:'8px 10px',background:'#0d0d1e',border:`1px solid ${ins.c}22`,borderRadius:8,marginBottom:6,display:'flex',gap:9,alignItems:'flex-start' }}>
@@ -839,10 +839,9 @@ function Landing() {
           <div style={{ textAlign:'center', marginBottom:48 }}>
             <span className="section-label">Pricing</span>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Simple, transparent pricing.</div>
-            <p style={{ fontSize:14, color:'#4b5563' }}>Free during beta. Paid plans launch at MVP.</p>
           </div>
 
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, alignItems:'start' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, alignItems:'stretch' }}>
             {Object.values(PLANS).map(p=>(
               <div key={p.id} style={{ background:p.popular?'linear-gradient(180deg,#130e2a,#0c0a1e)':'#08080f', border:`1px solid ${p.popular?p.color+'55':'#1a1a2e'}`, borderRadius:20, padding:'28px 24px', position:'relative', display:'flex', flexDirection:'column', boxShadow:p.popular?`0 0 40px ${p.color}18`:'none' }}>
                 {p.popular && (
@@ -1204,8 +1203,8 @@ function ChangelogPage() {
     {
       version:'v0.9.2', date:'February 2026', tag:'New', tagColor:'#10b981',
       items:[
-        {type:'✦', text:'Live Shop page — shareable buyer-facing URL per show with full product lineup and Shopify deeplinks'},
-        {type:'✦', text:'Quick Message tab — SMS, Instagram DM, and TikTok DM templates with one-tap live shop link sharing'},
+        {type:'✦', text:'Live Shop page: shareable buyer-facing URL per show with full product lineup and Shopify deeplinks'},
+        {type:'✦', text:'Quick Message tab: SMS, Instagram DM, and TikTok DM templates with one-tap live shop link sharing'},
         {type:'◈', text:'Live Companion two-row header: Total Viewers, condensed per-platform badges, copy-link widget'},
         {type:'◈', text:'Show name flows from Show Planner → Live Companion → Order Review → Show History automatically'},
         {type:'✓', text:'Fixed: live shop URL now includes show slug so every show gets a unique, bookmarkable link'},
@@ -1214,10 +1213,10 @@ function ChangelogPage() {
     {
       version:'v0.9.1', date:'January 2026', tag:'Improved', tagColor:'#7c3aed',
       items:[
-        {type:'◈', text:'Perks tab in Live Companion — assign live-only discounts and bundles to individual buyers mid-show'},
-        {type:'◈', text:'Loyalty Hub — 4-tier program (Bronze → Silver → Gold → VIP) with points, rewards, birthday discounts'},
-        {type:'◉', text:'Buyer Profile — full purchase history, churn risk score, LTV, and cross-platform handle registry'},
-        {type:'◉', text:'Order Review — post-show summary with per-buyer breakdown, total GMV, and CSV export'},
+        {type:'◈', text:'Perks tab in Live Companion: assign live-only discounts and bundles to individual buyers mid-show'},
+        {type:'◈', text:'Loyalty Hub: 4-tier program (Bronze → Silver → Gold → VIP) with points, rewards, birthday discounts'},
+        {type:'◉', text:'Buyer Profile: full purchase history, churn risk score, LTV, and cross-platform handle registry'},
+        {type:'◉', text:'Order Review: post-show summary with per-buyer breakdown, total GMV, and CSV export'},
         {type:'✓', text:'Fixed: platform viewer counts now update in real-time during show without page refresh'},
         {type:'✓', text:'Fixed: Show Planner run order correctly persists into Live Companion on session start'},
       ]
@@ -1225,15 +1224,15 @@ function ChangelogPage() {
     {
       version:'v0.9.0', date:'December 2025', tag:'Launch', tagColor:'#f59e0b',
       items:[
-        {type:'✦', text:'Beta launch — full product available to founding members across all 5 platforms'},
-        {type:'✦', text:'Buyer CRM — unified buyer database across Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live'},
-        {type:'✦', text:'Live Companion — real-time buyer feed, GMV counter, per-order tracking, and VIP alerts'},
-        {type:'✦', text:'Analytics dashboard — revenue trends, audience health, platform comparison, LTV distribution'},
-        {type:'✦', text:'AI Insights — 6 weekly recommendations with confidence scores after every show'},
-        {type:'✦', text:'Production Suite — Sony FX3/FX6 camera control, Elgato/Aputure lighting, OBS scene switching'},
+        {type:'✦', text:'Beta launch: full product available to founding members across all 5 platforms'},
+        {type:'✦', text:'Buyer CRM: unified buyer database across Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live'},
+        {type:'✦', text:'Live Companion: real-time buyer feed, GMV counter, per-order tracking, and VIP alerts'},
+        {type:'✦', text:'Analytics dashboard: revenue trends, audience health, platform comparison, LTV distribution'},
+        {type:'✦', text:'AI Insights: 6 weekly recommendations with confidence scores after every show'},
+        {type:'✦', text:'Production Suite: Sony FX3/FX6 camera control, Elgato/Aputure lighting, OBS scene switching'},
         {type:'✦', text:'Opt-in pages at strmlive.com/s/yourshop with TCPA-compliant email, SMS, and DM capture'},
-        {type:'✦', text:'Show Planner — platform selection, AI-ranked run order, perk assignment, show history'},
-        {type:'✦', text:'YouTube Live Pixel — first-party attribution from stream → site → purchase, 99% accuracy'},
+        {type:'✦', text:'Show Planner: platform selection, AI-ranked run order, perk assignment, show history'},
+        {type:'✦', text:'YouTube Live Pixel: first-party attribution from stream → site → purchase, 99% accuracy'},
       ]
     },
     {
@@ -1252,7 +1251,7 @@ function ChangelogPage() {
       <div className="page-fade">
         <PLabel t="Changelog"/>
         <PTitle>What's shipped.</PTitle>
-        <PSub>Every update to Streamlive, documented. We ship fast and break things carefully — this is the honest record of both.</PSub>
+        <PSub>Every update to Streamlive, documented. We ship fast and break things carefully: this is the honest record of both.</PSub>
 
         <div style={{ position:'relative', paddingLeft:28 }}>
           <div style={{ position:'absolute', left:6, top:6, bottom:6, width:1, background:'linear-gradient(180deg,#7c3aed88,#7c3aed11)' }}/>
@@ -1291,15 +1290,15 @@ function RoadmapPage() {
   const quarters = [
     { period:'Q1 2026', label:'In Progress', color:'#10b981',
       items:[
-        {title:'Shopify live sync', desc:'Real-time inventory deduction during shows. When a buyer claims an item, stock drops instantly on Shopify — no more overselling.'},
-        {title:'Show templates', desc:'Save your best-performing show structure as a reusable template. Platform mix, run order strategy, perk assignments — all saved and reapplied in seconds.'},
+        {title:'Shopify live sync', desc:'Real-time inventory deduction during shows. When a buyer claims an item, stock drops instantly on Shopify: no more overselling.'},
+        {title:'Show templates', desc:'Save your best-performing show structure as a reusable template. Platform mix, run order strategy, perk assignments: all saved and reapplied in seconds.'},
         {title:'Buyer segments', desc:"Create saved segments: VIPs who haven't bought in 60 days, buyers who watch but never purchase, high-spenders. Target them directly in campaigns."},
         {title:'Live co-hosting', desc:'Invite a second seller or brand account into your live session. Both streams stay synced; both buyer CRMs update.'},
       ]
     },
     { period:'Q2 2026', label:'Planned', color:'#7c3aed',
       items:[
-        {title:'Waitlist & pre-orders', desc:'Let buyers reserve items before a show. Waitlist fills automatically in Live Companion as the run order progresses — no manual tracking.'},
+        {title:'Waitlist & pre-orders', desc:'Let buyers reserve items before a show. Waitlist fills automatically in Live Companion as the run order progresses: no manual tracking.'},
         {title:'Post-show email automation', desc:'Trigger personalized emails after every show: thank-you notes, "you missed it" restock alerts, and VIP early-access invites based on what each buyer watched and bought.'},
         {title:'AI show scripting', desc:'Generate a full show script from your run order: talking points, pricing callouts, urgency hooks, and platform-specific language. Edit inline before going live.'},
         {title:'Affiliate seller network', desc:'Invite other sellers to promote your products during their shows. Track clicks, views, and purchases back to each affiliate automatically.'},
@@ -1307,7 +1306,7 @@ function RoadmapPage() {
     },
     { period:'Q3 2026', label:'Exploring', color:'#f59e0b',
       items:[
-        {title:'Native checkout overlay', desc:'Buyers check out without leaving the stream. Stripe-powered overlay triggered directly from the Live Companion run order card — no redirect, no friction.'},
+        {title:'Native checkout overlay', desc:'Buyers check out without leaving the stream. Stripe-powered overlay triggered directly from the Live Companion run order card: no redirect, no friction.'},
         {title:'Multi-language support', desc:'Streamlive in Spanish, Portuguese, French, and Mandarin. Opt-in pages, buyer notifications, and the full app UI localized.'},
         {title:'Buyer mobile app', desc:'A companion app for buyers: live alerts when favorite sellers go live, order tracking, loyalty point balance, and restock notifications.'},
         {title:'White-label reseller program', desc:'Agencies run Streamlive under their own brand domain with custom colors and logo. Includes multi-seller management for agencies running 5+ accounts.'},
@@ -1319,7 +1318,7 @@ function RoadmapPage() {
       <div className="page-fade">
         <PLabel t="Roadmap"/>
         <PTitle>Where we're going.</PTitle>
-        <PSub>Our public roadmap. Founding members vote on priorities — the most-requested features move up the queue first.</PSub>
+        <PSub>Our public roadmap. Founding members vote on priorities: the most-requested features move up the queue first.</PSub>
 
         <div style={{ background:'#0a0a14', border:'1px solid #10b98133', borderRadius:12, padding:'16px 20px', marginBottom:48, display:'flex', gap:14, alignItems:'center', flexWrap:'wrap' }}>
           <div style={{ width:8, height:8, borderRadius:'50%', background:'#10b981', flexShrink:0 }}/>
@@ -1355,9 +1354,9 @@ function RoadmapPage() {
 // ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
 function AboutPage() {
   const values = [
-    {icon:'◉', label:'Sellers first', desc:"Every decision starts with one question: does this make a seller's show better? Not a nice-to-have — does it actually move GMV or reduce friction during a live show."},
-    {icon:'◈', label:'Attribution without compromise', desc:'Live commerce has a $0 attribution problem. Everyone tracks clicks. Nobody tracks what happened in the stream. We built a first-party pixel that follows the full path from stream to purchase — no cookies, no guessing.'},
-    {icon:'◆', label:'One tool, all platforms', desc:"A seller shouldn't need five dashboards to understand their business. We built one source of truth for buyer data, analytics, and live operations — regardless of whether you sell on TikTok, Whatnot, Amazon, Instagram, or YouTube."},
+    {icon:'◉', label:'Sellers first', desc:"Every decision starts with one question: does this make a seller's show better? Not a nice-to-have: does it actually move GMV or reduce friction during a live show."},
+    {icon:'◈', label:'Attribution without compromise', desc:'Live commerce has a $0 attribution problem. Everyone tracks clicks. Nobody tracks what happened in the stream. We built a first-party pixel that follows the full path from stream to purchase: no cookies, no guessing.'},
+    {icon:'◆', label:'One tool, all platforms', desc:"A seller shouldn't need five dashboards to understand their business. We built one source of truth for buyer data, analytics, and live operations: regardless of whether you sell on TikTok, Whatnot, Amazon, Instagram, or YouTube."},
     {icon:'✦', label:'Transparency in how we build', desc:"Our roadmap is public. Our changelog is honest. When we ship something broken, we say so. Founding members know exactly what stage we're at."},
   ]
   return (
@@ -1370,7 +1369,7 @@ function AboutPage() {
         <SectionTitle>The problem we're solving</SectionTitle>
         <Body>Live commerce is one of the fastest-growing retail channels in the world. In China, it already accounts for over 20% of e-commerce. In the US, sellers on Whatnot, TikTok Shop, and Amazon Live are building seven-figure businesses one show at a time.</Body>
         <Body>But the infrastructure hasn't kept up. Sellers stream across 5 platforms simultaneously with no way to unify buyer data. They have no real-time visibility into who's buying during a show. They can't attribute revenue back to a specific item, a specific moment, or a specific platform. They manage loyalty in notes apps and DM fans manually to remind them about upcoming shows.</Body>
-        <Body>Streamlive is the operating system for live commerce. The buyer CRM, live command center, attribution layer, and analytics platform — all in one place, purpose-built for sellers who go live.</Body>
+        <Body>Streamlive is the operating system for live commerce. The buyer CRM, live command center, attribution layer, and analytics platform: all in one place, purpose-built for sellers who go live.</Body>
 
         <Divider2/>
 
@@ -1390,7 +1389,7 @@ function AboutPage() {
         <Divider2/>
 
         <SectionTitle>Where we are</SectionTitle>
-        <Body>We're in open beta. The full product — Buyer CRM, Live Companion, Analytics, AI Insights, Production Suite, Show Planner, Loyalty Hub, and Opt-in Pages — is live and available to founding members today.</Body>
+        <Body>We're in open beta. The full product: Buyer CRM, Live Companion, Analytics, AI Insights, Production Suite, Show Planner, Loyalty Hub, and Opt-in Pages: is live and available to founding members today.</Body>
         <Body>We're a small, focused team. We don't have a 200-person org or a $50M Series B. What we have is a working product, a group of founding sellers using it every week, and a roadmap built around their feedback.</Body>
 
         <div style={{ background:'linear-gradient(135deg,#0d0d1e,#12103a)', border:'1px solid #7c3aed33', borderRadius:16, padding:'32px', textAlign:'center', marginTop:40 }}>
@@ -1414,13 +1413,13 @@ function BlogPage() {
       body:[
         {h:''},
         {p:"When we started talking to live sellers, one complaint came up in almost every conversation: \"I have no idea what's actually working.\""},
-        {p:'They were running shows on TikTok, Whatnot, and Amazon simultaneously — sometimes driving $10,000–$20,000 in a single three-hour show. But Shopify analytics showed "direct" traffic. No channel. No source. No show.'},
+        {p:'They were running shows on TikTok, Whatnot, and Amazon simultaneously: sometimes driving $10,000–$20,000 in a single three-hour show. But Shopify analytics showed "direct" traffic. No channel. No source. No show.'},
         {h:'Why live commerce breaks traditional attribution'},
         {p:"Traditional attribution is built around a click. Someone sees an ad, clicks a link, lands on a product page, buys. The click is the tracking event. Live commerce doesn't work that way."},
-        {p:'A buyer watches a stream for 45 minutes. The seller mentions a product. The buyer opens a new tab, searches the store, and buys. Or they wait until after the show ends. Or they click a chat link with no UTM parameters. The click — if it exists at all — is invisible to your analytics stack.'},
+        {p:'A buyer watches a stream for 45 minutes. The seller mentions a product. The buyer opens a new tab, searches the store, and buys. Or they wait until after the show ends. Or they click a chat link with no UTM parameters. The click: if it exists at all: is invisible to your analytics stack.'},
         {h:'What we built instead'},
         {p:'The Streamlive Live Pixel is a first-party script on your Shopify store. When a live show starts, the Pixel creates a session token tied to that show ID. Every visitor during the show window gets the token in their browser.'},
-        {p:'When that visitor converts — whether through a chat link, typing your URL directly, or returning three hours later — the Pixel links their order to the show session. No third-party cookies. No cross-site tracking. Just a direct connection between your live show and your Shopify orders.'},
+        {p:'When that visitor converts: whether through a chat link, typing your URL directly, or returning three hours later: the Pixel links their order to the show session. No third-party cookies. No cross-site tracking. Just a direct connection between your live show and your Shopify orders.'},
         {p:'The result: 99% attribution accuracy on purchases made during and immediately after a live show. You know exactly which show drove which revenue, which product performed, and which platform your buyers came from.'},
       ]
     },
@@ -1433,7 +1432,7 @@ function BlogPage() {
         {p:"There's a pattern with the top-performing live sellers on our platform. They don't treat shows as isolated events. They treat each show as a data collection opportunity."},
         {p:"After 10 shows, they know which of their 200 buyers purchases every week. They know who hasn't been seen in 45 days. They know who consistently spends over $200 and who's a one-time buyer. They know which buyers watch on TikTok but buy on the website."},
         {h:'The compounding advantage'},
-        {p:'Buyer data compounds. A seller with 500 buyers in their CRM — with real purchase history, platform handles, and loyalty tiers — has a fundamentally different business than a seller with 500 TikTok followers.'},
+        {p:'Buyer data compounds. A seller with 500 buyers in their CRM: with real purchase history, platform handles, and loyalty tiers: has a fundamentally different business than a seller with 500 TikTok followers.'},
         {p:'The unified CRM in Streamlive is built around this idea. Every buyer across every platform gets a single profile. Every purchase, every show appearance, every opt-in flows in automatically. You always know who your best buyers are, which platform they prefer, and when you last saw them.'},
         {h:'What you can do with it'},
         {p:"Segment your VIP buyers and DM them before a show. Build a re-engagement campaign for buyers who haven't purchased in 60 days. Send a birthday discount to every buyer in their birthday month. Create a waitlist for popular products and notify the most likely buyers first."},
@@ -1449,7 +1448,7 @@ function BlogPage() {
         {p:"The case for streaming across all five platforms is straightforward: you're already producing the content, and every platform has a different audience. Going live only on TikTok means the buyers who only watch Whatnot never see your show."},
         {p:'The counterargument is equally clear: managing five live chats, five sets of questions, and five comment feeds while running a show is operationally impossible for a solo seller.'},
         {h:'Separate the production from the distribution'},
-        {p:'The sellers who do this well have separated their production infrastructure from their distribution infrastructure. The show — the camera feed, product presentation, the lighting — runs once. The distribution layer handles all five platforms.'},
+        {p:'The sellers who do this well have separated their production infrastructure from their distribution infrastructure. The show: the camera feed, product presentation, the lighting: runs once. The distribution layer handles all five platforms.'},
         {p:"OBS handles the multi-platform stream routing. Streamlive's Production Suite controls camera feeds, scene switching, and lighting presets from a single interface, without touching OBS during the show."},
         {p:"The Live Companion aggregates buyer activity across all five platforms into one feed. You're not watching five chats. You're watching one buyer feed sorted by who just bought, who just joined, and who your VIPs are."},
         {h:'The setup'},
@@ -1478,7 +1477,7 @@ function BlogPage() {
           <Divider2/>
           <div style={{ background:'#0a0a14', border:'1px solid #7c3aed33', borderRadius:14, padding:'24px', textAlign:'center' }}>
             <div style={{ fontSize:14, fontWeight:700, color:'#fff', marginBottom:8 }}>See it in action</div>
-            <div style={{ fontSize:12, color:'#6b7280', marginBottom:18 }}>The full product is interactive — every screen is available right now.</div>
+            <div style={{ fontSize:12, color:'#6b7280', marginBottom:18 }}>The full product is interactive: every screen is available right now.</div>
             <button onClick={()=>navigate('/')} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'10px 22px', borderRadius:9, cursor:'pointer' }}>Explore Streamlive →</button>
           </div>
         </div>
@@ -1524,7 +1523,7 @@ We collect buyer data through your connected platform accounts (Whatnot, TikTok,
 
 We collect data through the Streamlive Live Pixel installed on your Shopify store: session identifiers, page view data, and order IDs for purchases made during or after your live shows.` },
     { title:'How we use your information',
-      body:`We use information collected to power your Buyer CRM — unifying buyer data across platforms and calculating loyalty tiers, churn risk scores, and lifetime value metrics.
+      body:`We use information collected to power your Buyer CRM: unifying buyer data across platforms and calculating loyalty tiers, churn risk scores, and lifetime value metrics.
 
 We use it to provide live show analytics, post-show reports, and AI Insights. To process your Streamlive subscription payments. To send operational emails about your account, billing, and product updates. To attribute purchases to specific shows via the Live Pixel.` },
     { title:'Your buyer data',
@@ -1536,7 +1535,7 @@ You can export your full buyer database in CSV format at any time. If you cancel
     { title:'Data security',
       body:`We use TLS 1.3 encryption for all data in transit. Data at rest is encrypted using AES-256. Our infrastructure runs on AWS with SOC 2 compliant data centers.
 
-Access to customer data is restricted to Streamlive engineers on a need-to-know basis and is logged and audited. We do not store credit card numbers — all payment processing is handled by Stripe (PCI DSS Level 1 certified).` },
+Access to customer data is restricted to Streamlive engineers on a need-to-know basis and is logged and audited. We do not store credit card numbers: all payment processing is handled by Stripe (PCI DSS Level 1 certified).` },
     { title:'TCPA compliance',
       body:`Streamlive opt-in pages are designed to be TCPA-compliant. Every SMS opt-in includes explicit consent language, message frequency disclosure, standard messaging rates disclosure, and opt-out instructions.
 
@@ -1587,7 +1586,7 @@ You may not share credentials with others or allow multiple users to access the 
     { title:'Your buyer data',
       body:`You retain ownership of all buyer data you bring into or collect through Streamlive. By using Streamlive, you grant us a limited license to process that data for the purpose of providing the service.
 
-You represent that you have the right to collect and process the buyer data you input into Streamlive, and that your use of that data complies with all applicable laws — including CAN-SPAM, TCPA, GDPR, and CCPA.
+You represent that you have the right to collect and process the buyer data you input into Streamlive, and that your use of that data complies with all applicable laws: including CAN-SPAM, TCPA, GDPR, and CCPA.
 
 You are solely responsible for obtaining proper consent from your buyers for any marketing communications sent through Streamlive.` },
     { title:'Prohibited uses',
@@ -1705,10 +1704,10 @@ function PlatformPage({ slug }) {
       emoji: '🔨',
       tagline: 'The auction-first live marketplace.',
       about: "Whatnot is the leading live auction and shopping platform in the US, built specifically for collectors, resellers, and enthusiast sellers. It launched in 2020 focused on trading cards and sneakers, and has since expanded to vintage clothing, comics, toys, luxury goods, and general merchandise. Whatnot sellers go live in scheduled shows, selling items individually through timed auctions or Buy It Now pricing, with buyers competing in real time.",
-      audienceNote: "Whatnot buyers tend to be highly engaged collectors and enthusiasts. They're repeat buyers who follow specific sellers and tune in regularly. Show loyalty is strong — many Whatnot sellers build audiences that return every week for years.",
+      audienceNote: "Whatnot buyers tend to be highly engaged collectors and enthusiasts. They're repeat buyers who follow specific sellers and tune in regularly. Show loyalty is strong: many Whatnot sellers build audiences that return every week for years.",
       features: [
-        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive pulls your full Whatnot buyer history automatically — every buyer, every order, every item sold — into your unified CRM. Buyer handles, spend history, and auction wins are all captured and linked to a single buyer profile." },
-        { icon: '◈', title: 'Live Companion integration', body: "When you go live on Whatnot, the Live Companion activates automatically. Your Whatnot viewer count appears in the platform strip. Every bid and purchase shows up in your real-time buyer feed with the buyer's full history — loyalty tier, lifetime spend, notes, and past orders." },
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive pulls your full Whatnot buyer history automatically: every buyer, every order, every item sold: into your unified CRM. Buyer handles, spend history, and auction wins are all captured and linked to a single buyer profile." },
+        { icon: '◈', title: 'Live Companion integration', body: "When you go live on Whatnot, the Live Companion activates automatically. Your Whatnot viewer count appears in the platform strip. Every bid and purchase shows up in your real-time buyer feed with the buyer's full history: loyalty tier, lifetime spend, notes, and past orders." },
         { icon: '◆', title: 'Show attribution', body: "Every show you run on Whatnot is logged in Show History with total GMV, number of items sold, and per-buyer breakdowns. Post-show Order Review gives you a clean summary you can use to plan your next show or export for records." },
         { icon: '✦', title: 'Opt-in & loyalty', body: "Whatnot buyers who opt in through your Streamlive link get added to your buyer CRM with SMS and email consent on file. You can enroll them in your loyalty program and send show reminders to bring them back to your next live." },
       ],
@@ -1718,13 +1717,13 @@ function PlatformPage({ slug }) {
       color: '#f43f5e',
       emoji: '🎵',
       tagline: 'The fastest-growing live commerce channel in the world.',
-      about: "TikTok Shop launched in the US in 2023 and grew faster than any live commerce platform in history. It combines TikTok's algorithm-driven discovery with native shopping — viewers can buy products without leaving the app. Live selling on TikTok happens through TikTok LIVE, where creators and sellers stream to their followers and algorithmically distributed audiences simultaneously.",
-      audienceNote: "TikTok audiences skew younger and are highly impulse-driven. Discovery is algorithm-powered, so new viewers can find your show without being a follower first. This makes TikTok exceptional for new customer acquisition — but buyer loyalty requires active nurturing off-platform.",
+      about: "TikTok Shop launched in the US in 2023 and grew faster than any live commerce platform in history. It combines TikTok's algorithm-driven discovery with native shopping: viewers can buy products without leaving the app. Live selling on TikTok happens through TikTok LIVE, where creators and sellers stream to their followers and algorithmically distributed audiences simultaneously.",
+      audienceNote: "TikTok audiences skew younger and are highly impulse-driven. Discovery is algorithm-powered, so new viewers can find your show without being a follower first. This makes TikTok exceptional for new customer acquisition: but buyer loyalty requires active nurturing off-platform.",
       features: [
-        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive connects to your TikTok Shop seller account and imports your full order history — buyer usernames, items purchased, order values, and dates. Every TikTok buyer gets a unified profile in your CRM alongside their activity on other platforms." },
-        { icon: '◈', title: 'Live Companion integration', body: "TikTok viewer counts and order activity appear in the Live Companion in real time during your show. When a TikTok viewer converts to a buyer, they surface immediately in your buyer feed with their full profile — even if they also buy on other platforms." },
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive connects to your TikTok Shop seller account and imports your full order history: buyer usernames, items purchased, order values, and dates. Every TikTok buyer gets a unified profile in your CRM alongside their activity on other platforms." },
+        { icon: '◈', title: 'Live Companion integration', body: "TikTok viewer counts and order activity appear in the Live Companion in real time during your show. When a TikTok viewer converts to a buyer, they surface immediately in your buyer feed with their full profile: even if they also buy on other platforms." },
         { icon: '◆', title: 'ManyChat keyword automations', body: "Streamlive connects to ManyChat to power TikTok keyword DM automations. A viewer types a keyword in your TikTok LIVE chat, ManyChat sends them a DM with your product link or opt-in page automatically. No manual follow-up required." },
-        { icon: '✦', title: 'Cross-platform attribution', body: "TikTok often drives buyers who then purchase on your Shopify store. Streamlive's Live Pixel captures these cross-platform conversions and links them back to the specific TikTok show that drove them — so your TikTok GMV is never undercounted." },
+        { icon: '✦', title: 'Cross-platform attribution', body: "TikTok often drives buyers who then purchase on your Shopify store. Streamlive's Live Pixel captures these cross-platform conversions and links them back to the specific TikTok show that drove them: so your TikTok GMV is never undercounted." },
       ],
     },
     'instagram-live': {
@@ -1733,12 +1732,12 @@ function PlatformPage({ slug }) {
       emoji: '📸',
       tagline: 'Live selling to your most loyal followers.',
       about: "Instagram Live is Meta's live video feature inside Instagram. Sellers go live directly from their Instagram profile and sell to their existing followers in real time. Instagram Live Shopping allows sellers to tag products from their Instagram Shop catalog during a live session, letting viewers tap to buy without leaving the app. It's less discovery-driven than TikTok, making it best suited for selling to an established, warm audience.",
-      audienceNote: "Instagram Live audiences are typically existing followers — people who already know your brand and have opted in to see your content. This makes Instagram Live high-converting for repeat buyers and VIP audiences, but it requires a built-up following to drive meaningful volume.",
+      audienceNote: "Instagram Live audiences are typically existing followers: people who already know your brand and have opted in to see your content. This makes Instagram Live high-converting for repeat buyers and VIP audiences, but it requires a built-up following to drive meaningful volume.",
       features: [
-        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Instagram buyer history through your Meta Business account — order records, buyer profiles, and purchase history all flow into your unified CRM. Instagram handles are linked to buyer profiles so you recognize buyers across platforms." },
-        { icon: '◈', title: 'Live Companion integration', body: "Instagram Live viewer counts appear in the Live Companion platform strip during your show. Order activity from Instagram Live Shopping surfaces in your buyer feed in real time, with full buyer profiles attached — including their history from TikTok, Whatnot, or any other connected platform." },
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Instagram buyer history through your Meta Business account: order records, buyer profiles, and purchase history all flow into your unified CRM. Instagram handles are linked to buyer profiles so you recognize buyers across platforms." },
+        { icon: '◈', title: 'Live Companion integration', body: "Instagram Live viewer counts appear in the Live Companion platform strip during your show. Order activity from Instagram Live Shopping surfaces in your buyer feed in real time, with full buyer profiles attached: including their history from TikTok, Whatnot, or any other connected platform." },
         { icon: '◆', title: 'DM opt-in flow', body: "Streamlive connects to ManyChat to enable Instagram DM keyword automations. A viewer comments a keyword during your Instagram Live, and ManyChat automatically sends them a DM with your opt-in link or product URL. Opt-ins from Instagram capture consent and flow directly into your buyer CRM." },
-        { icon: '✦', title: 'Quick Message', body: "After a show, use Streamlive's Quick Message tab in the Live Companion to send a pre-built Instagram DM to followers with a link to your Live Shop page — so viewers who missed the show can still browse and buy the full lineup." },
+        { icon: '✦', title: 'Quick Message', body: "After a show, use Streamlive's Quick Message tab in the Live Companion to send a pre-built Instagram DM to followers with a link to your Live Shop page: so viewers who missed the show can still browse and buy the full lineup." },
       ],
     },
     'amazon-live': {
@@ -1746,12 +1745,12 @@ function PlatformPage({ slug }) {
       color: '#f59e0b',
       emoji: '📦',
       tagline: "Live selling inside the world's largest store.",
-      about: "Amazon Live is Amazon's native live shopping feature, available to brand-registered sellers and Amazon Influencers. Sellers stream directly on Amazon product pages and their Amazon storefront, demonstrating products to shoppers who are already in buying mode. Amazon Live sits at the bottom of the funnel — viewers are actively searching for products to buy, not browsing for entertainment — which makes conversion rates exceptionally high.",
-      audienceNote: "Amazon Live audiences are purchase-intent shoppers. Unlike TikTok or Instagram where discovery is social, Amazon Live viewers find shows through product searches and Amazon's recommendation engine. They're already primed to buy — your job is to demonstrate and convince.",
+      about: "Amazon Live is Amazon's native live shopping feature, available to brand-registered sellers and Amazon Influencers. Sellers stream directly on Amazon product pages and their Amazon storefront, demonstrating products to shoppers who are already in buying mode. Amazon Live sits at the bottom of the funnel: viewers are actively searching for products to buy, not browsing for entertainment: which makes conversion rates exceptionally high.",
+      audienceNote: "Amazon Live audiences are purchase-intent shoppers. Unlike TikTok or Instagram where discovery is social, Amazon Live viewers find shows through product searches and Amazon's recommendation engine. They're already primed to buy: your job is to demonstrate and convince.",
       features: [
-        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Amazon Live order data — buyer identifiers, product purchases, show dates, and order values — into your unified buyer CRM. Amazon buyer privacy restrictions mean we work with the data Amazon makes available to sellers through the API." },
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Amazon Live order data: buyer identifiers, product purchases, show dates, and order values: into your unified buyer CRM. Amazon buyer privacy restrictions mean we work with the data Amazon makes available to sellers through the API." },
         { icon: '◈', title: 'Live Companion integration', body: "Amazon Live viewer counts and purchase activity appear in your Live Companion during a show. Amazon orders convert in real time and surface in your buyer feed as they come in, giving you a live view of your Amazon GMV ticking up alongside your other platforms." },
-        { icon: '◆', title: 'Show attribution', body: "Every Amazon Live show is tracked in your Show History with product-level attribution. You can see exactly which items sold, at what volume, and compare Amazon performance against other platforms for the same show — all in one post-show report." },
+        { icon: '◆', title: 'Show attribution', body: "Every Amazon Live show is tracked in your Show History with product-level attribution. You can see exactly which items sold, at what volume, and compare Amazon performance against other platforms for the same show: all in one post-show report." },
         { icon: '✦', title: 'Cross-platform buyer matching', body: "Buyers who purchase on Amazon and also engage on TikTok or Instagram can be matched in your CRM using email or contact information when available. This gives you a more complete view of your highest-value buyers across every channel they use." },
       ],
     },
@@ -1760,12 +1759,12 @@ function PlatformPage({ slug }) {
       color: '#ef4444',
       emoji: '▶️',
       tagline: 'Long-form live selling with first-party attribution.',
-      about: "YouTube Live is Google's live streaming platform, the largest video platform in the world by watch time. YouTube Live Shopping launched in 2023, allowing creators and sellers to tag products directly in their live stream for viewers to purchase. YouTube's audiences tend toward longer watch times than TikTok or Instagram — viewers will stay for hours — making it well-suited for in-depth product demonstrations, unboxings, and educational selling.",
+      about: "YouTube Live is Google's live streaming platform, the largest video platform in the world by watch time. YouTube Live Shopping launched in 2023, allowing creators and sellers to tag products directly in their live stream for viewers to purchase. YouTube's audiences tend toward longer watch times than TikTok or Instagram: viewers will stay for hours: making it well-suited for in-depth product demonstrations, unboxings, and educational selling.",
       audienceNote: "YouTube Live audiences are engaged, long-session viewers who are comfortable watching extended content. They research before buying and respond well to detailed product explanations, comparisons, and demonstrations. Building a YouTube audience takes longer than TikTok, but the buyer quality and average order value tend to be higher.",
       features: [
-        { icon: '◉', title: 'Live Pixel attribution', body: "YouTube doesn't expose buyer data the same way as other platforms. Streamlive solves this with the YouTube Live Pixel — a lightweight JavaScript snippet installed on your Shopify store. When a viewer clicks from your stream to your store, the Pixel creates a session ID that follows them through checkout and links their purchase back to your specific YouTube show with 99% accuracy." },
-        { icon: '◈', title: 'Live Companion integration', body: "YouTube viewer counts appear in your Live Companion platform strip in real time. Purchases attributed via Live Pixel surface in your buyer feed as they're confirmed — typically within seconds of checkout completion. Your YouTube GMV ticks up live alongside all other platforms." },
-        { icon: '◆', title: 'Show attribution & reporting', body: "Post-show, your YouTube revenue is broken out in Order Review and Show History alongside TikTok, Whatnot, Instagram, and Amazon. You can see your total show GMV and exactly what percentage came from YouTube — the number most sellers have never been able to measure before." },
+        { icon: '◉', title: 'Live Pixel attribution', body: "YouTube doesn't expose buyer data the same way as other platforms. Streamlive solves this with the YouTube Live Pixel: a lightweight JavaScript snippet installed on your Shopify store. When a viewer clicks from your stream to your store, the Pixel creates a session ID that follows them through checkout and links their purchase back to your specific YouTube show with 99% accuracy." },
+        { icon: '◈', title: 'Live Companion integration', body: "YouTube viewer counts appear in your Live Companion platform strip in real time. Purchases attributed via Live Pixel surface in your buyer feed as they're confirmed: typically within seconds of checkout completion. Your YouTube GMV ticks up live alongside all other platforms." },
+        { icon: '◆', title: 'Show attribution & reporting', body: "Post-show, your YouTube revenue is broken out in Order Review and Show History alongside TikTok, Whatnot, Instagram, and Amazon. You can see your total show GMV and exactly what percentage came from YouTube: the number most sellers have never been able to measure before." },
         { icon: '✦', title: 'Pixel setup', body: "Installing the Live Pixel takes under 5 minutes. Add a single script tag to your Shopify theme, connect your YouTube channel in Streamlive settings, and the Pixel activates automatically at the start of every YouTube Live. No ongoing maintenance required." },
       ],
     },
@@ -2310,7 +2309,7 @@ const LIVE_SHOP_DATA = {
     ],
     shows: {
       "new-shade-drop-live": {
-        name: "New Shade Drop — Live",
+        name: "New Shade Drop: Live",
         platforms: ["TT","IG"],
         products: [
           { id:"p11", name:"Matte Lip Kit Ruby",          image:"💄", price:29,  inventory:840, url:"/products/matte-lip-kit-ruby"       },
@@ -2345,7 +2344,7 @@ const LIVE_SHOP_DATA = {
 function LiveShopPage({ shopSlug, showSlug }) {
   const seller    = SELLER_PROFILES[shopSlug];
 
-  // Resolve seller first — everything else depends on it
+  // Resolve seller first: everything else depends on it
   const resolvedSeller = seller || (shopSlug && shopSlug !== "shop" ? {
     name: shopSlug.replace(/-/g," ").replace(/\b\w/g, c=>c.toUpperCase()),
     avatar: shopSlug.slice(0,2).toUpperCase(),
@@ -2525,7 +2524,7 @@ function LiveShopPage({ shopSlug, showSlug }) {
                     </div>
                   </div>
 
-                  {/* Buy Now — full text on desktop, arrow-only on mobile handled via min-width */}
+                  {/* Buy Now: full text on desktop, arrow-only on mobile handled via min-width */}
                   {!isSold && (
                     <a
                       href={shopifyUrl(p)}
@@ -2887,7 +2886,7 @@ function LiveCursor() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Strip cursor from any element that has it inline — runs on mount + DOM changes
+    // Strip cursor from any element that has it inline: runs on mount + DOM changes
     const stripCursors = (root = document.body) => {
       root.querySelectorAll('*').forEach(el => {
         if (el.style.cursor) el.style.cursor = '';
