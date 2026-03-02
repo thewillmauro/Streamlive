@@ -3198,24 +3198,23 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const [audioLevel,    setAudioLevel]    = useState(72);
   const [streamHealth,  setStreamHealth]  = useState({ WN:true, TT:true, IG:true, AM:true, YT:true });
 
-  // Sync stream health with platform connections loaded from Settings
+  // Device + platform connection state — declared before the effects that use them
+  const [liveDevices, setLiveDevices] = useState({});
+  const [platformConnections, setPlatformConnections] = useState({});
+
+  // Sync stream health whenever platform connections load from Settings
   useEffect(() => {
     if (Object.keys(platformConnections).length === 0) return;
     const PLATFORM_KEYS = { wn:"WN", tt:"TT", ig:"IG", am:"AM", yt:"YT" };
     setStreamHealth(prev => {
       const updated = { ...prev };
       Object.entries(PLATFORM_KEYS).forEach(([connKey, streamKey]) => {
-        // If platform is connected in Settings, default to live; if not connected, mark offline
         if (platformConnections[connKey]) updated[streamKey] = true;
         else updated[streamKey] = false;
       });
       return updated;
     });
   }, [platformConnections]);
-
-  // Device connection state — loaded from shared storage (Production Suite writes here)
-  const [liveDevices, setLiveDevices] = useState({});
-  const [platformConnections, setPlatformConnections] = useState({});
 
   useEffect(() => {
     (async () => {
