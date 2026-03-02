@@ -30,65 +30,48 @@ const STRIPE_LINKS = {
 const PLANS = {
   starter: {
     id:'starter', name:'Starter', price:79, color:'#10b981', bg:'#0a1e16', border:'#10b98133',
-    emoji:'🌱', tagline:'For sellers just getting started with live commerce',
+    emoji:'🌱', tagline:'Get started with live selling',
     headline:"You're in. Let's import your buyers.",
     subline:"Your Streamlive account is active. Connect your first platform and we'll import your buyers immediately.",
     features:[
-      'Buyer CRM: all platforms unified',
-      'Email campaigns (1,000/month)',
-      'Show performance reports',
-      'Opt-in landing page (strmlive.com/s/yourshop)',
-      'Whatnot, TikTok & Amazon Live sync',
-      'Loyalty program (Bronze & Silver tiers)',
-      'Show Planner with run order',
+      'Buyer CRM across all platforms',
+      'Show Planner + run order',
+      'Loyalty program',
+      'Opt-in pages & email campaigns',
       'Up to 2 platforms',
     ],
-    notIncluded:['Live Companion','Analytics','Production suite','AI Insights','SMS campaigns'],
     nextLabel:'Connect your first platform →',
     nextHint:"Takes 2 minutes. We'll import your buyers immediately.",
     billing:'Billed monthly. Cancel anytime.',
   },
   growth: {
     id:'growth', name:'Growth', price:199, color:'#7c3aed', bg:'#2d1f5e22', border:'#7c3aed44', popular:true,
-    emoji:'🚀', tagline:'For sellers running multiple shows per week',
+    emoji:'🚀', tagline:'Scale your live business',
     headline:'Growth unlocked. Time to go live.',
     subline:'You now have real-time Live Companion, Analytics, AI insights, and SMS campaigns.',
     features:[
       'Everything in Starter',
-      'Real-time Live Companion during shows',
-      'Analytics dashboard (Revenue, Audience, Shows)',
-      'AI Insights: 6 weekly business recommendations',
-      'SMS campaigns (5,000/month)',
-      'Instagram & all 4 platform sync',
-      'Loyalty Hub (all 4 tiers incl. VIP)',
-      'ManyChat DM automation (TikTok + Instagram)',
-      'Audience segmentation & win-back campaigns',
-      'Show Planner with multi-platform streaming',
+      'Live Companion — real-time GMV & buyer feed',
+      'Analytics + 6 AI insights per show',
+      'SMS campaigns & DM automations',
+      'All 5 platforms simultaneously',
     ],
-    notIncluded:['Production suite','Multi-camera & lighting control','White label','Dedicated support'],
     nextLabel:'Set up your platforms →',
     nextHint:"Connect Whatnot and it activates automatically when you go live.",
     billing:'Billed monthly. Cancel anytime.',
   },
   pro: {
     id:'pro', name:'Pro', price:399, color:'#f59e0b', bg:'#2e1f0a22', border:'#f59e0b33',
-    emoji:'⚡', tagline:'For power sellers at full scale',
+    emoji:'⚡', tagline:'Full production control',
     headline:"Pro activated. You're operating at full power.",
     subline:'Every feature unlocked. Production suite, full AI, and multi-platform at scale.',
     features:[
       'Everything in Growth',
-      'Production suite: Sony FX3/FX6, multi-camera and OBS control',
-      'OBS scene switcher via WebSocket',
-      'Lighting control (Elgato, Aputure, Godox)',
-      'Production automation rules',
-      'AI churn narratives & win-back copy generation',
+      'Production Suite — cameras, lights & OBS',
+      'Host Briefing auto-advances with show clock',
       'Cross-platform buyer identity matching',
-      'SMS campaigns (25,000/month)',
-      'TikTok multi-shop (up to 5)',
-      'Amazon multi-marketplace sync',
-      'Priority support (< 4hr response)',
+      'Priority support',
     ],
-    notIncluded:['White label','Dedicated account manager','Custom integrations'],
     nextLabel:'Set up your platforms →',
     nextHint:"Connect all 4 platforms and let Streamlive do the rest.",
     billing:'Billed monthly. Cancel anytime.',
@@ -155,7 +138,6 @@ function Nav({ currentPlan }) {
 function Landing() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
-  const [billingCycle, setBillingCycle] = useState('monthly')
   const [faqOpen, setFaqOpen] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [liveGmv, setLiveGmv] = useState(0)
@@ -338,7 +320,6 @@ function Landing() {
     { q:'Which platforms?', a:'Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. Stream all five simultaneously. One buyer CRM for all of them.' },
   ]
 
-  const annualDiscount = 0.17
 
   const MOBILE_CSS = `
     .nav-links         { display:flex; }
@@ -359,7 +340,7 @@ function Landing() {
     .spotlight-text    { order:inherit; }
     .spotlight-mockup  { order:inherit; }
     .pricing-section   { padding:96px 40px 0; }
-    .pricing-grid      { grid-template-columns:repeat(4,1fr); gap:12px; }
+    .pricing-grid      { grid-template-columns:repeat(3,1fr); gap:16px; }
     .enterprise-row    { flex-direction:row; }
     .faq-section       { padding:88px 40px 0; }
     .cta-section       { padding:88px 40px 80px; }
@@ -368,7 +349,7 @@ function Landing() {
     .footer-inner      { padding:36px 40px; }
 
     @media (max-width: 860px) {
-      .pricing-grid    { grid-template-columns:repeat(2,1fr); }
+      .pricing-grid    { grid-template-columns:repeat(3,1fr); }
     }
     @media (max-width: 700px) {
       .nav-links       { display:none; }
@@ -412,8 +393,6 @@ function Landing() {
         .section-label { font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#a78bfa; margin-bottom:14px; display:block; }
         .gradient-text { background:linear-gradient(135deg,#7c3aed,#a78bfa 50%,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
         .divider-glow  { height:1px; background:linear-gradient(90deg,transparent 0%,#7c3aed44 30%,#a78bfa55 50%,#7c3aed44 70%,transparent 100%); margin:0 auto; max-width:800px; }
-        .toggle-pill   { display:inline-flex; background:#0d0d1e; border:1px solid #1e1e3a; border-radius:99px; padding:4px; gap:4px; }
-        .toggle-opt    { font-size:12px; font-weight:600; padding:6px 18px; border-radius:99px; border:none; cursor:pointer; transition:all .15s; }
         .check-include { color:#10b981; font-size:11px; margin-top:1px; flex-shrink:0; }
         .check-exclude { color:#374151; font-size:11px; margin-top:1px; flex-shrink:0; }
         .yt-badge      { display:inline-flex; align-items:center; gap:5px; background:#ff000015; border:1px solid #ff000033; border-radius:99px; padding:3px 10px; }
@@ -855,65 +834,60 @@ function Landing() {
           </div>
         </div>
 
-                {/* ── PRICING ──────────────────────────────────────────────────────── */}
-        <div id="pricing" className="pricing-section" style={{ maxWidth:1040, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:32 }}>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:16 }}>Start free. Scale when ready.</div>
-            <div className="toggle-pill">
-              <button className="toggle-opt" onClick={()=>setBillingCycle('monthly')} style={{ background:billingCycle==='monthly'?'#1e1e3a':'transparent', color:billingCycle==='monthly'?'#fff':'#4b5563' }}>Monthly</button>
-              <button className="toggle-opt" onClick={()=>setBillingCycle('annual')} style={{ background:billingCycle==='annual'?'#1e1e3a':'transparent', color:billingCycle==='annual'?'#fff':'#4b5563', display:'flex', alignItems:'center', gap:6 }}>
-                Annual
-                <span style={{ fontSize:10, fontWeight:700, color:'#10b981', background:'#0a1e16', border:'1px solid #10b98133', padding:'1px 7px', borderRadius:99 }}>Save 17%</span>
-              </button>
-            </div>
+        {/* ── PRICING ──────────────────────────────────────────────────────── */}
+        <div id="pricing" className="pricing-section" style={{ maxWidth:860, margin:'0 auto' }}>
+          <div style={{ textAlign:'center', marginBottom:48 }}>
+            <span className="section-label">Pricing</span>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Simple, transparent pricing.</div>
+            <p style={{ fontSize:14, color:'#4b5563' }}>Free during beta. Paid plans launch at MVP.</p>
           </div>
 
-          <div className="pricing-grid" style={{ display:'grid' }}>
-            {Object.values(PLANS).map(p=>{
-              const displayPrice = billingCycle==='annual' ? Math.round(p.price*(1-annualDiscount)) : p.price
-              return (
-                <div key={p.id} className="plan-card" style={{ background:p.popular?'linear-gradient(180deg,#1a1030,#0e0b1e)':'#08080f', border:`1px solid ${p.popular?p.color+'66':'#14142a'}`, borderRadius:18, padding:'24px 20px', position:'relative', display:'flex', flexDirection:'column' }}>
-                  {p.popular && <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', color:'#fff', fontSize:9, fontWeight:800, padding:'3px 14px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap', boxShadow:'0 2px 12px rgba(124,58,237,.4)' }}>Most Popular</div>}
-                  <div style={{ marginBottom:18 }}>
-                    <div style={{ fontSize:18, marginBottom:6 }}>{p.emoji}</div>
-                    <span style={{ fontSize:10, fontWeight:800, color:p.color, textTransform:'uppercase', letterSpacing:'.1em', display:'block', marginBottom:6 }}>{p.name}</span>
-                    <>
-                        <div style={{ display:'flex', alignItems:'flex-end', gap:4, marginBottom:4 }}>
-                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:28, fontWeight:700, color:'#fff', lineHeight:1 }}>${displayPrice}</span>
-                          <span style={{ fontSize:12, color:'#4b5563', paddingBottom:2 }}>/mo</span>
-                        </div>
-                        {billingCycle==='annual' && <div style={{ fontSize:10, color:'#10b981', fontWeight:600 }}>↓ ${p.price-displayPrice}/mo savings</div>}
-                      </>
-                    <div style={{ fontSize:11, color:'#374151', marginTop:5, lineHeight:1.5 }}>{p.tagline}</div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, alignItems:'start' }}>
+            {Object.values(PLANS).map(p=>(
+              <div key={p.id} style={{ background:p.popular?'linear-gradient(180deg,#130e2a,#0c0a1e)':'#08080f', border:`1px solid ${p.popular?p.color+'55':'#1a1a2e'}`, borderRadius:20, padding:'28px 24px', position:'relative', display:'flex', flexDirection:'column', boxShadow:p.popular?`0 0 40px ${p.color}18`:'none' }}>
+                {p.popular && (
+                  <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:`linear-gradient(135deg,#7c3aed,#4f46e5)`, color:'#fff', fontSize:9, fontWeight:800, padding:'3px 16px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.1em', whiteSpace:'nowrap', boxShadow:'0 2px 14px rgba(124,58,237,.5)' }}>Most Popular</div>
+                )}
+                {/* Plan name + price */}
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+                    <span style={{ fontSize:20 }}>{p.emoji}</span>
+                    <span style={{ fontSize:13, fontWeight:800, color:p.color, textTransform:'uppercase', letterSpacing:'.1em' }}>{p.name}</span>
                   </div>
-                  <div style={{ flex:1, marginBottom:18 }}>
-                    {p.features.map(f=>(
-                      <div key={f} style={{ display:'flex', gap:8, marginBottom:6, alignItems:'flex-start' }}>
-                        <span className="check-include">✓</span>
-                        <span style={{ fontSize:11, color:'#9ca3af', lineHeight:1.55 }}>{f}</span>
-                      </div>
-                    ))}
-                    {p.notIncluded&&p.notIncluded.length>0 && (
-                      <div style={{ marginTop:10, paddingTop:10, borderTop:'1px solid #14142a' }}>
-                        {p.notIncluded.map(f=>(
-                          <div key={f} style={{ display:'flex', gap:8, marginBottom:5, alignItems:'flex-start' }}>
-                            <span className="check-exclude">✕</span>
-                            <span style={{ fontSize:11, color:'#374151', lineHeight:1.55 }}>{f}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  <div style={{ display:'flex', alignItems:'flex-end', gap:3, marginBottom:6 }}>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:36, fontWeight:700, color:'#fff', lineHeight:1 }}>${p.price}</span>
+                    <span style={{ fontSize:13, color:'#374151', paddingBottom:4 }}>/mo</span>
                   </div>
-                  <button onClick={()=>navigate(`/checkout?plan=${p.id}`)} className="cta-btn"
-                      style={{ width:'100%', background:p.popular?'linear-gradient(135deg,#7c3aed,#4f46e5)':`${p.color}18`, border:`1px solid ${p.color}44`, color:p.popular?'#fff':p.color, fontSize:12, fontWeight:700, padding:'11px', borderRadius:10, cursor:'pointer' }}>
-                      {p.popular?`Start Growth for $${displayPrice}/mo →`:`Get ${p.name} for $${displayPrice}/mo →`}
-                    </button>
-                  <div style={{ fontSize:10, color:'#374151', textAlign:'center', marginTop:8 }}>{p.billing}</div>
+                  <div style={{ fontSize:12, color:'#4b5563' }}>{p.tagline}</div>
                 </div>
-              )
-            })}
+                {/* Divider */}
+                <div style={{ height:1, background:'#1a1a2e', marginBottom:20 }} />
+                {/* Features */}
+                <div style={{ flex:1, marginBottom:24 }}>
+                  {p.features.map(f=>(
+                    <div key={f} style={{ display:'flex', gap:10, marginBottom:10, alignItems:'flex-start' }}>
+                      <div style={{ width:16, height:16, borderRadius:'50%', background:`${p.color}18`, border:`1px solid ${p.color}44`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
+                        <span style={{ fontSize:8, color:p.color, fontWeight:800 }}>✓</span>
+                      </div>
+                      <span style={{ fontSize:12, color:'#9ca3af', lineHeight:1.5 }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* CTA */}
+                <button onClick={()=>navigate(`/checkout?plan=${p.id}`)} className="cta-btn"
+                  style={{ width:'100%', background:p.popular?'linear-gradient(135deg,#7c3aed,#4f46e5)':`${p.color}14`, border:`1px solid ${p.popular?'transparent':p.color+'44'}`, color:p.popular?'#fff':p.color, fontSize:13, fontWeight:700, padding:'12px', borderRadius:11, cursor:'pointer' }}>
+                  {p.popular ? 'Start with Growth →' : `Get ${p.name} →`}
+                </button>
+                <div style={{ fontSize:10, color:'#2a2a3a', textAlign:'center', marginTop:10 }}>Cancel anytime</div>
+              </div>
+            ))}
           </div>
 
+          {/* Contact sales nudge */}
+          <div style={{ textAlign:'center', marginTop:32 }}>
+            <span style={{ fontSize:13, color:'#374151' }}>Need a custom plan for your agency or team? </span>
+            <button onClick={openSales} style={{ fontSize:13, color:'#a78bfa', background:'none', border:'none', cursor:'pointer', fontWeight:600, textDecoration:'underline', textUnderlineOffset:3 }}>Talk to sales →</button>
+          </div>
         </div>
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
