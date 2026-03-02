@@ -508,33 +508,37 @@ function Landing() {
               </div>
             )}
           </div>
-          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:32 }}>No credit card required · Free during beta · Cancel anytime</p>
+          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:24 }}>No credit card required · Free during beta · Cancel anytime</p>
 
           {/* Live viewer count — mirrors Live Companion platform strip behavior */}
-          <div className="fade-a4 hero-platforms" style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:2 }}>
-              <div style={{ width:6, height:6, borderRadius:'50%', background:'#ef4444', animation:'pulse 1s infinite', flexShrink:0 }} />
-              <span style={{ fontSize:10, fontWeight:800, color:'#ef4444', letterSpacing:'0.1em', textTransform:'uppercase' }}>Live Now</span>
-              <span style={{ fontSize:10, color:'#374151', marginLeft:4 }}>
-                {Object.values(liveViewers).reduce((a,v)=>a+v,0).toLocaleString()} viewers across 5 platforms
-              </span>
-            </div>
-            <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'center' }}>
-              {[
-                {id:'WN', label:'Whatnot',     color:'#7c3aed'},
-                {id:'TT', label:'TikTok',      color:'#f43f5e'},
-                {id:'IG', label:'Instagram',   color:'#ec4899'},
-                {id:'AM', label:'Amazon Live', color:'#f59e0b'},
-                {id:'YT', label:'YouTube',     color:'#ff0000'},
-              ].map(p=>(
-                <div key={p.id} style={{ display:'flex', alignItems:'center', gap:6, background:`${p.color}12`, border:`1px solid ${p.color}30`, borderRadius:99, padding:'5px 12px' }}>
-                  <div style={{ width:5, height:5, borderRadius:'50%', background:p.color, animation:'pulse 1s infinite', flexShrink:0 }} />
-                  <span style={{ fontSize:11, fontWeight:700, color:p.color }}>{p.label}</span>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:'#9ca3af' }}>
-                    {liveViewers[p.id] >= 1000 ? (liveViewers[p.id]/1000).toFixed(1)+'k' : liveViewers[p.id]}
-                  </span>
-                </div>
-              ))}
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:0 }}>
+            <div className="fade-a4" style={{ display:'inline-flex', flexDirection:'column', alignItems:'center', gap:9, background:'#0a0a16', border:'1px solid #1e1e3a', borderRadius:14, padding:'11px 18px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                <div style={{ width:7, height:7, borderRadius:'50%', background:'#ef4444', animation:'pulse 1s infinite', flexShrink:0 }} />
+                <span style={{ fontSize:11, fontWeight:800, color:'#ef4444', letterSpacing:'0.08em', textTransform:'uppercase' }}>Live Now</span>
+                <span style={{ fontSize:11, color:'#374151', marginLeft:2 }}>·</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:'#fff' }}>
+                  {Object.values(liveViewers).reduce((a,v)=>a+v,0).toLocaleString()}
+                </span>
+                <span style={{ fontSize:11, color:'#6b7280' }}>viewers across 5 platforms</span>
+              </div>
+              <div style={{ display:'flex', gap:5, flexWrap:'wrap', justifyContent:'center' }}>
+                {[
+                  {id:'WN', label:'Whatnot',     color:'#7c3aed'},
+                  {id:'TT', label:'TikTok',      color:'#f43f5e'},
+                  {id:'IG', label:'Instagram',   color:'#ec4899'},
+                  {id:'AM', label:'Amazon Live', color:'#f59e0b'},
+                  {id:'YT', label:'YouTube',     color:'#ff0000'},
+                ].map(p=>(
+                  <div key={p.id} style={{ display:'flex', alignItems:'center', gap:5, background:`${p.color}18`, border:`1px solid ${p.color}44`, borderRadius:99, padding:'4px 11px' }}>
+                    <div style={{ width:5, height:5, borderRadius:'50%', background:p.color, animation:'pulse 1.4s infinite', flexShrink:0 }} />
+                    <span style={{ fontSize:11, fontWeight:700, color:p.color }}>{p.label}</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:'#e5e7eb', marginLeft:2 }}>
+                      {liveViewers[p.id] >= 1000 ? (liveViewers[p.id]/1000).toFixed(1)+'k' : liveViewers[p.id]}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
