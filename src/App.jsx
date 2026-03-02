@@ -2007,19 +2007,34 @@ function Checkout() {
         .card-brand-badge { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:9px; font-weight:900; padding:2px 6px; border-radius:4px; letter-spacing:.05em; }
         @keyframes checkPop { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
         .check-pop { animation: checkPop .35s ease both; }
+        .checkout-wrap   { display:grid; grid-template-columns:1fr 460px; gap:32px; align-items:start; padding:28px 32px 80px; max-width:1080px; margin:0 auto; }
+        .checkout-header { max-width:1080px; margin:0 auto; padding:20px 32px 0; }
+        .checkout-form   { position:sticky; top:80px; }
+        .checkout-features-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
+        .checkout-trust  { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+        @media (max-width:760px) {
+          .checkout-wrap  { grid-template-columns:1fr; padding:20px 16px 60px; gap:20px; }
+          .checkout-header { padding:16px 16px 0; }
+          .checkout-form  { position:static; }
+          .checkout-features-grid { grid-template-columns:1fr; }
+          .checkout-trust { grid-template-columns:repeat(3,1fr); gap:8px; }
+        }
+        @media (max-width:480px) {
+          .checkout-trust { grid-template-columns:1fr; gap:8px; }
+        }
       `}</style>
       <div style={{ minHeight:'100vh', background:'#06060e', overflowY:'auto' }}>
         <Nav currentPlan={selectedPlan} />
 
-        <div style={{ maxWidth:1080, margin:'0 auto', padding:'20px 32px 0' }}>
+        <div className="checkout-header">
           <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', color:'#4b5563', fontSize:12, cursor:'pointer', padding:0 }}>← Back to plans</button>
         </div>
-        <div style={{ maxWidth:1080, margin:'0 auto', padding:'20px 32px 0' }}>
+        <div className="checkout-header">
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:26, fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:4 }}>Complete your subscription</div>
           <div style={{ fontSize:13, color:'#4b5563' }}>Pay securely below. You'll never leave Streamlive.</div>
         </div>
 
-        <div style={{ maxWidth:1080, margin:'0 auto', padding:'28px 32px 80px', display:'grid', gridTemplateColumns:'1fr 460px', gap:32, alignItems:'start' }}>
+        <div className="checkout-wrap">
 
           {/* LEFT - plan selector + features */}
           <div>
@@ -2061,7 +2076,7 @@ function Checkout() {
                   <div style={{ fontSize:10, color:'#4b5563' }}>per month</div>
                 </div>
               </div>
-              <div style={{ borderTop:'1px solid #14142a', paddingTop:16, display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 16px' }}>
+              <div className="checkout-features-grid" style={{ borderTop:'1px solid #14142a', paddingTop:16 }}>
                 {p.features.map(f => (
                   <div key={f} style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
                     <span style={{ color:p.color, fontSize:12, flexShrink:0, marginTop:2 }}>✓</span>
@@ -2072,7 +2087,7 @@ function Checkout() {
             </div>
 
             {/* Trust */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
+            <div className="checkout-trust">
               {TRUST.map(t => (
                 <div key={t.label} style={{ background:'#0a0a15', border:'1px solid #14142a', borderRadius:12, padding:'14px 16px' }}>
                   <div style={{ fontSize:20, marginBottom:8 }}>{t.icon}</div>
@@ -2084,7 +2099,7 @@ function Checkout() {
           </div>
 
           {/* RIGHT - payment form */}
-          <div style={{ position:'sticky', top:80 }}>
+          <div className="checkout-form">
             <div style={{ background:'linear-gradient(160deg,#0e0e1a,#09090f)', border:`1px solid ${p.color}33`, borderRadius:20, padding:28, boxShadow:`0 0 80px ${p.color}0d` }}>
 
               {/* Order summary */}

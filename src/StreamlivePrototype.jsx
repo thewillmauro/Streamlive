@@ -83,7 +83,7 @@ const PERSONAS = [
     subscriberCount: 3820,
     manychat: { ttOptIns: 1240, igOptIns: 860, thisWeek: { tt: 94, ig: 61 }, topKeyword: "STYLE" },
     slug: "bananarepublic",
-    bio: "Banana Republic Live — seasonal collections, member exclusives, and live styling every week.",
+    bio: "Banana Republic Live: seasonal collections, member exclusives, and live styling every week.",
   },
   {
     id: "tyler",
@@ -133,22 +133,22 @@ const PERSONAS = [
     showCount: 1840,
     subscriberCount: 124000,
     slug: "walmartlive",
-    bio: "Walmart Live — powering live commerce for Walmart's brand partners across every category.",
+    bio: "Walmart Live: powering live commerce for Walmart's brand partners across every category.",
     teamSize: 12,
     sellerCount: 12,
     whiteLabel: true,
     whiteLabelDomain: "live.walmart.com",
     managedSellers: [
-      { id:"s1",  name:"Banana Republic",    owner:"Jamie Ellis",    avatar:"BR", category:"Apparel",         plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","IG","AM"],      gmv:184200, gmvPrev:162800, buyerCount:1840, showCount:11, lastShow:"Feb 22", subscriberCount:3820, manager:"tm2", monthlyFee:399, alerts:[{type:"opportunity",text:"Spring collection launch — schedule a live event this week"}] },
+      { id:"s1",  name:"Banana Republic",    owner:"Jamie Ellis",    avatar:"BR", category:"Apparel",         plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","IG","AM"],      gmv:184200, gmvPrev:162800, buyerCount:1840, showCount:11, lastShow:"Feb 22", subscriberCount:3820, manager:"tm2", monthlyFee:399, alerts:[{type:"opportunity",text:"Spring collection launch: schedule a live event this week"}] },
       { id:"s2",  name:"Kylie Cosmetics",    owner:"Alyssa Kim",     avatar:"KC", category:"Beauty",          plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","IG"],           gmv:98400,  gmvPrev:84100,  buyerCount:2140, showCount:8,  lastShow:"Feb 21", subscriberCount:5890, manager:"tm3", monthlyFee:199, alerts:[] },
       { id:"s3",  name:"Anker Electronics",  owner:"Dan Lv",         avatar:"AE", category:"Electronics",     plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["AM","TT"],           gmv:142000, gmvPrev:138400, buyerCount:2880, showCount:14, lastShow:"Feb 23", subscriberCount:4210, manager:"tm5", monthlyFee:399, alerts:[] },
-      { id:"s4",  name:"Tropicfeel",         owner:"Marc Pujol",     avatar:"TF", category:"Travel Footwear", plan:"starter", planColor:"#10b981", status:"active", platforms:["IG","AM"],           gmv:28400,  gmvPrev:21800,  buyerCount:128,  showCount:3,  lastShow:"Feb 18", subscriberCount:214,  manager:"tm2", monthlyFee:79,  alerts:[{type:"opportunity",text:"GMV up 30% — ready to upgrade to Growth"}] },
+      { id:"s4",  name:"Tropicfeel",         owner:"Marc Pujol",     avatar:"TF", category:"Travel Footwear", plan:"starter", planColor:"#10b981", status:"active", platforms:["IG","AM"],           gmv:28400,  gmvPrev:21800,  buyerCount:128,  showCount:3,  lastShow:"Feb 18", subscriberCount:214,  manager:"tm2", monthlyFee:79,  alerts:[{type:"opportunity",text:"GMV up 30%: ready to upgrade to Growth"}] },
       { id:"s5",  name:"Better Homes",       owner:"Lisa Chen",      avatar:"BH", category:"Home & Garden",   plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","AM"],           gmv:76200,  gmvPrev:71400,  buyerCount:1240, showCount:9,  lastShow:"Feb 21", subscriberCount:2180, manager:"tm3", monthlyFee:199, alerts:[] },
       { id:"s6",  name:"Mainstays Home",     owner:"Retail Ops",     avatar:"MH", category:"Home Basics",     plan:"starter", planColor:"#10b981", status:"active", platforms:["AM"],                gmv:31800,  gmvPrev:29200,  buyerCount:620,  showCount:6,  lastShow:"Feb 19", subscriberCount:840,  manager:"tm2", monthlyFee:79,  alerts:[] },
-      { id:"s7",  name:"Athletic Works",     owner:"Kevin Park",     avatar:"AW", category:"Activewear",      plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","IG"],           gmv:64400,  gmvPrev:68200,  buyerCount:980,  showCount:7,  lastShow:"Feb 20", subscriberCount:1640, manager:"tm5", monthlyFee:199, alerts:[{type:"warning",text:"GMV down 5.6% — review show content strategy"}] },
-      { id:"s8",  name:"Time and Tru",       owner:"Style Team",     avatar:"TT", category:"Women's Fashion", plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","IG","AM"],      gmv:218400, gmvPrev:194800, buyerCount:3140, showCount:16, lastShow:"Feb 23", subscriberCount:6820, manager:"tm5", monthlyFee:399, alerts:[{type:"opportunity",text:"Top GMV account — strong candidate for featured placement"}] },
-      { id:"s9",  name:"George Menswear",    owner:"Brand Ops",      avatar:"GM", category:"Men's Fashion",   plan:"growth",  planColor:"#7c3aed", status:"paused", platforms:["TT","AM"],           gmv:42100,  gmvPrev:51200,  buyerCount:640,  showCount:0,  lastShow:"Jan 31", subscriberCount:980,  manager:"tm3", monthlyFee:199, alerts:[{type:"alert",text:"Account paused 24 days — check in re: spring relaunch"}] },
-      { id:"s10", name:"LEGO at Walmart",    owner:"Dan Soren",      avatar:"LG", category:"Toys & Games",    plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","AM"],           gmv:164000, gmvPrev:148200, buyerCount:2640, showCount:12, lastShow:"Feb 22", subscriberCount:5100, manager:"tm3", monthlyFee:399, alerts:[{type:"opportunity",text:"New set drops this month — schedule a build-along live"}] },
+      { id:"s7",  name:"Athletic Works",     owner:"Kevin Park",     avatar:"AW", category:"Activewear",      plan:"growth",  planColor:"#7c3aed", status:"active", platforms:["TT","IG"],           gmv:64400,  gmvPrev:68200,  buyerCount:980,  showCount:7,  lastShow:"Feb 20", subscriberCount:1640, manager:"tm5", monthlyFee:199, alerts:[{type:"warning",text:"GMV down 5.6%: review show content strategy"}] },
+      { id:"s8",  name:"Time and Tru",       owner:"Style Team",     avatar:"TT", category:"Women's Fashion", plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","IG","AM"],      gmv:218400, gmvPrev:194800, buyerCount:3140, showCount:16, lastShow:"Feb 23", subscriberCount:6820, manager:"tm5", monthlyFee:399, alerts:[{type:"opportunity",text:"Top GMV account: strong candidate for featured placement"}] },
+      { id:"s9",  name:"George Menswear",    owner:"Brand Ops",      avatar:"GM", category:"Men's Fashion",   plan:"growth",  planColor:"#7c3aed", status:"paused", platforms:["TT","AM"],           gmv:42100,  gmvPrev:51200,  buyerCount:640,  showCount:0,  lastShow:"Jan 31", subscriberCount:980,  manager:"tm3", monthlyFee:199, alerts:[{type:"alert",text:"Account paused 24 days: check in re: spring relaunch"}] },
+      { id:"s10", name:"LEGO at Walmart",    owner:"Dan Soren",      avatar:"LG", category:"Toys & Games",    plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","AM"],           gmv:164000, gmvPrev:148200, buyerCount:2640, showCount:12, lastShow:"Feb 22", subscriberCount:5100, manager:"tm3", monthlyFee:399, alerts:[{type:"opportunity",text:"New set drops this month: schedule a build-along live"}] },
       { id:"s11", name:"Samsung at Walmart", owner:"Tech Commerce",  avatar:"SS", category:"Electronics",     plan:"pro",     planColor:"#f59e0b", status:"active", platforms:["TT","AM","IG"],      gmv:341000, gmvPrev:312400, buyerCount:4820, showCount:18, lastShow:"Feb 23", subscriberCount:9840, manager:"tm2", monthlyFee:399, alerts:[] },
       { id:"s12", name:"BetterGoods",        owner:"Food & Bev",     avatar:"BG", category:"Grocery & Food",  plan:"starter", planColor:"#10b981", status:"active", platforms:["TT","AM"],           gmv:22800,  gmvPrev:19400,  buyerCount:410,  showCount:5,  lastShow:"Feb 20", subscriberCount:620,  manager:"tm6", monthlyFee:79,  alerts:[] },
     ],
@@ -166,7 +166,7 @@ const BUYERS_BY_PERSONA = {
     { id:"b6", name:"Zoe Kim",          handle:"@zoekim_looks",     platform:"IG", spend:980,  orders:7,  lastOrder:"3d ago",  category:"Knitwear",     status:"active",  score:6.8, avatar:"ZK", tags:["New"],               email:"zk@example.com",        phone:"+1-555-0106" },
     { id:"b7", name:"Ellie Hoffman",    handle:"@ellieh",           platform:"TT", spend:620,  orders:4,  lastOrder:"11d ago",  category:"Dresses",      status:"active",  score:5.9, avatar:"EH", tags:[],                    email:"eh@example.com",        phone:"+1-555-0107" },
     { id:"b8", name:"James Weston",     handle:"@jwestonshops",     platform:"AM", spend:290,  orders:2,  lastOrder:"88d ago", category:"Outerwear",    status:"dormant", score:2.3, avatar:"JW", tags:[],                    email:"jw@example.com",        phone:"+1-555-0108" },
-    // YouTube buyers — sourced from Shopify, attributed to YouTube shows
+    // YouTube buyers: sourced from Shopify, attributed to YouTube shows
     { id:"b9",  name:"Ryan Callahan",   handle:"youtube/ryancall",  platform:"YT", spend:456,  orders:2,  lastOrder:"18d ago", category:"Blazers",      status:"new",     score:6.2, avatar:"RC", tags:["New","YouTube"],     email:"rcallahan@gmail.com",   phone:"+1-555-0109", shopifyCustomerId:"cust_sh_4821", ytAttribution:"time-window" },
     { id:"b10", name:"Sarah Mitchell",  handle:"youtube/smitch",    platform:"YT", spend:228,  orders:1,  lastOrder:"18d ago", category:"Blazers",      status:"new",     score:5.8, avatar:"SM", tags:["New","YouTube"],     email:"sarah.m@gmail.com",     phone:"+1-555-0110", shopifyCustomerId:"cust_sh_4822", ytAttribution:"utm-link" },
     { id:"b11", name:"Derek Huang",     handle:"youtube/dhuang",    platform:"YT", spend:376,  orders:2,  lastOrder:"18d ago", category:"Trousers",     status:"new",     score:6.4, avatar:"DH", tags:["New","YouTube"],     email:"dhuang91@gmail.com",    phone:"+1-555-0111", shopifyCustomerId:"cust_sh_4823", ytAttribution:"utm-link" },
@@ -203,12 +203,12 @@ const BUYERS_BY_PERSONA = {
 // ─── SHOWS DATA ───────────────────────────────────────────────────────────────
 const SHOWS = [
   // ── Last 7 days ──────────────────────────────────────────────────────────────
-  { id:"sh1",  title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", platforms:["IG","TT"],      gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch — the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
-  { id:"sh2",  title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", platforms:["TT"],           gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach — 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
+  { id:"sh1",  title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", platforms:["IG","TT"],      gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch: the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
+  { id:"sh2",  title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", platforms:["TT"],           gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach: 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
   // ── Last 30 days (not in 7d) ─────────────────────────────────────────────────
-  { id:"sh3",  title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", platforms:["AM","IG"],      gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional — high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
+  { id:"sh3",  title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", platforms:["AM","IG"],      gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional: high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
   { id:"sh4",  title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", platforms:["IG","TT","AM"], gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
-  { id:"sh5",  title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", platforms:["YT"],           gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show — strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution.", topItem:"Merino Wool Blazer", newBuyers:38,
+  { id:"sh5",  title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", platforms:["YT"],           gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show: strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution.", topItem:"Merino Wool Blazer", newBuyers:38,
     ytAttribution: { method:"mixed", pixel:{ orders:14, confidence:"verified", sessionsCaptured:284 }, timeWindow:{ orders:12, confidence:"high", windowMins:15 }, utm:{ orders:6, link:"strmlive.com/yt/br-2025-02-08", clicks:284 }, manual:{ orders:6, pending:2 }, shopifyOrders:38, unattributed:0 }
   },
   { id:"sh6",  title:"Valentine's Weekend Drop",         date:"Feb 1, 2025",  platform:"IG", platforms:["IG","TT"],      gmv:16340, buyers:74,  repeatRate:68, duration:"1h 36m", aiDebrief:"Valentine's theme drove strong gifting purchases. Accessories outperformed apparel 2:1. Email pre-campaign drove 38% of attendance.", topItem:"Leather Crossbody Bag", newBuyers:19 },
@@ -216,11 +216,11 @@ const SHOWS = [
   { id:"sh7",  title:"Whatnot VIP Members Night",        date:"Jan 18, 2025", platform:"WN", platforms:["WN"],           gmv:11280, buyers:52,  repeatRate:81, duration:"1h 04m", aiDebrief:"Highest repeat rate of the quarter. VIP-only format drove intense engagement and 4.2x avg order vs standard shows.", topItem:"Merino Wool Blazer", newBuyers:6 },
   { id:"sh8",  title:"New Year New Wardrobe",            date:"Jan 5, 2025",  platform:"TT", platforms:["TT","IG"],      gmv:8920,  buyers:44,  repeatRate:48, duration:"1h 18m", aiDebrief:"Post-holiday buyers are in value mode. Bundle pricing outperformed single items. TikTok LIVE traffic spiked mid-show after a comment went viral.", topItem:"Slim Chino Shorts", newBuyers:33 },
   { id:"sh9",  title:"Holiday Gifts Last Call",          date:"Dec 21, 2024", platform:"IG", platforms:["IG","AM"],      gmv:24600, buyers:112, repeatRate:62, duration:"2h 14m", aiDebrief:"Best GMV show of Q4. Gifting urgency drove rapid checkout. Amazon simulcast added 28 incremental buyers. Repeat rate softer as many were one-time holiday shoppers.", topItem:"Spring Style Bundle (3pc)", newBuyers:48 },
-  { id:"sh10", title:"TikTok Holiday Countdown #3",      date:"Dec 14, 2024", platform:"TT", platforms:["TT"],           gmv:6840,  buyers:36,  repeatRate:41, duration:"58m",    aiDebrief:"Third holiday TikTok show — audience fatigue showing vs show #1. Shorter runtime matched engagement curve. SMS follow-up captured 18 new subscribers.", topItem:"Linen Button-Down Shirt", newBuyers:29 },
+  { id:"sh10", title:"TikTok Holiday Countdown #3",      date:"Dec 14, 2024", platform:"TT", platforms:["TT"],           gmv:6840,  buyers:36,  repeatRate:41, duration:"58m",    aiDebrief:"Third holiday TikTok show: audience fatigue showing vs show #1. Shorter runtime matched engagement curve. SMS follow-up captured 18 new subscribers.", topItem:"Linen Button-Down Shirt", newBuyers:29 },
   // ── All time (not in 90d) ─────────────────────────────────────────────────────
-  { id:"sh11", title:"Fall Collection Preview",          date:"Nov 20, 2024", platform:"IG", platforms:["IG","TT","AM"], gmv:14200, buyers:68,  repeatRate:65, duration:"1h 42m", aiDebrief:"Strong fall debut. Layering pieces drove bundles. Instagram simulcast outperformed TikTok 3:1 in revenue per viewer. First time using Show Planner — run order AI suggestion was accurate.", topItem:"Tailored Wool Overcoat", newBuyers:24 },
-  { id:"sh12", title:"Whatnot Flash: Outerwear Drop",    date:"Nov 8, 2024",  platform:"WN", platforms:["WN"],           gmv:9480,  buyers:46,  repeatRate:76, duration:"52m",    aiDebrief:"Compact high-intensity show. Whatnot buyers responded to scarcity messaging. Sold out 2 SKUs within 10 minutes. Repeat rate strong — core audience engaged.", topItem:"Tailored Wool Overcoat", newBuyers:8 },
-  { id:"sh13", title:"Back to School TikTok Live",       date:"Oct 12, 2024", platform:"TT", platforms:["TT","IG"],      gmv:5620,  buyers:31,  repeatRate:38, duration:"1h 02m", aiDebrief:"Seasonal relevance helped with discovery. Lower repeat rate expected for back-to-school demographic. 31 new buyers — good acquisition show.", topItem:"Slim Chino Shorts", newBuyers:31 },
+  { id:"sh11", title:"Fall Collection Preview",          date:"Nov 20, 2024", platform:"IG", platforms:["IG","TT","AM"], gmv:14200, buyers:68,  repeatRate:65, duration:"1h 42m", aiDebrief:"Strong fall debut. Layering pieces drove bundles. Instagram simulcast outperformed TikTok 3:1 in revenue per viewer. First time using Show Planner: run order AI suggestion was accurate.", topItem:"Tailored Wool Overcoat", newBuyers:24 },
+  { id:"sh12", title:"Whatnot Flash: Outerwear Drop",    date:"Nov 8, 2024",  platform:"WN", platforms:["WN"],           gmv:9480,  buyers:46,  repeatRate:76, duration:"52m",    aiDebrief:"Compact high-intensity show. Whatnot buyers responded to scarcity messaging. Sold out 2 SKUs within 10 minutes. Repeat rate strong: core audience engaged.", topItem:"Tailored Wool Overcoat", newBuyers:8 },
+  { id:"sh13", title:"Back to School TikTok Live",       date:"Oct 12, 2024", platform:"TT", platforms:["TT","IG"],      gmv:5620,  buyers:31,  repeatRate:38, duration:"1h 02m", aiDebrief:"Seasonal relevance helped with discovery. Lower repeat rate expected for back-to-school demographic. 31 new buyers: good acquisition show.", topItem:"Slim Chino Shorts", newBuyers:31 },
 ];
 
 // ─── CAMPAIGNS DATA ───────────────────────────────────────────────────────────
@@ -292,7 +292,7 @@ const KEYWORD_AUTOMATIONS = [
       { word: "VIP",    optIns: 198, thisWeek: 22 },
       { word: "MEMBER", optIns: 86,  thisWeek: 14 },
     ],
-    reply: "Welcome to the VIP list 👑 You'll get member-early access to every collection drop before it goes public. Watch your DMs — your welcome offer lands tomorrow.",
+    reply: "Welcome to the VIP list 👑 You'll get member-early access to every collection drop before it goes public. Watch your DMs: your welcome offer lands tomorrow.",
     goal: "vip_access",
     createdAt: "Jan 28, 2025",
     totalOptIns: 284,
@@ -308,7 +308,7 @@ const KEYWORD_AUTOMATIONS = [
       { word: "DEAL",    optIns: 94,  thisWeek: 32 },
       { word: "SET",     optIns: 62,  thisWeek: 18 },
     ],
-    reply: "You're in for the bundle drop! 🎁 Limited stock goes live tonight — I'll DM you the direct link the moment it's live. First 50 orders get free shipping!",
+    reply: "You're in for the bundle drop! 🎁 Limited stock goes live tonight: I'll DM you the direct link the moment it's live. First 50 orders get free shipping!",
     goal: "product_drop",
     createdAt: "Feb 10, 2025",
     totalOptIns: 344,
@@ -360,8 +360,8 @@ const CHANNEL_META = {
   sms:    { label:"SMS",                 color:"#a78bfa", bg:"#2d1f5e", icon:"💬", via:"Direct",  note:"",                                                    canBroadcast:true  },
   ig_dm:  { label:"Instagram DM",        color:"#e1306c", bg:"#2d1020", icon:"📸", via:"ManyChat", note:"Broadcasts to opted-in IG followers only",           canBroadcast:true  },
   tt_dm:  { label:"TikTok DM",           color:"#69c9d0", bg:"#0d2828", icon:"🎵", via:"ManyChat", note:"Business account required · US/non-EU only",         canBroadcast:true  },
-  wn_dm:  { label:"Whatnot Notification",color:"#f59e0b", bg:"#2e1f0a", icon:"🔔", via:"Whatnot", note:"Show notifications & in-show chat only — no bulk DM", canBroadcast:false },
-  am_msg: { label:"Amazon Message",      color:"#f97316", bg:"#2e1608", icon:"📦", via:"SP-API",  note:"Transactional only — order-related messages only",    canBroadcast:false },
+  wn_dm:  { label:"Whatnot Notification",color:"#f59e0b", bg:"#2e1f0a", icon:"🔔", via:"Whatnot", note:"Show notifications & in-show chat only: no bulk DM", canBroadcast:false },
+  am_msg: { label:"Amazon Message",      color:"#f97316", bg:"#2e1608", icon:"📦", via:"SP-API",  note:"Transactional only: order-related messages only",    canBroadcast:false },
 };
 
 
@@ -386,7 +386,7 @@ const PLAN_META = {
 };
 
 // ─── CHECKOUT MODAL ───────────────────────────────────────────────────────────
-// Branded interstitial shown before redirecting to Stripe — keeps UX native.
+// Branded interstitial shown before redirecting to Stripe: keeps UX native.
 function CheckoutModal({ plan, onClose }) {
   const [countdown, setCountdown] = useState(null);
   const meta = PLAN_META[plan] || {};
@@ -411,9 +411,9 @@ function CheckoutModal({ plan, onClose }) {
 
   return (
     <div onClick={onClose}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", overflowY:"auto" }}>
       <div onClick={e=>e.stopPropagation()} className="pop-in"
-        style={{ background:"#09090f", border:`1px solid ${meta.color}44`, borderRadius:20, padding:"32px", width:420, maxWidth:"94vw", position:"relative", overflow:"hidden" }}>
+        style={{ background:"#09090f", border:`1px solid ${meta.color}44`, borderRadius:20, padding:"clamp(20px,5vw,32px)", width:420, maxWidth:"94vw", position:"relative", overflow:"hidden" }}>
 
         {/* Ambient glow */}
         <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, borderRadius:"50%", background:meta.color, opacity:0.07, filter:"blur(60px)", pointerEvents:"none" }}/>
@@ -441,7 +441,7 @@ function CheckoutModal({ plan, onClose }) {
         </div>
 
         {/* Secure badge row */}
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:18 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:18, flexWrap:"wrap" }}>
           <div style={{ display:"flex", alignItems:"center", gap:5, background:"#0f1a14", border:"1px solid #10b98133", borderRadius:6, padding:"4px 10px" }}>
             <span style={{ fontSize:10 }}>🔒</span>
             <span style={{ fontSize:9, fontWeight:700, color:"#10b981" }}>Secured by Stripe</span>
@@ -479,7 +479,7 @@ function CheckoutModal({ plan, onClose }) {
 
 // ─── SHOPIFY CATALOG DATA ─────────────────────────────────────────────────────
 const PRODUCTS = [
-  // ── Banana Republic (Pro) — Apparel & Fashion ───────────────────────────────
+  // ── Banana Republic (Pro): Apparel & Fashion ───────────────────────────────
   { id:"p1",  name:"Merino Wool Blazer",               sku:"BR-BLZ-001", price:228, cost:82,  inventory:48,  category:"Blazers",      image:"🧥", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:62,  avgPerShow:5.8 },
   { id:"p2",  name:"Italian Linen Trousers",            sku:"BR-TRS-002", price:148, cost:51,  inventory:84,  category:"Bottoms",      image:"👖", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_002", aiScore:8.9, soldLast30:88,  avgPerShow:7.2 },
   { id:"p3",  name:"Leather Crossbody Bag",             sku:"BR-BAG-003", price:198, cost:74,  inventory:36,  category:"Accessories",  image:"👜", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:44,  avgPerShow:3.9 },
@@ -491,16 +491,16 @@ const PRODUCTS = [
   { id:"p9",  name:"Tailored Wool Overcoat",            sku:"BR-OVR-009", price:498, cost:182, inventory:12,  category:"Outerwear",    image:"🧣", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_009", aiScore:7.4, soldLast30:14,  avgPerShow:1.4 },
   { id:"p10", name:"Linen Button-Down Shirt",           sku:"BR-SHR-010", price:98,  cost:34,  inventory:96,  category:"Tops",         image:"👔", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_010", aiScore:8.7, soldLast30:108, avgPerShow:9.1 },
 
-  // ── Kylie Cosmetics (Growth) — Beauty ──────────────────────────────────────
-  { id:"p11", name:"Matte Lip Kit — Ruby",              sku:"KC-LIP-001", price:29,  cost:7,   inventory:840, category:"Lip",          image:"💄", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_011", aiScore:9.8, soldLast30:482, avgPerShow:48.2 },
-  { id:"p12", name:"Kyshadow Palette — Bronze",         sku:"KC-EYE-002", price:45,  cost:11,  inventory:420, category:"Eye",          image:"✨", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_012", aiScore:9.4, soldLast30:314, avgPerShow:31.4 },
+  // ── Kylie Cosmetics (Growth): Beauty ──────────────────────────────────────
+  { id:"p11", name:"Matte Lip Kit: Ruby",              sku:"KC-LIP-001", price:29,  cost:7,   inventory:840, category:"Lip",          image:"💄", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_011", aiScore:9.8, soldLast30:482, avgPerShow:48.2 },
+  { id:"p12", name:"Kyshadow Palette: Bronze",         sku:"KC-EYE-002", price:45,  cost:11,  inventory:420, category:"Eye",          image:"✨", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_012", aiScore:9.4, soldLast30:314, avgPerShow:31.4 },
   { id:"p13", name:"Skin Tint SPF 30",                  sku:"KC-FAC-003", price:38,  cost:9,   inventory:560, category:"Face",         image:"🌟", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_013", aiScore:9.2, soldLast30:268, avgPerShow:26.8 },
-  { id:"p14", name:"Gloss Drip — Clear",                sku:"KC-GLS-004", price:16,  cost:4,   inventory:1200,category:"Lip",          image:"💋", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_014", aiScore:8.8, soldLast30:620, avgPerShow:62.0 },
+  { id:"p14", name:"Gloss Drip: Clear",                sku:"KC-GLS-004", price:16,  cost:4,   inventory:1200,category:"Lip",          image:"💋", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_014", aiScore:8.8, soldLast30:620, avgPerShow:62.0 },
   { id:"p15", name:"Holiday Collection Set (6pc)",      sku:"KC-SET-005", price:89,  cost:22,  inventory:180, category:"Sets",         image:"🎀", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_015", aiScore:9.6, soldLast30:188, avgPerShow:18.8 },
-  { id:"p16", name:"Pressed Blush — Peach Sorbet",      sku:"KC-BLH-006", price:24,  cost:6,   inventory:680, category:"Face",         image:"🍑", platforms:["TT","IG"],         showReady:false, shopifyId:"sh_016", aiScore:8.6, soldLast30:244, avgPerShow:24.4 },
+  { id:"p16", name:"Pressed Blush: Peach Sorbet",      sku:"KC-BLH-006", price:24,  cost:6,   inventory:680, category:"Face",         image:"🍑", platforms:["TT","IG"],         showReady:false, shopifyId:"sh_016", aiScore:8.6, soldLast30:244, avgPerShow:24.4 },
   { id:"p17", name:"Kylighter Highlighter Stick",       sku:"KC-HGL-007", price:21,  cost:5,   inventory:740, category:"Face",         image:"💫", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_017", aiScore:8.4, soldLast30:312, avgPerShow:31.2 },
 
-  // ── Tropicfeel (Starter) — Travel Footwear & Gear ──────────────────────────
+  // ── Tropicfeel (Starter): Travel Footwear & Gear ──────────────────────────
   { id:"p18", name:"Canyon All-Terrain Sneaker",        sku:"TF-SNK-001", price:148, cost:58,  inventory:84,  category:"Shoes",        image:"👟", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_018", aiScore:8.4, soldLast30:24,  avgPerShow:3.2 },
   { id:"p19", name:"Shell Travel Backpack 26L",         sku:"TF-BAG-001", price:178, cost:68,  inventory:42,  category:"Bags",         image:"🎒", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_019", aiScore:8.0, soldLast30:14,  avgPerShow:2.4 },
   { id:"p20", name:"Nest 2-in-1 Sandal",                sku:"TF-SND-001", price:118, cost:44,  inventory:62,  category:"Shoes",        image:"🩴", platforms:["IG"],              showReady:true,  shopifyId:"sh_020", aiScore:7.6, soldLast30:18,  avgPerShow:2.8 },
@@ -514,7 +514,7 @@ const PLATFORM_FEES = {
   TT: 0.05,   // TikTok Shop: 5% referral fee
   AM: 0.15,   // Amazon: ~15% referral fee (varies by category)
   IG: 0.05,   // Instagram Shops: 5% selling fee
-  YT: 0.00,   // YouTube Live: 0% — fulfilled via Shopify directly
+  YT: 0.00,   // YouTube Live: 0%: fulfilled via Shopify directly
 };
 
 // Default minimum acceptable margin (seller can override in Settings)
@@ -544,10 +544,10 @@ const calcMaxSafeDisc = (price, cost, platformKey, minMargin = DEFAULT_MIN_MARGI
 };
 
 const marginColor = (margin) => {
-  if (margin >= 0.30) return "#10b981";  // green  — healthy
-  if (margin >= 0.15) return "#f59e0b";  // amber  — caution
-  if (margin >= 0)    return "#ef4444";  // red    — below min
-  return "#7f1d1d";                       // dark   — selling at a loss
+  if (margin >= 0.30) return "#10b981";  // green : healthy
+  if (margin >= 0.15) return "#f59e0b";  // amber : caution
+  if (margin >= 0)    return "#ef4444";  // red   : below min
+  return "#7f1d1d";                       // dark  : selling at a loss
 };
 
 const marginLabel = (margin) => {
@@ -585,7 +585,7 @@ const UPCOMING_SHOW = {
 
 // ─── NAV ITEMS ────────────────────────────────────────────────────────────────
 // ─── STORAGE SHIM ─────────────────────────────────────────────────────────────
-// storage is the Claude artifact API — only available inside claude.ai.
+// storage is the Claude artifact API: only available inside claude.ai.
 // On Vercel (production), we fall back to localStorage so cross-screen state
 // (device connections, platform connections, team data) persists correctly.
 const storage = {
@@ -621,7 +621,7 @@ const NAV = [
   { id:"settings",    label:"Settings",    icon:"◎",  route:"/settings" },
 ];
 
-// Producer role requires Pro+ plan — Production Suite is locked on Starter/Growth.
+// Producer role requires Pro+ plan: Production Suite is locked on Starter/Growth.
 // Inviting a Producer on Starter or Growth shows an upgrade upsell instead.
 const PRODUCER_NAV_ACCESS = ["dashboard","shows","production","catalog","settings"];
 
@@ -665,19 +665,19 @@ const UPGRADE_WALLS = {
   analytics: {
     icon:"◑", title:"Analytics", requiredPlan:"growth", requiredColor:"#7c3aed",
     headline:"Understand what's driving your revenue.",
-    desc:"Unlock revenue trends, audience health scores, LTV distribution, platform comparison, and 6 weekly AI-generated recommendations — all built from your real show and buyer data.",
-    features:["GMV trend charts & platform breakdown","Buyer health: VIP, at-risk, dormant segments","LTV distribution & purchase frequency","Show-by-show performance comparison","✦ AI Insights — 6 prioritized weekly recommendations"],
+    desc:"Unlock revenue trends, audience health scores, LTV distribution, platform comparison, and 6 weekly AI-generated recommendations: all built from your real show and buyer data.",
+    features:["GMV trend charts & platform breakdown","Buyer health: VIP, at-risk, dormant segments","LTV distribution & purchase frequency","Show-by-show performance comparison","✦ AI Insights: 6 prioritized weekly recommendations"],
   },
   loyalty: {
     icon:"♦", title:"Loyalty Hub", requiredPlan:"growth", requiredColor:"#7c3aed",
     headline:"Turn one-time buyers into lifetime fans.",
-    desc:"Activate all 4 loyalty tiers — Bronze, Silver, Gold, and VIP. Buyers earn points automatically, unlock perks, and get early show access. Starter includes Bronze and Silver only.",
+    desc:"Activate all 4 loyalty tiers: Bronze, Silver, Gold, and VIP. Buyers earn points automatically, unlock perks, and get early show access. Starter includes Bronze and Silver only.",
     features:["Gold & VIP tier management","Points leaderboard & tier health dashboard","Birthday rewards & exclusive perks","VIP early access windows per show","Automated tier-up notifications"],
   },
   production: {
     icon:"⬛", title:"Production Suite", requiredPlan:"pro", requiredColor:"#f59e0b",
     headline:"Run a professional broadcast from one screen.",
-    desc:"Connect and control your Sony cameras, DJI gimbals, and studio lighting alongside OBS scene switching — all from inside Streamlive. No more alt-tabbing mid-show.",
+    desc:"Connect and control your Sony cameras, DJI gimbals, and studio lighting alongside OBS scene switching: all from inside Streamlive. No more alt-tabbing mid-show.",
     features:["Sony FX3 / FX6 camera control via SDK","DJI RS4 Pro gimbal positioning over Bluetooth","Elgato, Aputure & Godox lighting API","OBS scene switcher via WebSocket v5","Production automation rules engine"],
   },
 };
@@ -1053,11 +1053,11 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
   const st = STATUS_META[buyer.status];
 
   const timeline = [
-    { date:"Feb 20, 2025", event:"Placed order #34 — Silk Wrap Midi Dress", amount:268 },
-    { date:"Feb 15, 2025", event:"Placed order #33 — Bowman Chrome Prospect", amount:185 },
+    { date:"Feb 20, 2025", event:"Placed order #34: Silk Wrap Midi Dress", amount:268 },
+    { date:"Feb 15, 2025", event:"Placed order #33: Bowman Chrome Prospect", amount:185 },
     { date:"Feb 10, 2025", event:"Subscribed to show reminders via SMS", amount:null },
-    { date:"Feb 1,  2025", event:"Placed order #32 — Spring Style Bundle (3pc)", amount:148 },
-    { date:"Jan 24, 2025", event:"Placed order #31 — Merino Wool Blazer", amount:228 },
+    { date:"Feb 1,  2025", event:"Placed order #32: Spring Style Bundle (3pc)", amount:148 },
+    { date:"Jan 24, 2025", event:"Placed order #31: Merino Wool Blazer", amount:228 },
   ];
 
   return (
@@ -1201,7 +1201,7 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
                 <div style={{ fontSize:10, color:"#a78bfa", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>✦ AI Insight</div>
                 <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65 }}>
                   {buyer.name} is one of your top {buyer.status === "vip" ? "VIP buyers" : "customers"}, averaging ${Math.round(buyer.spend/buyer.orders)} per order. 
-                  {buyer.status === "risk" ? " They haven't ordered in a while — a personalized win-back SMS referencing their favorite category could bring them back." : 
+                  {buyer.status === "risk" ? " They haven't ordered in a while: a personalized win-back SMS referencing their favorite category could bring them back." : 
                    buyer.status === "vip" ? " Giving them early access to your next show or a private preview could increase their average order value further." : 
                    " They're showing healthy engagement patterns."}
                 </div>
@@ -1251,7 +1251,7 @@ function ScreenShows({ navigate, persona, shows }) {
         <div style={{ width:44, height:44, borderRadius:12, background:`${C.accent}22`, border:`1px solid ${C.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>🔴</div>
         <div style={{ flex:1 }}>
           <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Live Companion</div>
-          <div style={{ fontSize:12, color:"#9ca3af" }}>Real-time buyer intelligence during your shows — instant lookups, VIP alerts, notes on the fly.</div>
+          <div style={{ fontSize:12, color:"#9ca3af" }}>Real-time buyer intelligence during your shows: instant lookups, VIP alerts, notes on the fly.</div>
         </div>
         {persona.plan === "starter" ? (
           <div style={{ fontSize:11, color:C.accent, background:`${C.accent}18`, border:`1px solid ${C.accent}33`, padding:"6px 14px", borderRadius:8, whiteSpace:"nowrap" }}>Growth+ feature</div>
@@ -1620,7 +1620,7 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
                   <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:C.green }}>${p.revenue.toLocaleString()}</span>
                 </div>,
                 <div key={`m${i}`} style={{ padding:"9px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center" }}>
-                  {p.margin ? <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:mc }}>{p.margin}%</span> : <span style={{ fontSize:9, color:C.subtle }}>—</span>}
+                  {p.margin ? <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:mc }}>{p.margin}%</span> : <span style={{ fontSize:9, color:C.subtle }}>:</span>}
                 </div>,
                 <div key={`b${i}`} style={{ padding:"9px 0", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center", paddingRight:8 }}>
                   <div style={{ flex:1, height:5, background:C.surface2, borderRadius:3, overflow:"hidden" }}>
@@ -1710,7 +1710,7 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
 
 // ─── SCREEN: LIVE SHOP LANDING PAGE (buyer-facing) ───────────────────────────
 function ScreenLiveShop({ navigate, params, persona: personaProp }) {
-  // Keep a ref to params so the interval always reads the latest value — no stale closures
+  // Keep a ref to params so the interval always reads the latest value: no stale closures
   const paramsRef = useRef(params);
   useEffect(() => { paramsRef.current = params; }, [params]);
 
@@ -1724,7 +1724,7 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
     });
   };
 
-  // Compute show state — always prefers localStorage for activeIdx (written by host every 1s)
+  // Compute show state: always prefers localStorage for activeIdx (written by host every 1s)
   // so consumer page stays perfectly in sync even with manual product overrides
   const computeState = () => {
     const p = paramsRef.current;
@@ -1778,11 +1778,11 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
 
   const [showState, setShowState] = useState(() => computeState());
 
-  // Single interval — reads paramsRef.current fresh every tick, no re-subscribe needed
+  // Single interval: reads paramsRef.current fresh every tick, no re-subscribe needed
   useEffect(() => {
     const t = setInterval(() => setShowState(computeState()), 1000);
     return () => clearInterval(t);
-  }, []); // intentionally empty — paramsRef handles currency
+  }, []); // intentionally empty: paramsRef handles currency
 
   const { idx: activeIdx, runOrder, timings: productTimings,
           bps: breakpoints, total: totalDurMs, start: showStartTime } = showState;
@@ -1830,7 +1830,7 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
           ← Back to Live
         </button>
         <div style={{ flex:1 }}/>
-        {/* Copy link widget — same style as opt-in link */}
+        {/* Copy link widget: same style as opt-in link */}
         <div className="liveshop-header-url" style={{ alignItems:"center", background:"#07070f", border:`1px solid ${copied?"#10b98155":"#1e1e3a"}`, borderRadius:9, overflow:"hidden", transition:"border-color .2s" }}>
           <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 10px 6px 10px", borderRight:`1px solid ${copied?"#10b98122":"#1a1a2e"}` }}>
             <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
@@ -1970,7 +1970,7 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
           <div style={{ padding:"24px 28px", overflowY:"auto" }}>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, marginBottom:4 }}>Live Shop Page</div>
             <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>
-              Products listed in show order. Each "Buy Now" button deeplinks directly to the Shopify product page for {persona.shop} — tracking the order back to this show.
+              Products listed in show order. Each "Buy Now" button deeplinks directly to the Shopify product page for {persona.shop}: tracking the order back to this show.
             </div>
 
             {runOrder.length === 0 && (
@@ -2025,7 +2025,7 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
                       <span style={{ fontSize:10, color:C.muted }}>{p.inventory} in stock</span>
                       <span style={{ fontSize:10, color:"#2a2a3a" }}>SKU: {p.sku}</span>
                     </div>
-                    {/* Deeplink URL — subtle, desktop only */}
+                    {/* Deeplink URL: subtle, desktop only */}
                     <div style={{ marginTop:4 }}>
                       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, color:"#252535", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block", maxWidth:320 }}>
                         {url.replace("https://","")}
@@ -2082,7 +2082,7 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
 
 
 // ─── SCREEN: LIVE COMPANION ───────────────────────────────────────────────────
-// ── CatalogTab — live run order manager with per-product timers ───────────────
+// ── CatalogTab: live run order manager with per-product timers ───────────────
 function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductTimings, catalogSearch, setCatalogSearch, persona, activeIdx=0 }) {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [dragIdx, setDragIdx] = useState(null);
@@ -2202,7 +2202,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
             const inv       = (p.inventory !== null && p.inventory !== undefined) ? p.inventory : 999;
             const invColor  = inv < 25 ? "#ef4444" : inv < 60 ? "#f59e0b" : "#10b981";
             const safeIdx   = (typeof activeIdx === "number" && !isNaN(activeIdx)) ? activeIdx : 0;
-            const presented = i < safeIdx;   // already spoken about — lock it
+            const presented = i < safeIdx;   // already spoken about: lock it
             const isCurrent = i === safeIdx; // currently live on air
 
             return (
@@ -2215,7 +2215,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
                 {/* Top row */}
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom: presented ? "0px" : 8 }}>
 
-                  {/* Reorder arrows — locked when presented */}
+                  {/* Reorder arrows: locked when presented */}
                   <div style={{ display:"flex", flexDirection:"column", gap:2, flexShrink:0 }}>
                     <button onClick={() => !presented && moveUp(i)} disabled={i===0 || presented}
                       style={{ background:"none", border:"none",
@@ -2229,7 +2229,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
                         fontSize:9, padding:"1px 3px", lineHeight:1 }}>▼</button>
                   </div>
 
-                  {/* Index badge — shows status for presented/current */}
+                  {/* Index badge: shows status for presented/current */}
                   <div style={{ width:20, height:20, borderRadius:6, flexShrink:0,
                     background: presented ? "#10b98118" : isCurrent ? "#a78bfa18" : "#a78bfa12",
                     border:`1px solid ${presented ? "#10b98133" : isCurrent ? "#a78bfa55" : "#a78bfa22"}`,
@@ -2269,7 +2269,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
                     </div>
                   </div>
 
-                  {/* Remove — locked when presented or currently live */}
+                  {/* Remove: locked when presented or currently live */}
                   {!presented && !isCurrent ? (
                     <button onClick={() => removeProduct(p.id)}
                       style={{ background:"none", border:"none", color:"#374151", cursor:"pointer",
@@ -2279,7 +2279,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
                   )}
                 </div>
 
-                {/* Time row — hidden entirely for presented products */}
+                {/* Time row: hidden entirely for presented products */}
                 {!presented && (
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                     <span style={{ fontSize:9, color:C.muted, flexShrink:0 }}>⏱ Time on screen:</span>
@@ -2365,7 +2365,7 @@ function CatalogTab({ liveRunOrder, setLiveRunOrder, productTimings, setProductT
 }
 
 
-// ── SceneTab — drag-and-drop set layout diagram ────────────────────────────────
+// ── SceneTab: drag-and-drop set layout diagram ────────────────────────────────
 function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, audioLevel, deviceConnections={}, onToggleDevice }) {
   const lightGlow = lightPattern==="celebrate" ? "hsl(300,100%,60%)"
     : lightPattern==="fire"    ? "#f97316"
@@ -2378,7 +2378,7 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
   const fx3Active = activeScene.includes("FX3") || activeScene.includes("Wide");
   const fx6Active = activeScene.includes("FX6") || activeScene.includes("Close");
 
-  // Use prop directly — no localStorage polling, updates instantly from Production tab
+  // Use prop directly: no localStorage polling, updates instantly from Production tab
   // In Live Show context: device must be connected (from Production dashboard) AND active (toggled on for this show)
   const isConnected = (id) => {
     const d = deviceConnections[id];
@@ -2471,7 +2471,7 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
         </div>
       </div>
 
-      {/* Diagram — fills all remaining space */}
+      {/* Diagram: fills all remaining space */}
       <div ref={diagramRef} style={{ position:"relative", width:"100%", flex:1, minHeight:0,
         background:"#07070f", border:"1px solid #1a1a2e", borderRadius:14,
         overflow:"hidden", userSelect:"none", cursor:dragging?"grabbing":"default" }}>
@@ -2499,7 +2499,7 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
             pointerEvents:"none", transition:"all .4s" }}/>;
         })()}
 
-        {/* Camera sight lines — only when camera is connected */}
+        {/* Camera sight lines: only when camera is connected */}
         {[
           {id:"fx3",color:"#7c3aed",active:fx3Active && isConnected("fx3")},
           {id:"fx6",color:"#a78bfa",active:fx6Active && isConnected("fx6")}
@@ -2635,7 +2635,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
   const displayIdx = manualIdx !== null ? manualIdx : activeIdx;
   const bp = prods[displayIdx] || prods[0];
 
-  // Manual override — stays on selected product for 2× its duration, then re-syncs
+  // Manual override: stays on selected product for 2× its duration, then re-syncs
   const selectProduct = (i) => {
     setManualIdx(i);
     const dur = (timings[prods[i]?.id] || 90) * 2 * 1000;
@@ -2789,7 +2789,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
     return base;
   })();
 
-  // ── 2. Shared show clock — localStorage first, baked-in fallback ─────────────
+  // ── 2. Shared show clock: localStorage first, baked-in fallback ─────────────
   var SHOW_START = (function() {
     try {
       var ls = parseInt(localStorage.getItem("STRMLIVE_SHOW_START") || "0");
@@ -2835,22 +2835,22 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
   // ── 7. Talking points ─────────────────────────────────────────────────────────
   function getPoints(p) {
     var pts = [];
-    pts.push({icon:"💰", text:"Lead with the price — $"+p.price+" is your live-exclusive rate"});
+    pts.push({icon:"💰", text:"Lead with the price: $"+p.price+" is your live-exclusive rate"});
     if (p.inventory !== null && p.inventory < 30)
-      pts.push({icon:"⚠️", text:"Only "+p.inventory+" units left — say it now and keep repeating it"});
+      pts.push({icon:"⚠️", text:"Only "+p.inventory+" units left: say it now and keep repeating it"});
     else if (p.inventory !== null)
-      pts.push({icon:"✅", text:p.inventory+" in stock — solid supply, lean into the value"});
-    if (p.soldLast30) pts.push({icon:"📈", text:p.soldLast30+" units sold in the last 30 days — a proven bestseller"});
-    if (p.avgPerShow) pts.push({icon:"🎬", text:"Typically sells "+p.avgPerShow+" per show — demo it live"});
+      pts.push({icon:"✅", text:p.inventory+" in stock: solid supply, lean into the value"});
+    if (p.soldLast30) pts.push({icon:"📈", text:p.soldLast30+" units sold in the last 30 days: a proven bestseller"});
+    if (p.avgPerShow) pts.push({icon:"🎬", text:"Typically sells "+p.avgPerShow+" per show: demo it live"});
     if (p.category==="Bundles"||p.category==="Sets")
-      pts.push({icon:"🎁", text:"Bundle — break down what each piece costs separately"});
+      pts.push({icon:"🎁", text:"Bundle: break down what each piece costs separately"});
     else
       pts.push({icon:"🔍", text:"Hold it to camera. Describe the texture, weight, and finish"});
     if (p.platforms && p.platforms.length>1)
       pts.push({icon:"📡", text:"Shout out all "+p.platforms.length+" platforms by name"});
     if (p.cost && p.price) {
       var room = Math.max(0, Math.round((p.price-p.cost)/p.price*100)-15);
-      pts.push({icon:"💡", text:"Up to "+room+"% discount room — hold it for a closing push"});
+      pts.push({icon:"💡", text:"Up to "+room+"% discount room: hold it for a closing push"});
     }
     return pts;
   }
@@ -2964,7 +2964,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
     updateTimerDisplay(clockRemaining(cur));
   }
 
-  // ── 15. Main tick — runs every second ─────────────────────────────────────────
+  // ── 15. Main tick: runs every second ─────────────────────────────────────────
   function tick() {
     // If manual override has expired, snap back to clock
     if (Date.now() > manualUntil) {
@@ -2984,7 +2984,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
     if(e.key==="r"||e.key==="R") resync();
   });
 
-  // ── 17. Init — sync to clock immediately on open ─────────────────────────────
+  // ── 17. Init: sync to clock immediately on open ─────────────────────────────
   buildSlides();
   buildSidebar();
   showSlide(cur);                      // correct slide from clock, not slide 0
@@ -3115,13 +3115,13 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7, marginBottom:12 }}>
             {[
               { label:"Inventory",
-                value: bp.inventory !== undefined ? bp.inventory + " units" : "—",
+                value: bp.inventory !== undefined ? bp.inventory + " units" : ":",
                 color: bp.inventory < 25 ? "#ef4444" : bp.inventory < 60 ? "#f59e0b" : "#10b981" },
-              { label:"Sold last 30d", value: bp.soldLast30  || "—", color:"#a78bfa" },
-              { label:"Avg per show",  value: bp.avgPerShow  || "—", color:"#38bdf8" },
-              { label:"Margin",        value: margin !== null ? margin + "%" : "—", color:"#10b981" },
-              { label:"Category",      value: bp.category    || "—", color:C.text },
-              { label:"Platforms",     value: (bp.platforms  || []).join(", ") || "—", color:C.text },
+              { label:"Sold last 30d", value: bp.soldLast30  || ":", color:"#a78bfa" },
+              { label:"Avg per show",  value: bp.avgPerShow  || ":", color:"#38bdf8" },
+              { label:"Margin",        value: margin !== null ? margin + "%" : ":", color:"#10b981" },
+              { label:"Category",      value: bp.category    || ":", color:C.text },
+              { label:"Platforms",     value: (bp.platforms  || []).join(", ") || ":", color:C.text },
             ].map(function(s, i) {
               return (
                 <div key={i} style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:9, padding:"10px 12px" }}>
@@ -3143,7 +3143,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
                 <span style={{ fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:".07em" }}>Stock Level</span>
                 <span style={{ fontSize:9, fontWeight:700,
                   color: bp.inventory < 25 ? "#ef4444" : bp.inventory < 60 ? "#f59e0b" : "#10b981" }}>
-                  {bp.inventory < 25 ? "⚠ Low — create urgency" : bp.inventory < 60 ? "Moderate" : "Well stocked"}
+                  {bp.inventory < 25 ? "⚠ Low: create urgency" : bp.inventory < 60 ? "Moderate" : "Well stocked"}
                 </span>
               </div>
               <div style={{ height:5, background:"#0d0d1a", borderRadius:3, overflow:"hidden" }}>
@@ -3159,20 +3159,20 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
             <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase",
               letterSpacing:".08em", marginBottom:10 }}>Host Talking Points</div>
             {[
-              { icon:"💰", text:"Lead with the price — $" + bp.price + " is your live-exclusive rate" },
+              { icon:"💰", text:"Lead with the price: $" + bp.price + " is your live-exclusive rate" },
               bp.inventory !== undefined && bp.inventory < 30
-                ? { icon:"⚠️", text:"Only " + bp.inventory + " units left — mention it early and often" }
-                : { icon:"✅", text:(bp.inventory || "—") + " in stock — solid supply, focus on the value" },
-              bp.soldLast30 ? { icon:"📈", text:bp.soldLast30 + " units sold in the last 30 days — a proven bestseller" } : null,
-              bp.avgPerShow ? { icon:"🎬", text:"Typically sells " + bp.avgPerShow + " per show — pick it up and demo it live" } : null,
+                ? { icon:"⚠️", text:"Only " + bp.inventory + " units left: mention it early and often" }
+                : { icon:"✅", text:(bp.inventory || ":") + " in stock: solid supply, focus on the value" },
+              bp.soldLast30 ? { icon:"📈", text:bp.soldLast30 + " units sold in the last 30 days: a proven bestseller" } : null,
+              bp.avgPerShow ? { icon:"🎬", text:"Typically sells " + bp.avgPerShow + " per show: pick it up and demo it live" } : null,
               (bp.category === "Bundles" || bp.category === "Sets")
-                ? { icon:"🎁", text:"Bundle deal — break down what each piece costs separately" }
+                ? { icon:"🎁", text:"Bundle deal: break down what each piece costs separately" }
                 : { icon:"🔍", text:"Hold it close to camera. Describe texture, weight, and finish" },
               bp.platforms && bp.platforms.length > 1
-                ? { icon:"📡", text:"Shout out all " + bp.platforms.length + " platforms by name — everyone wants to feel seen" }
+                ? { icon:"📡", text:"Shout out all " + bp.platforms.length + " platforms by name: everyone wants to feel seen" }
                 : null,
               margin !== null
-                ? { icon:"💡", text:"Up to " + Math.max(0, margin - 15) + "% discount room — use it as a closing push if needed" }
+                ? { icon:"💡", text:"Up to " + Math.max(0, margin - 15) + "% discount room: use it as a closing push if needed" }
                 : null,
             ].filter(Boolean).map(function(pt, i, arr) {
               return (
@@ -3226,7 +3226,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const [msgText,       setMsgText]       = useState("");
   const [msgSent,       setMsgSent]       = useState(false);
 
-  // Live Catalog — mutable run order + per-product timings during show
+  // Live Catalog: mutable run order + per-product timings during show
   const [liveRunOrder,    setLiveRunOrder]    = useState(() => params?.runOrder || PRODUCTS.slice(0,5));
   const [productTimings,  setProductTimings]  = useState(() => {
     const base = params?.runOrder || PRODUCTS.slice(0,5);
@@ -3248,7 +3248,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
 
   // Production tab state (inline production panel)
   const [liveTab,       setLiveTab]       = useState("orders");
-  const [activeScene,   setActiveScene]   = useState("Wide — FX3");
+  const [activeScene,   setActiveScene]   = useState("Wide: FX3");
   const [lightBrightness, setLightBrightness] = useState(80);
   const [lightTemp,     setLightTemp]     = useState(5500);
   const [lightColor,    setLightColor]    = useState(null);   // hue 0-360, null = white/temp mode
@@ -3259,7 +3259,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const [audioLevel,    setAudioLevel]    = useState(72);
   const [streamHealth,  setStreamHealth]  = useState({ WN:true, TT:true, IG:true, AM:true, YT:true });
 
-  // Device + platform connection state — declared before the effects that use them
+  // Device + platform connection state: declared before the effects that use them
   const [liveDevices, setLiveDevices] = useState({});
   const [platformConnections, setPlatformConnections] = useState({});
 
@@ -3296,7 +3296,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   }, []);
 
   const toggleLiveDevice = (id) => {
-    // Compute next state, then persist — never call async ops inside a setState updater
+    // Compute next state, then persist: never call async ops inside a setState updater
     setLiveDevices(prev => {
       const wasConnected = prev[id]?.connected;
       const updated = { ...prev, [id]: { connected: !wasConnected } };
@@ -3316,8 +3316,8 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   }, [micMuted]);
 
   const SCENES = [
-    { id:"wide",    name:"Wide — FX3",     icon:"📷" },
-    { id:"closeup", name:"Close-Up — FX6", icon:"🎥" },
+    { id:"wide",    name:"Wide: FX3",     icon:"📷" },
+    { id:"closeup", name:"Close-Up: FX6", icon:"🎥" },
     { id:"product", name:"Product Focus",  icon:"🎥" },
     { id:"pip",     name:"PiP",            icon:"📷" },
     { id:"screen",  name:"Screen Share",   icon:"💻" },
@@ -3337,7 +3337,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const personaSlug  = params?.persona?.slug || personaProp?.slug || "shop";
   const showSlug     = showName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 
-  // Build a self-contained shareable URL — encodes show state so any browser can sync
+  // Build a self-contained shareable URL: encodes show state so any browser can sync
   const buildShareUrl = () => {
     try {
       const payload = {
@@ -3565,7 +3565,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
       {/* ── MAIN BODY ── */}
       <div style={{ flex:1, display:"flex", overflow:"hidden", minHeight:0 }}>
 
-        {/* ── LEFT PANEL — ORDERS or PRODUCTION ── */}
+        {/* ── LEFT PANEL: ORDERS or PRODUCTION ── */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", borderRight:`1px solid ${C.border}`, minHeight:0 }}>
 
           {/* ── TAB SWITCHER ── */}
@@ -3591,7 +3591,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
           {/* ── ORDERS TAB ── */}
           {liveTab === "orders" && <>
           <div style={{ padding:"10px 16px", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Quick lookup — search any buyer…"
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Quick lookup: search any buyer…"
               style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:8, padding:"7px 12px", color:C.text, fontSize:12, outline:"none" }} />
           </div>
           <div style={{ overflowY:"auto", flex:1, minHeight:0 }}>
@@ -3765,7 +3765,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                   </div>
                 </div>
 
-                {/* Secondary feeds row — all connected cameras */}
+                {/* Secondary feeds row: all connected cameras */}
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
                   {[
                     { id:"fx3",  name:"Sony FX3",  icon:"📷", color:"#7c3aed", status:"recording", iso:"ISO 800",  scene:"Wide" },
@@ -3773,7 +3773,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                   ].map(cam => {
                     const isActive = activeScene.toLowerCase().includes(cam.id === "fx3" ? "fx3" : "fx6");
                     return (
-                      <div key={cam.id} onClick={()=>setActiveScene(cam.id==="fx3"?"Wide — FX3":"Close-Up — FX6")}
+                      <div key={cam.id} onClick={()=>setActiveScene(cam.id==="fx3"?"Wide: FX3":"Close-Up: FX6")}
                         style={{ borderRadius:9, overflow:"hidden", border:`1.5px solid ${isActive?"#a78bfa55":"#1e1e3a"}`, cursor:"pointer", transition:"border-color .15s" }}>
                         <div style={{
                           height:72, position:"relative",
@@ -3830,7 +3830,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
 
               {/* ── AUDIO ── */}
               <div style={{ marginBottom:20 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Audio — Rode Wireless GO II</div>
+                <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Audio: Rode Wireless GO II</div>
                 <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"12px 14px" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
                     <div style={{ flex:1, height:8, background:"#0d0d1a", borderRadius:4, overflow:"hidden" }}>
@@ -4290,7 +4290,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
 
         </div>
 
-        {/* ── RIGHT PANEL — BUYER CONTEXT ── */}
+        {/* ── RIGHT PANEL: BUYER CONTEXT ── */}
         <div style={{ width:320, display:"flex", flexDirection:"column", background:"#050508", flexShrink:0, minHeight:0, overflow:"hidden" }}>
 
           {selectedBuyer ? (
@@ -4357,7 +4357,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                 {/* NOTES */}
                 {rightTab==="notes" && (
                   <div>
-                    <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>Note for <strong style={{ color:C.text }}>{selectedBuyer.name}</strong> — saved to their buyer profile</div>
+                    <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>Note for <strong style={{ color:C.text }}>{selectedBuyer.name}</strong>: saved to their buyer profile</div>
                     <textarea
                       rows={6}
                       value={buyerNotes[selectedBuyer.id] || ""}
@@ -4580,7 +4580,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                   const isAtLoss    = avgMargin !== null && avgMargin < 0;
                   const isBelowMin  = avgMargin !== null && avgMargin >= 0 && avgMargin < DEFAULT_MIN_MARGIN;
                   const mc          = hasCost && avgMargin !== null ? marginColor(avgMargin) : C.muted;
-                  const ml          = hasCost && avgMargin !== null ? marginLabel(avgMargin) : "—";
+                  const ml          = hasCost && avgMargin !== null ? marginLabel(avgMargin) : ":";
 
                   return (
                     <div>
@@ -4647,19 +4647,19 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                           )}
                           {isAtLoss && (
                             <div style={{ fontSize:10, fontWeight:700, color:"#ef4444", background:"#ef444415", border:"1px solid #ef444433", borderRadius:7, padding:"7px 10px", marginTop:8 }}>
-                              🚨 Selling at a loss — cost exceeds net revenue at this discount
+                              🚨 Selling at a loss: cost exceeds net revenue at this discount
                             </div>
                           )}
                           {isBelowMin && !isAtLoss && (
                             <div style={{ fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b12", border:"1px solid #f59e0b33", borderRadius:7, padding:"7px 10px", marginTop:8 }}>
-                              ⚠ Below minimum margin — consider max {maxSafeDisc}% discount instead
+                              ⚠ Below minimum margin: consider max {maxSafeDisc}% discount instead
                             </div>
                           )}
                         </div>
                       ) : (
                         <div style={{ background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:10, padding:"10px 12px", marginBottom:14, display:"flex", gap:8, alignItems:"center" }}>
                           <span style={{ fontSize:13 }}>📊</span>
-                          <div style={{ fontSize:10, color:C.muted }}>Add products to cart to see <span style={{ color:C.text }}>profit guard</span> — connects to Shopify cost data</div>
+                          <div style={{ fontSize:10, color:C.muted }}>Add products to cart to see <span style={{ color:C.text }}>profit guard</span>: connects to Shopify cost data</div>
                         </div>
                       )}
 
@@ -5172,7 +5172,7 @@ function AutomationBuilder({ initial, onSave, onClose }) {
             {/* Keywords */}
             <div>
               <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:"block", marginBottom:4 }}>Trigger Keywords *</label>
-              <div style={{ fontSize:11, color:C.subtle, marginBottom:8, lineHeight:1.5 }}>Each keyword is tracked separately — use multiple to A/B test</div>
+              <div style={{ fontSize:11, color:C.subtle, marginBottom:8, lineHeight:1.5 }}>Each keyword is tracked separately: use multiple to A/B test</div>
               <div style={{ display:"flex", gap:7, marginBottom:8 }}>
                 <input
                   value={newKw}
@@ -5240,7 +5240,7 @@ function AutomationBuilder({ initial, onSave, onClose }) {
               <div style={{ fontSize:11, fontWeight:700, color:C.green, marginBottom:8 }}>Tips for higher opt-ins</div>
               {[
                 "Keep messages under 300 chars for best read rates",
-                "Lead with the value — what does the subscriber get?",
+                "Lead with the value: what does the subscriber get?",
                 "Add urgency: 'I'll DM you 1 hour before we go live'",
                 "Use {first_name} to feel personal, not broadcast-y",
                 "Run 2-3 keywords and compare after 7 days",
@@ -5281,7 +5281,7 @@ const ALL_CRM_BUYERS = (() => {
   return all;
 })();
 
-// Segment definitions — each has id, label, icon, color, description, filter fn
+// Segment definitions: each has id, label, icon, color, description, filter fn
 const AUDIENCE_SEGMENTS = [
   {
     id: "all",
@@ -5289,7 +5289,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "👥",
     color: "#a78bfa",
     bg: "#2d1f5e",
-    description: "Your full CRM — all buyers across every platform",
+    description: "Your full CRM: all buyers across every platform",
     filter: () => true,
     category: "All",
   },
@@ -5299,7 +5299,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "👑",
     color: "#f59e0b",
     bg: "#2e1f0a",
-    description: "Highest-value loyal buyers — top loyalty tier",
+    description: "Highest-value loyal buyers: top loyalty tier",
     filter: b => b.status === "vip",
     category: "Loyalty",
   },
@@ -5309,7 +5309,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "🥇",
     color: "#d97706",
     bg: "#261a06",
-    description: "Gold loyalty members — 2,000 to 4,999 pts",
+    description: "Gold loyalty members: 2,000 to 4,999 pts",
     filter: b => b.loyalty.tier === "gold",
     category: "Loyalty",
   },
@@ -5319,7 +5319,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "🥈",
     color: "#9ca3af",
     bg: "#1c2028",
-    description: "Silver loyalty members — 500 to 1,999 pts",
+    description: "Silver loyalty members: 500 to 1,999 pts",
     filter: b => b.loyalty.tier === "silver",
     category: "Loyalty",
   },
@@ -5339,7 +5339,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "💤",
     color: "#6b7280",
     bg: "#111118",
-    description: "60+ days since last order — win-back candidates",
+    description: "60+ days since last order: win-back candidates",
     filter: b => b.status === "dormant",
     category: "Engagement",
   },
@@ -5359,7 +5359,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "🔥",
     color: "#10b981",
     bg: "#0a1e16",
-    description: "Bought in the last 14 days — warm and engaged",
+    description: "Bought in the last 14 days: warm and engaged",
     filter: b => b.status === "active",
     category: "Engagement",
   },
@@ -5439,7 +5439,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "🔁",
     color: "#34d399",
     bg: "#0a2016",
-    description: "3 or more orders placed — proven repeat purchasers",
+    description: "3 or more orders placed: proven repeat purchasers",
     filter: b => b.orders >= 3,
     category: "Behavior",
   },
@@ -5449,7 +5449,7 @@ const AUDIENCE_SEGMENTS = [
     icon: "📈",
     color: "#60a5fa",
     bg: "#0f1e2e",
-    description: "Buyers with 10+ orders — your most frequent customers",
+    description: "Buyers with 10+ orders: your most frequent customers",
     filter: b => b.orders >= 10,
     category: "Behavior",
   },
@@ -5497,7 +5497,7 @@ function ScreenComposer({ navigate, persona }) {
   }, [connectedChannels]);
   const [segmentId, setSegmentId]   = useState("all");
   const [subject, setSubject]       = useState("Thursday Night Break starts in 1 hour 🎉");
-  const [body, setBody]             = useState("Hey {{first_name}},\n\nJust a reminder — my Thursday Night Break kicks off at 8PM EST tonight on Whatnot.\n\nLast week's show had some insane pulls. Tonight I'm opening a fresh hobby box live. Don't miss it!\n\n👉 Tap to set a reminder: {{show_link}}\n\nSee you there,\n{{seller_name}}");
+  const [body, setBody]             = useState("Hey {{first_name}},\n\nJust a reminder: my Thursday Night Break kicks off at 8PM EST tonight on Whatnot.\n\nLast week's show had some insane pulls. Tonight I'm opening a fresh hobby box live. Don't miss it!\n\n👉 Tap to set a reminder: {{show_link}}\n\nSee you there,\n{{seller_name}}");
   const [keyword, setKeyword]       = useState("BREAK");
   const [flowType, setFlowType]     = useState("broadcast");
   const [amMsgType, setAmMsgType]   = useState("confirmOrderDetails");
@@ -5512,8 +5512,8 @@ function ScreenComposer({ navigate, persona }) {
   const ttFollowers = 5210;
 
   const recipientCount = ()=>{
-    if (type==="ig_dm")  return flowType==="broadcast" ? igFollowers : "—";
-    if (type==="tt_dm")  return flowType==="broadcast" ? ttFollowers : "—";
+    if (type==="ig_dm")  return flowType==="broadcast" ? igFollowers : ":";
+    if (type==="tt_dm")  return flowType==="broadcast" ? ttFollowers : ":";
     if (type==="wn_dm")  return 1240;
     if (type==="am_msg") return "order-based";
     return segment.scaledCount;
@@ -5635,7 +5635,7 @@ function ScreenComposer({ navigate, persona }) {
             {type==="am_msg" && (
               <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:14, marginTop:4 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:C.text, marginBottom:10 }}>Message Type</div>
-                <div style={{ fontSize:9, color:C.muted, marginBottom:8, lineHeight:1.5 }}>Order-related only — no marketing</div>
+                <div style={{ fontSize:9, color:C.muted, marginBottom:8, lineHeight:1.5 }}>Order-related only: no marketing</div>
                 {[
                   { v:"confirmOrderDetails",  l:"Confirm Order Details"      },
                   { v:"confirmCustomization", l:"Confirm Customization"      },
@@ -5771,7 +5771,7 @@ function ScreenComposer({ navigate, persona }) {
                 {/* Buyer preview strip */}
                 {showBuyerList && segment.buyers.length > 0 && (
                   <div style={{ borderTop:`1px solid ${segment.color}22`, paddingTop:10, marginTop:4 }}>
-                    <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:7 }}>CRM Sample — {segment.buyers.length} buyer{segment.buyers.length>1?"s":""} in this segment</div>
+                    <div style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:7 }}>CRM Sample: {segment.buyers.length} buyer{segment.buyers.length>1?"s":""} in this segment</div>
                     {segment.buyers.slice(0,5).map(b=>{
                       const pl = PLATFORMS[b.platform];
                       const tier = LOYALTY_TIERS.find(t=>t.id===b.loyalty.tier);
@@ -5811,7 +5811,7 @@ function ScreenComposer({ navigate, persona }) {
         <div className="fade-up">
           {(type==="ig_dm"||type==="tt_dm") && (
             <div style={{ background:ch.bg, border:`1px solid ${ch.color}33`, borderRadius:12, padding:"11px 16px", marginBottom:14, fontSize:11, color:ch.color, lineHeight:1.6 }}>
-              <strong>ManyChat rules:</strong> Links not clickable in DMs — send as plain text. Max 1000 chars. No images in TT DMs.
+              <strong>ManyChat rules:</strong> Links not clickable in DMs: send as plain text. Max 1000 chars. No images in TT DMs.
             </div>
           )}
           {type==="am_msg" && (
@@ -5962,7 +5962,7 @@ function ScreenSubscribers({ persona }) {
         </button>
       </div>
 
-      {/* STAT CARDS — 4 cols */}
+      {/* STAT CARDS: 4 cols */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
         <StatCard label="Total Subscribers" value={persona.subscriberCount.toLocaleString()} sub="opted in to messages" color={C.green} />
         <StatCard label="Email"             value={Math.round(persona.subscriberCount*0.48).toLocaleString()} sub="48% of list" color={C.blue} />
@@ -5972,7 +5972,7 @@ function ScreenSubscribers({ persona }) {
           <div style={{ position:"absolute", top:-20, right:-20, width:80, height:80, borderRadius:"50%", background:"#69c9d0", opacity:0.06, filter:"blur(20px)", pointerEvents:"none" }}/>
           <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>ManyChat DMs</div>
           <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:800, color:C.text, marginBottom:6 }}>
-            {totalMC > 0 ? totalMC.toLocaleString() : "—"}
+            {totalMC > 0 ? totalMC.toLocaleString() : ":"}
           </div>
           {totalMC > 0 ? (
             <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
@@ -6081,7 +6081,7 @@ function TeamTab({ persona, openCheckout }) {
   const ROLE_META = {
     Owner:             { color: C.accent,   desc: "Full access to everything" },
     Admin:             { color: "#f59e0b",  desc: "Manage shows, buyers, campaigns, settings" },
-    Producer:          { color: "#06b6d4",  desc: "Production suite, shows & catalog — Pro+ only", badge: "Pro+", access: ["Shows", "Production", "Live Companion", "Catalog"] },
+    Producer:          { color: "#06b6d4",  desc: "Production suite, shows & catalog: Pro+ only", badge: "Pro+", access: ["Shows", "Production", "Live Companion", "Catalog"] },
     "Show Manager":    { color: "#10b981",  desc: "Run live shows and manage orders" },
     "Campaign Manager":{ color: "#3b82f6",  desc: "Create and send campaigns" },
     Viewer:            { color: "#9ca3af",  desc: "Read-only access" },
@@ -6216,14 +6216,14 @@ function TeamTab({ persona, openCheckout }) {
         console.error("Email API error:", e);
       }
     } else {
-      // No SMTP configured — invite link still works, user can copy it manually
+      // No SMTP configured: invite link still works, user can copy it manually
       setEmailSendStatus("no_smtp");
     }
 
     await persistTeam([...teamMembers, newMember]);
     setSaving(false);
     setSaved(true);
-    // Don't auto-close — let user see the delivery status first
+    // Don't auto-close: let user see the delivery status first
   };
 
   const removeMember = async (id) => {
@@ -6385,7 +6385,7 @@ function TeamTab({ persona, openCheckout }) {
                           : sel && rm.badge && <span style={{ fontSize:7, fontWeight:800, color:"#06b6d4", background:"#06b6d414", border:"1px solid #06b6d433", padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>{rm.badge}</span>
                         }
                       </div>
-                      <div style={{ fontSize:10, color:producerLocked?"#2e2e45":C.muted, lineHeight:1.3 }}>{rm.desc.split(" — ")[0]}</div>
+                      <div style={{ fontSize:10, color:producerLocked?"#2e2e45":C.muted, lineHeight:1.3 }}>{rm.desc.split(": ")[0]}</div>
                     </div>
                   );
                 })}
@@ -6414,7 +6414,7 @@ function TeamTab({ persona, openCheckout }) {
               ) : null}
             </div>
 
-            {/* EMAIL DELIVERY STATUS — shown after sending */}
+            {/* EMAIL DELIVERY STATUS: shown after sending */}
             {saved && emailSendStatus && (
               <div style={{ marginBottom:16 }}>
                 {emailSendStatus === "sent" && (
@@ -6459,7 +6459,7 @@ function TeamTab({ persona, openCheckout }) {
                       SMTP error: <code style={{ color:"#fca5a5", fontSize:10 }}>{emailSendError}</code>
                     </div>
                     <div style={{ fontSize:11, color:C.muted }}>
-                      The invite is saved — copy the link below to share manually, or check your SMTP settings.
+                      The invite is saved: copy the link below to share manually, or check your SMTP settings.
                     </div>
                     <button
                       onClick={async () => {
@@ -6667,7 +6667,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       icon: "📸",
       color: "#e1306c",
       bg: "#2d1020",
-      description: "Instagram Business account — DM automation via ManyChat, audience insights.",
+      description: "Instagram Business account: DM automation via ManyChat, audience insights.",
       authType: "oauth",
       scopes: ["instagram_basic", "instagram_manage_messages", "pages_read_engagement"],
       connectWith: () => connect("ig", { account: "@" + persona.shop.toLowerCase().replace(/\s/g,"_"), followers: "2,840", scopes: ["DM Automation", "Broadcasts", "Audience Insights"] }),
@@ -6677,7 +6677,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       icon: "🎵",
       color: "#69c9d0",
       bg: "#0d2828",
-      description: "TikTok Business account — DM keyword automations via ManyChat.",
+      description: "TikTok Business account: DM keyword automations via ManyChat.",
       authType: "oauth",
       scopes: ["user.info.basic", "message.write", "message.read"],
       connectWith: () => connect("tt", { account: "@" + persona.shop.toLowerCase().replace(/\s/g,"_") + "_tt", followers: "5,210", scopes: ["DM Automation", "Keyword Triggers"] }),
@@ -6687,7 +6687,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       icon: "🟡",
       color: "#f59e0b",
       bg: "#2e1f0a",
-      description: "Whatnot Seller API — inventory sync, show notifications to followers.",
+      description: "Whatnot Seller API: inventory sync, show notifications to followers.",
       authType: "apikey",
       apiKeyLabel: "Whatnot API Key",
       apiKeyHint: "Request access at whatnot.com/seller-api (private beta)",
@@ -6699,7 +6699,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       icon: "📦",
       color: "#f97316",
       bg: "#2e1608",
-      description: "Amazon Selling Partner API — post-show order sync, transactional buyer messages.",
+      description: "Amazon Selling Partner API: post-show order sync, transactional buyer messages.",
       authType: "spapi",
       connectWith: () => connect("am", { account: persona.shop + " Amazon Store", marketplaceId, scopes: ["Order Sync", "Buyer Messages", "Reports"] }),
     },
@@ -6708,7 +6708,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       icon: "▶️",
       color: "#ff0000",
       bg: "#2a0a0a",
-      description: "YouTube Data API — live stream management, chat, viewer metrics. Buyer purchase data sourced from your connected Shopify store using 3-method attribution.",
+      description: "YouTube Data API: live stream management, chat, viewer metrics. Buyer purchase data sourced from your connected Shopify store using 3-method attribution.",
       authType: "oauth",
       scopes: ["youtube.readonly", "youtube.force-ssl"],
       connectWith: () => connect("yt", { account: persona.shop + " on YouTube", subscribers: "12.4K", scopes: ["Live Stream Mgmt", "Chat & Viewers", "Analytics", "Shopify Attribution"] }),
@@ -6742,7 +6742,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
   const platformData = {
     WN: { accountType:"Seller",              note:"Orders, buyers, inventory + real-time webhooks" },
     TT: { accountType:"Seller Account",      note:"Requires TikTok Seller Account" },
-    AM: { accountType:"Brand Registry / Influencer", note:"Post-show order sync via SP-API — ~24h delay" },
+    AM: { accountType:"Brand Registry / Influencer", note:"Post-show order sync via SP-API: ~24h delay" },
     IG: { accountType:"Business or Creator", note:"Audience insights + DM automation (Pro)" },
     YT: { accountType:"YouTube Channel",     note:"Live stream management via YouTube Data API · Buyer data via Shopify · 3 attribution methods" },
   };
@@ -6812,7 +6812,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 {[
                   { n:1, text:"Go to your ManyChat account", link:"https://app.manychat.com", linkLabel:"app.manychat.com →" },
                   { n:2, text:'Click Settings in the left sidebar, then select "API" tab' },
-                  { n:3, text:'Click "Generate API Key" — copy the full key starting with mc-' },
+                  { n:3, text:'Click "Generate API Key": copy the full key starting with mc-' },
                   { n:4, text:"Paste it below" },
                 ].map(s=>(
                   <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
@@ -6847,7 +6847,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                       { n:1, text:"You need an Instagram Business or Creator account", link:"https://www.facebook.com/business/help/502981923235522", linkLabel:"Switch here →" },
                       { n:2, text:"Your Instagram must be linked to a Facebook Page", link:"https://www.facebook.com/help/1148909221857370", linkLabel:"Link guide →" },
                       { n:3, text:"ManyChat must already be connected (step above) as it handles the DM routing" },
-                      { n:4, text:'Click "Authorize Instagram" below — sign into Facebook and grant all permissions' },
+                      { n:4, text:'Click "Authorize Instagram" below: sign into Facebook and grant all permissions' },
                     ].map(s=>(
                       <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
                         <div style={{ width:20, height:20, borderRadius:"50%", background:"#2d1020", border:"1px solid #e1306c33", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#e1306c", flexShrink:0, marginTop:1 }}>{s.n}</div>
@@ -6893,7 +6893,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                     {[
                       { n:1, text:"You need a TikTok Business account (not personal/creator)", link:"https://www.tiktok.com/business/en/blog/tiktok-business-account-vs-creator-account", linkLabel:"How to switch →" },
                       { n:2, text:"Currently available in US and non-EU/UK regions only" },
-                      { n:3, text:"ManyChat must already be connected — TikTok DMs route through it" },
+                      { n:3, text:"ManyChat must already be connected: TikTok DMs route through it" },
                       { n:4, text:'Click "Authorize TikTok" and sign in with your TikTok Business credentials' },
                     ].map(s=>(
                       <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
@@ -6972,10 +6972,10 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:12 }}>How to get your SP-API credentials</div>
                 {[
                   { n:1, text:"Sign into Seller Central and go to Apps & Services → Develop Apps", link:"https://sellercentral.amazon.com/sellerapp/seller-apps", linkLabel:"Seller Central →" },
-                  { n:2, text:'Click "Add New App Client" — give it a name like "Streamlive"' },
+                  { n:2, text:'Click "Add New App Client": give it a name like "Streamlive"' },
                   { n:3, text:'Under "Roles", enable: Reports, Orders, Buyer Communication, and Notifications' },
                   { n:4, text:"Copy the LWA Client ID and Client Secret from the app credentials page" },
-                  { n:5, text:"Generate a Refresh Token using the SP-API Auth workflow — or use the token tool below", link:"https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md", linkLabel:"SP-API auth guide →" },
+                  { n:5, text:"Generate a Refresh Token using the SP-API Auth workflow: or use the token tool below", link:"https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md", linkLabel:"SP-API auth guide →" },
                 ].map(s=>(
                   <div key={s.n} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
                     <div style={{ width:20, height:20, borderRadius:"50%", background:"#2e1608", border:"1px solid #f9731633", display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#f97316", flexShrink:0, marginTop:1 }}>{s.n}</div>
@@ -7030,8 +7030,8 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 ))}
               </div>
               {[
-                { label:"Account SID",  val:accountSid, set:setAccountSid, ph:"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", hint:"Starts with AC — from Twilio Console homepage" },
-                { label:"Auth Token",   val:authToken,  set:setAuthToken,  ph:"••••••••••••••••••••••••••••••••", hint:"Hidden by default — click the eye icon to reveal" },
+                { label:"Account SID",  val:accountSid, set:setAccountSid, ph:"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", hint:"Starts with AC: from Twilio Console homepage" },
+                { label:"Auth Token",   val:authToken,  set:setAuthToken,  ph:"••••••••••••••••••••••••••••••••", hint:"Hidden by default: click the eye icon to reveal" },
                 { label:"From Number",  val:fromNumber, set:setFromNumber, ph:"+15551234567", hint:"Must be a Twilio phone number with SMS capability" },
               ].map(f=>(
                 <div key={f.label} style={{ marginBottom:12 }}>
@@ -7068,7 +7068,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 </div>
                 <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>How to get your credentials</div>
                 {[
-                  { n:1, text:"Pick a provider above — it auto-fills the SMTP host and username format", },
+                  { n:1, text:"Pick a provider above: it auto-fills the SMTP host and username format", },
                   { n:2, text:"For SendGrid: create an API key with Mail Send permission", link:"https://app.sendgrid.com/settings/api_keys", linkLabel:"SendGrid API keys →" },
                   { n:3, text:"For Mailgun: find SMTP credentials under Domains → your domain → SMTP", link:"https://app.mailgun.com/mg/sending/domains", linkLabel:"Mailgun domains →" },
                   { n:4, text:"For Gmail: enable 2FA then create an App Password (not your login password)", link:"https://myaccount.google.com/apppasswords", linkLabel:"App passwords →" },
@@ -7085,7 +7085,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
               {[
                 { label:"SMTP Host",      val:smtpHost, set:setSmtpHost, ph:"smtp.sendgrid.net",         hint:"Port 587 (TLS) is standard for most providers" },
                 { label:"Username",       val:smtpUser, set:setSmtpUser, ph:"apikey",                    hint:"For SendGrid this is literally the word 'apikey'" },
-                { label:"Password / Key", val:smtpPass, set:setSmtpPass, ph:"SG.xxxxxxxxxxxxxxxxxxxxxxxx", hint:"Your API key or SMTP password — never your account login" },
+                { label:"Password / Key", val:smtpPass, set:setSmtpPass, ph:"SG.xxxxxxxxxxxxxxxxxxxxxxxx", hint:"Your API key or SMTP password: never your account login" },
               ].map(f=>(
                 <div key={f.label} style={{ marginBottom:12 }}>
                   <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>{f.label}</div>
@@ -7183,7 +7183,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 <span style={{ fontSize:11, fontWeight:800, color:"#ff0000", textTransform:"uppercase", letterSpacing:"0.1em" }}>YouTube Attribution</span>
               </div>
               <div style={{ fontSize:11, color:C.muted, marginBottom:16, lineHeight:1.6 }}>
-                YouTube doesn't expose buyer purchase data via API. Streamlive uses three complementary methods to attribute Shopify orders to your YouTube shows. All three run automatically — they're layered so every order gets captured.
+                YouTube doesn't expose buyer purchase data via API. Streamlive uses three complementary methods to attribute Shopify orders to your YouTube shows. All three run automatically: they're layered so every order gets captured.
               </div>
 
               {[
@@ -7195,13 +7195,13 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 },
                 {
                   num:"02", label:"UTM Link Attribution", color:"#3b82f6",
-                  desc:"A unique tracking link is generated for every YouTube show. Pin it in your live chat — any Shopify order from that link is attributed with 100% confidence regardless of timing.",
+                  desc:"A unique tracking link is generated for every YouTube show. Pin it in your live chat: any Shopify order from that link is attributed with 100% confidence regardless of timing.",
                   badge:"100% Confidence",
                   detail:"Link format: strmlive.com/yt/[shop]-[date]. Generated automatically in Show Planner.",
                 },
                 {
                   num:"03", label:"Post-Show Reconciliation", color:"#f59e0b",
-                  desc:"Unattributed Shopify orders from your stream window appear in Order Review after each show. Confirm or dismiss each one — your call gives the final attribution.",
+                  desc:"Unattributed Shopify orders from your stream window appear in Order Review after each show. Confirm or dismiss each one: your call gives the final attribution.",
                   badge:"Manual confirm",
                   detail:"Appears in Order Review tab after every YouTube show. Takes ~2 min.",
                 },
@@ -7522,7 +7522,7 @@ function LivePixelTab({ persona }) {
     { icon:"🔗", label:"Cross-session tracking", desc:"Buyer leaves and comes back 3 days later? Still attributed to the show that sent them." },
     { icon:"👤", label:"Identity resolution",    desc:"Matches anonymous visitors to known Shopify customers when they check out." },
     { icon:"📺", label:"Show-level attribution", desc:"Each show gets a unique fingerprint. Pixel knows exactly which stream the buyer came from." },
-    { icon:"⚡", label:"Real-time signals",      desc:"See live visitor counts on your site during a show — how many viewers clicked through." },
+    { icon:"⚡", label:"Real-time signals",      desc:"See live visitor counts on your site during a show: how many viewers clicked through." },
     { icon:"🛡️", label:"First-party data",       desc:"Runs on your domain. No third-party cookies. GDPR/CCPA compliant by design." },
   ];
 
@@ -7555,7 +7555,7 @@ function LivePixelTab({ persona }) {
           }
         </div>
         <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.7, maxWidth:500 }}>
-          A lightweight JavaScript snippet you install once on your website. Live Pixel tracks every visitor from the moment they arrive — whether from a YouTube chat link, a TikTok bio, or a DM campaign — and ties their purchase directly to the show that sent them. <span style={{ color:"#f43f5e", fontWeight:600 }}>No inference. No guessing. Direct attribution.</span>
+          A lightweight JavaScript snippet you install once on your website. Live Pixel tracks every visitor from the moment they arrive: whether from a YouTube chat link, a TikTok bio, or a DM campaign: and ties their purchase directly to the show that sent them. <span style={{ color:"#f43f5e", fontWeight:600 }}>No inference. No guessing. Direct attribution.</span>
         </div>
       </div>
 
@@ -7580,9 +7580,9 @@ function LivePixelTab({ persona }) {
         <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:14 }}>Attribution accuracy comparison</div>
         {[
           { method:"Live Pixel",    accuracy:99, color:"#f43f5e", note:"Direct session tracking. Buyer's path is recorded end-to-end." },
-          { method:"UTM Link",      accuracy:82, color:"#3b82f6", note:"100% accurate — but only for buyers who click your link." },
+          { method:"UTM Link",      accuracy:82, color:"#3b82f6", note:"100% accurate: but only for buyers who click your link." },
           { method:"Time-Window",   accuracy:64, color:"#10b981", note:"Catches most buyers but also unrelated orders in the window." },
-          { method:"Manual Review", accuracy:55, color:"#f59e0b", note:"Reliable for what you confirm — but slow and incomplete." },
+          { method:"Manual Review", accuracy:55, color:"#f59e0b", note:"Reliable for what you confirm: but slow and incomplete." },
         ].map(m => (
           <div key={m.method} style={{ marginBottom:12 }}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
@@ -7679,7 +7679,7 @@ function LivePixelTab({ persona }) {
           {pixelInstalled && (
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <div style={{ width:8, height:8, borderRadius:"50%", background:C.green, animation:"livePulse 1.2s ease-out infinite" }} />
-              <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Pixel detected — receiving data</span>
+              <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Pixel detected: receiving data</span>
             </div>
           )}
         </div>
@@ -7694,14 +7694,14 @@ function LivePixelTab({ persona }) {
             ["Show ID","Which specific stream sent the visitor"],
             ["Page views","Products viewed, time on site, scroll depth"],
             ["Cart events","Add to cart, remove, abandon"],
-            ["Purchase event","Order ID, items, total — matched to Shopify"],
+            ["Purchase event","Order ID, items, total: matched to Shopify"],
             ["Buyer identity","Matched to Streamlive CRM profile on checkout"],
           ].map(([k,v])=>(
             <div key={k} style={{ display:"flex", gap:6 }}>
               <div style={{ width:5, height:5, borderRadius:"50%", background:"#f43f5e", marginTop:5, flexShrink:0 }} />
               <div>
                 <span style={{ fontSize:11, fontWeight:600, color:C.text }}>{k}</span>
-                <span style={{ fontSize:11, color:C.muted }}> — {v}</span>
+                <span style={{ fontSize:11, color:C.muted }}>: {v}</span>
               </div>
             </div>
           ))}
@@ -7810,7 +7810,7 @@ function ScreenCatalog({ persona, navigate }) {
           {connectStep === 1 && (
             <div className="fade-up" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:18, padding:28 }}>
               <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:4 }}>What's your Shopify store URL?</div>
-              <div style={{ fontSize:11, color:C.muted, marginBottom:20, lineHeight:1.6 }}>Find it in your Shopify admin — it looks like <span style={{ fontFamily:"'JetBrains Mono',monospace", color:"#96BF48" }}>yourstore.myshopify.com</span></div>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:20, lineHeight:1.6 }}>Find it in your Shopify admin: it looks like <span style={{ fontFamily:"'JetBrains Mono',monospace", color:"#96BF48" }}>yourstore.myshopify.com</span></div>
 
               <div style={{ position:"relative", marginBottom:storeUrlError?8:20 }}>
                 <div style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", fontSize:11, color:C.muted, fontFamily:"'JetBrains Mono',monospace", pointerEvents:"none" }}>https://</div>
@@ -8154,7 +8154,7 @@ function ScreenShowPlanner({ navigate, persona }) {
               />
               {showName && (
                 <div style={{ marginTop:8, fontSize:11, color:C.green, display:"flex", alignItems:"center", gap:5 }}>
-                  <span>✓</span><span style={{ fontWeight:600 }}>{showName}</span><span style={{ color:C.muted }}>— saved</span>
+                  <span>✓</span><span style={{ fontWeight:600 }}>{showName}</span><span style={{ color:C.muted }}>: saved</span>
                 </div>
               )}
             </div>
@@ -8186,7 +8186,7 @@ function ScreenShowPlanner({ navigate, persona }) {
               <div style={{ marginTop:16, display:"flex", alignItems:"center", gap:10, background:"#0a1e16", border:"1px solid #10b98133", borderRadius:10, padding:"10px 16px" }}>
                 <span style={{ color:C.green, fontSize:13 }}>✦</span>
                 <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Multi-stream enabled</span>
-                <span style={{ fontSize:12, color:C.muted }}>— streaming to {selectedPlatforms.length} platforms simultaneously</span>
+                <span style={{ fontSize:12, color:C.muted }}>: streaming to {selectedPlatforms.length} platforms simultaneously</span>
               </div>
             )}
 
@@ -8199,11 +8199,11 @@ function ScreenShowPlanner({ navigate, persona }) {
                   <span style={{ fontSize:9, color:"#ff0000", background:"#ff000018", border:"1px solid #ff000033", padding:"2px 7px", borderRadius:5, marginLeft:"auto" }}>Shopify-powered</span>
                 </div>
                 <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.6, marginBottom:14 }}>
-                  YouTube doesn't expose buyer data via API — Streamlive uses 3 methods to attribute your Shopify orders to this show.
+                  YouTube doesn't expose buyer data via API: Streamlive uses 3 methods to attribute your Shopify orders to this show.
                 </div>
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {[
-                    { label:"Time-window (±15 min)", color:"#10b981", status:"Auto — on" },
+                    { label:"Time-window (±15 min)", color:"#10b981", status:"Auto: on" },
                     { label:"UTM Link for live chat",  color:"#3b82f6", status:"Generated below" },
                     { label:"Post-show reconciliation", color:"#f59e0b", status:"In Order Review" },
                   ].map(m => (
@@ -8258,7 +8258,7 @@ function ScreenShowPlanner({ navigate, persona }) {
                 <div style={{ fontSize:14, fontWeight:700, color:C.text }}>Choose products for this show</div>
                 <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>
                   {selectedProducts.length === 0
-                    ? "No products selected — tap to add"
+                    ? "No products selected: tap to add"
                     : `${selectedProducts.length} of ${showReadyProducts.length} selected`}
                 </div>
               </div>
@@ -8420,7 +8420,7 @@ function ScreenShowPlanner({ navigate, persona }) {
               <div>
                 <div style={{ background:"#2d1f5e18", border:`1px solid ${C.accent}33`, borderRadius:14, padding:"16px 18px", marginBottom:14 }}>
                   <div style={{ fontSize:10, fontWeight:700, color:"#a78bfa", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>✦ AI Show Strategy</div>
-                  <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65 }}>Opening with the Spring Style Bundle drives the highest bundle attachment — 6.8 units/show on average. Following with the Silk Wrap Dress creates urgency early while live viewers are most engaged.</div>
+                  <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.65 }}>Opening with the Spring Style Bundle drives the highest bundle attachment: 6.8 units/show on average. Following with the Silk Wrap Dress creates urgency early while live viewers are most engaged.</div>
                 </div>
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
                   <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>Projected Performance</div>
@@ -8834,7 +8834,7 @@ function ScreenShowPlanner({ navigate, persona }) {
         })()}
       </div>
 
-      {/* ── GO LIVE FOOTER — outside scroll area so it's always visible ── */}
+      {/* ── GO LIVE FOOTER: outside scroll area so it's always visible ── */}
       {step===5 && (
         <div style={{ padding:"14px 28px", borderTop:`1px solid ${C.border}`, background:C.surface, flexShrink:0, display:"flex", gap:10 }}>
           <button onClick={()=>setStep(4)} style={{ background:"transparent", border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"12px 20px", borderRadius:10, cursor:"pointer" }}>← Edit</button>
@@ -8901,7 +8901,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
       const counts = {};
       Object.values(buyerItems).flat().forEach(id => { counts[id]=(counts[id]||0)+1; });
       const topId = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0];
-      return PRODUCTS.find(p=>p.id===topId)?.name || (PRODUCTS.find(p=>p.showReady)?.name || "—");
+      return PRODUCTS.find(p=>p.id===topId)?.name || (PRODUCTS.find(p=>p.showReady)?.name || ":");
     })();
     return {
       id:      `sh_live_${Date.now()}`,
@@ -8992,7 +8992,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
               <div style={{ width:26, height:26, borderRadius:7, background:"#ff000018", border:"1px solid #ff000033", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12 }}>▶</div>
               <div style={{ flex:1 }}>
                 <span style={{ fontSize:13, fontWeight:700, color:"#ff6b6b" }}>YouTube Order Reconciliation</span>
-                <span style={{ fontSize:10, color:C.muted, marginLeft:8 }}>Method 3 of 3 — manual confirm</span>
+                <span style={{ fontSize:10, color:C.muted, marginLeft:8 }}>Method 3 of 3: manual confirm</span>
               </div>
               {pendingYT.length > 0
                 ? <span style={{ fontSize:10, fontWeight:700, color:"#f59e0b", background:"#f59e0b18", border:"1px solid #f59e0b33", padding:"3px 10px", borderRadius:99 }}>{pendingYT.length} pending</span>
@@ -9049,7 +9049,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
                     <span style={{ fontSize:13, fontWeight:700, color:C.text }}>{b.name}</span>
                     {tier && <span style={{ fontSize:10 }}>{tier.icon}</span>}
                     <PlatformPill code={b.platform} />
-                    {!hasChanges && <span style={{ fontSize:10, color:C.muted }}>— no changes</span>}
+                    {!hasChanges && <span style={{ fontSize:10, color:C.muted }}>: no changes</span>}
                   </div>
                   <div style={{ display:"flex", gap:6 }}>
                     {discount>0 && <span style={{ fontSize:9, fontWeight:700, color:C.green, background:"#0a1e16", border:"1px solid #10b98133", padding:"1px 7px", borderRadius:5 }}>{discount}% OFF</span>}
@@ -9269,21 +9269,21 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
   const buyerTrend_pct   = prevBuyerCount > 0 ? Math.round((totalBuyers - prevBuyerCount) / prevBuyerCount * 100) : null;
   const ltvTrend_pct     = prevAvgLTV > 0 ? Math.round((avgLTV - prevAvgLTV) / prevAvgLTV * 100) : null;
 
-  // Platform breakdown — from filtered shows + filtered buyers
+  // Platform breakdown: from filtered shows + filtered buyers
   const platformGMV = { WN:0, TT:0, AM:0, IG:0, YT:0 };
   filteredShows.forEach(s=>{ platformGMV[s.platform]=(platformGMV[s.platform]||0)+s.gmv; });
   const platformBuyers = { WN:0, TT:0, AM:0, IG:0, YT:0 };
   filteredBuyers.forEach(b=>{ platformBuyers[b.platform]=(platformBuyers[b.platform]||0)+1; });
 
-  // Status breakdown — from filtered buyers
+  // Status breakdown: from filtered buyers
   const statusCounts = { vip:0, active:0, risk:0, dormant:0, new:0 };
   filteredBuyers.forEach(b=>{ statusCounts[b.status]=(statusCounts[b.status]||0)+1; });
 
-  // Category breakdown — from filtered buyers
+  // Category breakdown: from filtered buyers
   const catSpend = {};
   filteredBuyers.forEach(b=>{ catSpend[b.category]=(catSpend[b.category]||0)+b.spend; });
 
-  // GMV trend chart — different data per range to show accurate picture
+  // GMV trend chart: different data per range to show accurate picture
   const TREND_7D   = { data:[12840,18420],             weeks:["Feb 17","Feb 22"] };
   const TREND_30D  = { data:[7640,21800,9210,12840,16340,18420],  weeks:["Feb 8","Feb 10","Feb 12","Feb 15","Feb 17","Feb 22"] };
   const TREND_90D  = { data:[8920,11280,16340,7640,21800,9210,12840,18420], weeks:["Jan 5","Jan 18","Feb 1","Feb 8","Feb 10","Feb 12","Feb 17","Feb 22"] };
@@ -9623,8 +9623,8 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
               <KPI label="Best GMV"       value={filteredShows.length>0?`$${Math.max(...filteredShows.map(s=>s.gmv)).toLocaleString()}`:" - "} color={C.green} sub="single show" />
               <KPI label="Avg Show GMV"   value={filteredShows.length>0?`$${Math.round(filteredShows.reduce((a,s)=>a+s.gmv,0)/filteredShows.length).toLocaleString()}`:" - "} color={C.accent} />
-              <KPI label="Avg Buyers/Show" value={filteredShows.length>0?Math.round(filteredShows.reduce((a,s)=>a+s.buyers,0)/filteredShows.length):"—"} color="#a78bfa" />
-              <KPI label="Best Platform"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]?PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]:"—"} color="#f59e0b" sub="by GMV" />
+              <KPI label="Avg Buyers/Show" value={filteredShows.length>0?Math.round(filteredShows.reduce((a,s)=>a+s.buyers,0)/filteredShows.length):":"} color="#a78bfa" />
+              <KPI label="Best Platform"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]?PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]:":"} color="#f59e0b" sub="by GMV" />
             </div>
 
             {/* Show performance table */}
@@ -9921,19 +9921,19 @@ function ScreenProduction({ persona, navigate }) {
 
   // ── OBS / SCENE STATE ────────────────────────────────────────────────────────
   const [obsConnected, setObsConnected]   = useState(false);
-  const [activeScene, setActiveScene]     = useState("Wide — FX3");
+  const [activeScene, setActiveScene]     = useState("Wide: FX3");
   const [transitionType, setTransitionType] = useState("Cut");
   const [scenes, setScenes] = useState([
-    { id:"wide",    name:"Wide — FX3",       source:"fx3",   preview:"📷 Wide" },
-    { id:"closeup", name:"Close-Up — FX6",   source:"fx6",   preview:"🎥 Close" },
+    { id:"wide",    name:"Wide: FX3",       source:"fx3",   preview:"📷 Wide" },
+    { id:"closeup", name:"Close-Up: FX6",   source:"fx6",   preview:"🎥 Close" },
     { id:"product", name:"Product Focus",     source:"fx6",   preview:"🎥 + 📷" },
-    { id:"pip",     name:"PiP — FX3+iPad",   source:"fx3",   preview:"📷 + 📱" },
+    { id:"pip",     name:"PiP: FX3+iPad",   source:"fx3",   preview:"📷 + 📱" },
     { id:"screen",  name:"Screen Share",      source:"macbook",preview:"💻 Screen" },
   ]);
 
   // ── AUTOMATION STATE ─────────────────────────────────────────────────────────
   const [automations, setAutomations] = useState([
-    { id:"a1", enabled:true,  trigger:"Product queued",  action:"Switch to Close-Up — FX6",       devices:["fx6","rs4pro"],    icon:"🎥" },
+    { id:"a1", enabled:true,  trigger:"Product queued",  action:"Switch to Close-Up: FX6",       devices:["fx6","rs4pro"],    icon:"🎥" },
     { id:"a2", enabled:true,  trigger:"Show starts",     action:"Key Light → 100% · 5600K",        devices:["elgato"],          icon:"💡" },
     { id:"a3", enabled:false, trigger:"VIP buyer joins", action:"RS4 Pro → Product Follow mode",   devices:["rs4pro"],          icon:"🎛" },
     { id:"a4", enabled:true,  trigger:"Show ends",       action:"All lights off · Cameras standby",devices:["elgato","fx3","fx6"],icon:"⏹" },
@@ -10798,7 +10798,7 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
                   <Avatar initials={item.buyer.avatar} color={PLATFORMS[item.buyer.platform]?.color} size={28} />
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:12, color:C.text }}>
-                      <strong>{item.buyer.name}</strong> — {item.event}
+                      <strong>{item.buyer.name}</strong>: {item.event}
                     </div>
                     <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{item.date} · {item.buyer.loyalty.points.toLocaleString()} pts total</div>
                   </div>
@@ -10845,7 +10845,7 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
                     style={{ width:"100%", background:C.surface, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color: awardBuyer ? C.text : C.muted, fontSize:13 }}>
                     <option value="">Select a buyer…</option>
                     {enriched.map(b => (
-                      <option key={b.id} value={b.id}>{b.name} — {b.loyalty.points.toLocaleString()} pts ({b.loyalty.tier})</option>
+                      <option key={b.id} value={b.id}>{b.name}: {b.loyalty.points.toLocaleString()} pts ({b.loyalty.tier})</option>
                     ))}
                   </select>
                 </div>
@@ -10914,7 +10914,7 @@ function ScreenNetwork({ persona, navigate }) {
   const planBreakdown = sellers.reduce((acc,s)=>{ acc[s.plan]=(acc[s.plan]||0)+1; return acc; },{});
   const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b" };
 
-  // Mini bar chart data — simulate 8-week trend
+  // Mini bar chart data: simulate 8-week trend
   const weeklyData = [28400,31200,29800,34100,37200,35800,39400,networkGMV/4];
 
   return (
@@ -10965,7 +10965,7 @@ function ScreenNetwork({ persona, navigate }) {
           {/* Trend chart */}
           <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-              <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Network GMV — 8 Week Trend</span>
+              <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Network GMV: 8 Week Trend</span>
               <span style={{ fontSize:10, color:"#10b981", fontWeight:600 }}>+{gmvDelta}% MTD</span>
             </div>
             <svg width="100%" height="80" viewBox="0 0 400 80" preserveAspectRatio="none">
@@ -11191,7 +11191,7 @@ function ScreenSellers({ persona, navigate }) {
                   {manager?.avatar||"?"}
                 </div>
                 <div>
-                  <div style={{ fontSize:10, fontWeight:600, color:C.text }}>{manager?.name.split(" ")[0]||"—"}</div>
+                  <div style={{ fontSize:10, fontWeight:600, color:C.text }}>{manager?.name.split(" ")[0]||":"}</div>
                   <div style={{ fontSize:9, color:C.subtle }}>{manager?.role||""}</div>
                 </div>
               </div>
@@ -11374,7 +11374,7 @@ function ScreenSellerDetail({ persona, params, navigate }) {
               {nextPlan[s.plan] && (
                 <div style={{ background:`${nextColor[s.plan]}08`, border:`1px solid ${nextColor[s.plan]}33`, borderRadius:9, padding:"10px 12px" }}>
                   <div style={{ fontSize:10, fontWeight:700, color:nextColor[s.plan], marginBottom:4 }}>
-                    Upgrade to {nextPlan[s.plan].charAt(0).toUpperCase()+nextPlan[s.plan].slice(1)} — +${nextPrice[s.plan]-planPrices[s.plan]}/mo
+                    Upgrade to {nextPlan[s.plan].charAt(0).toUpperCase()+nextPlan[s.plan].slice(1)}: +${nextPrice[s.plan]-planPrices[s.plan]}/mo
                   </div>
                   <div style={{ fontSize:10, color:C.muted }}>
                     {nextPlan[s.plan]==="growth"?"Unlocks Analytics, Loyalty, AI Insights, SMS campaigns":"Unlocks Production Suite, camera & gimbal control"}
@@ -11432,7 +11432,7 @@ function ScreenSellerDetail({ persona, params, navigate }) {
             {[
               { label:"VIP Buyers",     count:vipCount,     color:"#7c3aed", desc:"Lifetime spend > $1k, loyal repeat buyers" },
               { label:"Active",          count:activeCount,  color:"#10b981", desc:"Purchased in last 30 days" },
-              { label:"At-Risk",         count:atRiskCount,  color:"#f59e0b", desc:"28 to 60 days since last order — needs re-engagement" },
+              { label:"At-Risk",         count:atRiskCount,  color:"#f59e0b", desc:"28 to 60 days since last order: needs re-engagement" },
               { label:"Dormant",         count:dormantCount, color:"#374151", desc:"60+ days inactive" },
             ].map(seg=>(
               <div key={seg.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", marginBottom:10, display:"flex", alignItems:"center", gap:14 }}>
@@ -11452,7 +11452,7 @@ function ScreenSellerDetail({ persona, params, navigate }) {
         {activeTab==="campaigns" && (
           <div>
             {[
-              { name:"Re-engagement — at-risk buyers",    type:"email",  status:"sent",  sent:atRiskCount, opened:62, converted:18, gmv:Math.round(atRiskCount*240) },
+              { name:"Re-engagement: at-risk buyers",    type:"email",  status:"sent",  sent:atRiskCount, opened:62, converted:18, gmv:Math.round(atRiskCount*240) },
               { name:"VIP early access notice",           type:"sms",    status:"sent",  sent:vipCount,    opened:91, converted:68, gmv:Math.round(vipCount*890) },
               { name:"New inventory drop",                type:"ig_dm",  status:"draft", sent:0,           opened:0,  converted:0,  gmv:0 },
             ].map((c,i)=>{
@@ -11463,7 +11463,7 @@ function ScreenSellerDetail({ persona, params, navigate }) {
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{c.name}</div>
                     {c.status==="sent" && <div style={{ fontSize:10, color:C.muted }}>{c.sent} sent · {c.opened}% opened · {c.converted}% converted</div>}
-                    {c.status==="draft" && <div style={{ fontSize:10, color:C.subtle }}>Draft — not yet sent</div>}
+                    {c.status==="draft" && <div style={{ fontSize:10, color:C.subtle }}>Draft: not yet sent</div>}
                   </div>
                   {c.status==="sent" && c.gmv>0 && (
                     <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:"#10b981" }}>${c.gmv.toLocaleString()}</div>
@@ -11524,7 +11524,7 @@ function ScreenNetworkAnalytics({ persona }) {
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
         {/* GMV trend */}
         <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-          <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Network GMV — 8 Month Trend</div>
+          <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Network GMV: 8 Month Trend</div>
           <svg width="100%" height="100" viewBox="0 0 420 100" preserveAspectRatio="none">
             <defs>
               <linearGradient id="nettrend" x1="0" y1="0" x2="0" y2="1">
@@ -11655,7 +11655,7 @@ function ScreenTeam({ persona }) {
     Manager:  "Edit sellers, campaigns, buyers, shows",
     Analyst:  "View analytics across network",
     Support:  "View buyers and handle support",
-    Producer: "Production, shows & live — Pro+ sellers only",
+    Producer: "Production, shows & live: Pro+ sellers only",
   };
 
   const openEdit = (m) => {
@@ -12187,7 +12187,7 @@ function ScreenWhiteLabel({ persona }) {
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
       <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>White Label</div>
-      <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Your sellers experience your brand — Streamlive is invisible.</div>
+      <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Your sellers experience your brand: Streamlive is invisible.</div>
 
       <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
         {/* Config */}
@@ -12300,7 +12300,7 @@ function ScreenWhiteLabel({ persona }) {
               </div>
             </div>
           </div>
-          <div style={{ fontSize:10, color:C.subtle, textAlign:"center", marginTop:8 }}>Live preview — what your sellers see</div>
+          <div style={{ fontSize:10, color:C.subtle, textAlign:"center", marginTop:8 }}>Live preview: what your sellers see</div>
         </div>
       </div>
     </div>
@@ -12366,7 +12366,7 @@ function ScreenUpgrade({ feature, persona, navigate, openCheckout }) {
             <button
               onClick={()=>openCheckout&&openCheckout(nextPlan)}
               style={{ background:`linear-gradient(135deg,${nextColor},${nextColor}cc)`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"12px 28px", borderRadius:10, cursor:"pointer" }}>
-              Upgrade to {planName} — {planPrice}/mo →
+              Upgrade to {planName}: {planPrice}/mo →
             </button>
             <button onClick={()=>navigate("settings")} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:13, fontWeight:600, padding:"12px 20px", borderRadius:10, cursor:"pointer" }}>
               View Plan Details
@@ -12392,7 +12392,7 @@ function ScreenUpgrade({ feature, persona, navigate, openCheckout }) {
                   )}
                   <div style={{ fontSize:11, fontWeight:700, color:p.color, marginBottom:2 }}>{p.label}</div>
                   <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:C.text, marginBottom:8 }}>{p.price}</div>
-                  <div style={{ fontSize:18 }}>{hasFeature ? "✓" : "—"}</div>
+                  <div style={{ fontSize:18 }}>{hasFeature ? "✓" : ":"}</div>
                   <div style={{ fontSize:9, color:hasFeature?p.color:C.subtle, fontWeight:700, marginTop:2 }}>{hasFeature?"Included":"Not included"}</div>
                 </div>
               );
@@ -12475,7 +12475,7 @@ function ScreenAcceptInvite({ token }) {
     await new Promise(r => setTimeout(r, 1800));
 
     try {
-      // Store new user credentials (hashed representation — never store plaintext in real app)
+      // Store new user credentials (hashed representation: never store plaintext in real app)
       const userId = "user_" + Date.now().toString(36);
       const userData = {
         id:          userId,
@@ -12522,7 +12522,7 @@ function ScreenAcceptInvite({ token }) {
   const ROLE_DESC = {
     "Owner":              "Full access to everything",
     "Admin":              "Manage shows, buyers, campaigns, and settings",
-    "Producer":           "Production suite, shows & live companion — Pro+ sellers only",
+    "Producer":           "Production suite, shows & live companion: Pro+ sellers only",
     "Show Manager":       "Run live shows and manage orders",
     "Campaign Manager":   "Create and send campaigns",
     "Viewer":             "Read-only access to all sections",
@@ -12731,13 +12731,13 @@ export default function StreamlivePrototype() {
   // Persist the active live session so navigating away and back restores it
   const [liveSession, setLiveSession] = useState(null); // null = no show running
 
-  // Check for invite token in URL — render accept screen instead of app
+  // Check for invite token in URL: render accept screen instead of app
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
   if (urlInviteToken) {
     return <ScreenAcceptInvite token={urlInviteToken} />;
   }
 
-  // Check for ?live= param — decode and render Live Shop directly (cross-browser sharing)
+  // Check for ?live= param: decode and render Live Shop directly (cross-browser sharing)
   const urlLiveParam = new URLSearchParams(window.location.search).get("live");
   if (urlLiveParam) {
     try {
@@ -12752,7 +12752,7 @@ export default function StreamlivePrototype() {
       };
       return <ScreenLiveShop navigate={() => {}} params={liveParams} persona={liveParams.persona} />;
     } catch(e) {
-      // Bad param — fall through to normal app
+      // Bad param: fall through to normal app
     }
   }
 
@@ -12760,7 +12760,7 @@ export default function StreamlivePrototype() {
   const buyers   = BUYERS_BY_PERSONA[personaId] || [];
 
   const navigate = (screen, newParams={}) => {
-    // Starting a live show — persist the session
+    // Starting a live show: persist the session
     if (screen === "live") {
       // Stamp showStartTime now and write to localStorage so ALL tabs stay in sync
       const t = newParams.showStartTime || Date.now();
@@ -12770,14 +12770,14 @@ export default function StreamlivePrototype() {
             localStorage.setItem("STRMLIVE_SHOW_ORDER", JSON.stringify((session.runOrder || []).map(p=>p.id))); } catch(e) {}
       setLiveSession(session);
     }
-    // Ending a show — clear the session
+    // Ending a show: clear the session
     if (screen === "order-review") {
       try { localStorage.removeItem("STRMLIVE_SHOW_START");
             localStorage.removeItem("STRMLIVE_SHOW_TIMINGS");
             localStorage.removeItem("STRMLIVE_SHOW_ORDER"); } catch(e) {}
       setLiveSession(null);
     }
-    // Clicking Shows nav while a show is live — jump back into it
+    // Clicking Shows nav while a show is live: jump back into it
     if (screen === "shows" && liveSession) {
       setView("live");
       setParams(liveSession);
@@ -13030,7 +13030,7 @@ export default function StreamlivePrototype() {
               </>
             )}
 
-            {/* USER — always visible at bottom */}
+            {/* USER: always visible at bottom */}
             <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 10px 4px", borderTop:`1px solid ${C.border}`, marginTop:4 }}>
               <Avatar initials={persona.avatar} color={persona.planColor} size={28} />
               <div style={{ flex:1, minWidth:0 }}>
