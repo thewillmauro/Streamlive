@@ -227,6 +227,7 @@ function Landing() {
       current += orderAmt
       if (current >= 10000) {
         setLiveGmv(0)
+        setLiveViewers({ WN: 234, TT: 891, IG: 312, AM: 156, YT: 420 })
         current = 0
       } else {
         setLiveGmv(current)
