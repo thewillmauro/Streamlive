@@ -380,13 +380,10 @@ const STRIPE_LINKS = {
 // Enterprise: https://strmlive.com/welcome?plan=enterprise
 
 // ─── INTERCOM ─────────────────────────────────────────────────────────────────
-const INTERCOM_APP_ID = 'zyj40439'
-
+// Intercom is booted via index.html. Just call update() with user identity.
 function bootIntercom(persona) {
-  const settings = {
-    app_id: INTERCOM_APP_ID,
-    background_color: '#7c3aed',
-    action_color: '#7c3aed',
+  if (typeof window.Intercom !== 'function') return
+  window.Intercom('update', {
     name: persona.name,
     email: persona.email,
     user_id: persona.id,
@@ -399,32 +396,7 @@ function bootIntercom(persona) {
     platforms: (persona.platforms || []).join(', '),
     buyer_count: persona.buyerCount,
     show_count: persona.showCount,
-  }
-
-  // Session already booted (came from landing page) — just update with user identity
-  if (window._intercomBooted) {
-    window.Intercom('update', settings)
-    return
-  }
-
-  // Script loaded but not yet booted — boot now with identity
-  if (typeof window.Intercom === 'function') {
-    window._intercomBooted = true
-    window.Intercom('boot', settings)
-    return
-  }
-
-  // Direct navigation to /app — inject script fresh, boot with identity
-  const i = function() { i.c(arguments) }; i.q = []; i.c = function(a) { i.q.push(a) }
-  window.Intercom = i
-  const s = document.createElement('script')
-  s.async = true
-  s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
-  s.onload = () => {
-    window._intercomBooted = true
-    window.Intercom('boot', settings)
-  }
-  document.head.appendChild(s)
+  })
 }
 
 const PLAN_META = {
