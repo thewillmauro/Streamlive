@@ -554,6 +554,30 @@ const UPCOMING_SHOW = {
 };
 
 // ─── NAV ITEMS ────────────────────────────────────────────────────────────────
+// ─── STORAGE SHIM ─────────────────────────────────────────────────────────────
+// storage is the Claude artifact API — only available inside claude.ai.
+// On Vercel (production), we fall back to localStorage so cross-screen state
+// (device connections, platform connections, team data) persists correctly.
+const storage = {
+  get: async (key) => {
+    try {
+      const val = localStorage.getItem("strmlive__" + key);
+      if (val === null) return null;
+      return { key, value: val };
+    } catch(e) { return null; }
+  },
+  set: async (key, value) => {
+    try {
+      localStorage.setItem("strmlive__" + key, value);
+      return { key, value };
+    } catch(e) { return null; }
+  },
+  delete: async (key) => {
+    try { localStorage.removeItem("strmlive__" + key); } catch(e) {}
+    return { key, deleted: true };
+  },
+};
+
 const NAV = [
   { id:"dashboard",   label:"Dashboard",   icon:"⬡",  route:"/dashboard" },
   { id:"analytics",   label:"Analytics",   icon:"◑",  route:"/analytics" },
@@ -3226,7 +3250,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
     (async () => {
       // Load physical device connections set in Production Suite
       try {
-        const devResult = await window.storage.get("strmlive:devices");
+        const devResult = await storage.get("strmlive:devices");
         if (devResult?.value) {
           const saved = JSON.parse(devResult.value);
           setLiveDevices(saved);
@@ -3234,7 +3258,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
       } catch(e) {}
       // Load platform connections set in Settings
       try {
-        const connResult = await window.storage.get("strmlive:connections");
+        const connResult = await storage.get("strmlive:connections");
         if (connResult?.value) setPlatformConnections(JSON.parse(connResult.value));
       } catch(e) {}
     })();
@@ -3246,7 +3270,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
       const wasConnected = prev[id]?.connected;
       const updated = { ...prev, [id]: { connected: !wasConnected } };
       setTimeout(() => {
-        try { window.storage?.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{}); } catch(e) {}
+        try { storage?.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{}); } catch(e) {}
       }, 0);
       return updated;
     });
@@ -3642,7 +3666,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                               onClick={() => setLiveDevices(prev => {
                                 const updated = { ...prev, [dev.id]: { ...prev[dev.id], active: !active } };
                                 setTimeout(() => {
-                                  try { window.storage?.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{}); } catch(e) {}
+                                  try { storage?.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{}); } catch(e) {}
                                 }, 0);
                                 return updated;
                               })}
@@ -6020,7 +6044,7 @@ function TeamTab({ persona, openCheckout }) {
   useEffect(() => {
     (async () => {
       try {
-        const result = await window.storage.get("strmlive:team");
+        const result = await storage.get("strmlive:team");
         if (result?.value) setTeamMembers(JSON.parse(result.value));
       } catch(e) {}
     })();
@@ -6028,7 +6052,7 @@ function TeamTab({ persona, openCheckout }) {
 
   const persistTeam = async (members) => {
     setTeamMembers(members);
-    try { await window.storage.set("strmlive:team", JSON.stringify(members)); } catch(e) {}
+    try { await storage.set("strmlive:team", JSON.stringify(members)); } catch(e) {}
   };
 
   const sendInvite = async () => {
@@ -6055,7 +6079,7 @@ function TeamTab({ persona, openCheckout }) {
     };
 
     // ── Persist the pending invite record (used by acceptance screen) ─────────
-    await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
+    await storage.set(`strmlive:invite:${token}`, JSON.stringify({
       token,
       name:      newMember.name,
       email:     newMember.email,
@@ -6071,7 +6095,7 @@ function TeamTab({ persona, openCheckout }) {
     // ── Read SMTP credentials from stored connections ──────────────────────────
     let smtpCreds = null;
     try {
-      const connResult = await window.storage.get("strmlive:connections");
+      const connResult = await storage.get("strmlive:connections");
       if (connResult?.value) {
         const conns = JSON.parse(connResult.value);
         if (conns.email) {
@@ -6116,7 +6140,7 @@ function TeamTab({ persona, openCheckout }) {
 
         if (apiRes.ok && result.success) {
           setEmailSendStatus("sent");
-          await window.storage.set(`strmlive:invite_email:${token}`, JSON.stringify({
+          await storage.set(`strmlive:invite_email:${token}`, JSON.stringify({
             to:        newMember.email,
             subject:   `${persona.name} invited you to ${persona.shop} on Streamlive`,
             sentAt:    now,
@@ -6193,8 +6217,8 @@ function TeamTab({ persona, openCheckout }) {
                   <button
                     onClick={async ()=>{
                       try {
-                        const emailData = await window.storage.get(`strmlive:invite_email:${m.token}`);
-                        const inviteData = await window.storage.get(`strmlive:invite:${m.token}`);
+                        const emailData = await storage.get(`strmlive:invite_email:${m.token}`);
+                        const inviteData = await storage.get(`strmlive:invite:${m.token}`);
                         if (inviteData?.value) {
                           const inv = JSON.parse(inviteData.value);
                           const link = `${window.location.origin}${window.location.pathname}?invite=${m.token}`;
@@ -6481,7 +6505,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
   useEffect(() => {
     (async () => {
       try {
-        const result = await window.storage.get("strmlive:connections");
+        const result = await storage.get("strmlive:connections");
         if (result?.value) {
           setConnections(JSON.parse(result.value));
         }
@@ -6495,7 +6519,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
   const saveConnections = async (updated) => {
     setConnections(updated);
     try {
-      await window.storage.set("strmlive:connections", JSON.stringify(updated));
+      await storage.set("strmlive:connections", JSON.stringify(updated));
     } catch(e) {}
   };
 
@@ -9760,7 +9784,7 @@ function ScreenProduction({ persona, navigate }) {
   useEffect(() => {
     (async () => {
       try {
-        const result = await window.storage.get("strmlive:devices");
+        const result = await storage.get("strmlive:devices");
         if (result?.value) {
           const saved = JSON.parse(result.value);
           setDevices(prev => prev.map(d => saved[d.id]
@@ -9772,11 +9796,11 @@ function ScreenProduction({ persona, navigate }) {
     })();
   }, []);
 
-  // Persist device connection state to shared storage (window.storage) so Live Show can read it
+  // Persist device connection state to shared storage (storage) so Live Show can read it
   const saveDevices = async (updated) => {
     try {
       const toSave = Object.fromEntries(updated.map(d => [d.id, { connected: d.connected, battery: d.battery, signal: d.signal }]));
-      await window.storage.set("strmlive:devices", JSON.stringify(toSave));
+      await storage.set("strmlive:devices", JSON.stringify(toSave));
     } catch(e) {}
   };
 
@@ -11571,7 +11595,7 @@ function ScreenTeam({ persona }) {
     const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
     const link  = `${window.location.origin}${window.location.pathname}?invite=${token}`;
     try {
-      await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
+      await storage.set(`strmlive:invite:${token}`, JSON.stringify({
         token, workspace: persona.shop, invitedBy: persona.name,
         name: inviteName.trim(), email: inviteEmail.trim().toLowerCase(),
         role: inviteRole, invitedAt: new Date().toISOString(),
@@ -12337,7 +12361,7 @@ function ScreenAcceptInvite({ token }) {
     (async () => {
       if (!token) { setStep("invalid"); return; }
       try {
-        const result = await window.storage.get(`strmlive:invite:${token}`);
+        const result = await storage.get(`strmlive:invite:${token}`);
         if (!result?.value) { setStep("invalid"); return; }
         const inv = JSON.parse(result.value);
         if (inv.status === "accepted") { setStep("already_accepted"); setInvite(inv); return; }
@@ -12345,7 +12369,7 @@ function ScreenAcceptInvite({ token }) {
         setDisplayName(inv.name);
         // Load email preview if available
         try {
-          const emailResult = await window.storage.get(`strmlive:invite_email:${token}`);
+          const emailResult = await storage.get(`strmlive:invite_email:${token}`);
           if (emailResult?.value) setEmailData(JSON.parse(emailResult.value));
         } catch(e) {}
         setStep("form");
@@ -12377,10 +12401,10 @@ function ScreenAcceptInvite({ token }) {
         passwordSet: true,
       };
 
-      await window.storage.set(`strmlive:user:${invite.email}`, JSON.stringify(userData));
+      await storage.set(`strmlive:user:${invite.email}`, JSON.stringify(userData));
 
       // Mark invite as accepted
-      await window.storage.set(`strmlive:invite:${token}`, JSON.stringify({
+      await storage.set(`strmlive:invite:${token}`, JSON.stringify({
         ...invite,
         status:     "accepted",
         acceptedAt: new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }),
@@ -12389,13 +12413,13 @@ function ScreenAcceptInvite({ token }) {
 
       // Update the team member record in the workspace owner's team list
       try {
-        const teamResult = await window.storage.get("strmlive:team");
+        const teamResult = await storage.get("strmlive:team");
         if (teamResult?.value) {
           const team = JSON.parse(teamResult.value);
           const updated = team.map(m =>
             m.token === token ? { ...m, status:"active", userId, name:displayName.trim() } : m
           );
-          await window.storage.set("strmlive:team", JSON.stringify(updated));
+          await storage.set("strmlive:team", JSON.stringify(updated));
         }
       } catch(e) {}
 
