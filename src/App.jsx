@@ -316,8 +316,14 @@ function Landing() {
   ]
 
   const FAQS = [
-    { q:'Free during beta?', a:'Yes. Full access, no credit card. Paid plans launch at MVP: join now to lock in founding-member pricing.' },
-    { q:'Which platforms?', a:'Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. Stream all five simultaneously. One buyer CRM for all of them.' },
+    { q:'Do I actually stream to all 5 platforms at the same time?', a:'Yes. One stream out, five platforms live simultaneously. Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. Streamlive handles the multistream routing so you can focus on selling.' },
+    { q:'How does the Host Briefing work?', a:'The Briefing is a companion window you open on a second screen or tablet while you sell. It shows your current product, countdown timer, and AI-generated talking points that auto-advance with your run order so you always know what to say next.' },
+    { q:'What problem does the Live Command Center actually solve?', a:'Right now most sellers have to watch 5 different browser tabs to track who is buying on which platform. The Command Center gives you one live feed: real-time GMV, buyer names across all platforms, and VIP alerts as orders land.' },
+    { q:'How does attribution work across platforms?', a:'Each order is matched to a buyer profile in your CRM using platform ID, email, and order timing. For YouTube, Streamlive uses a lightweight pixel installed on your Shopify store that ties sessions back to specific shows. Attribution accuracy sits at 99% across all five platforms.' },
+    { q:'What does the Production Suite actually control?', a:'Camera switching (Sony FX3, FX6, and others), lighting levels for Elgato, Aputure, and Godox fixtures, and OBS scene changes via WebSocket. All from one panel. You set up automation rules so your lighting and scenes switch automatically as your run order advances.' },
+    { q:'What insights does Streamlive generate after each show?', a:'Six AI recommendations scored by confidence and revenue impact. Things like which platform drove the most conversions that show, which products underperformed their AI rank, and which buyers are at risk of churning. Delivered as a report the moment you go offline.' },
+    { q:'Is my buyer data combined across platforms?', a:'Yes. When the same buyer shops on Whatnot and TikTok, Streamlive matches their profiles using email, phone, and behavioral signals. You get one buyer record with full cross-platform purchase history, not five separate lists.' },
+    { q:'What does it cost?', a:'Free during beta. Paid plans start at $79/mo when we launch. Beta users who join now lock in founding-member pricing.' },
   ]
 
 
@@ -838,7 +844,7 @@ function Landing() {
         <div id="pricing" className="pricing-section" style={{ maxWidth:860, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:48 }}>
             <span className="section-label">Pricing</span>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Simple, transparent pricing.</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Priced for sellers, not software companies.</div>
           </div>
 
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, alignItems:'stretch' }}>
