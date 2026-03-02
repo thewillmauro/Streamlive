@@ -304,8 +304,6 @@ function Landing() {
     { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',            desc:'4-tier program. Auto across all platforms.' },
     { icon:'●', color:'#3b82f6', label:'Opt-in Pages',           desc:'Collect email and phone. TCPA-compliant.' },
     { icon:'◧', color:'#10b981', label:'Show Planner',           desc:'AI run order. Perks. Go live in minutes.' },
-    { icon:'🔴', color:'#ff0000', label:'YouTube Live',           desc:'Stream + 99% purchase attribution.' },
-    { icon:'◎', color:'#f59e0b', label:'Live Pixel',             desc:'First-party. No cookies. Every sale tracked.' },
     { icon:'✦', color:'#a78bfa', label:'AI Insights',            desc:'6 confidence-scored recs per show.' },
     { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync',   desc:'All 5 simultaneously. Always in sync.' },
   ]
@@ -611,6 +609,171 @@ function Landing() {
             ))}
           </div>
         </div>
+
+        {/* ── SPOTLIGHT SECTIONS ───────────────────────────────────────────── */}
+        {SPOTLIGHTS.map((s,i)=>(
+          <div key={i} className="spotlight-section" style={{ maxWidth:980, margin:'0 auto' }}>
+            <div className="spotlight-grid" style={{ display:'grid', alignItems:'center' }}>
+              <div className="spotlight-text" style={{ order:s.side==='right'?2:1 }}>
+                <span style={{ fontSize:10, fontWeight:800, letterSpacing:'.14em', textTransform:'uppercase', color:s.color, display:'block', marginBottom:14 }}>{s.tag}</span>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.2vw,34px)', fontWeight:800, color:'#fff', lineHeight:1.15, letterSpacing:'-1px', marginBottom:16, whiteSpace:'pre-line' }}>{s.headline}</div>
+                <p style={{ fontSize:14, color:'#4b5563', lineHeight:1.6, marginBottom:20 }}>{s.desc}</p>
+                <div style={{ display:'flex', gap:24, flexWrap:'wrap' }}>
+                  {s.stats.map(st=>(
+                    <div key={st.label}>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color:s.color, marginBottom:2 }}>{st.value}</div>
+                      <div style={{ fontSize:11, color:'#4b5563' }}>{st.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="spotlight-mockup" style={{ order:s.side==='right'?1:2 }}>
+                <div style={{ background:'linear-gradient(135deg,#0a0a15,#12102a)', border:`1px solid ${s.color}22`, borderRadius:20, padding:'24px', position:'relative', overflow:'hidden' }}>
+                  <div style={{ position:'absolute', top:-20, right:-20, width:160, height:160, borderRadius:'50%', background:s.color, opacity:0.05, filter:'blur(50px)' }} />
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:'#374151', marginBottom:12, textTransform:'uppercase', letterSpacing:'.08em' }}>● Streamlive · {s.tag}</div>
+                  {/* i=0: Plan the Show */}
+                  {i===0 && (
+                    <div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #7c3aed33', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:5, textTransform:'uppercase', letterSpacing:'0.08em' }}>Show Name</div>
+                        <div style={{ fontSize:13, fontWeight:700, color:'#fff' }}>Friday Night Flash Sale ✦</div>
+                      </div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Streaming To</div>
+                        <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                          {[['WN','#7c3aed'],['TT','#f43f5e'],['IG','#ec4899'],['AM','#f59e0b'],['YT','#ff0000']].map(([p,c])=>(
+                            <div key={p} style={{ display:'flex',alignItems:'center',gap:4,background:`${c}15`,border:`1px solid ${c}44`,borderRadius:6,padding:'4px 9px' }}>
+                              <div style={{ width:5,height:5,borderRadius:'50%',background:c }} />
+                              <span style={{ fontSize:9,fontWeight:700,color:c }}>{p}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>AI Run Order</div>
+                        {[{n:'Silk Wrap Midi Dress',ai:9.6},{n:'Merino Wool Blazer',ai:9.4},{n:'Spring Style Bundle',ai:9.2}].map((p,pi)=>(
+                          <div key={p.n} style={{ display:'flex',alignItems:'center',gap:8,marginBottom:5 }}>
+                            <span style={{ fontSize:9,fontWeight:800,color:'#374151',width:12 }}>{pi+1}</span>
+                            <span style={{ fontSize:10,color:'#d1d5db',flex:1 }}>{p.n}</span>
+                            <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:'#7c3aed' }}>{p.ai}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:10, padding:'11px 14px' }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Show Perks</div>
+                        {[{label:'First order 10% off',active:true},{label:'VIP early access (5 min)',active:true},{label:'Bundle unlock at $150+',active:false}].map(pk=>(
+                          <div key={pk.label} style={{ display:'flex',alignItems:'center',gap:7,marginBottom:5 }}>
+                            <div style={{ width:14,height:14,borderRadius:4,background:pk.active?'#7c3aed18':'#1e1e3a',border:`1px solid ${pk.active?'#7c3aed55':'#374151'}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
+                              {pk.active && <span style={{ fontSize:8,color:'#a78bfa' }}>✓</span>}
+                            </div>
+                            <span style={{ fontSize:10,color:pk.active?'#d1d5db':'#374151' }}>{pk.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* i=1: Before the Show - Production */}
+                  {i===1 && (
+                    <div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #f59e0b22', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Camera Feeds</div>
+                        <div style={{ display:'flex', gap:7 }}>
+                          {[{label:'Sony FX3',sub:'Wide · LIVE',active:true},{label:'Sony FX6',sub:'Close-up',active:false}].map(cam=>(
+                            <div key={cam.label} style={{ flex:1, background:cam.active?'#0a1e0a':'#0d0d1e', border:`1px solid ${cam.active?'#10b98144':'#1e1e3a'}`, borderRadius:8, padding:'8px 10px' }}>
+                              <div style={{ display:'flex',alignItems:'center',gap:5,marginBottom:3 }}>
+                                <div style={{ width:5,height:5,borderRadius:'50%',background:cam.active?'#10b981':'#374151',animation:cam.active?'pulse 1s infinite':undefined }} />
+                                <span style={{ fontSize:9,fontWeight:700,color:cam.active?'#10b981':'#4b5563' }}>{cam.label}</span>
+                              </div>
+                              <div style={{ fontSize:8,color:'#4b5563' }}>{cam.sub}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #f59e0b22', borderRadius:10, padding:'11px 14px', marginBottom:8 }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>Lighting</div>
+                        {[{name:'Elgato Key Light',pct:100,temp:'5600K'},{name:'Aputure 300d Fill',pct:65,temp:'4200K'},{name:'Godox Background',pct:40,temp:'3200K'}].map(light=>(
+                          <div key={light.name} style={{ display:'flex',alignItems:'center',gap:8,marginBottom:6 }}>
+                            <span style={{ fontSize:10 }}>💡</span>
+                            <div style={{ flex:1,minWidth:0 }}>
+                              <div style={{ display:'flex',justifyContent:'space-between',marginBottom:3 }}>
+                                <span style={{ fontSize:9,fontWeight:600,color:'#d1d5db' }}>{light.name}</span>
+                                <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:'#f59e0b' }}>{light.pct}%</span>
+                              </div>
+                              <div style={{ height:3,background:'#1e1e3a',borderRadius:2 }}>
+                                <div style={{ height:3,width:`${light.pct}%`,background:'linear-gradient(90deg,#f59e0b,#fbbf24)',borderRadius:2 }} />
+                              </div>
+                            </div>
+                            <span style={{ fontSize:8,color:'#4b5563',fontFamily:"'JetBrains Mono',monospace" }}>{light.temp}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ background:'#0d0d1e', border:'1px solid #f59e0b22', borderRadius:10, padding:'11px 14px' }}>
+                        <div style={{ fontSize:9, color:'#4b5563', marginBottom:7, textTransform:'uppercase', letterSpacing:'0.08em' }}>OBS Scenes</div>
+                        {[{scene:'Product Reveal',active:true},{scene:'Close-Up Shot',active:false},{scene:'Wide Room View',active:false}].map(sc=>(
+                          <div key={sc.scene} style={{ display:'flex',alignItems:'center',gap:7,padding:'6px 8px',background:sc.active?'#f59e0b10':'transparent',border:`1px solid ${sc.active?'#f59e0b33':'transparent'}`,borderRadius:6,marginBottom:4 }}>
+                            <div style={{ width:5,height:5,borderRadius:'50%',background:sc.active?'#f59e0b':'#374151',flexShrink:0 }} />
+                            <span style={{ fontSize:10,color:sc.active?'#fff':'#4b5563',fontWeight:sc.active?600:400 }}>{sc.scene}</span>
+                            {sc.active && <span style={{ marginLeft:'auto',fontSize:8,fontWeight:700,color:'#f59e0b',background:'#f59e0b15',padding:'1px 6px',borderRadius:3 }}>LIVE</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* i=2: During the Show - Live Companion */}
+                  {i===2 && (
+                    <div>
+                      <div style={{ display:'flex', gap:5, marginBottom:12, flexWrap:'wrap' }}>
+                        {[['WN','#7c3aed',312],['TT','#f43f5e',891],['IG','#ec4899',445],['AM','#f59e0b',156],['YT','#ff0000',4200]].map(([p,c,v])=>(
+                          <div key={p} style={{ flex:1, minWidth:40, background:`${c}12`, border:`1px solid ${c}33`, borderRadius:8, padding:'7px 4px', textAlign:'center' }}>
+                            <div style={{ width:5,height:5,borderRadius:'50%',background:c,margin:'0 auto 4px',animation:'pulse 1s infinite' }} />
+                            <div style={{ fontSize:8,fontWeight:800,color:c }}>{p}</div>
+                            <div style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,color:'#fff' }}>{v.toLocaleString()}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, background:'#0a1e1680', border:'1px solid #10b98133', borderRadius:8, padding:'8px 12px', marginBottom:10 }}>
+                        <div style={{ width:6,height:6,borderRadius:'50%',background:'#10b981',animation:'pulse 1s infinite' }} />
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:'#10b981' }}>$2,708 GMV</span>
+                        <span style={{ fontSize:9, color:'#374151' }}>· 10 orders · live</span>
+                      </div>
+                      {[{n:'Marcus Duval',s:9.4,t:'VIP',c:'#f59e0b',p:'AM'},{n:'Olivia Bennett',s:9.1,t:'VIP',c:'#f59e0b',p:'IG'},{n:'Derek Huang',s:6.4,t:'New',c:'#3b82f6',p:'YT'}].map(b=>(
+                        <div key={b.n} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 10px',background:'#0d0d1e',border:'1px solid #14142a',borderRadius:9,marginBottom:6 }}>
+                          <div style={{ width:28,height:28,borderRadius:8,background:'#1e1e3a',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#a78bfa',flexShrink:0 }}>{b.n.split(' ').map(w=>w[0]).join('')}</div>
+                          <div style={{ flex:1 }}><div style={{ fontSize:11,fontWeight:700,color:'#fff' }}>{b.n}</div><div style={{ fontSize:9,color:'#4b5563' }}>Score {b.s}</div></div>
+                          <span style={{ fontSize:8,fontWeight:700,color:b.c,background:`${b.c}15`,border:`1px solid ${b.c}33`,padding:'2px 6px',borderRadius:4 }}>{b.t}</span>
+                          <span style={{ fontSize:8,fontWeight:700,color:({AM:'#f59e0b',IG:'#ec4899',YT:'#ff0000'})[b.p]||'#7c3aed',background:'#14142a',padding:'1px 5px',borderRadius:3 }}>{b.p}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* i=3: After the Show - AI Insights */}
+                  {i===3 && (
+                    <div>
+                      {[
+                        {icon:'💰',pri:'HIGH',title:'YouTube viewers convert 2.1× vs TikTok',impact:'+$3,400 potential',conf:89,c:'#10b981'},
+                        {icon:'⚠️',pri:'HIGH',title:'3 at-risk buyers: re-engage now',impact:'$680 at stake',conf:84,c:'#f59e0b'},
+                        {icon:'📊',pri:'MED',title:'Thursday shows outperform by +$900',impact:'Schedule more Thurs',conf:82,c:'#a78bfa'},
+                        {icon:'🎯',pri:'MED',title:'Live Pixel: 99% of YT sales attributed',impact:'14 orders confirmed',conf:97,c:'#ff0000'},
+                      ].map(ins=>(
+                        <div key={ins.title} style={{ padding:'9px 10px',background:'#0d0d1e',border:`1px solid ${ins.c}22`,borderRadius:9,marginBottom:7,display:'flex',gap:10,alignItems:'flex-start' }}>
+                          <div style={{ width:26,height:26,borderRadius:7,background:`${ins.c}15`,border:`1px solid ${ins.c}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,flexShrink:0 }}>{ins.icon}</div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ display:'flex',gap:6,alignItems:'center',marginBottom:2 }}>
+                              <span style={{ fontSize:8,fontWeight:800,color:ins.c==='#10b981'?'#ef4444':ins.c,textTransform:'uppercase' }}>{ins.pri}</span>
+                              <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:'#a78bfa' }}>{ins.conf}%</span>
+                            </div>
+                            <div style={{ fontSize:10,fontWeight:700,color:'#fff',marginBottom:2 }}>{ins.title}</div>
+                            <div style={{ fontSize:9,color:'#10b981',fontWeight:600 }}>{ins.impact}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
 
         {/* ── DEMO CTA ─────────────────────────────────────────────────────── */}
         <div style={{ maxWidth:900, margin:'0 auto', padding:'56px 24px 0' }}>
