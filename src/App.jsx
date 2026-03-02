@@ -3051,9 +3051,10 @@ function LiveCursor() {
     styleEl.id = 'live-cursor-hide';
     styleEl.textContent = `
       html, body { cursor: none !important; }
-      *:not(button):not(a):not(input):not(select):not(textarea):not([role="button"]) { cursor: none !important; }
+      *:not(button):not(a):not(input):not(select):not(textarea):not([role="button"]):not([id*="intercom"]):not([class*="intercom"]) { cursor: none !important; }
       button, a, input, select, textarea, [role="button"], label { cursor: pointer !important; }
       button:disabled, input[type="text"]:not([disabled]), input[type="email"]:not([disabled]) { cursor: default !important; }
+      [id*="intercom"], [id*="intercom"] *, [class*="intercom"], [class*="intercom"] * { cursor: auto !important; }
     `;
     document.head.appendChild(styleEl);
 

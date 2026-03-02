@@ -5,7 +5,8 @@ const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #06060e; }
-  *, *:focus, *:active { cursor: none !important; }
+  *:not(iframe):not([id*="intercom"]):not([class*="intercom"]), *:not(iframe):not([id*="intercom"]):not([class*="intercom"]):focus { cursor: none !important; }
+  [id*="intercom"], [id*="intercom"] *, [class*="intercom"], [class*="intercom"] * { cursor: auto !important; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 99px; }
@@ -392,7 +393,6 @@ function bootIntercom(persona) {
     company: {
       company_id: persona.slug,
       name: persona.shop,
-      plan: persona.plan,
     },
     plan: persona.plan,
     shop: persona.shop,
@@ -401,31 +401,21 @@ function bootIntercom(persona) {
     show_count: persona.showCount,
   }
 
-  // Script already injected — just boot or update
-  if (document.querySelector(`script[src*="${INTERCOM_APP_ID}"]`)) {
-    if (typeof window.Intercom === 'function') {
-      window.Intercom('boot', settings)
-    }
-    return
-  }
-
-  // First load — inject script, then boot on load
-  const boot = () => window.Intercom('boot', settings)
-
+  // Already loaded — shutdown anonymous session, boot fresh with identity
   if (typeof window.Intercom === 'function') {
-    // Already loaded — shutdown previous session then reboot with new identity
     window.Intercom('shutdown')
-    boot()
+    // Brief defer so shutdown completes before booting the new session
+    setTimeout(() => window.Intercom('boot', settings), 50)
     return
   }
 
-  // First load — stub queue, inject script, boot on load
+  // First load — inject script, boot once it loads
   const i = function() { i.c(arguments) }; i.q = []; i.c = function(a) { i.q.push(a) }
   window.Intercom = i
   const s = document.createElement('script')
   s.async = true
   s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
-  s.onload = boot
+  s.onload = () => window.Intercom('boot', settings)
   document.head.appendChild(s)
 }
 
