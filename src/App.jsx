@@ -97,6 +97,8 @@ const GLOBAL_CSS = `
   .fade-a4 { animation: fadeUp .55s .34s ease both; }
   .fade-a5 { animation: fadeUp .55s .44s ease both; }
   .pop     { animation: pop .4s ease both; }
+  .mobile-menu       { display:none; }
+  .mobile-menu.open  { display:flex; flex-direction:column; }
   .feat-card:hover { border-color:#7c3aed88 !important; transform:translateY(-3px); box-shadow:0 12px 40px rgba(124,58,237,.12); }
   .feat-card       { transition:all .2s ease; }
   .plan-card:hover { transform:translateY(-3px); box-shadow:0 16px 48px rgba(0,0,0,.4); }
@@ -328,66 +330,77 @@ function Landing() {
 
 
   const MOBILE_CSS = `
-    .nav-links         { display:flex; }
-    .nav-hamburger     { display:none; }
-    .mobile-menu       { display:none; }
-    .mobile-menu.open  { display:flex; flex-direction:column; }
+    /* ── BASE (mobile-first defaults applied via class) ── */
     .hero-wrap         { padding:72px 24px 56px; }
     .hero-input-row    { flex-direction:row; }
-    .hero-input        { width:300px; }
+    .hero-input        { width:280px; }
     .hero-platforms    { gap:8px; }
     .stats-grid        { grid-template-columns:repeat(4,1fr); }
     .stat-divider      { border-right:1px solid #14142a; }
     .preview-wrap      { padding:72px 40px 0; }
     .features-section  { padding:88px 40px 0; }
-    .features-grid     { grid-template-columns:repeat(3,1fr); }
+    .features-grid     { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
     .spotlight-section { padding:88px 40px 0; }
     .spotlight-grid    { grid-template-columns:1fr 1fr; gap:56px; }
     .spotlight-text    { order:inherit; }
     .spotlight-mockup  { order:inherit; }
     .pricing-section   { padding:96px 40px 0; }
-    .pricing-grid      { grid-template-columns:repeat(3,1fr); gap:16px; }
-    .enterprise-row    { flex-direction:row; }
+    .pricing-grid      { grid-template-columns:repeat(3,1fr); gap:16px; margin:0 auto; }
     .faq-section       { padding:88px 40px 0; }
     .cta-section       { padding:88px 40px 80px; }
     .cta-btns          { flex-direction:row; }
     .footer-grid       { grid-template-columns:1fr 1fr 1fr 1fr; gap:32px; }
     .footer-inner      { padding:36px 40px; }
+    .shopify-strip     { flex-direction:row; gap:10px; }
+    .shopify-divider   { display:block; }
+    .shopify-desc      { display:block; }
+    .shopify-stats     { display:flex; }
+    .viewer-label      { display:inline; }
 
-    @media (max-width: 860px) {
-      .pricing-grid    { grid-template-columns:repeat(3,1fr); }
+    /* ── TABLET ── */
+    @media (max-width:860px) {
+      .pricing-grid    { grid-template-columns:1fr; gap:14px; max-width:400px; margin:0 auto; }
+      .spotlight-grid  { gap:36px; }
     }
-    @media (max-width: 700px) {
-      .nav-links       { display:none; }
-      .nav-hamburger   { display:flex; }
-      .hero-wrap       { padding:56px 20px 44px; }
-      .hero-input-row  { flex-direction:column; align-items:stretch; }
-      .hero-input      { width:100%; }
-      .hero-platforms  { gap:6px; flex-wrap:wrap; }
-      .stats-grid      { grid-template-columns:repeat(2,1fr); }
-      .stat-divider    { border-right:none; }
-      .stat-item       { border-bottom:1px solid #14142a; padding-bottom:20px !important; }
+
+    /* ── MOBILE ── */
+    @media (max-width:700px) {
+      .nav-links         { display:none; }
+      .nav-hamburger     { display:flex; }
+      .hero-wrap         { padding:48px 20px 36px; }
+      .hero-input-row    { flex-direction:column; align-items:stretch; }
+      .hero-input        { width:100%; }
+      .hero-platforms    { gap:6px; flex-wrap:wrap; }
+      .stats-grid        { grid-template-columns:repeat(2,1fr); }
+      .stat-divider      { border-right:none; }
+      .stat-item         { border-bottom:1px solid #14142a; padding-bottom:20px !important; }
       .stat-item:nth-child(3), .stat-item:nth-child(4) { border-bottom:none; }
-      .preview-wrap    { padding:56px 20px 0; }
-      .features-section { padding:64px 20px 0; }
-      .features-grid   { grid-template-columns:1fr; gap:10px; }
-      .spotlight-section { padding:64px 20px 0; }
-      .spotlight-grid  { grid-template-columns:1fr; gap:32px; }
-      .spotlight-text  { order:2 !important; }
-      .spotlight-mockup { order:1 !important; }
-      .pricing-section { padding:64px 20px 0; }
-      .pricing-grid    { grid-template-columns:1fr; gap:16px; }
-      .enterprise-row  { flex-direction:column; gap:16px; }
-      .faq-section     { padding:64px 20px 0; }
-      .cta-section     { padding:64px 20px 64px; }
-      .cta-btns        { flex-direction:column; align-items:stretch; }
-      .cta-btns button { width:100%; }
-      .footer-grid     { grid-template-columns:1fr 1fr; gap:28px; }
-      .footer-inner    { padding:28px 20px; }
+      .preview-wrap      { padding:48px 20px 0; }
+      .features-section  { padding:56px 20px 0; }
+      .features-grid     { grid-template-columns:repeat(2,1fr); gap:8px; }
+      .spotlight-section { padding:56px 20px 0; }
+      .spotlight-grid    { grid-template-columns:1fr; gap:24px; }
+      .spotlight-text    { order:2 !important; }
+      .spotlight-mockup  { order:1 !important; max-height:320px; overflow:hidden; }
+      .pricing-section   { padding:56px 20px 0; }
+      .pricing-grid      { grid-template-columns:1fr; gap:14px; max-width:100%; }
+      .faq-section       { padding:56px 20px 0; }
+      .cta-section       { padding:56px 20px 56px; }
+      .cta-btns          { flex-direction:column; align-items:stretch; }
+      .cta-btns button   { width:100%; }
+      .footer-grid       { grid-template-columns:1fr 1fr; gap:28px; }
+      .footer-inner      { padding:28px 20px; }
+      .shopify-strip     { flex-direction:column; gap:12px; align-items:center; text-align:center; }
+      .shopify-divider   { display:none; }
+      .shopify-desc      { font-size:12px; }
+      .shopify-stats     { justify-content:center; gap:16px; }
+      .viewer-label      { display:none; }
     }
-    @media (max-width: 420px) {
-      .footer-grid     { grid-template-columns:1fr; gap:24px; }
-      .pricing-grid    { gap:12px; }
+
+    @media (max-width:420px) {
+      .footer-grid  { grid-template-columns:1fr; gap:24px; }
+      .features-grid { grid-template-columns:1fr; }
+      .hero-wrap    { padding:40px 16px 28px; }
     }
   `
 
@@ -483,7 +496,7 @@ function Landing() {
                 <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:'#fff' }}>
                   {Object.values(liveViewers).reduce((a,v)=>a+v,0).toLocaleString()}
                 </span>
-                <span style={{ fontSize:11, color:'#6b7280' }}>viewers across 5 platforms</span>
+                <span className="viewer-label" style={{ fontSize:11, color:'#6b7280' }}>viewers across 5 platforms</span>
               </div>
               <div style={{ display:'flex', gap:5, flexWrap:'wrap', justifyContent:'center' }}>
                 {[
@@ -508,17 +521,17 @@ function Landing() {
 
         {/* ── SHOPIFY CONNECTION STRIP ─────────────────────────────────────── */}
         <div className="fade-a5" style={{ display:'flex', justifyContent:'center', padding:'20px 24px 0' }}>
-          <div style={{ display:'inline-flex', alignItems:'center', gap:10, background:'#07070f', border:'1px solid #1a1a2e', borderRadius:12, padding:'10px 20px', flexWrap:'wrap', justifyContent:'center' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <div className="shopify-strip" style={{ display:'inline-flex', alignItems:'center', background:'#07070f', border:'1px solid #1a1a2e', borderRadius:12, padding:'12px 20px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:7, flexShrink:0 }}>
               <div style={{ width:24, height:24, borderRadius:7, background:'#96bf48', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, flexShrink:0 }}>🛍</div>
               <span style={{ fontSize:12, fontWeight:700, color:'#96bf48' }}>Shopify</span>
               <div style={{ width:5, height:5, borderRadius:'50%', background:'#10b981', animation:'pulse 1.2s infinite', flexShrink:0 }} />
               <span style={{ fontSize:11, color:'#10b981', fontWeight:600 }}>Connected</span>
             </div>
-            <div style={{ width:1, height:18, background:'#1e1e3a' }} />
-            <span style={{ fontSize:11, color:'#4b5563' }}>Orders, products, and buyer history sync automatically.</span>
-            <div style={{ width:1, height:18, background:'#1e1e3a' }} />
-            <div style={{ display:'flex', gap:8 }}>
+            <div className="shopify-divider" style={{ width:1, height:18, background:'#1e1e3a', margin:'0 10px' }} />
+            <span className="shopify-desc" style={{ fontSize:11, color:'#4b5563' }}>Orders, products, and buyer history sync automatically.</span>
+            <div className="shopify-divider" style={{ width:1, height:18, background:'#1e1e3a', margin:'0 10px' }} />
+            <div className="shopify-stats" style={{ display:'flex', gap:16 }}>
               {[{label:'Orders synced', val:'1,284'},{label:'Products', val:'94'},{label:'Buyers matched', val:'612'}].map(s=>(
                 <div key={s.label} style={{ textAlign:'center' }}>
                   <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:'#fff' }}>{s.val}</div>
@@ -561,11 +574,11 @@ function Landing() {
 
 
         {/* ── FEATURES GRID ────────────────────────────────────────────────── */}
-        <div id="features" style={{ maxWidth:900, margin:'0 auto', padding:'72px 24px 0' }}>
+        <div id="features" className="features-section" style={{ maxWidth:900, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:32 }}>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px' }}>Everything in one platform.</div>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:8 }}>
+          <div className="features-grid" style={{ display:'grid', gap:8 }}>
             {FEATURES.map(f=>(
               <div key={f.label} style={{ display:'flex', alignItems:'center', gap:10, background:'#08080f', border:'1px solid #14142a', borderRadius:12, padding:'12px 14px' }}>
                 <div style={{ width:28, height:28, borderRadius:8, background:`${f.color}15`, border:`1px solid ${f.color}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, color:f.color, flexShrink:0 }}>{f.icon}</div>
@@ -576,8 +589,8 @@ function Landing() {
         </div>
 
         {/* ── SHOW STAGES ─────────────────────────────────────────────────── */}
-        <div style={{ maxWidth:900, margin:'0 auto', padding:'72px 24px 0' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:10 }}>
+        <div className="features-section" style={{ maxWidth:900, margin:'0 auto' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:10 }}>
             {[
               { num:'01', tag:'PLAN', label:'Show Planner', bullets:['AI-ranked run order','Perks & bundle config','Multi-platform in one click'], color:'#7c3aed' },
               { num:'02', tag:'SETUP', label:'Production Suite', bullets:['Camera & lighting control','OBS scene switching','All gear, one panel'], color:'#f59e0b' },
@@ -739,7 +752,7 @@ function Landing() {
                   )}
                   {/* i=3: Host Briefing */}
                   {i===3 && (
-                    <div style={{ display:'flex', gap:10, height:'100%' }}>
+                    <div style={{ display:'flex', gap:10, minHeight:0 }}>
                       <div style={{ width:110, flexShrink:0, background:'#07070f', border:'1px solid #1e1e3a', borderRadius:10, overflow:'hidden' }}>
                         <div style={{ padding:'8px 10px', borderBottom:'1px solid #1e1e3a' }}>
                           <div style={{ fontSize:8, fontWeight:800, color:'#38bdf8', textTransform:'uppercase', letterSpacing:'.1em' }}>📋 Run Order</div>
@@ -851,7 +864,7 @@ function Landing() {
         ))}
 
         {/* ── DEMO CTA ─────────────────────────────────────────────────────── */}
-        <div style={{ maxWidth:900, margin:'0 auto', padding:'56px 24px 0' }}>
+        <div className="features-section" style={{ maxWidth:900, margin:'0 auto' }}>
           <div style={{ background:'linear-gradient(135deg,#0d0d1e,#12103a)', border:'1px solid #7c3aed33', borderRadius:18, padding:'32px', textAlign:'center', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', top:-40, right:-40, width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.06, filter:'blur(60px)' }} />
             <div style={{ fontSize:11, fontWeight:800, color:'#a78bfa', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>Every screen is live right now</div>
@@ -870,7 +883,7 @@ function Landing() {
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Stream five platforms. Pay one bill.</div>
           </div>
 
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, alignItems:'stretch' }}>
+          <div className="pricing-grid" style={{ display:'grid', alignItems:'stretch' }}>
             {Object.values(PLANS).map(p=>(
               <div key={p.id} style={{ background:p.popular?'linear-gradient(180deg,#130e2a,#0c0a1e)':'#08080f', border:`1px solid ${p.popular?p.color+'55':'#1a1a2e'}`, borderRadius:20, padding:'28px 24px', position:'relative', display:'flex', flexDirection:'column', boxShadow:p.popular?`0 0 40px ${p.color}18`:'none' }}>
                 {p.popular && (
@@ -940,7 +953,7 @@ function Landing() {
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(26px,4.5vw,48px)', fontWeight:800, color:'#fff', letterSpacing:'-1.5px', lineHeight:1.1, marginBottom:24 }}>
             <span className="gradient-text">Ready to go live?</span>
           </div>
-          <div style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:12, flexWrap:'wrap' }}>
+          <div className="cta-btns" style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:12 }}>
             {!submitted ? (
               <>
                 <input value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSubmit()} placeholder="your@email.com"
@@ -1017,7 +1030,7 @@ function Landing() {
                 ))}
               </div>
             </div>
-            <div style={{ borderTop:'1px solid #0d0d1a', paddingTop:20, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
+            <div style={{ borderTop:'1px solid #0d0d1a', paddingTop:20, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
               <span style={{ fontSize:11, color:'#1e1e3a' }}>© 2025 Streamlive. All rights reserved.</span>
               <span style={{ fontSize:11, color:'#1e1e3a', fontFamily:"'JetBrains Mono',monospace" }}>strmlive.com</span>
             </div>
