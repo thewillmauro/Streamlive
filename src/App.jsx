@@ -152,6 +152,7 @@ function Landing() {
   const [salesModal, setSalesModal] = useState(false)
   const [salesForm, setSalesForm] = useState({ firstName:'', lastName:'', email:'', phone:'', store:'', platforms:[], message:'' })
   const [salesSent, setSalesSent] = useState(false)
+  const [signalOpen, setSignalOpen] = useState(false)
 
   useEffect(() => {
     // Simulate realistic live show GMV ticking up
@@ -416,17 +417,65 @@ function Landing() {
         .check-include { color:#10b981; font-size:11px; margin-top:1px; flex-shrink:0; }
         .check-exclude { color:#374151; font-size:11px; margin-top:1px; flex-shrink:0; }
         .yt-badge      { display:inline-flex; align-items:center; gap:5px; background:#ff000015; border:1px solid #ff000033; border-radius:99px; padding:3px 10px; }
+        @keyframes signalRing1 { 0%{transform:scale(.6);opacity:.9} 100%{transform:scale(1.6);opacity:0} }
+        @keyframes signalRing2 { 0%{transform:scale(.5);opacity:.8} 100%{transform:scale(1.5);opacity:0} }
         .pixel-badge   { display:inline-flex; align-items:center; gap:5px; background:#10b98115; border:1px solid #10b98133; border-radius:99px; padding:3px 10px; }
       `}</style>
 
-      <div style={{ minHeight:'100vh', background:'#06060e', overflowY:'auto', overflowX:'hidden' }}>
+      <div style={{ minHeight:'100vh', background:'#06060e', overflowY:'auto', overflowX:'hidden' }} onClick={()=>setSignalOpen(false)}>
 
         {/* ── NAV ──────────────────────────────────────────────────────────── */}
         <nav style={{ position:'sticky', top:0, zIndex:50, background:'#06060eee', backdropFilter:'blur(16px)', borderBottom:'1px solid #14142a', padding:'0 24px', height:58, display:'flex', alignItems:'center', gap:12 }}>
-          <button onClick={()=>navigate('/')} style={{ display:'flex', alignItems:'center', gap:9, background:'none', border:'none', cursor:'pointer', padding:0, flexShrink:0 }}>
-            <div style={{ width:30, height:30, borderRadius:9, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:900, color:'#fff', boxShadow:'0 2px 12px rgba(124,58,237,.4)' }}>S</div>
-            <span style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>Streamlive</span>
-          </button>
+          <div style={{ display:'flex', alignItems:'center', gap:9, flexShrink:0 }}>
+            <button onClick={()=>navigate('/')} style={{ display:'flex', alignItems:'center', gap:9, background:'none', border:'none', cursor:'pointer', padding:0 }}>
+              <div style={{ width:30, height:30, borderRadius:9, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:900, color:'#fff', boxShadow:'0 2px 12px rgba(124,58,237,.4)' }}>S</div>
+              <span style={{ fontFamily:"'Syne',sans-serif", fontSize:17, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>Streamlive</span>
+            </button>
+            {/* ── LIVE SIGNAL ICON ── */}
+            <div style={{ position:'relative' }}>
+              <button
+                onClick={()=>setSignalOpen(o=>!o)}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', width:28, height:28, background:'transparent', border:'none', cursor:'pointer', padding:0, position:'relative' }}
+                title="Live signal"
+              >
+                {/* Outer pulse ring 1 */}
+                <div style={{ position:'absolute', width:28, height:28, borderRadius:'50%', border:'1.5px solid #ef444455', animation:'signalRing1 2s ease-out infinite' }} />
+                {/* Outer pulse ring 2 */}
+                <div style={{ position:'absolute', width:20, height:20, borderRadius:'50%', border:'1.5px solid #ef444477', animation:'signalRing2 2s ease-out .6s infinite' }} />
+                {/* Core dot */}
+                <div style={{ width:8, height:8, borderRadius:'50%', background:'#ef4444', boxShadow:'0 0 8px #ef4444cc', animation:'pulse 1s infinite', flexShrink:0 }} />
+              </button>
+              {/* Popover */}
+              {signalOpen && (
+                <div style={{ position:'absolute', top:38, left:'50%', transform:'translateX(-50%)', background:'#0d0d1e', border:'1px solid #2a2a4a', borderRadius:14, padding:'14px 16px', width:200, zIndex:200, boxShadow:'0 16px 48px rgba(0,0,0,.8)' }}
+                  onClick={e=>e.stopPropagation()}>
+                  {/* Arrow */}
+                  <div style={{ position:'absolute', top:-5, left:'50%', transform:'translateX(-50%) rotate(45deg)', width:9, height:9, background:'#0d0d1e', border:'1px solid #2a2a4a', borderRight:'none', borderBottom:'none' }} />
+                  <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:12 }}>
+                    <div style={{ width:6, height:6, borderRadius:'50%', background:'#ef4444', animation:'pulse 1s infinite', flexShrink:0 }} />
+                    <span style={{ fontSize:10, fontWeight:800, color:'#ef4444', textTransform:'uppercase', letterSpacing:'.1em' }}>Live right now</span>
+                  </div>
+                  {[
+                    { platform:'Whatnot',   color:'#7c3aed', viewers: liveViewers.WN },
+                    { platform:'TikTok',    color:'#f43f5e', viewers: liveViewers.TT },
+                    { platform:'Instagram', color:'#ec4899', viewers: liveViewers.IG },
+                    { platform:'Amazon',    color:'#f59e0b', viewers: liveViewers.AM },
+                    { platform:'YouTube',   color:'#ff0000', viewers: liveViewers.YT },
+                  ].map(r=>(
+                    <div key={r.platform} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:7 }}>
+                      <div style={{ width:6, height:6, borderRadius:'50%', background:r.color, flexShrink:0 }} />
+                      <span style={{ fontSize:11, color:'#9ca3af', flex:1 }}>{r.platform}</span>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:'#fff' }}>{r.viewers >= 1000 ? (r.viewers/1000).toFixed(1)+'k' : r.viewers}</span>
+                    </div>
+                  ))}
+                  <div style={{ marginTop:10, paddingTop:10, borderTop:'1px solid #1e1e3a', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <span style={{ fontSize:10, color:'#4b5563' }}>Total viewers</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:800, color:'#10b981' }}>{Object.values(liveViewers).reduce((a,v)=>a+v,0).toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           <div style={{ flex:1 }} />
           <div className="nav-links" style={{ alignItems:'center', gap:20 }}>
             <a href="#features" style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
@@ -741,7 +790,7 @@ function Landing() {
                         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:'#10b981' }}>$2,708 GMV</span>
                         <span style={{ fontSize:9, color:'#374151' }}>· 10 orders · live</span>
                       </div>
-                      {[{n:'Marcus Duval',s:9.4,t:'VIP',c:'#f59e0b',p:'AM'},{n:'Olivia Bennett',s:9.1,t:'VIP',c:'#f59e0b',p:'IG'},{n:'Derek Huang',s:6.4,t:'New',c:'#3b82f6',p:'YT'}].map(b=>(
+                      {[{n:'Marcus Duval',s:9.4,t:'VIP',c:'#f59e0b',p:'AM'},{n:'Olivia Bennett',s:9.1,t:'VIP',c:'#f59e0b',p:'IG'}].map(b=>(
                         <div key={b.n} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 10px',background:'#0d0d1e',border:'1px solid #14142a',borderRadius:9,marginBottom:6 }}>
                           <div style={{ width:28,height:28,borderRadius:8,background:'#1e1e3a',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#a78bfa',flexShrink:0 }}>{b.n.split(' ').map(w=>w[0]).join('')}</div>
                           <div style={{ flex:1 }}><div style={{ fontSize:11,fontWeight:700,color:'#fff' }}>{b.n}</div><div style={{ fontSize:9,color:'#4b5563' }}>Score {b.s}</div></div>
