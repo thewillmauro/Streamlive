@@ -386,34 +386,38 @@ function bootIntercom(persona) {
     app_id: INTERCOM_APP_ID,
     background_color: '#7c3aed',
     action_color: '#7c3aed',
-    // User identity from persona
     name: persona.name,
     email: persona.email,
     user_id: persona.id,
     company: {
-      id: persona.slug,
+      company_id: persona.slug,
       name: persona.shop,
       plan: persona.plan,
     },
-    // Custom attributes visible in Intercom inbox
     plan: persona.plan,
     shop: persona.shop,
     platforms: (persona.platforms || []).join(', '),
     buyer_count: persona.buyerCount,
     show_count: persona.showCount,
   }
-  window.intercomSettings = settings
-  if (typeof window.Intercom === 'function') {
-    window.Intercom('reattach_activator')
-    window.Intercom('update', settings)
-    return
-  }
+
+  // Standard Intercom snippet pattern
   const i = function() { i.c(arguments) }
   i.q = []; i.c = function(a) { i.q.push(a) }
   window.Intercom = i
+  window.intercomSettings = settings
+
   const s = document.createElement('script')
   s.type = 'text/javascript'; s.async = true
   s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
+  s.onload = () => { window.Intercom('boot', settings) }
+  // If already loaded, just update
+  if (document.querySelector(`script[src*="${INTERCOM_APP_ID}"]`)) {
+    if (typeof window.Intercom === 'function') {
+      window.Intercom('update', settings)
+    }
+    return
+  }
   document.head.appendChild(s)
 }
 
@@ -12861,7 +12865,7 @@ export default function StreamlivePrototype() {
       <style>{GLOBAL_CSS}</style>
 
       {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
-      <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", minHeight:0, background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
+      <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", minHeight:0, background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif" }}>
 
         {/* ── DEMO BANNER ── */}
         <div style={{ background:"linear-gradient(90deg,#1a0f2e,#2d1f5e,#1a0f2e)", borderBottom:"1px solid #7c3aed33", padding:"4px 16px", display:"flex", alignItems:"center", gap:12, flexShrink:0, flexWrap:"wrap", minHeight:36 }}>

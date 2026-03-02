@@ -21,23 +21,25 @@ function navigate(path) {
 const INTERCOM_APP_ID = 'zyj40439'
 
 function loadIntercom(settings = {}) {
-  window.intercomSettings = {
+  const fullSettings = {
     app_id: INTERCOM_APP_ID,
     background_color: '#7c3aed',
     action_color: '#7c3aed',
     ...settings,
   }
-  if (typeof window.Intercom === 'function') {
-    window.Intercom('reattach_activator')
-    window.Intercom('update', window.intercomSettings)
+  // Already loaded: just update
+  if (document.querySelector(`script[src*="${INTERCOM_APP_ID}"]`)) {
+    if (typeof window.Intercom === 'function') window.Intercom('update', fullSettings)
     return
   }
   const i = function() { i.c(arguments) }
   i.q = []; i.c = function(a) { i.q.push(a) }
   window.Intercom = i
+  window.intercomSettings = fullSettings
   const s = document.createElement('script')
   s.type = 'text/javascript'; s.async = true
   s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
+  s.onload = () => window.Intercom('boot', fullSettings)
   document.head.appendChild(s)
 }
 
