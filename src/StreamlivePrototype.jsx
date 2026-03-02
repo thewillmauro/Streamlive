@@ -410,12 +410,23 @@ function bootIntercom(persona) {
   }
 
   // First load — inject script, then boot on load
-  window.intercomSettings = settings
-  ;(function(w,d,id){
-    function l(){ const s=d.createElement('script'); s.type='text/javascript'; s.async=true; s.src='https://widget.intercom.io/widget/'+id; d.head.appendChild(s) }
-    if(typeof w.Intercom==='function'){ w.Intercom('reattach_activator'); w.Intercom('update',w.intercomSettings) }
-    else { const i=function(){i.c(arguments)}; i.q=[]; i.c=function(a){i.q.push(a)}; w.Intercom=i; l() }
-  })(window, document, INTERCOM_APP_ID)
+  const boot = () => window.Intercom('boot', settings)
+
+  if (typeof window.Intercom === 'function') {
+    // Already loaded — shutdown previous session then reboot with new identity
+    window.Intercom('shutdown')
+    boot()
+    return
+  }
+
+  // First load — stub queue, inject script, boot on load
+  const i = function() { i.c(arguments) }; i.q = []; i.c = function(a) { i.q.push(a) }
+  window.Intercom = i
+  const s = document.createElement('script')
+  s.async = true
+  s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
+  s.onload = boot
+  document.head.appendChild(s)
 }
 
 const PLAN_META = {
