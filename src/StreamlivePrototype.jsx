@@ -378,6 +378,45 @@ const STRIPE_LINKS = {
 // Pro:        https://strmlive.com/welcome?plan=pro
 // Enterprise: https://strmlive.com/welcome?plan=enterprise
 
+// ─── INTERCOM ─────────────────────────────────────────────────────────────────
+const INTERCOM_APP_ID = 'zyj40439'
+
+function bootIntercom(persona) {
+  const settings = {
+    app_id: INTERCOM_APP_ID,
+    background_color: '#7c3aed',
+    action_color: '#7c3aed',
+    // User identity from persona
+    name: persona.name,
+    email: persona.email,
+    user_id: persona.id,
+    company: {
+      id: persona.slug,
+      name: persona.shop,
+      plan: persona.plan,
+    },
+    // Custom attributes visible in Intercom inbox
+    plan: persona.plan,
+    shop: persona.shop,
+    platforms: (persona.platforms || []).join(', '),
+    buyer_count: persona.buyerCount,
+    show_count: persona.showCount,
+  }
+  window.intercomSettings = settings
+  if (typeof window.Intercom === 'function') {
+    window.Intercom('reattach_activator')
+    window.Intercom('update', settings)
+    return
+  }
+  const i = function() { i.c(arguments) }
+  i.q = []; i.c = function(a) { i.q.push(a) }
+  window.Intercom = i
+  const s = document.createElement('script')
+  s.type = 'text/javascript'; s.async = true
+  s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
+  document.head.appendChild(s)
+}
+
 const PLAN_META = {
   starter:    { price:"$79",  color:"#10b981", features:["Up to 2 live shows/month","Buyers CRM","Catalog management","Campaign tools","Subscriber list"] },
   growth:     { price:"$199", color:"#7c3aed", features:["Everything in Starter","Analytics & AI insights","Loyalty program","Live Companion","SMS campaigns"] },
@@ -12758,6 +12797,11 @@ export default function StreamlivePrototype() {
 
   const persona  = PERSONAS.find(p=>p.id===personaId);
   const buyers   = BUYERS_BY_PERSONA[personaId] || [];
+
+  // Boot Intercom with current persona identity whenever persona switches
+  useEffect(() => {
+    if (persona) bootIntercom(persona)
+  }, [personaId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const navigate = (screen, newParams={}) => {
     // Starting a live show: persist the session

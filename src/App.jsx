@@ -17,6 +17,44 @@ function navigate(path) {
   window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
+// ─── INTERCOM ─────────────────────────────────────────────────────────────────
+const INTERCOM_APP_ID = 'zyj40439'
+
+function loadIntercom(settings = {}) {
+  window.intercomSettings = {
+    app_id: INTERCOM_APP_ID,
+    background_color: '#7c3aed',
+    action_color: '#7c3aed',
+    ...settings,
+  }
+  if (typeof window.Intercom === 'function') {
+    window.Intercom('reattach_activator')
+    window.Intercom('update', window.intercomSettings)
+    return
+  }
+  const i = function() { i.c(arguments) }
+  i.q = []; i.c = function(a) { i.q.push(a) }
+  window.Intercom = i
+  const s = document.createElement('script')
+  s.type = 'text/javascript'; s.async = true
+  s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
+  document.head.appendChild(s)
+}
+
+function shutdownIntercom() {
+  if (typeof window.Intercom === 'function') window.Intercom('shutdown')
+}
+
+function useIntercom(userSettings = {}) {
+  useEffect(() => {
+    loadIntercom(userSettings)
+    return () => {
+      // Don't shutdown on unmount within same session — just let it persist
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+}
+
 // ─── SHARED CONSTANTS ─────────────────────────────────────────────────────────
 const FONT = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');`
 
@@ -141,6 +179,7 @@ function Landing() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [faqOpen, setFaqOpen] = useState(null)
+  useIntercom()
   const [menuOpen, setMenuOpen] = useState(false)
   const [liveGmv, setLiveGmv] = useState(0)
   const [liveViewers, setLiveViewers] = useState({ WN: 234, TT: 891, IG: 312, AM: 156, YT: 420 })
@@ -1717,6 +1756,7 @@ We reserve the right to change pricing with 30 days' advance notice. If payment 
 
 // ─── CONTACT PAGE ─────────────────────────────────────────────────────────────
 function ContactPage() {
+  useIntercom()
   const [form, setForm] = useState({name:'',email:'',subject:'',message:''})
   const [sent, setSent] = useState(false)
   const SHEET_URL_C = 'https://script.google.com/macros/s/AKfycbwgOLHc642bZ-iHn5djlMWE4zqUHd06apowDVVj8Nk_96w-xal6QjSMyc6W_aYRm-ePrw/exec'
@@ -1931,6 +1971,7 @@ function Checkout() {
   const params = new URLSearchParams(window.location.search)
   const initPlan = (() => { const q = params.get('plan'); return (q && q !== 'enterprise' && PLANS[q]) ? q : 'growth' })()
   const [selectedPlan, setSelectedPlan] = useState(initPlan)
+  useIntercom()
   const p = PLANS[selectedPlan] || PLANS.growth
 
   // Form fields
@@ -2225,6 +2266,7 @@ function Checkout() {
 function Welcome() {
   const plan = new URLSearchParams(window.location.search).get('plan') || 'starter'
   const p = PLANS[plan] || PLANS.starter
+  useIntercom({ plan_name: plan })
 
   return (
     <>
