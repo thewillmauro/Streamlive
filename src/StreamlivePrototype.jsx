@@ -325,6 +325,36 @@ const GOAL_META = {
   win_back:     { label: "Win-Back",      color: "#ec4899", bg: "#2d1028",  icon: "♻️"  },
 };
 
+
+// ─── CHANNEL CONNECTION HELPER ────────────────────────────────────────────────
+// Maps Settings connection keys → Campaign channel keys.
+// Call this with the connections object from storage("strmlive:connections").
+function getConnectedChannels(connections = {}) {
+  return {
+    email:  !!connections.email,
+    sms:    !!connections.sms,
+    ig_dm:  !!connections.ig,       // Instagram connected in Settings
+    tt_dm:  !!connections.tt,       // TikTok connected in Settings
+    wn_dm:  !!connections.wn,       // Whatnot connected in Settings
+    am_msg: !!connections.am,       // Amazon connected in Settings
+  };
+}
+
+// Hook: load channel connections from localStorage on mount
+function useChannelConnections() {
+  const [connectedChannels, setConnectedChannels] = React.useState({
+    email: false, sms: false, ig_dm: false, tt_dm: false, wn_dm: false, am_msg: false,
+  });
+  React.useEffect(() => {
+    storage.get("strmlive:connections").then(result => {
+      if (result?.value) {
+        try { setConnectedChannels(getConnectedChannels(JSON.parse(result.value))); } catch(e) {}
+      }
+    });
+  }, []);
+  return connectedChannels;
+}
+
 const CHANNEL_META = {
   email:  { label:"Email",               color:"#3b82f6", bg:"#0f1e2e", icon:"✉",  via:"Direct",  note:"",                                                    canBroadcast:true  },
   sms:    { label:"SMS",                 color:"#a78bfa", bg:"#2d1f5e", icon:"💬", via:"Direct",  note:"",                                                    canBroadcast:true  },
@@ -3191,6 +3221,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const [buyerPerks,    setBuyerPerks]    = useState({});
   const [buyerItems,    setBuyerItems]    = useState({});
   const [savedFeedback, setSavedFeedback] = useState(null);
+  const connectedChannels = useChannelConnections();
   const [msgChannel,    setMsgChannel]    = useState("sms");
   const [msgText,       setMsgText]       = useState("");
   const [msgSent,       setMsgSent]       = useState(false);
@@ -4368,16 +4399,22 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
                         { code:"sms",   label:"SMS",       icon:"💬", color:CHANNEL_META.sms.color,   bg:CHANNEL_META.sms.bg   },
                         { code:"ig_dm", label:"Instagram", icon:"📸", color:CHANNEL_META.ig_dm.color, bg:CHANNEL_META.ig_dm.bg },
                         { code:"tt_dm", label:"TikTok",    icon:"🎵", color:CHANNEL_META.tt_dm.color, bg:CHANNEL_META.tt_dm.bg },
-                      ].map(ch=>(
+                      ].map(ch=>{ const chConnected = !!connectedChannels[ch.code]; return (
                         <button
                           key={ch.code}
-                          onClick={()=>{ setMsgChannel(ch.code); setMsgText(MSG_TEMPLATES[ch.code] || ""); setMsgSent(false); }}
-                          style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4, padding:"8px 4px", background:msgChannel===ch.code?ch.bg:C.surface, border:`1px solid ${msgChannel===ch.code?ch.color+"66":C.border}`, borderRadius:9, cursor:"pointer", transition:"all .12s" }}
+                          onClick={()=>{ if(!chConnected) return; setMsgChannel(ch.code); setMsgText(MSG_TEMPLATES[ch.code] || ""); setMsgSent(false); }}
+                          title={chConnected ? ch.label : `Connect ${ch.label} in Settings`}
+                          style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4, padding:"8px 4px",
+                            background:msgChannel===ch.code?ch.bg:C.surface,
+                            border:`1px solid ${msgChannel===ch.code?ch.color+"66":C.border}`,
+                            borderRadius:9, cursor:chConnected?"pointer":"not-allowed",
+                            opacity:chConnected?1:0.4, transition:"all .12s", position:"relative" }}
                         >
                           <span style={{ fontSize:14 }}>{ch.icon}</span>
                           <span style={{ fontSize:9, fontWeight:700, color:msgChannel===ch.code?ch.color:C.muted }}>{ch.label}</span>
+                          {!chConnected && <span style={{ fontSize:7, color:"#374151" }}>Not connected</span>}
                         </button>
-                      ))}
+                      );})}
                     </div>
 
                     {/* Live shop link preview */}
@@ -4741,6 +4778,7 @@ function ScreenCampaigns({ navigate, persona }) {
 }
 
 function BroadcastsTab({ navigate, persona }) {
+  const connectedChannels = useChannelConnections();
   const [filterType, setFilterType] = useState("all");
   const filtered = filterType==="all" ? CAMPAIGNS : CAMPAIGNS.filter(c=>c.type===filterType);
   const totalGMV     = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.gmv,0);
@@ -4763,7 +4801,7 @@ function BroadcastsTab({ navigate, persona }) {
         </div>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           {Object.entries(CHANNEL_META).map(([key,ch])=>{
-            const connected = ["email","sms","ig_dm","tt_dm"].includes(key);
+            const connected = !!connectedChannels[key];
             return (
               <div key={key} style={{ display:"flex", alignItems:"center", gap:7, background:connected?ch.bg:C.surface2, border:`1px solid ${connected?ch.color+"44":C.border}`, borderRadius:9, padding:"7px 12px" }}>
                 <span style={{ fontSize:13 }}>{ch.icon}</span>
@@ -5448,8 +5486,15 @@ AUDIENCE_SEGMENTS.forEach(seg => {
 
 // ─── SCREEN: CAMPAIGN COMPOSER ────────────────────────────────────────────────
 function ScreenComposer({ navigate, persona }) {
+  const connectedChannels = useChannelConnections();
   const [step, setStep]             = useState(1);
   const [type, setType]             = useState("email");
+  // Auto-select first connected channel so the picker doesn't open on a locked channel
+  React.useEffect(() => {
+    const order = ["email","sms","ig_dm","tt_dm","wn_dm","am_msg"];
+    const first = order.find(ch => connectedChannels[ch]);
+    if (first) setType(first);
+  }, [connectedChannels]);
   const [segmentId, setSegmentId]   = useState("all");
   const [subject, setSubject]       = useState("Thursday Night Break starts in 1 hour 🎉");
   const [body, setBody]             = useState("Hey {{first_name}},\n\nJust a reminder — my Thursday Night Break kicks off at 8PM EST tonight on Whatnot.\n\nLast week's show had some insane pulls. Tonight I'm opening a fresh hobby box live. Don't miss it!\n\n👉 Tap to set a reminder: {{show_link}}\n\nSee you there,\n{{seller_name}}");
@@ -5493,6 +5538,7 @@ function ScreenComposer({ navigate, persona }) {
     { label: "Social DM via ManyChat", channels: ["ig_dm","tt_dm"] },
     { label: "Platform Native",        channels: ["wn_dm","am_msg"]},
   ];
+  const anyChannelConnected = Object.values(connectedChannels).some(Boolean);
 
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", maxWidth:1000 }}>
@@ -5522,13 +5568,25 @@ function ScreenComposer({ navigate, persona }) {
 
           {/* LEFT: CHANNEL PICKER */}
           <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"20px 22px" }}>
-            <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:16 }}>Channel</div>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.text }}>Channel</div>
+              {!anyChannelConnected && (
+                <button onClick={()=>navigate("settings")} style={{ fontSize:10, color:C.accent, background:"none", border:"none", cursor:"pointer", padding:0 }}>Connect in Settings →</button>
+              )}
+            </div>
+            {!anyChannelConnected && (
+              <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"16px", textAlign:"center", marginBottom:12 }}>
+                <div style={{ fontSize:13, marginBottom:6 }}>📡</div>
+                <div style={{ fontSize:11, fontWeight:700, color:C.muted, marginBottom:4 }}>No channels connected</div>
+                <div style={{ fontSize:10, color:"#374151", lineHeight:1.5 }}>Connect Email, SMS, or social platforms in Settings to start sending campaigns.</div>
+              </div>
+            )}
             {channelGroups.map(group=>(
               <div key={group.label} style={{ marginBottom:16 }}>
                 <div style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.09em", marginBottom:8 }}>{group.label}</div>
                 {group.channels.map(t=>{
                   const c = CHANNEL_META[t];
-                  const connected = ["email","sms","ig_dm","tt_dm"].includes(t);
+                  const connected = !!connectedChannels[t];
                   const isSelected = type===t;
                   return (
                     <div key={t} onClick={()=>connected&&setType(t)} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:10, border:`1px solid ${isSelected?c.color+"66":C.border}`, background:isSelected?c.bg:"transparent", cursor:connected?"pointer":"not-allowed", marginBottom:6, opacity:connected?1:0.5 }}>
@@ -5779,7 +5837,7 @@ function ScreenComposer({ navigate, persona }) {
             </div>
             <textarea value={body} onChange={e=>setBody(e.target.value)} rows={9} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"10px 12px", color:C.text, fontSize:13, outline:"none", resize:"vertical", fontFamily:"'DM Sans',sans-serif", lineHeight:1.65 }} />
             <div style={{ marginTop:8, display:"flex", gap:7, flexWrap:"wrap", alignItems:"center" }}>
-              {["email","sms","ig_dm","tt_dm"].includes(type) && ["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=>(
+              {!!connectedChannels[type] && ["{{first_name}}","{{show_link}}","{{seller_name}}"].map(t=>(
                 <button key={t} onClick={()=>setBody(b=>b+" "+t)} style={{ fontSize:10, color:ch.color, background:ch.bg, border:`1px solid ${ch.color}33`, padding:"3px 9px", borderRadius:6, cursor:"pointer" }}>{t}</button>
               ))}
               <div style={{ marginLeft:"auto", fontSize:10, color:body.length>800?"#ef4444":C.muted }}>{body.length}{type==="sms"?"/160":["ig_dm","tt_dm"].includes(type)?"/1000":""}</div>
