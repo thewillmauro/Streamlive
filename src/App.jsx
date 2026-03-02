@@ -184,6 +184,7 @@ function Landing() {
   const [faqOpen, setFaqOpen] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [liveGmv, setLiveGmv] = useState(0)
+  const [liveViewers, setLiveViewers] = useState({ WN: 234, TT: 891, IG: 312, AM: 156, YT: 420 })
   // Demo gate modal
   const [demoModal, setDemoModal] = useState(false)
   const [demoEmail, setDemoEmail] = useState('')
@@ -196,7 +197,24 @@ function Landing() {
   useEffect(() => {
     // Simulate realistic live show GMV ticking up
     // Orders come in bursts — sometimes fast, sometimes a pause
+    // Viewers fluctuate across all 5 platforms simultaneously (mirrors Live Companion behavior)
     let current = 0
+    const seeds = { WN: 234, TT: 891, IG: 312, AM: 156, YT: 420 }
+    let viewers = { ...seeds }
+
+    const tickViewers = () => {
+      setLiveViewers(prev => {
+        const next = { ...prev }
+        Object.keys(next).forEach(pid => {
+          const drift = Math.floor((Math.random() - 0.38) * 12)
+          next[pid] = Math.max(seeds[pid] * 0.6 | 0, next[pid] + drift)
+        })
+        return next
+      })
+      setTimeout(tickViewers, Math.round(Math.random() * 1200 + 600))
+    }
+    setTimeout(tickViewers, 400)
+
     const tick = () => {
       // Each "order" is between $18–$340, weighted toward $40–$120
       const rand = Math.random()
@@ -492,20 +510,32 @@ function Landing() {
           </div>
           <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:32 }}>No credit card required · Free during beta · Cancel anytime</p>
 
-          {/* Platform pills */}
-          <div className="fade-a4 hero-platforms" style={{ display:'flex', justifyContent:'center', gap:8 }}>
-            {[
-              {id:'WN',label:'Whatnot',    color:'#7c3aed'},
-              {id:'TT',label:'TikTok',     color:'#f43f5e'},
-              {id:'IG',label:'Instagram',  color:'#ec4899'},
-              {id:'AM',label:'Amazon Live',color:'#f59e0b'},
-              {id:'YT',label:'YouTube Live',color:'#ff0000'},
-            ].map(p=>(
-              <div key={p.id} style={{ display:'flex', alignItems:'center', gap:7, background:`${p.color}12`, border:`1px solid ${p.color}30`, borderRadius:99, padding:'6px 14px' }}>
-                <div style={{ width:6, height:6, borderRadius:'50%', background:p.color }} />
-                <span style={{ fontSize:12, fontWeight:600, color:p.color }}>{p.label}</span>
-              </div>
-            ))}
+          {/* Live viewer count — mirrors Live Companion platform strip behavior */}
+          <div className="fade-a4 hero-platforms" style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:2 }}>
+              <div style={{ width:6, height:6, borderRadius:'50%', background:'#ef4444', animation:'pulse 1s infinite', flexShrink:0 }} />
+              <span style={{ fontSize:10, fontWeight:800, color:'#ef4444', letterSpacing:'0.1em', textTransform:'uppercase' }}>Live Now</span>
+              <span style={{ fontSize:10, color:'#374151', marginLeft:4 }}>
+                {Object.values(liveViewers).reduce((a,v)=>a+v,0).toLocaleString()} viewers across 5 platforms
+              </span>
+            </div>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'center' }}>
+              {[
+                {id:'WN', label:'Whatnot',     color:'#7c3aed'},
+                {id:'TT', label:'TikTok',      color:'#f43f5e'},
+                {id:'IG', label:'Instagram',   color:'#ec4899'},
+                {id:'AM', label:'Amazon Live', color:'#f59e0b'},
+                {id:'YT', label:'YouTube',     color:'#ff0000'},
+              ].map(p=>(
+                <div key={p.id} style={{ display:'flex', alignItems:'center', gap:6, background:`${p.color}12`, border:`1px solid ${p.color}30`, borderRadius:99, padding:'5px 12px' }}>
+                  <div style={{ width:5, height:5, borderRadius:'50%', background:p.color, animation:'pulse 1s infinite', flexShrink:0 }} />
+                  <span style={{ fontSize:11, fontWeight:700, color:p.color }}>{p.label}</span>
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:'#9ca3af' }}>
+                    {liveViewers[p.id] >= 1000 ? (liveViewers[p.id]/1000).toFixed(1)+'k' : liveViewers[p.id]}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -537,35 +567,7 @@ function Landing() {
           </div>
         </div>
 
-        {/* ── YOUTUBE LIVE CALLOUT ──────────────────────────────────────────── */}
-        <div style={{ maxWidth:900, margin:'0 auto', padding:'64px 24px 0' }}>
-          <div style={{ background:'linear-gradient(135deg,#0f0404,#1a0505)', border:'1px solid #ff000033', borderRadius:20, padding:'32px 36px', display:'flex', alignItems:'center', gap:28, flexWrap:'wrap', position:'relative', overflow:'hidden' }}>
-            <div style={{ position:'absolute', top:-30, right:-30, width:200, height:200, borderRadius:'50%', background:'#ff0000', opacity:0.04, filter:'blur(60px)' }} />
-            <div style={{ width:52, height:52, borderRadius:14, background:'#ff000018', border:'1px solid #ff000044', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, flexShrink:0 }}>🔴</div>
-            <div style={{ flex:1, minWidth:240 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                <span style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>YouTube Live: Now Fully Supported</span>
-                <span style={{ fontSize:9, fontWeight:800, color:'#ff0000', background:'#ff000015', border:'1px solid #ff000033', padding:'2px 8px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em' }}>New</span>
-              </div>
-              <p style={{ fontSize:13, color:'#6b7280', lineHeight:1.7, margin:0 }}>
-                Stream to your YouTube audience alongside Whatnot, TikTok, Instagram, and Amazon simultaneously. <strong style={{ color:'#9ca3af' }}>Live Pixel</strong>, our first-party attribution snippet, installs on your Shopify store in under 2 minutes and tracks every viewer from stream to purchase with <strong style={{ color:'#ff4444' }}>99% accuracy</strong>. No UTM guesswork. No time-window estimation. Every sale attributed.
-              </p>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:8, flexShrink:0 }}>
-              {[
-                { label:'Live Pixel', sub:'99% accuracy', color:'#10b981' },
-                { label:'UTM Links', sub:'82% accuracy', color:'#f59e0b' },
-                { label:'Time Window', sub:'55–64%', color:'#ef4444' },
-              ].map(m=>(
-                <div key={m.label} style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <div style={{ width:6, height:6, borderRadius:'50%', background:m.color, flexShrink:0 }} />
-                  <span style={{ fontSize:11, fontWeight:600, color:'#9ca3af' }}>{m.label}</span>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:m.color, marginLeft:'auto', paddingLeft:12 }}>{m.sub}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+
 
         {/* ── INTERACTIVE PREVIEW ──────────────────────────────────────────── */}
         <div className="preview-wrap" style={{ maxWidth:900, margin:'0 auto' }}>
