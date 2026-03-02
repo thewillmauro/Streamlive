@@ -371,6 +371,7 @@ function Landing() {
 
   const MOBILE_CSS = `
     /* ── BASE (mobile-first defaults applied via class) ── */
+    .nav-links         { display:flex; }
     .hero-wrap         { padding:72px 24px 56px; }
     .hero-input-row    { flex-direction:row; }
     .hero-input        { width:280px; }
