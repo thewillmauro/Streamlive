@@ -506,7 +506,30 @@ function Landing() {
           </div>
         </div>
 
-        {/* ── STATS STRIP ──────────────────────────────────────────────────── */}
+        {/* ── SHOPIFY CONNECTION STRIP ─────────────────────────────────────── */}
+        <div className="fade-a5" style={{ display:'flex', justifyContent:'center', padding:'20px 24px 0' }}>
+          <div style={{ display:'inline-flex', alignItems:'center', gap:10, background:'#07070f', border:'1px solid #1a1a2e', borderRadius:12, padding:'10px 20px', flexWrap:'wrap', justifyContent:'center' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+              <div style={{ width:24, height:24, borderRadius:7, background:'#96bf48', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, flexShrink:0 }}>🛍</div>
+              <span style={{ fontSize:12, fontWeight:700, color:'#96bf48' }}>Shopify</span>
+              <div style={{ width:5, height:5, borderRadius:'50%', background:'#10b981', animation:'pulse 1.2s infinite', flexShrink:0 }} />
+              <span style={{ fontSize:11, color:'#10b981', fontWeight:600 }}>Connected</span>
+            </div>
+            <div style={{ width:1, height:18, background:'#1e1e3a' }} />
+            <span style={{ fontSize:11, color:'#4b5563' }}>Orders, products, and buyer history sync automatically.</span>
+            <div style={{ width:1, height:18, background:'#1e1e3a' }} />
+            <div style={{ display:'flex', gap:8 }}>
+              {[{label:'Orders synced', val:'1,284'},{label:'Products', val:'94'},{label:'Buyers matched', val:'612'}].map(s=>(
+                <div key={s.label} style={{ textAlign:'center' }}>
+                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:'#fff' }}>{s.val}</div>
+                  <div style={{ fontSize:9, color:'#374151' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+                {/* ── STATS STRIP ──────────────────────────────────────────────────── */}
         <div style={{ borderTop:'1px solid #14142a', borderBottom:'1px solid #14142a', background:'#07070f', marginTop:56 }}>
           <div className="stats-grid" style={{ maxWidth:900, margin:'0 auto', padding:'28px 24px', display:'grid', gap:0 }}>
             {STATS.map((s,i)=>(
@@ -844,7 +867,7 @@ function Landing() {
         <div id="pricing" className="pricing-section" style={{ maxWidth:860, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:48 }}>
             <span className="section-label">Pricing</span>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Priced for sellers, not software companies.</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Stream five platforms. Pay one bill.</div>
           </div>
 
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, alignItems:'stretch' }}>
