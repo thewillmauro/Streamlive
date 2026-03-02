@@ -3235,11 +3235,13 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   }, []);
 
   const toggleLiveDevice = (id) => {
+    // Compute next state, then persist — never call async ops inside a setState updater
     setLiveDevices(prev => {
       const wasConnected = prev[id]?.connected;
       const updated = { ...prev, [id]: { connected: !wasConnected } };
-      // Write back to shared storage so Production Suite stays in sync
-      window.storage.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{});
+      setTimeout(() => {
+        try { window.storage?.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{}); } catch(e) {}
+      }, 0);
       return updated;
     });
   };
@@ -9748,7 +9750,7 @@ function ScreenProduction({ persona, navigate }) {
         ? { ...d, connected:true, sdkStatus:"connected", battery: batteryMap[id] ?? d.battery, signal: signalMap[id] ?? 5 }
         : d
       );
-      saveDevices(updated);
+      setTimeout(() => saveDevices(updated), 0);
       return updated;
     });
   };
@@ -9756,7 +9758,7 @@ function ScreenProduction({ persona, navigate }) {
   const disconnectDevice = (id) => {
     setDevices(prev => {
       const updated = prev.map(d => d.id===id ? { ...d, connected:false, sdkStatus:"disconnected", signal:0 } : d);
-      saveDevices(updated);
+      setTimeout(() => saveDevices(updated), 0);
       return updated;
     });
   };
