@@ -6494,7 +6494,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
   const [smtpPass, setSmtpPass]     = useState("");
   const [connecting, setConnecting] = useState(false);
   const [platforms, setPlatforms]   = useState(
-    persona.platforms.map(p => ({ id:p, connected:true }))
+    persona.platforms.map(p => ({ id:p, connected:false }))
   );
   // ── Sales modal (billing tab) ──────────────────────────────────────────────
   const [sModal,  setSModal]  = useState(false);
