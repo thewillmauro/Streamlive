@@ -2325,7 +2325,13 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
   const fx6Active = activeScene.includes("FX6") || activeScene.includes("Close");
 
   // Use prop directly — no localStorage polling, updates instantly from Production tab
-  const isConnected = (id) => !!deviceConnections[id]?.connected;
+  // In Live Show context: device must be connected (from Production dashboard) AND active (toggled on for this show)
+  const isConnected = (id) => {
+    const d = deviceConnections[id];
+    if (!d) return false;
+    // If .active is explicitly set, use it; otherwise fall back to .connected
+    return d.active !== undefined ? d.active : !!d.connected;
+  };
 
   // Map production device IDs to scene equipment IDs
   const DEVICE_MAP = { fx3:"fx3", fx6:"fx6", elgato:"elgato", aputure:"aputure", ipad:"monitor", rode:"host" };
@@ -3587,47 +3593,79 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
           {liveTab === "production" && (
             <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
 
-              {/* ── DEVICE CONNECTIONS ── */}
-              <div style={{ marginBottom:20 }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em" }}>Devices</div>
-                  {Object.values(liveDevices).filter(d=>d?.connected).length > 0 && (
-                    <div style={{ fontSize:9, fontWeight:700, color:"#10b981", background:"#0a1e16", border:"1px solid #10b98133", padding:"3px 8px", borderRadius:6 }}>
-                      ⚡ {Object.values(liveDevices).filter(d=>d?.connected).length} synced from Production
+              {/* ── ACTIVE DEVICES (connected via Production dashboard) ── */}
+              {(() => {
+                const ALL_SHOW_DEVICES = [
+                  { id:"fx3",     label:"Sony FX3",          icon:"📷", color:"#7c3aed" },
+                  { id:"fx6",     label:"Sony FX6",          icon:"🎥", color:"#a78bfa" },
+                  { id:"elgato",  label:"Elgato Key Light",  icon:"💡", color:"#10b981" },
+                  { id:"aputure", label:"Aputure 600d",      icon:"🔆", color:"#f59e0b" },
+                  { id:"rode",    label:"Rode GO II",        icon:"🎙", color:"#f43f5e" },
+                  { id:"rs4pro",  label:"DJI RS4 Pro",       icon:"🎛", color:"#38bdf8" },
+                  { id:"ipad",    label:"iPad Pro",          icon:"📱", color:"#3b82f6" },
+                  { id:"macbook", label:"MacBook / OBS",     icon:"💻", color:"#6b7280" },
+                ];
+                // Only show devices that are connected in the Production dashboard
+                const connectedDevices = ALL_SHOW_DEVICES.filter(dev => liveDevices[dev.id]?.connected !== undefined
+                  ? liveDevices[dev.id].connected
+                  : false
+                );
+                // "active" means the user has toggled this device ON for this show session
+                // liveDevices[id].active tracks show-session state separately from connection state
+                return (
+                  <div style={{ marginBottom:20 }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                      <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em" }}>Active Devices</div>
+                      {connectedDevices.length > 0 && (
+                        <div style={{ fontSize:9, color:C.muted }}>
+                          {connectedDevices.filter(d => liveDevices[d.id]?.active !== false).length}/{connectedDevices.length} active
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
-                  {[
-                    { id:"fx3",     label:"Sony FX3",          icon:"📷", color:"#7c3aed" },
-                    { id:"fx6",     label:"Sony FX6",          icon:"🎥", color:"#a78bfa" },
-                    { id:"elgato",  label:"Elgato Key Light",  icon:"💡", color:"#10b981" },
-                    { id:"aputure", label:"Aputure 600d",      icon:"🔆", color:"#f59e0b" },
-                    { id:"rode",    label:"Rode GO II",        icon:"🎙", color:"#f43f5e" },
-                    { id:"rs4pro",  label:"DJI RS4 Pro",       icon:"🎛", color:"#38bdf8" },
-                    { id:"ipad",    label:"iPad Pro",          icon:"📱", color:"#3b82f6" },
-                    { id:"macbook", label:"MacBook / OBS",     icon:"💻", color:"#6b7280" },
-                  ].map(dev => {
-                    const on = liveDevices[dev.id]?.connected;
-                    return (
-                      <div key={dev.id} onClick={()=>toggleLiveDevice(dev.id)}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px",
-                          background:on?`${dev.color}12`:"#0a0a14",
-                          border:`1px solid ${on?dev.color+"44":"#1e1e3a"}`,
-                          borderRadius:9, cursor:"pointer", transition:"all .15s" }}>
-                        <span style={{ fontSize:14, flexShrink:0 }}>{dev.icon}</span>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:10, fontWeight:700, color:on?C.text:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{dev.label}</div>
-                          <div style={{ fontSize:9, color:on?dev.color:"#374151", marginTop:1, fontWeight:600 }}>{on?"● Connected":"○ Disconnected"}</div>
-                        </div>
-                        <div style={{ width:32, height:18, borderRadius:9, background:on?dev.color:"#1e1e3a", position:"relative", transition:"background .2s", flexShrink:0 }}>
-                          <div style={{ position:"absolute", top:2, left:on?14:2, width:14, height:14, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.4)" }}/>
-                        </div>
+
+                    {connectedDevices.length === 0 ? (
+                      <div style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:10, padding:"16px", textAlign:"center" }}>
+                        <div style={{ fontSize:13, marginBottom:6 }}>⚙️</div>
+                        <div style={{ fontSize:11, fontWeight:700, color:C.muted, marginBottom:4 }}>No devices connected</div>
+                        <div style={{ fontSize:10, color:"#374151", marginBottom:10, lineHeight:1.5 }}>Connect your equipment in Production before starting a show.</div>
+                        <button onClick={()=>navigate("production")} style={{ fontSize:10, fontWeight:700, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #a78bfa33", padding:"6px 14px", borderRadius:7, cursor:"pointer" }}>
+                          Open Production →
+                        </button>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                    ) : (
+                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
+                        {connectedDevices.map(dev => {
+                          // active defaults to true for connected devices unless explicitly toggled off
+                          const active = liveDevices[dev.id]?.active !== false;
+                          return (
+                            <div key={dev.id}
+                              onClick={() => setLiveDevices(prev => {
+                                const updated = { ...prev, [dev.id]: { ...prev[dev.id], active: !active } };
+                                setTimeout(() => {
+                                  try { window.storage?.set("strmlive:devices", JSON.stringify(updated)).catch(()=>{}); } catch(e) {}
+                                }, 0);
+                                return updated;
+                              })}
+                              style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px",
+                                background:active?`${dev.color}12`:"#0a0a14",
+                                border:`1px solid ${active?dev.color+"44":"#1e1e3a"}`,
+                                borderRadius:9, cursor:"pointer", transition:"all .15s" }}>
+                              <span style={{ fontSize:14, flexShrink:0 }}>{dev.icon}</span>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ fontSize:10, fontWeight:700, color:active?C.text:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{dev.label}</div>
+                                <div style={{ fontSize:9, color:active?dev.color:"#374151", marginTop:1, fontWeight:600 }}>{active?"● Active":"○ Inactive"}</div>
+                              </div>
+                              <div style={{ width:32, height:18, borderRadius:9, background:active?dev.color:"#1e1e3a", position:"relative", transition:"background .2s", flexShrink:0 }}>
+                                <div style={{ position:"absolute", top:2, left:active?14:2, width:14, height:14, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.4)" }}/>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* ── CAMERA FEEDS ── */}
               <div style={{ marginBottom:20 }}>
