@@ -27,20 +27,12 @@ function loadIntercom(settings = {}) {
     action_color: '#7c3aed',
     ...settings,
   }
-  // Already loaded: just update
-  if (document.querySelector(`script[src*="${INTERCOM_APP_ID}"]`)) {
-    if (typeof window.Intercom === 'function') window.Intercom('update', fullSettings)
-    return
-  }
-  const i = function() { i.c(arguments) }
-  i.q = []; i.c = function(a) { i.q.push(a) }
-  window.Intercom = i
   window.intercomSettings = fullSettings
-  const s = document.createElement('script')
-  s.type = 'text/javascript'; s.async = true
-  s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
-  s.onload = () => window.Intercom('boot', fullSettings)
-  document.head.appendChild(s)
+  ;(function(w,d,id){
+    function l(){ const s=d.createElement('script'); s.type='text/javascript'; s.async=true; s.src='https://widget.intercom.io/widget/'+id; d.head.appendChild(s) }
+    if(typeof w.Intercom==='function'){ w.Intercom('reattach_activator'); w.Intercom('update',w.intercomSettings) }
+    else { const i=function(){i.c(arguments)}; i.q=[]; i.c=function(a){i.q.push(a)}; w.Intercom=i; l() }
+  })(window, document, INTERCOM_APP_ID)
 }
 
 function shutdownIntercom() {

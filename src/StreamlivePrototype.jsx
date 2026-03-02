@@ -401,24 +401,21 @@ function bootIntercom(persona) {
     show_count: persona.showCount,
   }
 
-  // Standard Intercom snippet pattern
-  const i = function() { i.c(arguments) }
-  i.q = []; i.c = function(a) { i.q.push(a) }
-  window.Intercom = i
-  window.intercomSettings = settings
-
-  const s = document.createElement('script')
-  s.type = 'text/javascript'; s.async = true
-  s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
-  s.onload = () => { window.Intercom('boot', settings) }
-  // If already loaded, just update
+  // Script already injected — just boot or update
   if (document.querySelector(`script[src*="${INTERCOM_APP_ID}"]`)) {
     if (typeof window.Intercom === 'function') {
-      window.Intercom('update', settings)
+      window.Intercom('boot', settings)
     }
     return
   }
-  document.head.appendChild(s)
+
+  // First load — inject script, then boot on load
+  window.intercomSettings = settings
+  ;(function(w,d,id){
+    function l(){ const s=d.createElement('script'); s.type='text/javascript'; s.async=true; s.src='https://widget.intercom.io/widget/'+id; d.head.appendChild(s) }
+    if(typeof w.Intercom==='function'){ w.Intercom('reattach_activator'); w.Intercom('update',w.intercomSettings) }
+    else { const i=function(){i.c(arguments)}; i.q=[]; i.c=function(a){i.q.push(a)}; w.Intercom=i; l() }
+  })(window, document, INTERCOM_APP_ID)
 }
 
 const PLAN_META = {
