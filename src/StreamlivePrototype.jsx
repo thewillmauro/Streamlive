@@ -6554,6 +6554,33 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
   const [platforms, setPlatforms]   = useState(
     persona.platforms.map(p => ({ id:p, connected:false }))
   );
+
+  // Sync streaming platform connections → strmlive:connections so Campaigns/Composer
+  // can read them. Maps platform IDs (TT, IG, WN, AM, YT) to connection keys.
+  const PLATFORM_TO_CONN_KEY = { TT:"tt", IG:"ig", WN:"wn", AM:"am", YT:"yt" };
+  const syncPlatformsToConnections = async (updatedPlatforms) => {
+    try {
+      const result = await storage.get("strmlive:connections");
+      const existing = result?.value ? JSON.parse(result.value) : {};
+      const patch = {};
+      updatedPlatforms.forEach(pl => {
+        const key = PLATFORM_TO_CONN_KEY[pl.id];
+        if (!key) return;
+        if (pl.connected) {
+          // Only add if not already there (don't overwrite richer OAuth data)
+          if (!existing[key]) patch[key] = { connectedAt: new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}), status:"active" };
+        } else {
+          patch[key] = null; // mark for deletion
+        }
+      });
+      const updated = { ...existing };
+      Object.entries(patch).forEach(([k, v]) => {
+        if (v === null) delete updated[k];
+        else updated[k] = v;
+      });
+      await storage.set("strmlive:connections", JSON.stringify(updated));
+    } catch(e) {}
+  };
   // ── Sales modal (billing tab) ──────────────────────────────────────────────
   const [sModal,  setSModal]  = useState(false);
   const [sSent,   setSSent]   = useState(false);
@@ -6565,7 +6592,14 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       try {
         const result = await storage.get("strmlive:connections");
         if (result?.value) {
-          setConnections(JSON.parse(result.value));
+          const saved = JSON.parse(result.value);
+          setConnections(saved);
+          // Restore streaming platform connected state from saved connections
+          const CONN_TO_PLATFORM = { tt:"TT", ig:"IG", wn:"WN", am:"AM", yt:"YT" };
+          setPlatforms(prev => prev.map(pl => {
+            const key = Object.entries(CONN_TO_PLATFORM).find(([,id]) => id === pl.id)?.[0];
+            return key && saved[key] ? { ...pl, connected:true } : pl;
+          }));
         }
       } catch(e) {
         // No saved connections yet
@@ -7134,8 +7168,8 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                   {isConn && <div style={{ fontSize:10, color:C.green, marginTop:4 }}>● Connected · Last sync 12 min ago · 847 buyers</div>}
                 </div>
                 {isConn
-                  ? <button onClick={()=>setPlatforms(ps=>ps.map(pl=>pl.id===pid?{...pl,connected:false}:pl))} style={{ fontSize:11, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Disconnect</button>
-                  : <button onClick={()=>setPlatforms(ps=>{const ex=ps.find(pl=>pl.id===pid);return ex?ps.map(pl=>pl.id===pid?{...pl,connected:true}:pl):[...ps,{id:pid,connected:true}]})} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Connect</button>
+                  ? <button onClick={()=>{ const next=platforms.map(pl=>pl.id===pid?{...pl,connected:false}:pl); setPlatforms(next); syncPlatformsToConnections(next); }} style={{ fontSize:11, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Disconnect</button>
+                  : <button onClick={()=>{ const base=platforms.find(pl=>pl.id===pid)?platforms.map(pl=>pl.id===pid?{...pl,connected:true}:pl):[...platforms,{id:pid,connected:true}]; setPlatforms(base); syncPlatformsToConnections(base); }} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Connect</button>
                 }
               </div>
             );
