@@ -382,8 +382,8 @@ function Landing() {
       .spotlight-section { padding:56px 20px 0; }
       .spotlight-grid    { grid-template-columns:1fr; gap:24px; }
       .spotlight-text    { order:2 !important; }
-      .spotlight-mockup  { order:1 !important; overflow:hidden; border-radius:20px; }
-      .spotlight-mockup > div { transform-origin:top center; transform:scale(0.78); margin-bottom:calc(-22% - 4px); }
+      .spotlight-mockup  { order:1 !important; }
+      .spotlight-mockup > div { zoom: 0.82; }
       .pricing-section   { padding:56px 20px 0; }
       .pricing-grid      { grid-template-columns:1fr; gap:14px; max-width:100%; }
       .faq-section       { padding:56px 20px 0; }
