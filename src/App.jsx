@@ -20,6 +20,10 @@ function navigate(path) {
 // ─── INTERCOM ─────────────────────────────────────────────────────────────────
 const INTERCOM_APP_ID = 'zyj40439'
 
+// SPA Intercom flow:
+//   1. First load anywhere  → inject script + boot() with app_id (anonymous)
+//   2. User identified page → update() with name/email (enriches existing session)
+//   3. Never call shutdown() during navigation — it removes the widget from the DOM
 function loadIntercom(settings = {}) {
   const fullSettings = {
     app_id: INTERCOM_APP_ID,
@@ -27,33 +31,36 @@ function loadIntercom(settings = {}) {
     action_color: '#7c3aed',
     ...settings,
   }
-  const boot = () => window.Intercom('boot', fullSettings)
 
-  if (typeof window.Intercom === 'function') {
-    window.Intercom('shutdown')
-    boot()
+  // Script already loaded and session booted — just pass new attributes
+  if (window._intercomBooted) {
+    window.Intercom('update', fullSettings)
     return
   }
 
+  // Script loaded but not yet booted (edge case) — boot now
+  if (typeof window.Intercom === 'function' && !window._intercomBooted) {
+    window._intercomBooted = true
+    window.Intercom('boot', fullSettings)
+    return
+  }
+
+  // First time — inject script, then boot
   const i = function() { i.c(arguments) }; i.q = []; i.c = function(a) { i.q.push(a) }
   window.Intercom = i
   const s = document.createElement('script')
   s.async = true
   s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
-  s.onload = boot
+  s.onload = () => {
+    window._intercomBooted = true
+    window.Intercom('boot', fullSettings)
+  }
   document.head.appendChild(s)
-}
-
-function shutdownIntercom() {
-  if (typeof window.Intercom === 'function') window.Intercom('shutdown')
 }
 
 function useIntercom(userSettings = {}) {
   useEffect(() => {
     loadIntercom(userSettings)
-    return () => {
-      // Don't shutdown on unmount within same session — just let it persist
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 }

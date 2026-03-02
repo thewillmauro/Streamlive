@@ -401,21 +401,29 @@ function bootIntercom(persona) {
     show_count: persona.showCount,
   }
 
-  // Already loaded — shutdown anonymous session, boot fresh with identity
-  if (typeof window.Intercom === 'function') {
-    window.Intercom('shutdown')
-    // Brief defer so shutdown completes before booting the new session
-    setTimeout(() => window.Intercom('boot', settings), 50)
+  // Session already booted (came from landing page) — just update with user identity
+  if (window._intercomBooted) {
+    window.Intercom('update', settings)
     return
   }
 
-  // First load — inject script, boot once it loads
+  // Script loaded but not yet booted — boot now with identity
+  if (typeof window.Intercom === 'function') {
+    window._intercomBooted = true
+    window.Intercom('boot', settings)
+    return
+  }
+
+  // Direct navigation to /app — inject script fresh, boot with identity
   const i = function() { i.c(arguments) }; i.q = []; i.c = function(a) { i.q.push(a) }
   window.Intercom = i
   const s = document.createElement('script')
   s.async = true
   s.src = `https://widget.intercom.io/widget/${INTERCOM_APP_ID}`
-  s.onload = () => window.Intercom('boot', settings)
+  s.onload = () => {
+    window._intercomBooted = true
+    window.Intercom('boot', settings)
+  }
   document.head.appendChild(s)
 }
 
