@@ -381,7 +381,8 @@ function Landing() {
       .spotlight-section { padding:56px 20px 0; }
       .spotlight-grid    { grid-template-columns:1fr; gap:24px; }
       .spotlight-text    { order:2 !important; }
-      .spotlight-mockup  { order:1 !important; max-height:320px; overflow:hidden; }
+      .spotlight-mockup  { order:1 !important; overflow:hidden; border-radius:20px; }
+      .spotlight-mockup > div { transform-origin:top center; transform:scale(0.78); margin-bottom:calc(-22% - 4px); }
       .pricing-section   { padding:56px 20px 0; }
       .pricing-grid      { grid-template-columns:1fr; gap:14px; max-width:100%; }
       .faq-section       { padding:56px 20px 0; }
@@ -2999,6 +3000,8 @@ function LiveCursor() {
 
   const color = clicked ? '#10b981' : '#ef4444';
   if (!visible) return null;
+  // Don't render on touch devices
+  if (typeof window !== 'undefined' && 'ontouchstart' in window) return null;
 
   return (
     <div style={{ position:'fixed', left:pos.x, top:pos.y, pointerEvents:'none', zIndex:999999 }}>
