@@ -304,7 +304,7 @@ function Landing() {
     { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',            desc:'4-tier program. Auto across all platforms.' },
     { icon:'●', color:'#3b82f6', label:'Opt-in Pages',           desc:'Collect email and phone. TCPA-compliant.' },
     { icon:'◧', color:'#10b981', label:'Show Planner',           desc:'AI run order. Perks. Go live in minutes.' },
-    { icon:'✦', color:'#a78bfa', label:'AI Insights',            desc:'6 confidence-scored recs per show.' },
+    { icon:'📋', color:'#a78bfa', label:'Host Briefing',          desc:'Live script. Countdown. Talking points.' },
     { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync',   desc:'All 5 simultaneously. Always in sync.' },
   ]
 
@@ -333,7 +333,7 @@ function Landing() {
       side:'right',
     },
     {
-      tag:'DURING THE SHOW',
+      tag:'LIVE COMMAND CENTER',
       headline:"Stream everywhere.\nAttribute every sale.",
       desc:"Live buyer feed, real GMV, and 99% attribution across all 5 platforms simultaneously.",
       color:'#10b981',
@@ -347,6 +347,14 @@ function Landing() {
       color:'#a78bfa',
       stats:[{ label:'Insights/show', value:'6+' },{ label:'Avg confidence', value:'83%' },{ label:'Data sources', value:'5' }],
       side:'right',
+    },
+    {
+      tag:'HOST BRIEFING',
+      headline:"Your script.\nLive and in sync.",
+      desc:"The Briefing opens alongside your Live Companion — run order, countdown timer, and AI talking points auto-advance with the show clock.",
+      color:'#38bdf8',
+      stats:[{ label:'Auto-advances', value:'✓' },{ label:'Talking points', value:'AI' },{ label:'Sync', value:'Live' }],
+      side:'left',
     },
   ]
 
@@ -767,6 +775,75 @@ function Landing() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {/* i=4: Host Briefing */}
+                  {i===4 && (
+                    <div style={{ display:'flex', gap:10, height:'100%' }}>
+                      {/* Run order sidebar */}
+                      <div style={{ width:110, flexShrink:0, background:'#07070f', border:'1px solid #1e1e3a', borderRadius:10, overflow:'hidden' }}>
+                        <div style={{ padding:'8px 10px', borderBottom:'1px solid #1e1e3a' }}>
+                          <div style={{ fontSize:8, fontWeight:800, color:'#38bdf8', textTransform:'uppercase', letterSpacing:'.1em' }}>📋 Run Order</div>
+                          <div style={{ fontSize:8, color:'#374151', marginTop:2 }}>Friday Night Flash</div>
+                        </div>
+                        <div style={{ padding:'6px' }}>
+                          {[
+                            {n:'Silk Wrap Midi',p:'$89',active:true},
+                            {n:'Merino Blazer',p:'$165',active:false},
+                            {n:'Style Bundle',p:'$210',active:false},
+                            {n:'Linen Trousers',p:'$72',active:false},
+                          ].map((item,ii)=>(
+                            <div key={ii} style={{ display:'flex',alignItems:'center',gap:6,padding:'6px 7px',background:item.active?'#38bdf818':'transparent',border:`1px solid ${item.active?'#38bdf844':'transparent'}`,borderRadius:7,marginBottom:3 }}>
+                              <span style={{ fontSize:8,fontWeight:800,color:item.active?'#38bdf8':'#374151',width:10 }}>{ii+1}</span>
+                              <div style={{ flex:1,minWidth:0 }}>
+                                <div style={{ fontSize:8,fontWeight:700,color:item.active?'#fff':'#4b5563',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{item.n}</div>
+                                <div style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:item.active?'#10b981':'#374151' }}>{item.p}</div>
+                              </div>
+                              {item.active && <div style={{ width:4,height:4,borderRadius:'50%',background:'#10b981',flexShrink:0,boxShadow:'0 0 6px #10b981' }} />}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Main product card */}
+                      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
+                        {/* Timer bar */}
+                        <div style={{ background:'#0a0a14', border:'1px solid #38bdf833', borderRadius:9, padding:'8px 12px', display:'flex', alignItems:'center', gap:10 }}>
+                          <div style={{ width:6,height:6,borderRadius:'50%',background:'#ef4444',animation:'pulse 1s infinite',flexShrink:0 }} />
+                          <span style={{ fontSize:9,fontWeight:800,color:'#ef4444',textTransform:'uppercase',letterSpacing:'.08em' }}>LIVE</span>
+                          <span style={{ fontSize:9,color:'#374151',flex:1 }}>Friday Night Flash Sale</span>
+                          <span style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:16,fontWeight:800,color:'#10b981' }}>1:24</span>
+                        </div>
+                        {/* Product hero */}
+                        <div style={{ background:'#0d0d1e', border:'1px solid #38bdf822', borderRadius:9, padding:'10px 12px' }}>
+                          <div style={{ fontSize:8,color:'#374151',marginBottom:4,textTransform:'uppercase',letterSpacing:'.08em' }}>Now featuring · 1 of 4</div>
+                          <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:8 }}>
+                            <span style={{ fontSize:28 }}>👗</span>
+                            <div>
+                              <div style={{ fontSize:12,fontWeight:800,color:'#fff' }}>Silk Wrap Midi Dress</div>
+                              <div style={{ fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:800,color:'#10b981' }}>$89</div>
+                            </div>
+                          </div>
+                          <div style={{ display:'flex',gap:6 }}>
+                            {[{l:'42 sold/30d',c:'#10b981'},{l:'↑ 9.6 AI score',c:'#a78bfa'},{l:'8 left',c:'#f59e0b'}].map(b=>(
+                              <div key={b.l} style={{ fontSize:7,fontWeight:700,color:b.c,background:`${b.c}15`,border:`1px solid ${b.c}33`,padding:'2px 7px',borderRadius:4 }}>{b.l}</div>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Talking points */}
+                        <div style={{ background:'#07070f', border:'1px solid #1e1e3a', borderRadius:9, padding:'10px 12px' }}>
+                          <div style={{ fontSize:8,fontWeight:800,color:'#4b5563',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:8 }}>Talking Points</div>
+                          {[
+                            {icon:'✨',pt:'100% mulberry silk — mention the weight and drape'},
+                            {icon:'📦',pt:'Only 8 left — create urgency naturally'},
+                            {icon:'🎁',pt:'Pairs with the Merino Blazer (next up)'},
+                          ].map((tp,ti)=>(
+                            <div key={ti} style={{ display:'flex',gap:8,alignItems:'flex-start',marginBottom:6,paddingBottom:6,borderBottom:ti<2?'1px solid #1e1e3a11':'none' }}>
+                              <span style={{ fontSize:11,flexShrink:0 }}>{tp.icon}</span>
+                              <span style={{ fontSize:9,color:'#d1d5db',lineHeight:1.5 }}>{tp.pt}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
