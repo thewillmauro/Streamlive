@@ -24,7 +24,7 @@ const STRIPE_LINKS = {
   starter:    'https://buy.stripe.com/test_cNibJ377j60W9TS1rX0kE00',
   growth:     'https://buy.stripe.com/test_7sYbJ363fblgfec9Yt0kE01',
   pro:        'https://buy.stripe.com/test_00w5kF77j7504zyc6B0kE02',
-  enterprise: null,
+
 }
 
 const PLANS = {
@@ -92,32 +92,7 @@ const PLANS = {
     nextLabel:'Set up your platforms →',
     nextHint:"Connect all 4 platforms and let Streamlive do the rest.",
     billing:'Billed monthly. Cancel anytime.',
-  },
-  enterprise: {
-    id:'enterprise', name:'Enterprise', price:999, color:'#a78bfa', bg:'#1a1030', border:'#7c3aed55',
-    emoji:'🏢', tagline:'For agencies and high-volume seller networks',
-    headline:'Enterprise activated. Your whole team is live.',
-    subline:'White label, dedicated support, custom integrations, and unlimited scale.',
-    features:[
-      'Everything in Pro',
-      'White label: your brand, your domain',
-      'Unlimited team seats with role permissions',
-      'Dedicated account manager',
-      'Custom SDK & API integrations',
-      'SSO (Single Sign-On)',
-      'SLA: 99.9% uptime guarantee',
-      'Custom analytics & data exports',
-      'Unlimited SMS campaigns',
-      'Multi-seller network management',
-      '< 1hr support response + emergency line',
-      'Quarterly business reviews',
-    ],
-    notIncluded:[],
-    nextLabel:'Contact sales →',
-    nextHint:"We'll scope a custom plan for your team.",
-    billing:'Annual billing available. Custom contracts.',
-    contactSales: true,
-  },
+  }
 }
 
 const GLOBAL_CSS = `
@@ -896,11 +871,9 @@ function Landing() {
           <div className="pricing-grid" style={{ display:'grid' }}>
             {Object.values(PLANS).map(p=>{
               const displayPrice = billingCycle==='annual' ? Math.round(p.price*(1-annualDiscount)) : p.price
-              const isEnt = p.id==='enterprise'
               return (
-                <div key={p.id} className="plan-card" style={{ background:p.popular?'linear-gradient(180deg,#1a1030,#0e0b1e)':isEnt?'linear-gradient(180deg,#0f0a1e,#080810)':'#08080f', border:`1px solid ${p.popular?p.color+'66':isEnt?p.color+'44':'#14142a'}`, borderRadius:18, padding:'24px 20px', position:'relative', display:'flex', flexDirection:'column' }}>
+                <div key={p.id} className="plan-card" style={{ background:p.popular?'linear-gradient(180deg,#1a1030,#0e0b1e)':'#08080f', border:`1px solid ${p.popular?p.color+'66':'#14142a'}`, borderRadius:18, padding:'24px 20px', position:'relative', display:'flex', flexDirection:'column' }}>
                   {p.popular && <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', color:'#fff', fontSize:9, fontWeight:800, padding:'3px 14px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap', boxShadow:'0 2px 12px rgba(124,58,237,.4)' }}>Most Popular</div>}
-                  {isEnt && <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg,#4c1d95,#7c3aed)', color:'#e9d5ff', fontSize:9, fontWeight:800, padding:'3px 14px', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap' }}>For Teams</div>}
                   <div style={{ marginBottom:18 }}>
                     <div style={{ fontSize:18, marginBottom:6 }}>{p.emoji}</div>
                     <span style={{ fontSize:10, fontWeight:800, color:p.color, textTransform:'uppercase', letterSpacing:'.1em', display:'block', marginBottom:6 }}>{p.name}</span>
@@ -938,28 +911,16 @@ function Landing() {
                       </div>
                     )}
                   </div>
-                  {p.contactSales ? (
-                    <button onClick={openSales} className="cta-btn" style={{ width:'100%', background:`${p.color}18`, border:`1px solid ${p.color}44`, color:p.color, fontSize:12, fontWeight:700, padding:'11px', borderRadius:10, cursor:'pointer' }}>Contact Sales →</button>
-                  ) : (
-                    <button onClick={()=>navigate(`/checkout?plan=${p.id}`)} className="cta-btn"
+                  <button onClick={()=>navigate(`/checkout?plan=${p.id}`)} className="cta-btn"
                       style={{ width:'100%', background:p.popular?'linear-gradient(135deg,#7c3aed,#4f46e5)':`${p.color}18`, border:`1px solid ${p.color}44`, color:p.popular?'#fff':p.color, fontSize:12, fontWeight:700, padding:'11px', borderRadius:10, cursor:'pointer' }}>
                       {p.popular?`Start Growth for $${displayPrice}/mo →`:`Get ${p.name} for $${displayPrice}/mo →`}
                     </button>
-                  )}
                   <div style={{ fontSize:10, color:'#374151', textAlign:'center', marginTop:8 }}>{p.billing}</div>
                 </div>
               )
             })}
           </div>
 
-          <div className="enterprise-row" style={{ marginTop:20, background:'linear-gradient(135deg,#0f0a1e,#12102a)', border:'1px solid #7c3aed33', borderRadius:16, padding:'24px', display:'flex', alignItems:'center', gap:20, flexWrap:'wrap' }}>
-            <div style={{ width:44, height:44, borderRadius:12, background:'#2d1f5e44', border:'1px solid #7c3aed44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }}>🏢</div>
-            <div style={{ flex:1, minWidth:180 }}>
-              <div style={{ fontSize:15, fontWeight:700, color:'#fff', marginBottom:4 }}>Running an agency or seller network?</div>
-              <div style={{ fontSize:13, color:'#6b7280' }}>White label · unlimited seats · custom integrations.</div>
-            </div>
-            <button onClick={openSales} className="cta-btn" style={{ background:'linear-gradient(135deg,#4c1d95,#7c3aed)', border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 24px', borderRadius:10, cursor:'pointer', whiteSpace:'nowrap' }}>Talk to Sales →</button>
-          </div>
         </div>
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
@@ -1910,7 +1871,8 @@ function PlatformPage({ slug }) {
 // ─── CHECKOUT ─────────────────────────────────────────────────────────────────
 function Checkout() {
   const params = new URLSearchParams(window.location.search)
-  const [selectedPlan, setSelectedPlan] = useState(params.get('plan') || 'growth')
+  const initPlan = (() => { const q = params.get('plan'); return (q && q !== 'enterprise' && PLANS[q]) ? q : 'growth' })()
+  const [selectedPlan, setSelectedPlan] = useState(initPlan)
   const p = PLANS[selectedPlan] || PLANS.growth
 
   // Form fields

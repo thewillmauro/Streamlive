@@ -7324,8 +7324,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
             features:["Everything in Starter","Unlimited live shows","Analytics & AI insights","Loyalty program","Live Companion","SMS campaigns","Show auto-briefings"] },
           { id:"pro",        name:"Pro",        price:"$399",   period:"/mo", color:"#f59e0b", tagline:"For professional sellers who want full production control",
             features:["Everything in Growth","Production Suite","Camera & gimbal control","Multi-platform stream mgmt","White-label reports","Priority support","Advanced perks automation"] },
-          { id:"enterprise", name:"Enterprise", price:"Custom", period:"",    color:"#a78bfa", tagline:"For agencies managing multiple seller accounts",
-            features:["Everything in Pro","Up to 12 seller accounts","Team management & roles","White-label branding","Dedicated account manager","Custom integrations","SLA & uptime guarantee"] },
+
         ];
         const canSubmit = sForm.firstName && sForm.email.includes("@");
         const openSales = () => { setSSent(false); setSForm({ firstName:"", lastName:"", email:"", phone:"", store:"", platforms:[], message:"" }); setSModal(true); };
@@ -7339,7 +7338,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
         };
 
         const currentPlan = persona.plan;
-        const planOrder   = ["starter","growth","pro","enterprise"];
+        const planOrder   = ["starter","growth","pro"];
         const currentIdx  = planOrder.indexOf(currentPlan);
 
         return (
@@ -7385,8 +7384,6 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                       </div>
                       {isCurrent ? (
                         <div style={{ width:"100%", background:`${plan.color}10`, border:`1px solid ${plan.color}33`, borderRadius:8, padding:"8px", textAlign:"center", fontSize:11, fontWeight:700, color:plan.color }}>✓ Active</div>
-                      ) : plan.id === "enterprise" ? (
-                        <button onClick={openSales} style={{ width:"100%", background:`linear-gradient(135deg,${plan.color},${plan.color}bb)`, border:"none", borderRadius:8, padding:"9px", fontSize:12, fontWeight:800, color:"#fff", cursor:"pointer", boxShadow:`0 4px 16px ${plan.color}33` }}>Contact Sales →</button>
                       ) : isDowngrade ? (
                         <button onClick={()=>openCheckout&&openCheckout(plan.id)} style={{ width:"100%", background:"transparent", border:`1px solid ${C.border}`, borderRadius:8, padding:"8px", fontSize:11, fontWeight:600, color:C.muted, cursor:"pointer" }}>Switch to {plan.name}</button>
                       ) : (
