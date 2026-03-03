@@ -3021,10 +3021,13 @@ function LiveCursor() {
       });
     };
 
-    // Lock body scroll — must be injected here (after mount) to override any other CSS
+    // Lock body scroll on /app only — scoped so landing page can still scroll
+    const isApp = window.location.pathname === '/app';
     const overflowEl = document.createElement('style');
     overflowEl.id = 'body-overflow-lock';
-    overflowEl.textContent = 'html, body, #root { overflow: hidden !important; height: 100% !important; }';
+    overflowEl.textContent = isApp
+      ? 'html, body, #root { overflow: hidden !important; height: 100% !important; }'
+      : '';
     document.head.appendChild(overflowEl);
 
     // Inject stylesheet cursor:none as a fallback layer
@@ -3041,6 +3044,15 @@ function LiveCursor() {
 
     // Strip existing inline cursors immediately
     stripCursors();
+
+    // Update overflow lock whenever SPA route changes (landing ↔ /app)
+    const updateOverflowLock = () => {
+      const el = document.getElementById('body-overflow-lock');
+      if (el) el.textContent = window.location.pathname === '/app'
+        ? 'html, body, #root { overflow: hidden !important; height: 100% !important; }'
+        : '';
+    };
+    window.addEventListener('popstate', updateOverflowLock);
 
     // Watch for new elements added by React renders
     const observer = new MutationObserver((mutations) => {
@@ -3084,6 +3096,7 @@ function LiveCursor() {
       if (document.head.contains(styleEl)) document.head.removeChild(styleEl);
       const ol = document.getElementById('body-overflow-lock');
       if (ol) document.head.removeChild(ol);
+      window.removeEventListener('popstate', updateOverflowLock);
       window.removeEventListener('mousemove',  onMove);
       window.removeEventListener('mousedown',  onDown);
       window.removeEventListener('mouseup',    onUp);
