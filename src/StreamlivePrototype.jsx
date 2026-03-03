@@ -757,7 +757,7 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
     const topSellers    = [...persona.managedSellers].sort((a,b)=>b.gmv-a.gmv).slice(0,5);
 
     return (
-      <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+      <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0, background:"#04040e" }}>
         {/* GREETING */}
         <div style={{ marginBottom:24, display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
           <div>
@@ -870,7 +870,7 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
   ];
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0 }}>
       {/* GREETING */}
       <div style={{ marginBottom:24 }}>
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>
@@ -1008,7 +1008,7 @@ function ScreenBuyers({ buyers, navigate }) {
   ];
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, overflow:"hidden" }}>
       {/* TOOLBAR */}
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ display:"flex", gap:0, marginBottom:12 }}>
@@ -1082,7 +1082,7 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
   ];
 
   return (
-    <div style={{ display:"flex", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, overflow:"hidden" }}>
       {/* LEFT PANEL */}
       <div style={{ width:300, borderRight:`1px solid ${C.border}`, overflowY:"auto", flexShrink:0, background:"#050508" }}>
         <div style={{ padding:"22px 20px" }}>
@@ -1261,7 +1261,7 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
 function ScreenShows({ navigate, persona, shows }) {
   const allShows = shows || SHOWS;
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0 }}>
       <div style={{ marginBottom:24 }}>
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Shows</div>
         <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{allShows.length} shows recorded across all platforms</div>
@@ -1417,7 +1417,7 @@ Cover: what went well, any red flags, what to do differently next show. Be speci
   };
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, overflow:"hidden" }}>
 
       {/* ── STICKY HEADER ── */}
       <div style={{ padding:"14px 28px 14px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
@@ -1843,7 +1843,7 @@ function ScreenLiveShop({ navigate, params, persona: personaProp }) {
     `https://${shopDomain}/products/${p.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}?ref=streamlive_live&show_id=sh5&utm_source=streamlive`;
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden", background:C.bg }}>
+    <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, overflow:"hidden", background:C.bg }}>
 
       {/* ── HEADER ── */}
       <div style={{ background:"#06060e", borderBottom:`1px solid ${C.border}`, padding:"12px 20px", display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
@@ -3515,7 +3515,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
   const addedProducts   = PRODUCTS.filter(p=>currentItems.includes(p.id));
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", minHeight:0, background:"#050510" }}>
+    <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, background:"#050510" }}>
 
       {/* ── LIVE HEADER ── */}
       <div style={{ background:"#090916", borderBottom:`1px solid ${C.border}`, padding:"0 20px", flexShrink:0 }}>
@@ -4796,7 +4796,7 @@ function ScreenCampaigns({ navigate, persona }) {
   const [mainTab, setMainTab] = useState("broadcasts");
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
       <div style={{ padding:"20px 32px 0", borderBottom:`1px solid ${C.border}`, background:C.surface, flexShrink:0 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
           <div>
@@ -5586,7 +5586,7 @@ function ScreenComposer({ navigate, persona }) {
   const anyChannelConnected = Object.values(connectedChannels).some(Boolean);
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", maxWidth:1000 }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0, maxWidth:1000 }}>
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
         <button onClick={()=>navigate("campaigns")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>New Campaign</div>
@@ -5991,7 +5991,7 @@ function ScreenSubscribers({ persona }) {
   };
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto" }}>
 
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
@@ -7179,7 +7179,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", position:"relative" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0, position:"relative" }}>
       <Modal />
 
       <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px", marginBottom:20 }}>Settings</div>
@@ -8012,7 +8012,7 @@ function ScreenCatalog({ persona, navigate }) {
   const showReadyCount = products.filter(p=>p.showReady).length;
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
       <div style={{ padding:"16px 28px 12px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div>
@@ -8211,7 +8211,7 @@ function ScreenShowPlanner({ navigate, persona }) {
   const steps = ["Choose Platforms","Select Products","Set Run Order","Show Perks","Go Live"];
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
           <button onClick={()=>navigate("shows")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
@@ -9066,7 +9066,7 @@ function ScreenOrderReview({ params, navigate, onShowComplete }) {
   };
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden", position:"relative" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden", position:"relative" }}>
 
       {/* ── SUCCESS OVERLAY ── */}
       {processed && (
@@ -9446,7 +9446,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
   ];
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
 
       {/* HEADER */}
       <div style={{ padding:"14px 28px 0", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
@@ -10136,7 +10136,7 @@ function ScreenProduction({ persona, navigate }) {
   const CATEGORY_LABELS = { camera:"Camera", gimbal:"Gimbal", light:"Light", monitor:"Monitor", audio:"Audio", encoder:"Encoder" };
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
 
       {/* ── HEADER ── */}
       <div style={{ padding:"14px 28px 0", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
@@ -10736,7 +10736,7 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
   }).sort((a,b) => b.loyalty.points - a.loyalty.points);
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
 
       {/* HEADER */}
       <div style={{ padding:"24px 28px 0", flexShrink:0 }}>
@@ -11054,7 +11054,7 @@ function ScreenNetwork({ persona, navigate }) {
   const weeklyData = [28400,31200,29800,34100,37200,35800,39400,networkGMV/4];
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto" }}>
       {/* Header */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
         <div>
@@ -11247,7 +11247,7 @@ function ScreenSellers({ persona, navigate }) {
   const alertCount = sellers.filter(s=>s.alerts.length>0).length;
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto" }}>
       {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
         <div>
@@ -11380,7 +11380,7 @@ function ScreenSellerDetail({ persona, params, navigate }) {
   const tabs = ["overview","buyers","shows","campaigns"];
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
       {/* Sub-header */}
       <div style={{ background:"#050508", borderBottom:`1px solid ${C.border}`, padding:"14px 28px", display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
         <button onClick={()=>navigate("sellers")}
@@ -11638,7 +11638,7 @@ function ScreenNetworkAnalytics({ persona }) {
   const ranked=[...sellers].sort((a,b)=>b.gmv-a.gmv);
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto" }}>
       <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Network Analytics</div>
       <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Aggregate performance across all {sellers.length} managed accounts</div>
 
@@ -11837,7 +11837,7 @@ function ScreenTeam({ persona }) {
   };
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%", position:"relative" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0, position:"relative" }}>
 
       {/* ── INVITE MODAL ── */}
       {showInvite && (
@@ -12220,7 +12220,7 @@ function ScreenBilling({ persona }) {
   ];
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto" }}>
       <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>Billing</div>
       <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Manage agency subscription and seller plan fees</div>
 
@@ -12321,7 +12321,7 @@ function ScreenWhiteLabel({ persona }) {
   const handleSave=()=>{ setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
   return (
-    <div style={{ padding:"28px 32px", overflowY:"auto", height:"100%" }}>
+    <div style={{ padding:"28px 32px", overflowY:"auto" }}>
       <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, marginBottom:4 }}>White Label</div>
       <div style={{ fontSize:12, color:C.muted, marginBottom:24 }}>Your sellers experience your brand: Streamlive is invisible.</div>
 
@@ -13076,7 +13076,7 @@ export default function StreamlivePrototype() {
         <div style={{ display:"flex", flex:1, overflow:"hidden", minHeight:0 }}>
 
           {/* ── SIDEBAR ── */}
-          <div style={{ width:216, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", padding:"12px 10px", flexShrink:0, background:"#050508" }}>
+          <div style={{ width:216, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", padding:"12px 10px", flexShrink:0, background:"#050508", overflow:"hidden" }}>
             {isEnterprise ? (
               <>
                 {/* Enterprise agency nav */}
@@ -13182,7 +13182,7 @@ export default function StreamlivePrototype() {
           </div>
 
           {/* ── MAIN CONTENT ── */}
-          <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column", minHeight:0 }}>
+          <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column", minHeight:0, position:"relative" }}>
             {isEnterprise ? (
               <>
                 {(view==="network"||view==="dashboard") && <ScreenNetwork          persona={persona} navigate={navigate} />}
