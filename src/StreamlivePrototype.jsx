@@ -8192,6 +8192,7 @@ function ScreenShowPlanner({ navigate, persona }) {
   const [showTalkingPoints, setShowTalkingPoints] = useState({}); // per-product show overrides
   const [expandedTpId, setExpandedTpId] = useState(null); // which product's TP editor is open
   const [tpDraft, setTpDraft] = useState(""); // current draft text in TP input
+  const stepScrollRef = useRef(null); // scroll container for step content
 
   const setTimingForAll = (secs) => {
     const v = Math.max(30, Math.min(600, Number(secs)||90));
@@ -8227,7 +8228,7 @@ function ScreenShowPlanner({ navigate, persona }) {
         <div style={{ display:"flex", gap:0 }}>
           {steps.map((s,i)=>(
             <div key={s} style={{ display:"flex", alignItems:"center" }}>
-              <button onClick={()=>setStep(i+1)} style={{ display:"flex", alignItems:"center", gap:7, background:"none", border:"none", cursor:"pointer", padding:"0 4px" }}>
+              <button onClick={()=>{ setStep(i+1); if(stepScrollRef.current) stepScrollRef.current.scrollTop=0; }} style={{ display:"flex", alignItems:"center", gap:7, background:"none", border:"none", cursor:"pointer", padding:"0 4px" }}>
                 <div style={{ width:22, height:22, borderRadius:"50%", background:step>i+1?C.green:step===i+1?C.accent:C.surface2, border:`2px solid ${step>i+1?C.green:step===i+1?C.accent:C.border2}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:step>=i+1?"#fff":C.subtle, flexShrink:0 }}>
                   {step>i+1?"✓":i+1}
                 </div>
@@ -8238,7 +8239,7 @@ function ScreenShowPlanner({ navigate, persona }) {
           ))}
         </div>
       </div>
-      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
+      <div ref={stepScrollRef} style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
         {step===1 && (
           <div>
             {/* Show Name */}
@@ -8327,7 +8328,7 @@ function ScreenShowPlanner({ navigate, persona }) {
             )}
             <div style={{ marginTop:24, display:"flex", justifyContent:"flex-end", alignItems:"center", gap:12 }}>
               {!showName && <span style={{ fontSize:11, color:"#f59e0b" }}>⚠ Enter a show name to continue</span>}
-              <button onClick={()=>setStep(2)} disabled={selectedPlatforms.length===0 || !showName.trim()} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:selectedPlatforms.length===0||!showName.trim()?"not-allowed":"pointer", opacity:selectedPlatforms.length===0||!showName.trim()?0.4:1 }}>
+              <button onClick={()=>{ setStep(2); if(stepScrollRef.current) stepScrollRef.current.scrollTop=0; }} disabled={selectedPlatforms.length===0 || !showName.trim()} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 28px", borderRadius:10, cursor:selectedPlatforms.length===0||!showName.trim()?"not-allowed":"pointer", opacity:selectedPlatforms.length===0||!showName.trim()?0.4:1 }}>
                 Select Products →
               </button>
             </div>
@@ -8416,7 +8417,7 @@ function ScreenShowPlanner({ navigate, persona }) {
                 ? <span style={{ fontSize:11, color:C.muted }}>Select at least one product to continue</span>
                 : <span style={{ fontSize:11, color:C.muted }}>{selectedProducts.length} product{selectedProducts.length!==1?"s":""} · est. ${selectedProducts.reduce((a,p)=>a+p.price,0).toLocaleString()} potential GMV</span>
               }
-              <button onClick={()=>setStep(3)} disabled={selectedProducts.length===0}
+              <button onClick={()=>{ setStep(3); if(stepScrollRef.current) stepScrollRef.current.scrollTop=0; }} disabled={selectedProducts.length===0}
                 style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`,
                   border:"none", color:"#fff", fontSize:13, fontWeight:700,
                   padding:"10px 28px", borderRadius:10, cursor: selectedProducts.length===0 ? "default" : "pointer",
