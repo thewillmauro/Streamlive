@@ -8841,7 +8841,8 @@ function ScreenShowPlanner({ navigate, persona }) {
                     const cumSec = runOrder.slice(0,i).reduce((a,q)=>a+(productTimings[q.id]||90),0);
                     const cumMin = Math.floor(cumSec/60), cumS = cumSec%60;
                     return (
-                      <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 16px", borderBottom:i<runOrder.length-1?"1px solid "+C.border+"44":"none" }}>
+                      <React.Fragment key={p.id}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 16px", borderBottom:i<runOrder.length-1?"1px solid "+C.border+"44":"none" }}>
                         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.accent, width:16, flexShrink:0 }}>{i+1}</span>
                         <span style={{ fontSize:16, flexShrink:0 }}>{p.image}</span>
                         <div style={{ flex:1, minWidth:0 }}>
@@ -8863,45 +8864,35 @@ function ScreenShowPlanner({ navigate, persona }) {
                         </button>
                         <span style={{ fontSize:9, fontWeight:700, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5, padding:"2px 7px", fontFamily:"'JetBrains Mono',monospace", flexShrink:0 }}>{tm>0?tm+"m ":""}{ts}s</span>
                       </div>
-                      {/* ── Talking Points Editor (expands inline) ── */}
-                      {expandedTpId === p.id && (() => {
-                        const pts = showTalkingPoints[p.id] || p.talkingPoints || [];
-                        const addPt = () => {
-                          const t = tpDraft.trim();
-                          if (!t) return;
-                          setShowTalkingPoints(prev => ({ ...prev, [p.id]: [...(prev[p.id] || p.talkingPoints || []), t] }));
-                          setTpDraft("");
-                        };
-                        const removePt = (idx) => setShowTalkingPoints(prev => ({ ...prev, [p.id]: (prev[p.id] || p.talkingPoints || []).filter((_,i)=>i!==idx) }));
-                        return (
-                          <div style={{ background:"#07070f", borderTop:"1px solid #a78bfa22", padding:"12px 16px" }}>
-                            <div style={{ fontSize:9, fontWeight:800, color:"#a78bfa", textTransform:"uppercase", letterSpacing:".1em", marginBottom:10 }}>✦ Host Talking Points — {p.name}</div>
-                            {pts.length === 0 && (
-                              <div style={{ fontSize:10, color:C.subtle, marginBottom:10, fontStyle:"italic" }}>No custom points yet. AI points will be used. Add your own below.</div>
-                            )}
-                            {pts.map((pt, idx) => (
-                              <div key={idx} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:6, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:8, padding:"8px 10px" }}>
-                                <span style={{ fontSize:11, color:"#a78bfa", flexShrink:0, marginTop:1 }}>✦</span>
-                                <span style={{ flex:1, fontSize:11, color:C.text, lineHeight:1.5 }}>{pt}</span>
-                                <button onClick={()=>removePt(idx)} style={{ background:"none", border:"none", color:C.subtle, cursor:"pointer", fontSize:11, padding:0, flexShrink:0, lineHeight:1 }}>✕</button>
-                              </div>
-                            ))}
-                            <div style={{ display:"flex", gap:8, marginTop:8 }}>
-                              <input
-                                value={tpDraft}
-                                onChange={e=>setTpDraft(e.target.value)}
-                                onKeyDown={e=>e.key==="Enter"&&addPt()}
-                                placeholder="Add a talking point… (press Enter)"
-                                style={{ flex:1, background:"#0a0a14", border:"1px solid #2a2a4a", borderRadius:8, padding:"8px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
-                              />
-                              <button onClick={addPt} style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"8px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>+ Add</button>
+                      {expandedTpId === p.id && (
+                        <div style={{ background:"#07070f", borderTop:"1px solid #a78bfa22", padding:"12px 16px" }}>
+                          <div style={{ fontSize:9, fontWeight:800, color:"#a78bfa", textTransform:"uppercase", letterSpacing:".1em", marginBottom:10 }}>✦ Host Talking Points — {p.name}</div>
+                          {(showTalkingPoints[p.id] || p.talkingPoints || []).length === 0 && (
+                            <div style={{ fontSize:10, color:C.subtle, marginBottom:8, fontStyle:"italic" }}>No custom points yet — AI points will show in briefing. Add below to override.</div>
+                          )}
+                          {(showTalkingPoints[p.id] || p.talkingPoints || []).map((pt, idx) => (
+                            <div key={idx} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:6, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:8, padding:"8px 10px" }}>
+                              <span style={{ fontSize:11, color:"#a78bfa", flexShrink:0, marginTop:1 }}>✦</span>
+                              <span style={{ flex:1, fontSize:11, color:C.text, lineHeight:1.5 }}>{pt}</span>
+                              <button onClick={()=>setShowTalkingPoints(prev=>({...prev,[p.id]:(prev[p.id]||p.talkingPoints||[]).filter((_,i)=>i!==idx)}))} style={{ background:"none", border:"none", color:C.subtle, cursor:"pointer", fontSize:11, padding:0, flexShrink:0 }}>✕</button>
                             </div>
-                            {p.talkingPoints && p.talkingPoints.length > 0 && !showTalkingPoints[p.id] && (
-                              <div style={{ marginTop:8, fontSize:9, color:C.subtle }}>Using {p.talkingPoints.length} points from Catalog defaults. Edit above to override for this show.</div>
-                            )}
+                          ))}
+                          {p.talkingPoints && p.talkingPoints.length > 0 && !showTalkingPoints[p.id] && (
+                            <div style={{ fontSize:9, color:C.subtle, marginBottom:8 }}>Showing {p.talkingPoints.length} Catalog defaults — add a point above to override for this show.</div>
+                          )}
+                          <div style={{ display:"flex", gap:8, marginTop:8 }}>
+                            <input
+                              value={tpDraft}
+                              onChange={e=>setTpDraft(e.target.value)}
+                              onKeyDown={e=>{ if(e.key==="Enter"){ const t=tpDraft.trim(); if(t){ setShowTalkingPoints(prev=>({...prev,[p.id]:[...(prev[p.id]||p.talkingPoints||[]),t]})); setTpDraft(""); } } }}
+                              placeholder="Add a talking point… (press Enter)"
+                              style={{ flex:1, background:"#0a0a14", border:"1px solid #2a2a4a", borderRadius:8, padding:"8px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+                            />
+                            <button onClick={()=>{ const t=tpDraft.trim(); if(t){ setShowTalkingPoints(prev=>({...prev,[p.id]:[...(prev[p.id]||p.talkingPoints||[]),t]})); setTpDraft(""); } }} style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"8px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>+ Add</button>
                           </div>
-                        );
-                      })()}
+                        </div>
+                      )}
+                      </React.Fragment>
                     );
                   })}
                 </div>
