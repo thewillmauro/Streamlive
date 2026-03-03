@@ -3021,6 +3021,12 @@ function LiveCursor() {
       });
     };
 
+    // Lock body scroll — must be injected here (after mount) to override any other CSS
+    const overflowEl = document.createElement('style');
+    overflowEl.id = 'body-overflow-lock';
+    overflowEl.textContent = 'html, body, #root { overflow: hidden !important; height: 100% !important; }';
+    document.head.appendChild(overflowEl);
+
     // Inject stylesheet cursor:none as a fallback layer
     const styleEl = document.createElement('style');
     styleEl.id = 'live-cursor-hide';
@@ -3076,6 +3082,8 @@ function LiveCursor() {
     return () => {
       observer.disconnect();
       if (document.head.contains(styleEl)) document.head.removeChild(styleEl);
+      const ol = document.getElementById('body-overflow-lock');
+      if (ol) document.head.removeChild(ol);
       window.removeEventListener('mousemove',  onMove);
       window.removeEventListener('mousedown',  onDown);
       window.removeEventListener('mouseup',    onUp);
