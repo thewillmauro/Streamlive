@@ -501,10 +501,10 @@ function CheckoutModal({ plan, onClose }) {
 // ─── SHOPIFY CATALOG DATA ─────────────────────────────────────────────────────
 const PRODUCTS = [
   // ── Banana Republic (Pro): Apparel & Fashion ───────────────────────────────
-  { id:"p1",  name:"Merino Wool Blazer",               sku:"BR-BLZ-001", price:228, cost:82,  inventory:48,  category:"Blazers",      image:"🧥", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:62,  avgPerShow:5.8 },
+  { id:"p1",  name:"Merino Wool Blazer",               sku:"BR-BLZ-001", price:228, cost:82,  inventory:48,  category:"Blazers",      image:"🧥", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:62,  avgPerShow:5.8, talkingPoints:["This is our #1 repeat-buyer product — mention the Merino grade upfront","Pair it with the linen trousers for the bundle close","Hold the lapel to camera — the texture sells itself"] },
   { id:"p2",  name:"Italian Linen Trousers",            sku:"BR-TRS-002", price:148, cost:51,  inventory:84,  category:"Bottoms",      image:"👖", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_002", aiScore:8.9, soldLast30:88,  avgPerShow:7.2 },
   { id:"p3",  name:"Leather Crossbody Bag",             sku:"BR-BAG-003", price:198, cost:74,  inventory:36,  category:"Accessories",  image:"👜", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:44,  avgPerShow:3.9 },
-  { id:"p4",  name:"Silk Wrap Midi Dress",              sku:"BR-DRS-004", price:268, cost:96,  inventory:22,  category:"Dresses",      image:"👗", platforms:["TT","IG","YT"],    showReady:true,  shopifyId:"sh_004", aiScore:9.6, soldLast30:38,  avgPerShow:4.1 },
+  { id:"p4",  name:"Silk Wrap Midi Dress",              sku:"BR-DRS-004", price:268, cost:96,  inventory:22,  category:"Dresses",      image:"👗", platforms:["TT","IG","YT"],    showReady:true,  shopifyId:"sh_004", aiScore:9.6, soldLast30:38,  avgPerShow:4.1, talkingPoints:["Only 22 left — say it in the first 10 seconds","Ask viewers to comment their size for social proof","Describe how it wraps differently on each body type — invite DMs"] },
   { id:"p5",  name:"Cashmere Crewneck Sweater",         sku:"BR-KNT-005", price:188, cost:68,  inventory:60,  category:"Knitwear",     image:"🧶", platforms:["TT","IG","AM"],    showReady:false, shopifyId:"sh_005", aiScore:8.4, soldLast30:52,  avgPerShow:5.0 },
   { id:"p6",  name:"Slim Chino Shorts",                 sku:"BR-SHT-006", price:80,  cost:28,  inventory:120, category:"Bottoms",      image:"🩳", platforms:["TT","AM"],         showReady:true,  shopifyId:"sh_006", aiScore:7.8, soldLast30:94,  avgPerShow:8.4 },
   { id:"p7",  name:"Suede Chelsea Boots",               sku:"BR-BOO-007", price:298, cost:108, inventory:18,  category:"Footwear",     image:"👢", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_007", aiScore:8.2, soldLast30:28,  avgPerShow:2.6 },
@@ -2607,7 +2607,7 @@ function SceneTab({ activeScene, lightPattern, lightColor, lightTemp, micMuted, 
 }
 
 // ── BriefingTab ───────────────────────────────────────────────────────────────
-function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
+function BriefingTab({ runOrder, showName, productTimings, showStartTime, showTalkingPoints }) {
   const prods = (runOrder && runOrder.length > 0) ? runOrder : PRODUCTS.slice(0, 5);
   const _lsStart = (() => { try { return parseInt(localStorage.getItem("STRMLIVE_SHOW_START")||"0")||0; } catch(e){return 0;} })();
   const timings   = productTimings || {};
@@ -2680,7 +2680,10 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
 
   const openForHost = () => {
     const timings = productTimings || {};
+    const tpMap = showTalkingPoints || {};
     const prodsData = JSON.stringify(prods.map(function(p) {
+      // Show-specific talking points override catalog defaults
+      const customPts = tpMap[p.id] || p.talkingPoints || [];
       return {
         id:p.id, name:p.name, image:p.image||"\u{1F4E6}", price:p.price,
         timing: timings[p.id] || 90,
@@ -2690,6 +2693,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
         aiScore:p.aiScore!==undefined?p.aiScore:null,
         showReady:!!p.showReady, platforms:p.platforms||[],
         cost:p.cost||null,
+        talkingPoints: customPts,
       };
     }));
 
@@ -2754,11 +2758,16 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
   .stat-val { font-size: 22px; font-weight: 800; font-family: monospace; margin-bottom: 4px; }
   .stat-lbl { font-size: 10px; color: #4b5563; text-transform: uppercase; letter-spacing: .08em; }
   .tp-card { background: #07070f; border: 1px solid #1e1e3a; border-radius: 12px; padding: 20px 24px; }
-  .tp-title { font-size: 10px; font-weight: 800; color: #4b5563; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 14px; }
+  .tp-title { font-size: 10px; font-weight: 800; color: #4b5563; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 14px; display:flex; align-items:center; gap:8px; }
+  .tp-badge { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing:.06em; }
+  .tp-badge-custom { background: #1a0f2e; border: 1px solid #a78bfa44; color: #a78bfa; }
+  .tp-badge-ai { background: #0a1e16; border: 1px solid #10b98133; color: #10b981; }
   .tp-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid #1a1a2e44; }
   .tp-item:last-child { border-bottom: none; }
   .tp-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+  .tp-icon-custom { font-size: 14px; flex-shrink: 0; line-height: 1.8; color: #a78bfa; }
   .tp-text { font-size: 16px; color: #d1d5db; line-height: 1.55; }
+  .tp-text-custom { font-size: 16px; color: #e9e3ff; line-height: 1.55; font-weight: 500; }
   #bottom-bar { display: flex; align-items: center; padding: 14px 24px; background: #06060e; border-top: 1px solid #1a1a2e; flex-shrink: 0; gap: 16px; }
   #progress-track { flex: 1; height: 4px; background: #1a1a2e; border-radius: 2px; overflow: hidden; }
   #progress-fill { height: 100%; background: #a78bfa; border-radius: 2px; transition: width .3s; }
@@ -2855,6 +2864,11 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
 
   // ── 7. Talking points ─────────────────────────────────────────────────────────
   function getPoints(p) {
+    // If the product has custom talking points (set in Show Planner or Catalog), use them
+    if (p.talkingPoints && p.talkingPoints.length > 0) {
+      return p.talkingPoints.map(function(text) { return {icon:"✦", text:text, custom:true}; });
+    }
+    // Otherwise fall back to AI-generated points from product data
     var pts = [];
     pts.push({icon:"💰", text:"Lead with the price: $"+p.price+" is your live-exclusive rate"});
     if (p.inventory !== null && p.inventory < 30)
@@ -2903,11 +2917,19 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime }) {
       if(p.avgPerShow) addStat(p.avgPerShow,"Avg / Show","#38bdf8");
       if(margin!==null) addStat(margin+"%","Margin","#10b981");
       var tpCard=el("div","tp-card");
-      var tpTitle=el("div","tp-title"); tpTitle.textContent="Host Talking Points"; tpCard.appendChild(tpTitle);
-      getPoints(p).forEach(function(pt){
+      var tpTitle=el("div","tp-title");
+      var tpTitleText=document.createTextNode("Host Talking Points");
+      tpTitle.appendChild(tpTitleText);
+      var pts=getPoints(p);
+      var isCustom=pts.length>0&&pts[0].custom;
+      var badge=el("span","tp-badge "+(isCustom?"tp-badge-custom":"tp-badge-ai"));
+      badge.textContent=isCustom?"✦ Custom":"AI Generated";
+      tpTitle.appendChild(badge);
+      tpCard.appendChild(tpTitle);
+      pts.forEach(function(pt){
         var item=el("div","tp-item");
-        var icon=el("span","tp-icon"); icon.textContent=pt.icon;
-        var text=el("span","tp-text"); text.textContent=pt.text;
+        var icon=el("span",pt.custom?"tp-icon-custom":"tp-icon"); icon.textContent=pt.icon;
+        var text=el("span",pt.custom?"tp-text-custom":"tp-text"); text.textContent=pt.text;
         item.appendChild(icon); item.appendChild(text); tpCard.appendChild(item);
       });
       slide.appendChild(counter); slide.appendChild(hero); slide.appendChild(stats); slide.appendChild(tpCard);
@@ -3254,6 +3276,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
     const fromParams = params?.productTimings || {};
     return Object.fromEntries(base.map(p => [p.id, fromParams[p.id] || 90]));
   });
+  const liveShowTalkingPoints = params?.showTalkingPoints || {};
   const [catalogSearch,   setCatalogSearch]   = useState("");
 
   // Keep liveSession in sync whenever run order or timings change in Catalog tab
@@ -4207,6 +4230,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               showName={showName}
               productTimings={productTimings}
               showStartTime={showStartTime.current}
+              showTalkingPoints={liveShowTalkingPoints}
             />
           )}
 
@@ -7783,6 +7807,19 @@ function ScreenCatalog({ persona, navigate }) {
     setProducts(ps => ps.map(p => p.id===id ? {...p, showReady:!p.showReady} : p));
   };
 
+  // Talking points editing
+  const [expandedTpId, setExpandedTpId] = useState(null);
+  const [tpDraft, setTpDraft] = useState("");
+  const addTalkingPoint = (id) => {
+    const t = tpDraft.trim();
+    if (!t) return;
+    setProducts(ps => ps.map(p => p.id===id ? {...p, talkingPoints:[...(p.talkingPoints||[]),t]} : p));
+    setTpDraft("");
+  };
+  const removeTalkingPoint = (id, idx) => {
+    setProducts(ps => ps.map(p => p.id===id ? {...p, talkingPoints:(p.talkingPoints||[]).filter((_,i)=>i!==idx)} : p));
+  };
+
   // ── Pre-connection screen ─────────────────────────────────────────────────
   if (!shopifyConnected) {
     const STEPS = [
@@ -8084,6 +8121,44 @@ function ScreenCatalog({ persona, navigate }) {
                   <div style={{ position:"absolute", top:3, left:p.showReady?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
                 </div>
               </div>
+              {/* ── Talking Points ── */}
+              <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${C.border}` }}>
+                <button onClick={()=>{ setExpandedTpId(expandedTpId===p.id?null:p.id); setTpDraft(""); }}
+                  style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", padding:0, width:"100%" }}>
+                  <span style={{ fontSize:10, fontWeight:700, color:(p.talkingPoints||[]).length>0?"#a78bfa":C.muted }}>
+                    ✦ Talking Points
+                  </span>
+                  {(p.talkingPoints||[]).length > 0
+                    ? <span style={{ fontSize:9, background:"#1a0f2e", border:"1px solid #a78bfa44", color:"#a78bfa", borderRadius:4, padding:"1px 7px" }}>{p.talkingPoints.length}</span>
+                    : <span style={{ fontSize:9, color:C.subtle }}>Add for briefing</span>
+                  }
+                  <span style={{ marginLeft:"auto", fontSize:10, color:C.subtle }}>{expandedTpId===p.id?"▲":"▼"}</span>
+                </button>
+                {expandedTpId === p.id && (
+                  <div style={{ marginTop:10 }}>
+                    {(p.talkingPoints||[]).length === 0 && (
+                      <div style={{ fontSize:10, color:C.subtle, marginBottom:8, fontStyle:"italic" }}>No points yet — AI points will show in briefing. Add custom points below to override.</div>
+                    )}
+                    {(p.talkingPoints||[]).map((pt,idx)=>(
+                      <div key={idx} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:6, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:8, padding:"7px 10px" }}>
+                        <span style={{ fontSize:10, color:"#a78bfa", flexShrink:0, marginTop:1 }}>✦</span>
+                        <span style={{ flex:1, fontSize:11, color:C.text, lineHeight:1.5 }}>{pt}</span>
+                        <button onClick={()=>removeTalkingPoint(p.id,idx)} style={{ background:"none", border:"none", color:C.subtle, cursor:"pointer", fontSize:11, padding:0, flexShrink:0 }}>✕</button>
+                      </div>
+                    ))}
+                    <div style={{ display:"flex", gap:6, marginTop:6 }}>
+                      <input
+                        value={tpDraft}
+                        onChange={e=>setTpDraft(e.target.value)}
+                        onKeyDown={e=>e.key==="Enter"&&addTalkingPoint(p.id)}
+                        placeholder="e.g. Lead with the texture, hold to camera…"
+                        style={{ flex:1, background:"#0a0a14", border:"1px solid #2a2a4a", borderRadius:8, padding:"7px 10px", color:C.text, fontSize:11, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+                      />
+                      <button onClick={()=>addTalkingPoint(p.id)} style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"7px 12px", borderRadius:8, cursor:"pointer" }}>+ Add</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -8114,6 +8189,9 @@ function ScreenShowPlanner({ navigate, persona }) {
 
   const [productTimings, setProductTimings] = useState({});
   const [globalTiming, setGlobalTiming] = useState(90);
+  const [showTalkingPoints, setShowTalkingPoints] = useState({}); // per-product show overrides
+  const [expandedTpId, setExpandedTpId] = useState(null); // which product's TP editor is open
+  const [tpDraft, setTpDraft] = useState(""); // current draft text in TP input
 
   const setTimingForAll = (secs) => {
     const v = Math.max(30, Math.min(600, Number(secs)||90));
@@ -8774,10 +8852,56 @@ function ScreenShowPlanner({ navigate, persona }) {
                             <span>AI {p.aiScore}</span>
                             <span style={{ margin:"0 4px" }}>·</span>
                             <span style={{ color:C.muted }}>@{cumMin>0?cumMin+"m ":""}{cumS}s</span>
+                            {(showTalkingPoints[p.id]||p.talkingPoints||[]).length > 0 && (
+                              <span style={{ marginLeft:4, color:"#a78bfa" }}>· {(showTalkingPoints[p.id]||p.talkingPoints||[]).length} points</span>
+                            )}
                           </div>
                         </div>
+                        <button onClick={()=>{ setExpandedTpId(expandedTpId===p.id?null:p.id); setTpDraft(""); }}
+                          style={{ fontSize:9, fontWeight:700, color:(showTalkingPoints[p.id]||p.talkingPoints||[]).length>0?"#a78bfa":C.muted, background:(showTalkingPoints[p.id]||p.talkingPoints||[]).length>0?"#a78bfa18":"transparent", border:`1px solid ${(showTalkingPoints[p.id]||p.talkingPoints||[]).length>0?"#a78bfa44":C.border}`, borderRadius:5, padding:"2px 8px", cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                          ✦ Points
+                        </button>
                         <span style={{ fontSize:9, fontWeight:700, color:"#a78bfa", background:"#1a0f2e", border:"1px solid #a78bfa33", borderRadius:5, padding:"2px 7px", fontFamily:"'JetBrains Mono',monospace", flexShrink:0 }}>{tm>0?tm+"m ":""}{ts}s</span>
                       </div>
+                      {/* ── Talking Points Editor (expands inline) ── */}
+                      {expandedTpId === p.id && (() => {
+                        const pts = showTalkingPoints[p.id] || p.talkingPoints || [];
+                        const addPt = () => {
+                          const t = tpDraft.trim();
+                          if (!t) return;
+                          setShowTalkingPoints(prev => ({ ...prev, [p.id]: [...(prev[p.id] || p.talkingPoints || []), t] }));
+                          setTpDraft("");
+                        };
+                        const removePt = (idx) => setShowTalkingPoints(prev => ({ ...prev, [p.id]: (prev[p.id] || p.talkingPoints || []).filter((_,i)=>i!==idx) }));
+                        return (
+                          <div style={{ background:"#07070f", borderTop:"1px solid #a78bfa22", padding:"12px 16px" }}>
+                            <div style={{ fontSize:9, fontWeight:800, color:"#a78bfa", textTransform:"uppercase", letterSpacing:".1em", marginBottom:10 }}>✦ Host Talking Points — {p.name}</div>
+                            {pts.length === 0 && (
+                              <div style={{ fontSize:10, color:C.subtle, marginBottom:10, fontStyle:"italic" }}>No custom points yet. AI points will be used. Add your own below.</div>
+                            )}
+                            {pts.map((pt, idx) => (
+                              <div key={idx} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:6, background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:8, padding:"8px 10px" }}>
+                                <span style={{ fontSize:11, color:"#a78bfa", flexShrink:0, marginTop:1 }}>✦</span>
+                                <span style={{ flex:1, fontSize:11, color:C.text, lineHeight:1.5 }}>{pt}</span>
+                                <button onClick={()=>removePt(idx)} style={{ background:"none", border:"none", color:C.subtle, cursor:"pointer", fontSize:11, padding:0, flexShrink:0, lineHeight:1 }}>✕</button>
+                              </div>
+                            ))}
+                            <div style={{ display:"flex", gap:8, marginTop:8 }}>
+                              <input
+                                value={tpDraft}
+                                onChange={e=>setTpDraft(e.target.value)}
+                                onKeyDown={e=>e.key==="Enter"&&addPt()}
+                                placeholder="Add a talking point… (press Enter)"
+                                style={{ flex:1, background:"#0a0a14", border:"1px solid #2a2a4a", borderRadius:8, padding:"8px 12px", color:C.text, fontSize:11, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+                              />
+                              <button onClick={addPt} style={{ background:"linear-gradient(135deg,#a78bfa,#7c3aed)", border:"none", color:"#fff", fontSize:11, fontWeight:700, padding:"8px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>+ Add</button>
+                            </div>
+                            {p.talkingPoints && p.talkingPoints.length > 0 && !showTalkingPoints[p.id] && (
+                              <div style={{ marginTop:8, fontSize:9, color:C.subtle }}>Using {p.talkingPoints.length} points from Catalog defaults. Edit above to override for this show.</div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     );
                   })}
                 </div>
@@ -8859,7 +8983,7 @@ function ScreenShowPlanner({ navigate, persona }) {
       {step===5 && (
         <div style={{ padding:"14px 28px", borderTop:`1px solid ${C.border}`, background:C.surface, flexShrink:0, display:"flex", gap:10 }}>
           <button onClick={()=>setStep(4)} style={{ background:"transparent", border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"12px 20px", borderRadius:10, cursor:"pointer" }}>← Edit</button>
-          <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now()})}
+          <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now(),showTalkingPoints})}
             style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:15, fontWeight:800, padding:"14px", borderRadius:10, cursor:"pointer", letterSpacing:".02em", boxShadow:"0 4px 20px #10b98144" }}>
             🔴 Go Live Now
           </button>
