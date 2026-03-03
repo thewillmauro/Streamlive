@@ -12958,7 +12958,7 @@ export default function StreamlivePrototype() {
       <style>{GLOBAL_CSS}</style>
 
       {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
-      <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", minHeight:0, background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif" }}>
+      <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", minHeight:0, overflow:"hidden", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif" }}>
 
         {/* ── DEMO BANNER ── */}
         <div style={{ background:"linear-gradient(90deg,#1a0f2e,#2d1f5e,#1a0f2e)", borderBottom:"1px solid #7c3aed33", padding:"4px 16px", display:"flex", alignItems:"center", gap:12, flexShrink:0, flexWrap:"wrap", minHeight:36 }}>
