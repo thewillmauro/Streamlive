@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body, #root { height: 100% !important; overflow: hidden !important; background: #06060e; }
+  html, body, #root { height: 100%; background: #06060e; }
   *:not(iframe):not([id*="intercom"]):not([class*="intercom"]), *:not(iframe):not([id*="intercom"]):not([class*="intercom"]):focus { cursor: none !important; }
   [id*="intercom"], [id*="intercom"] *, [class*="intercom"], [class*="intercom"] * { cursor: auto !important; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
