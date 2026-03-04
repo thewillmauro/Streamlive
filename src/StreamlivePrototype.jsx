@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { supabase } from './lib/supabase.js';
 
 // ─── FONTS ────────────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
@@ -13174,6 +13175,15 @@ export default function StreamlivePrototype() {
                 <div style={{ fontSize:11, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.name}</div>
                 <div style={{ fontSize:9, color:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.shop}</div>
               </div>
+              <button
+                onClick={async () => { await supabase.auth.signOut() }}
+                title="Sign Out"
+                style={{ background:"none", border:`1px solid ${C.border2}`, borderRadius:6, padding:"4px 8px", cursor:"pointer", fontSize:9, fontWeight:600, color:C.muted, transition:"all .15s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.borderColor=C.red; e.currentTarget.style.color=C.red }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor=C.border2; e.currentTarget.style.color=C.muted }}
+              >
+                Sign Out
+              </button>
             </div>
           </div>
 

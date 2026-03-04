@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import StreamlivePrototype from './StreamlivePrototype.jsx'
+import { supabase } from './lib/supabase.js'
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 function useRoute() {
@@ -32,6 +33,7 @@ const PAGE_META = {
   '/platform/instagram-live':  { title: 'Instagram Live Selling Tools — Streamlive',       desc: 'Connect Streamlive to Instagram Live. Unified buyer CRM, DM automations, and multistream — built for Instagram live sellers.' },
   '/platform/amazon-live':     { title: 'Amazon Live Selling Tools — Streamlive',          desc: 'Connect Streamlive to Amazon Live. Buyer attribution, CRM sync, and multistream alongside your other channels.' },
   '/platform/youtube-live':    { title: 'YouTube Live Selling Tools — Streamlive',         desc: 'Connect Streamlive to YouTube Live. Live Pixel attribution, buyer CRM sync, and multistream — built for YouTube live sellers.' },
+  '/signin':                   { title: 'Sign In — Streamlive',                                                                           desc: 'Sign in or create your Streamlive account.' },
 }
 
 function updatePageMeta(route) {
@@ -135,6 +137,7 @@ const GLOBAL_CSS = `
   @keyframes pop       { 0% { transform:scale(.85);opacity:0 } 60% { transform:scale(1.06) } 100% { transform:scale(1);opacity:1 } }
   @keyframes pulse     { 0%,100% { opacity:1 } 50% { opacity:.35 } }
   @keyframes shimmer   { 0% { background-position:-200% 0 } 100% { background-position:200% 0 } }
+  @keyframes spin      { to { transform:rotate(360deg) } }
 
   .fade-a0 { animation: fadeUp .55s ease both; }
   .fade-a1 { animation: fadeUp .55s .08s ease both; }
@@ -168,6 +171,7 @@ function Nav({ currentPlan }) {
       <div style={{ display:'flex', alignItems:'center', gap:16 }}>
         <a href="#features"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
         <a href="#pricing"   style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
+        <a href="/signin" style={{ fontSize:13, color:'#9ca3af', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();navigate('/signin')}}>Sign In</a>
         {p && (
           <div style={{ display:'flex', alignItems:'center', gap:6, background:`${p.color}12`, border:`1px solid ${p.color}33`, borderRadius:6, padding:'4px 12px' }}>
             <div style={{ width:5, height:5, borderRadius:'50%', background:p.color, animation:'pulse 2s infinite' }} />
@@ -528,6 +532,7 @@ function Landing() {
           <div className="nav-links" style={{ alignItems:'center', gap:20 }}>
             <a href="#features" style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
             <a href="#pricing"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
+            <a href="/signin" style={{ fontSize:13, color:'#9ca3af', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();navigate('/signin')}}>Sign In</a>
             <button onClick={()=>openDemo()} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Open App →</button>
           </div>
           <button className="nav-hamburger" onClick={()=>setMenuOpen(m=>!m)} style={{ background:'none', border:'1px solid #1e1e3a', borderRadius:8, color:'#9ca3af', padding:'6px 10px', cursor:'pointer', fontSize:16, display:'none', alignItems:'center', justifyContent:'center' }}>
@@ -538,6 +543,7 @@ function Landing() {
         <div className={`mobile-menu${menuOpen?' open':''}`} style={{ background:'#07070f', borderBottom:'1px solid #14142a', padding:'16px 24px', gap:0, position:'sticky', top:58, zIndex:49 }}>
           <a href="#features" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
           <a href="#pricing"  style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
+          <a href="/signin" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);navigate('/signin')}}>Sign In</a>
           <button onClick={()=>{setMenuOpen(false);openDemo()}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Open App →</button>
         </div>
 
@@ -582,7 +588,8 @@ function Landing() {
               </div>
             )}
           </div>
-          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:24 }}>Free during beta · No credit card required</p>
+          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:8 }}>Free during beta · No credit card required</p>
+          <p className="fade-a3" style={{ fontSize:12, color:'#4b5563', marginBottom:24 }}>Already have an account? <a href="/signin" onClick={e=>{e.preventDefault();navigate('/signin')}} style={{ color:'#a78bfa', fontWeight:600, textDecoration:'none' }}>Sign in</a></p>
 
           {/* Live viewer count: mirrors Live Companion platform strip behavior */}
           <div style={{ display:'flex', justifyContent:'center', marginBottom:0 }}>
@@ -1078,7 +1085,8 @@ function Landing() {
               </div>
             )}
           </div>
-          {!submitted && <p style={{ fontSize:11, color:'#374151' }}>Free during beta · No credit card</p>}
+          {!submitted && <p style={{ fontSize:11, color:'#374151', marginBottom:6 }}>Free during beta · No credit card</p>}
+          <p style={{ fontSize:12, color:'#4b5563' }}>Already have an account? <a href="/signin" onClick={e=>{e.preventDefault();navigate('/signin')}} style={{ color:'#a78bfa', fontWeight:600, textDecoration:'none' }}>Sign in</a></p>
         </div>
 
         {/* ── FOOTER ───────────────────────────────────────────────────────── */}
@@ -1099,6 +1107,7 @@ function Landing() {
                   {label:'Pricing',  href:'/#pricing',  action:()=>document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})},
                   {label:'Changelog',href:'/changelog',  action:()=>navigate('/changelog')},
                   {label:'Roadmap',  href:'/roadmap',    action:()=>navigate('/roadmap')},
+                  {label:'Sign In', href:'/signin',     action:()=>navigate('/signin')},
                 ].map(({label,href,action})=>(
                   <a key={label} href={href} onClick={e=>{e.preventDefault();action()}} className="footer-link-hover" style={{ display:'block', fontSize:13, color:'#374151', marginBottom:8, textDecoration:'none', transition:'color .15s' }}>{label}</a>
                 ))}
@@ -3291,9 +3300,331 @@ function LiveCursor() {
   );
 }
 
+// ─── SIGN IN PAGE ────────────────────────────────────────────────────────────
+function SignInPage() {
+  const [mode, setMode] = useState('signin') // 'signin' | 'signup' | 'reset' | 'reset-sent'
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [accountType, setAccountType] = useState('business') // 'business' | 'partner'
+  useIntercom()
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      if (mode === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
+      } else if (mode === 'signup') {
+        if (password.length < 6) { setError('Password must be at least 6 characters'); setLoading(false); return }
+        if (password !== confirmPassword) { setError('Passwords do not match'); setLoading(false); return }
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { first_name: firstName, account_type: accountType } }
+        })
+        if (error) throw error
+      } else if (mode === 'reset') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email)
+        if (error) throw error
+        setMode('reset-sent')
+      }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/app' }
+    })
+    if (error) setError(error.message)
+  }
+
+  const googleSvg = (
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.08 24.08 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+  )
+
+  const eyeIcon = (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      {showPassword ? (
+        <>
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </>
+      ) : (
+        <>
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </>
+      )}
+    </svg>
+  )
+
+  const inputStyle = {
+    width:'100%', padding:'12px 16px', background:'#0d0d1a', border:'1px solid #1e1e3a',
+    borderRadius:10, color:'#e2e8f0', fontSize:14, fontFamily:"'DM Sans',sans-serif",
+    outline:'none', transition:'border-color .15s ease',
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'row', background:'#06060e' }}>
+      <style>{FONT}{GLOBAL_CSS}{`
+        @media(max-width:768px){
+          .signin-split { flex-direction:column !important; }
+          .signin-left { min-height:auto !important; padding:40px 24px 24px !important; }
+          .signin-left .signin-orbs { display:none !important; }
+          .signin-left .signin-stats { display:none !important; }
+          .signin-right { padding:0 24px 40px !important; }
+          .signin-card { padding:28px 20px !important; max-width:100% !important; }
+        }
+      `}</style>
+
+      <div className="signin-split" style={{ display:'flex', flex:1, minHeight:'100vh' }}>
+        {/* Left branded panel */}
+        <div className="signin-left" style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', position:'relative', overflow:'hidden', padding:'60px 40px', background:'#06060e', minHeight:'100vh' }}>
+          <div className="signin-orbs" style={{ position:'absolute', inset:0, pointerEvents:'none' }}>
+            <div style={{ position:'absolute', top:'20%', left:'15%', width:400, height:400, borderRadius:'50%', background:'#7c3aed', opacity:0.04, filter:'blur(120px)' }} />
+            <div style={{ position:'absolute', bottom:'25%', right:'10%', width:340, height:340, borderRadius:'50%', background:'#4f46e5', opacity:0.03, filter:'blur(100px)' }} />
+          </div>
+
+          <div style={{ position:'relative', zIndex:1, textAlign:'center', maxWidth:400 }}>
+            <button onClick={()=>navigate('/')} style={{ display:'inline-flex', alignItems:'center', gap:10, background:'none', border:'none', cursor:'pointer', padding:0, marginBottom:40 }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#fff', boxShadow:'0 2px 16px rgba(124,58,237,.45)' }}>S</div>
+              <span style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>Streamlive</span>
+            </button>
+
+            <h2 style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(24px,3vw,36px)', fontWeight:800, color:'#fff', lineHeight:1.15, letterSpacing:'-1px', marginBottom:16 }}>
+              The command center<br />for live commerce.
+            </h2>
+            <p style={{ fontSize:15, color:'#4b5563', lineHeight:1.6, marginBottom:32 }}>
+              Multistream, track every buyer, and grow your live selling business — all from one dashboard.
+            </p>
+
+            <div className="signin-stats" style={{ display:'flex', justifyContent:'center', gap:10, flexWrap:'wrap' }}>
+              {['5 Channels','99% Attribution','2,400+ Sellers'].map(s => (
+                <span key={s} style={{ fontSize:11, fontWeight:600, color:'#6b7280', background:'#0d0d1a', border:'1px solid #1e1e3a', borderRadius:99, padding:'5px 14px' }}>{s}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right form panel */}
+        <div className="signin-right" style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:'60px 40px', minHeight:'100vh' }}>
+          <div className="signin-card fade-a0" style={{ width:'100%', maxWidth:420, background:'#0a0a14', border:'1px solid #1e1e3a', borderRadius:16, padding:40 }}>
+            {/* Business / Partner toggle */}
+            <div style={{ display:'flex', background:'#0d0d1a', border:'1px solid #1e1e3a', borderRadius:10, padding:3, marginBottom:24 }}>
+              {['business','partner'].map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={()=>setAccountType(t)}
+                  style={{
+                    flex:1, padding:'8px 0', fontSize:13, fontWeight:600, border:'none', borderRadius:8, cursor:'pointer',
+                    background: accountType === t ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : 'transparent',
+                    color: accountType === t ? '#fff' : '#6b7280',
+                    transition:'all .2s ease',
+                    textTransform:'capitalize',
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:700, color:'#fff', marginBottom:6 }}>
+              {mode === 'signin' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset password' : 'Check your email'}
+            </h1>
+            <p style={{ fontSize:14, color:'#6b7280', marginBottom:28 }}>
+              {mode === 'signin' ? 'Sign in to your account' : mode === 'signup' ? 'Get started with Streamlive' : mode === 'reset' ? 'Enter your email to receive a reset link' : 'We sent a password reset link to your email'}
+            </p>
+
+            {mode === 'reset-sent' ? (
+              <>
+                <div style={{ textAlign:'center', padding:'20px 0' }}>
+                  <div style={{ fontSize:40, marginBottom:16 }}>&#9993;</div>
+                  <p style={{ fontSize:14, color:'#9ca3af', lineHeight:1.6, marginBottom:24 }}>
+                    If an account exists for <strong style={{ color:'#e2e8f0' }}>{email}</strong>, you'll receive a password reset link shortly.
+                  </p>
+                </div>
+                <button
+                  onClick={()=>{ setError(''); setMode('signin') }}
+                  className="cta-btn"
+                  style={{ width:'100%', height:48, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:15, fontWeight:700, borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
+                >
+                  Back to Sign In
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Google button — only on signin/signup */}
+                {(mode === 'signin' || mode === 'signup') && (
+                  <>
+                    <button
+                      onClick={handleGoogleSignIn}
+                      style={{ width:'100%', height:48, display:'flex', alignItems:'center', justifyContent:'center', gap:10, background:'#fff', color:'#1f2937', fontSize:14, fontWeight:600, border:'none', borderRadius:12, cursor:'pointer', transition:'opacity .15s' }}
+                      onMouseEnter={e=>e.currentTarget.style.opacity='0.9'}
+                      onMouseLeave={e=>e.currentTarget.style.opacity='1'}
+                    >
+                      {googleSvg}
+                      Continue with Google
+                    </button>
+
+                    {/* Divider */}
+                    <div style={{ display:'flex', alignItems:'center', gap:12, margin:'24px 0' }}>
+                      <div style={{ flex:1, height:1, background:'#1e1e3a' }} />
+                      <span style={{ fontSize:12, color:'#4b5563', fontWeight:500 }}>or</span>
+                      <div style={{ flex:1, height:1, background:'#1e1e3a' }} />
+                    </div>
+                  </>
+                )}
+
+                <form onSubmit={handleSubmit}>
+                  {mode === 'signup' && (
+                    <div style={{ marginBottom:14 }}>
+                      <input
+                        type="text"
+                        placeholder="First name"
+                        value={firstName}
+                        onChange={e=>setFirstName(e.target.value)}
+                        style={inputStyle}
+                        onFocus={e=>e.target.style.borderColor='#7c3aed'}
+                        onBlur={e=>e.target.style.borderColor='#1e1e3a'}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ marginBottom:14 }}>
+                    <input
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={e=>setEmail(e.target.value)}
+                      style={inputStyle}
+                      onFocus={e=>e.target.style.borderColor='#7c3aed'}
+                      onBlur={e=>e.target.style.borderColor='#1e1e3a'}
+                    />
+                  </div>
+
+                  {(mode === 'signin' || mode === 'signup') && (
+                    <div style={{ position:'relative', marginBottom: mode === 'signin' ? 8 : 14 }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Password"
+                        value={password}
+                        onChange={e=>setPassword(e.target.value)}
+                        style={{ ...inputStyle, paddingRight:44 }}
+                        onFocus={e=>e.target.style.borderColor='#7c3aed'}
+                        onBlur={e=>e.target.style.borderColor='#1e1e3a'}
+                      />
+                      <button
+                        type="button"
+                        onClick={()=>setShowPassword(v=>!v)}
+                        style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', padding:2, display:'flex' }}
+                      >
+                        {eyeIcon}
+                      </button>
+                    </div>
+                  )}
+
+                  {mode === 'signin' && (
+                    <div style={{ textAlign:'right', marginBottom:20 }}>
+                      <button type="button" onClick={()=>{ setError(''); setMode('reset') }} style={{ background:'none', border:'none', color:'#6b7280', fontSize:12, cursor:'pointer', fontWeight:500 }}>Forgot password?</button>
+                    </div>
+                  )}
+
+                  {mode === 'signup' && (
+                    <div style={{ position:'relative', marginBottom:20 }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Confirm password"
+                        value={confirmPassword}
+                        onChange={e=>setConfirmPassword(e.target.value)}
+                        style={inputStyle}
+                        onFocus={e=>e.target.style.borderColor='#7c3aed'}
+                        onBlur={e=>e.target.style.borderColor='#1e1e3a'}
+                      />
+                    </div>
+                  )}
+
+                  {error && (
+                    <p style={{ color:'#ef4444', fontSize:13, marginBottom:14, lineHeight:1.4 }}>{error}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="cta-btn"
+                    style={{ width:'100%', height:48, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:15, fontWeight:700, borderRadius:12, cursor: loading ? 'wait' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, opacity: loading ? 0.7 : 1 }}
+                  >
+                    {loading ? (
+                      <div style={{ width:20, height:20, border:'2px solid #fff4', borderTop:'2px solid #fff', borderRadius:'50%', animation:'spin .7s linear infinite' }} />
+                    ) : (
+                      mode === 'signin' ? 'Sign In →' : mode === 'signup' ? 'Create Account →' : 'Send Reset Link →'
+                    )}
+                  </button>
+                </form>
+
+                <p style={{ textAlign:'center', fontSize:13, color:'#6b7280', marginTop:24 }}>
+                  {mode === 'signin' ? (
+                    <>Don't have an account?{' '}<button onClick={()=>{ setError(''); setMode('signup') }} style={{ background:'none', border:'none', color:'#a78bfa', fontWeight:600, cursor:'pointer', fontSize:13 }}>Create one</button></>
+                  ) : (
+                    <>Already have an account?{' '}<button onClick={()=>{ setError(''); setMode('signin') }} style={{ background:'none', border:'none', color:'#a78bfa', fontWeight:600, cursor:'pointer', fontSize:13 }}>Sign in</button></>
+                  )}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   const route = useRoute()
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
   useEffect(() => { updatePageMeta(route) }, [route])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      if (session) {
+        intercomUpdate({
+          email: session.user.email,
+          user_id: session.user.id,
+          name: session.user.user_metadata?.first_name
+        })
+      }
+      if (session && window.location.pathname === '/signin') navigate('/app')
+      if (!session && window.location.pathname.startsWith('/app')) navigate('/signin')
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Route guards
+  if (route === '/app') {
+    if (authLoading) return null
+    if (!session) { navigate('/signin'); return null }
+  }
+  if (route === '/signin' && session) { navigate('/app'); return null }
+
   return (
     <>
       <style>{`
@@ -3320,6 +3651,7 @@ export default function App() {
        route === '/blog'           ? <BlogPage /> :
        route === '/privacy'        ? <PrivacyPage /> :
        route === '/terms'          ? <TermsPage /> :
+       route === '/signin'         ? <SignInPage /> :
        route === '/contact'        ? <ContactPage /> :
        route.startsWith('/platform/') ? <PlatformPage slug={route.split('/platform/')[1]} /> :
        <Landing />}
