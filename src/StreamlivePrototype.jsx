@@ -8216,45 +8216,32 @@ function ScreenCatalog({ persona, navigate, products: productsProp, loading: pro
 
               <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:4 }}>Import your catalog</div>
               <div style={{ fontSize:11, color:C.muted, marginBottom:20, lineHeight:1.6 }}>
-                We found <span style={{ color:C.text, fontWeight:700 }}>247 products</span> across <span style={{ color:C.text, fontWeight:700 }}>12 collections</span> in your Shopify store.
+                Your Shopify store is connected. Import your products and inventory into Streamlive.
               </div>
 
-              <div style={{ background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:12, padding:"12px 16px", marginBottom:20 }}>
-                {[
-                  { name:"Merino Wool Blazer",           sku:"BR-BLZ-001", price:"$228", inventory:48, img:"🧥" },
-                  { name:"Silk Wrap Midi Dress",          sku:"BR-DRS-004", price:"$268", inventory:22, img:"👗" },
-                  { name:"Spring Style Bundle (3pc)",     sku:"BR-BND-008", price:"$148", inventory:30, img:"🎁" },
-                ].map((p, i, arr)=>(
-                  <div key={p.sku} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:i<arr.length-1?`1px solid #0d0d18`:"none" }}>
-                    <span style={{ fontSize:18 }}>{p.img}</span>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:11, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
-                      <div style={{ fontSize:9, fontFamily:"'JetBrains Mono',monospace", color:C.subtle }}>{p.sku}</div>
-                    </div>
-                    <div style={{ fontSize:11, fontFamily:"'JetBrains Mono',monospace", color:C.green, fontWeight:700 }}>{p.price}</div>
-                    <div style={{ fontSize:9, color:C.muted }}>{p.inventory} in stock</div>
-                  </div>
-                ))}
-                <div style={{ paddingTop:8, fontSize:9, color:C.subtle }}>+ 244 more products</div>
+              <div style={{ background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:12, padding:"20px 16px", marginBottom:20, textAlign:"center" }}>
+                <div style={{ fontSize:28, marginBottom:8 }}>🛍️</div>
+                <div style={{ fontSize:12, fontWeight:600, color:C.text, marginBottom:4 }}>Ready to sync</div>
+                <div style={{ fontSize:10, color:C.muted, lineHeight:1.5 }}>Products, variants, pricing, and inventory levels will be imported from your Shopify store.</div>
               </div>
 
               {isSyncing ? (
                 <div>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-                    <span style={{ fontSize:11, color:C.muted }}>Importing products…</span>
+                    <span style={{ fontSize:11, color:C.muted }}>Syncing with Shopify…</span>
                     <span style={{ fontSize:11, fontFamily:"'JetBrains Mono',monospace", color:"#96BF48", fontWeight:700 }}>{syncProgress}%</span>
                   </div>
                   <div style={{ height:6, background:C.surface2, borderRadius:3, overflow:"hidden", marginBottom:10 }}>
                     <div style={{ height:"100%", width:`${syncProgress}%`, background:"linear-gradient(90deg,#96BF48,#5A8E00)", borderRadius:3, transition:"width .35s ease" }}/>
                   </div>
                   <div style={{ fontSize:10, color:C.subtle, textAlign:"center" }}>
-                    {syncProgress<30?"Reading product catalog…":syncProgress<60?"Importing inventory levels…":syncProgress<90?"Syncing images & metadata…":"Finalizing…"}
+                    {syncProgress<30?"Connecting to Shopify API…":syncProgress<60?"Reading product catalog…":syncProgress<90?"Importing inventory data…":"Finalizing sync…"}
                   </div>
                 </div>
               ) : (
                 <button onClick={handleSync}
                   style={{ width:"100%", background:"linear-gradient(135deg,#96BF48,#5A8E00)", border:"none", color:"#fff", fontSize:14, fontWeight:700, padding:"13px", borderRadius:11, cursor:"pointer" }}>
-                  ⚡ Import 247 Products
+                  Import Products from Shopify
                 </button>
               )}
             </div>
