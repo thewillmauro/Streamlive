@@ -12862,7 +12862,6 @@ export default function StreamlivePrototype() {
   const [view, setView]             = useState(onboardParam === "settings" ? "settings" : "dashboard");
   const [params, setParams]         = useState({});
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
-  const [notifications, setNotifications] = useState(3);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
   const [completedShows, setCompletedShows] = useState(SHOWS);
   // Persist the active live session so navigating away and back restores it
@@ -13037,11 +13036,6 @@ export default function StreamlivePrototype() {
 
           <div style={{ flex:1 }} />
 
-          {/* NOTIFICATIONS */}
-          <button onClick={()=>{ setView("subscribers"); setNotifications(0); }} style={{ position:"relative", background:"none", border:"none", cursor:"pointer", color:C.muted, fontSize:14, padding:"4px 8px" }}>
-            🔔
-            {notifications > 0 && <div style={{ position:"absolute", top:0, right:0, width:16, height:16, borderRadius:"50%", background:"#ef4444", fontSize:9, fontWeight:700, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>{notifications}</div>}
-          </button>
 
           {/* PERSONA SWITCHER */}
           <div style={{ position:"relative" }}>
@@ -13137,9 +13131,6 @@ export default function StreamlivePrototype() {
                       <span style={{ fontSize:13, color:navColor, width:16, textAlign:"center" }}>{n.icon}</span>
                       <span style={{ fontSize:13, fontWeight:isActive?700:400, color:textColor }}>{n.label}</span>
                       {isLocked && <span style={{ marginLeft:"auto", fontSize:9, color:"#374151" }}>🔒</span>}
-                      {!isLocked && n.id==="subscribers" && notifications>0 && (
-                        <div style={{ marginLeft:"auto", width:16, height:16, borderRadius:"50%", background:"#ef4444", fontSize:9, fontWeight:700, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>{notifications}</div>
-                      )}
                       {!isLocked && n.id==="shows" && liveSession && (
                         <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:4, background:"#1a0505", border:"1px solid #ef444444", borderRadius:5, padding:"2px 6px" }}>
                           <div style={{ width:5, height:5, borderRadius:"50%", background:"#ef4444", animation:"pulse 1s infinite", flexShrink:0 }}/>
