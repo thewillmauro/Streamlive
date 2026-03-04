@@ -9797,9 +9797,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   const avgRR = shows.length ? Math.round(shows.reduce((a,s)=>a+s.repeatRate,0)/shows.length) : 0;
                   return (
                     <div key={k} style={{ display:"flex", gap:14, alignItems:"center", padding:"12px 0", borderBottom:`1px solid ${C.border}` }}>
-                      <div style={{ width:36, height:36, borderRadius:10, background:`${PC[k]}18`, border:`1px solid ${PC[k]}44`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <PlatformPill code={k} />
-                      </div>
+                      <PlatformPill code={k} />
                       <div style={{ flex:1 }}>
                         <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:800, color:C.green }}>${v.toLocaleString()}</div>
                         <div style={{ fontSize:10, color:C.muted }}>{shows.length} show{shows.length!==1?"s":""} · {avgRR}% repeat rate</div>
