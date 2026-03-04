@@ -31,7 +31,6 @@ export default async function handler(req, res) {
 
   // ── HMAC validation (timing-safe) ──────────────────────────────────────────
   const params = { ...restQuery, code, shop, state, timestamp };
-  // Remove hmac from the params used to compute the digest
   const sortedMessage = Object.keys(params)
     .filter((k) => k !== "hmac" && params[k] !== undefined)
     .sort()
@@ -89,11 +88,11 @@ export default async function handler(req, res) {
 
   const { access_token, scope } = await tokenRes.json();
 
-  // ── Persist connection in Supabase ─────────────────────────────────────────
+  // ── Persist connection in Supabase (optional — works without it) ───────────
   if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
     try {
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-      const { error: upsertError } = await supabase.from("connections").upsert(
+      await supabase.from("connections").upsert(
         {
           profile_id: stateData.userId,
           platform: "shopify",
@@ -104,19 +103,20 @@ export default async function handler(req, res) {
         },
         { onConflict: "profile_id,platform" }
       );
-      if (upsertError) {
-        console.error("Connection upsert error:", upsertError);
-      }
     } catch (err) {
       console.error("Supabase connection storage error:", err);
     }
   }
 
-  // ── Clear nonce cookie & redirect back to app ──────────────────────────────
-  res.setHeader(
-    "Set-Cookie",
-    "shopify_oauth_nonce=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0; Secure"
-  );
+  // ── Store credentials in httpOnly cookies so /api/shopify/sync can use them ─
+  const cookieOpts = "HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000; Secure";
+  res.setHeader("Set-Cookie", [
+    `shopify_oauth_nonce=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0; Secure`,
+    `shopify_token=${access_token}; ${cookieOpts}`,
+    `shopify_shop=${shop}; ${cookieOpts}`,
+  ]);
 
-  res.redirect(302, `${APP_URL}/app?shopify=connected`);
+  // ── Redirect back to app ──────────────────────────────────────────────────
+  const redirectUrl = `${APP_URL}/app?shopify=connected&shop=${encodeURIComponent(shop)}`;
+  res.redirect(302, redirectUrl);
 }

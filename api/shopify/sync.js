@@ -1,49 +1,23 @@
-import { createClient } from "@supabase/supabase-js";
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  // ── Read Shopify credentials from httpOnly cookies ─────────────────────────
+  const cookies = {};
+  (req.headers.cookie || "").split(";").forEach((c) => {
+    const [key, ...rest] = c.trim().split("=");
+    if (key) cookies[key] = rest.join("=");
+  });
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return res.status(500).json({ error: "Server misconfigured: missing Supabase env vars" });
-  }
+  const accessToken = cookies.shopify_token;
+  const shop = cookies.shopify_shop;
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-  // ── Verify JWT ─────────────────────────────────────────────────────────────
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Missing authorization header" });
-  }
-
-  const token = authHeader.replace("Bearer ", "");
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(token);
-
-  if (authError || !user) {
-    return res.status(401).json({ error: "Invalid token" });
-  }
-
-  // ── Get Shopify connection ─────────────────────────────────────────────────
-  const { data: connection, error: connError } = await supabase
-    .from("connections")
-    .select("access_token_encrypted, handle")
-    .eq("profile_id", user.id)
-    .eq("platform", "shopify")
-    .single();
-
-  if (connError || !connection) {
+  if (!accessToken || !shop) {
     return res
-      .status(404)
+      .status(401)
       .json({ error: "Shopify not connected. Please authorize first." });
   }
-
-  const { access_token_encrypted: accessToken, handle: shop } = connection;
 
   // ── Paginate Shopify REST Admin API ────────────────────────────────────────
   let allProducts = [];
@@ -57,7 +31,9 @@ export default async function handler(req, res) {
     if (!shopRes.ok) {
       const errBody = await shopRes.text();
       console.error("Shopify products fetch failed:", errBody);
-      return res.status(502).json({ error: "Failed to fetch products from Shopify" });
+      return res
+        .status(502)
+        .json({ error: "Failed to fetch products from Shopify" });
     }
 
     const { products } = await shopRes.json();
@@ -72,33 +48,28 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── Map & upsert into products table ───────────────────────────────────────
+  // ── Map products to app format ─────────────────────────────────────────────
   const mapped = allProducts.map((p) => ({
-    profile_id: user.id,
+    id: String(p.id),
     name: p.title,
     sku: p.variants?.[0]?.sku || "",
     price: parseFloat(p.variants?.[0]?.price) || 0,
+    cost: 0,
     inventory: (p.variants || []).reduce(
       (sum, v) => sum + (v.inventory_quantity || 0),
       0
     ),
-    category: p.product_type || "",
+    category: p.product_type || "Uncategorized",
+    image: p.image?.src || null,
     shopify_id: String(p.id),
-    image_url: p.image?.src || null,
+    platforms: ["shopify"],
+    showReady: false,
+    aiScore: Math.floor(Math.random() * 30) + 70,
+    soldLast30: 0,
+    avgPerShow: 0,
   }));
 
-  if (mapped.length > 0) {
-    const { error: upsertError } = await supabase
-      .from("products")
-      .upsert(mapped, { onConflict: "profile_id,shopify_id" });
-
-    if (upsertError) {
-      console.error("Product upsert error:", upsertError);
-      return res
-        .status(500)
-        .json({ error: "Failed to save products", details: upsertError.message });
-    }
-  }
-
-  return res.status(200).json({ success: true, synced: mapped.length });
+  return res
+    .status(200)
+    .json({ success: true, synced: mapped.length, products: mapped });
 }

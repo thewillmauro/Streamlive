@@ -7760,7 +7760,7 @@ function LivePixelTab({ persona }) {
   );
 }
 // ─── SCREEN: CATALOG ──────────────────────────────────────────────────────────
-function ScreenCatalog({ persona, navigate, autoSync, onAutoSyncConsumed }) {
+function ScreenCatalog({ persona, navigate, autoSync, autoSyncShop, onAutoSyncConsumed }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [products, setProducts] = useState(PRODUCTS);
@@ -7790,6 +7790,7 @@ function ScreenCatalog({ persona, navigate, autoSync, onAutoSyncConsumed }) {
   // ── Auto-sync when returning from Shopify OAuth redirect ──────────────────
   useEffect(() => {
     if (autoSync) {
+      if (autoSyncShop) setStoreUrl(autoSyncShop);
       setConnectStep(3);
       // Short delay to let the UI render step 3 before starting sync
       const timer = setTimeout(() => handleSync(), 400);
@@ -7844,8 +7845,14 @@ function ScreenCatalog({ persona, navigate, autoSync, onAutoSyncConsumed }) {
       const data = await res.json();
       setSyncProgress(100);
 
+      // Update products with real Shopify data
+      if (data.products && data.products.length > 0) {
+        setProducts(data.products);
+      }
+
       // Mark connected and persist
       await new Promise((r) => setTimeout(r, 600));
+      setIsSyncing(false);
       setShopifyConnected(true);
       localStorage.setItem("strmlive__shopify_connected", "true");
       localStorage.setItem("strmlive__shopify_store", storeUrl);
@@ -12922,6 +12929,7 @@ export default function StreamlivePrototype() {
   // All hooks must come before any conditional returns (Rules of Hooks)
   const onboardParam = new URLSearchParams(window.location.search).get("onboard");
   const shopifyParam = new URLSearchParams(window.location.search).get("shopify");
+  const shopifyShopParam = new URLSearchParams(window.location.search).get("shop");
   const [personaId, setPersonaId]   = useState("sarah");
   const [view, setView]             = useState(
     shopifyParam === "connected" ? "catalog"
@@ -12938,11 +12946,12 @@ export default function StreamlivePrototype() {
   // Auto-sync flag: true when returning from Shopify OAuth redirect
   const [shopifyAutoSync, setShopifyAutoSync] = useState(shopifyParam === "connected");
 
-  // Clean ?shopify=connected from the URL so it doesn't re-trigger on refresh
+  // Clean ?shopify=connected&shop=... from the URL so it doesn't re-trigger on refresh
   useEffect(() => {
     if (shopifyParam === "connected") {
       const url = new URL(window.location);
       url.searchParams.delete("shopify");
+      url.searchParams.delete("shop");
       window.history.replaceState({}, "", url.pathname + url.search);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -13294,7 +13303,7 @@ export default function StreamlivePrototype() {
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
                 {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} openCheckout={setCheckoutPlan} />}
                 {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} onShowComplete={(show)=>setCompletedShows(prev=>[show,...prev])} />}
-                {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} autoSync={shopifyAutoSync} onAutoSyncConsumed={() => setShopifyAutoSync(false)} />}
+                {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} autoSync={shopifyAutoSync} autoSyncShop={shopifyShopParam} onAutoSyncConsumed={() => setShopifyAutoSync(false)} />}
                 {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} persona={persona} />}
                 {view==="loyalty"      && <ScreenLoyalty       buyers={buyers} navigate={navigate} persona={persona} />}
                 {view==="production"   && <ScreenProduction    persona={persona} navigate={navigate} />}
