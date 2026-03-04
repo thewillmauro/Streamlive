@@ -3635,7 +3635,7 @@ export default function App() {
         }
       `}</style>
       <LiveCursor />
-      {route === '/app'         ? <StreamlivePrototype /> :
+      {route === '/app'         ? <StreamlivePrototype session={session} /> :
        route === '/checkout'    ? <Checkout /> :
        route === '/welcome'     ? <Welcome /> :
        route.startsWith('/s/')  ? <OptInPage slug={route.split('/s/')[1]?.split('/')[0]} connectedPlatforms={PERSONA_PLATFORMS[route.split('/s/')[1]?.split('/')[0]]} /> :

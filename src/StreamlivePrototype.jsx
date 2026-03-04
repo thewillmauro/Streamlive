@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from './lib/supabase.js';
+import { useProfile, useBuyers, useProducts } from './hooks/useSupabase.js';
 
 // ─── FONTS ────────────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
@@ -533,6 +534,46 @@ const PRODUCTS = [
   { id:"p21", name:"Tropicfeel Starter Bundle",         sku:"TF-BND-001", price:228, cost:82,  inventory:24,  category:"Bundles",      image:"🌴", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_021", aiScore:7.2, soldLast30:8,   avgPerShow:1.4 },
 ];
 
+// ─── HELPER UTILITIES ────────────────────────────────────────────────────────
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return "--";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
+
+function deriveAvatar(name) {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+// ─── EMPTY STATE COMPONENT ───────────────────────────────────────────────────
+function EmptyState({ icon, title, description, ctaLabel, onCta }) {
+  return (
+    <div className="fade-up" style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flex:1, padding:"60px 32px", textAlign:"center" }}>
+      <div style={{ width:64, height:64, borderRadius:18, background:`${C.accent}12`, border:`1px solid ${C.accent}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, marginBottom:20 }}>
+        {icon}
+      </div>
+      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.5px", marginBottom:8 }}>{title}</div>
+      <div style={{ fontSize:13, color:C.muted, maxWidth:380, lineHeight:1.6, marginBottom:ctaLabel ? 24 : 0 }}>{description}</div>
+      {ctaLabel && onCta && (
+        <button onClick={onCta} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer" }}>
+          {ctaLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ─── PLATFORM FEES (from Shopify seller context) ─────────────────────────────
 // Source: each platform's published seller fee schedule
 const PLATFORM_FEES = {
@@ -748,7 +789,7 @@ function StatCard({ label, value, sub, color="#7c3aed", mono=true }) {
 
 // ─── SCREEN: DASHBOARD ────────────────────────────────────────────────────────
 function ScreenDashboard({ persona, buyers, navigate, shows }) {
-  const recentShows = shows || SHOWS;
+  const recentShows = shows || [];
   const vip     = buyers.filter(b=>b.status==="vip").length;
   const atRisk  = buyers.filter(b=>b.status==="risk").length;
   const dormant = buyers.filter(b=>b.status==="dormant").length;
@@ -882,14 +923,14 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
           Good evening, {persona.name.split(" ")[0]} 👋
         </div>
         <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>
-          {persona.shop} · {persona.platforms.map(p=>PLATFORMS[p]?.label).join(", ")}
+          {persona.shop}{(persona.platforms||[]).length > 0 ? ` · ${persona.platforms.map(p=>PLATFORMS[p]?.label).filter(Boolean).join(", ")}` : ""}
         </div>
       </div>
 
       {/* STATS GRID */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
         <StatCard label="Total Buyers"   value={buyers.length.toLocaleString()} sub="across all platforms" color={C.accent} />
-        <StatCard label="VIP Buyers"     value={vip}             sub={`${Math.round(vip/buyers.length*100)}% of list`}  color="#a78bfa" />
+        <StatCard label="VIP Buyers"     value={vip}             sub={buyers.length ? `${Math.round(vip/buyers.length*100)}% of list` : "0% of list"}  color="#a78bfa" />
         <StatCard label="At Risk"        value={atRisk}          sub="need a campaign now"                               color={C.amber} />
         <StatCard label="GMV (90 days)"  value={`$${totalGMV.toLocaleString()}`} sub="across all shows"                 color={C.green} />
       </div>
@@ -993,27 +1034,124 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
   );
 }
 
+// ─── BUYER FORM MODAL ────────────────────────────────────────────────────────
+function BuyerFormModal({ onClose, onSave, initial }) {
+  const [form, setForm] = useState({
+    name: initial?.name || "",
+    email: initial?.email || "",
+    phone: initial?.phone || "",
+    handle: initial?.handle || "",
+    platform: initial?.platform || "IG",
+    status: initial?.status || "new",
+    tags: initial?.tags ? initial.tags.join(", ") : "",
+  });
+  const set = (k,v) => setForm(f => ({...f, [k]:v}));
+  const handleSave = () => {
+    if (!form.name.trim()) return;
+    onSave({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      handle: form.handle.trim(),
+      platform: form.platform,
+      status: form.status,
+      tags: form.tags ? form.tags.split(",").map(t=>t.trim()).filter(Boolean) : [],
+      spend: initial?.spend || 0,
+      orders: initial?.orders || 0,
+      last_order: initial?.last_order || null,
+    });
+  };
+  const fieldStyle = { width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:12, outline:"none", boxSizing:"border-box" };
+  const labelStyle = { fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", fontWeight:700, marginBottom:5, display:"block" };
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+      <div onClick={e=>e.stopPropagation()} className="pop-in" style={{ background:"#09090f", border:`1px solid ${C.border2}`, borderRadius:16, padding:24, width:420, maxWidth:"94vw" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <div style={{ fontSize:16, fontWeight:700, color:C.text }}>{initial ? "Edit Buyer" : "Add Buyer"}</div>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:C.muted, fontSize:16, cursor:"pointer" }}>✕</button>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+          <div><label style={labelStyle}>Name *</label><input value={form.name} onChange={e=>set("name",e.target.value)} style={fieldStyle} placeholder="Full name" /></div>
+          <div><label style={labelStyle}>Email</label><input value={form.email} onChange={e=>set("email",e.target.value)} style={fieldStyle} placeholder="email@example.com" /></div>
+          <div><label style={labelStyle}>Phone</label><input value={form.phone} onChange={e=>set("phone",e.target.value)} style={fieldStyle} placeholder="+1-555-0100" /></div>
+          <div><label style={labelStyle}>Handle</label><input value={form.handle} onChange={e=>set("handle",e.target.value)} style={fieldStyle} placeholder="@handle" /></div>
+          <div>
+            <label style={labelStyle}>Platform</label>
+            <select value={form.platform} onChange={e=>set("platform",e.target.value)} style={{...fieldStyle, cursor:"pointer"}}>
+              {Object.keys(PLATFORMS).map(k=><option key={k} value={k}>{PLATFORMS[k].label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Status</label>
+            <select value={form.status} onChange={e=>set("status",e.target.value)} style={{...fieldStyle, cursor:"pointer"}}>
+              {Object.keys(STATUS_META).map(k=><option key={k} value={k}>{STATUS_META[k].label}</option>)}
+            </select>
+          </div>
+        </div>
+        <div style={{ marginBottom:16 }}>
+          <label style={labelStyle}>Tags (comma-separated)</label>
+          <input value={form.tags} onChange={e=>set("tags",e.target.value)} style={fieldStyle} placeholder="VIP, Wholesale" />
+        </div>
+        <button onClick={handleSave} style={{ width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px", borderRadius:9, cursor:"pointer" }}>
+          {initial ? "Save Changes" : "Add Buyer"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── SCREEN: BUYER LIBRARY ────────────────────────────────────────────────────
-function ScreenBuyers({ buyers, navigate }) {
+function ScreenBuyers({ buyers, navigate, loading, createBuyer, updateBuyer, deleteBuyer }) {
   const [search, setSearch] = useState("");
   const [seg, setSeg]       = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  const filtered = buyers.filter(b => {
-    const matchSearch = b.name.toLowerCase().includes(search.toLowerCase()) || b.handle.toLowerCase().includes(search.toLowerCase());
+  // Empty state
+  if (!loading && buyers.length === 0) {
+    return (
+      <>
+        <EmptyState
+          icon="◉"
+          title="No buyers yet"
+          description="Add your first buyer to start building your CRM. Track orders, engagement, and loyalty across every platform."
+          ctaLabel="Add First Buyer"
+          onCta={()=>setShowAddModal(true)}
+        />
+        {showAddModal && <BuyerFormModal onClose={()=>setShowAddModal(false)} onSave={async (b) => { await createBuyer(b); setShowAddModal(false); }} />}
+      </>
+    );
+  }
+
+  // Normalize fields from Supabase rows
+  const normalizedBuyers = buyers.map(b => ({
+    ...b,
+    avatar: b.avatar || deriveAvatar(b.name),
+    lastOrder: b.lastOrder || formatTimeAgo(b.last_order),
+    handle: b.handle || "",
+    spend: Number(b.spend) || 0,
+    orders: b.orders || 0,
+    status: b.status || "new",
+    tags: b.tags || [],
+  }));
+
+  const filtered = normalizedBuyers.filter(b => {
+    const matchSearch = b.name.toLowerCase().includes(search.toLowerCase()) || (b.handle||"").toLowerCase().includes(search.toLowerCase());
     const matchSeg    = seg === "all" || b.status === seg;
     return matchSearch && matchSeg;
   });
 
   const segs = [
-    { id:"all",     label:`All (${buyers.length})` },
-    { id:"vip",     label:`VIP (${buyers.filter(b=>b.status==="vip").length})` },
-    { id:"risk",    label:`At Risk (${buyers.filter(b=>b.status==="risk").length})` },
-    { id:"new",     label:`New (${buyers.filter(b=>b.status==="new").length})` },
-    { id:"dormant", label:`Dormant (${buyers.filter(b=>b.status==="dormant").length})` },
+    { id:"all",     label:`All (${normalizedBuyers.length})` },
+    { id:"vip",     label:`VIP (${normalizedBuyers.filter(b=>b.status==="vip").length})` },
+    { id:"risk",    label:`At Risk (${normalizedBuyers.filter(b=>b.status==="risk").length})` },
+    { id:"new",     label:`New (${normalizedBuyers.filter(b=>b.status==="new").length})` },
+    { id:"dormant", label:`Dormant (${normalizedBuyers.filter(b=>b.status==="dormant").length})` },
   ];
 
   return (
     <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, overflow:"hidden" }}>
+      {showAddModal && <BuyerFormModal onClose={()=>setShowAddModal(false)} onSave={async (b) => { await createBuyer(b); setShowAddModal(false); }} />}
+
       {/* TOOLBAR */}
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ display:"flex", gap:0, marginBottom:12 }}>
@@ -1028,6 +1166,7 @@ function ScreenBuyers({ buyers, navigate }) {
             <span style={{ color:C.subtle, fontSize:12 }}>🔍</span>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search buyers by name or handle…" style={{ flex:1, background:"none", border:"none", color:C.text, fontSize:12, outline:"none" }} />
           </div>
+          <button onClick={()=>setShowAddModal(true)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 16px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>+ Add Buyer</button>
           <div style={{ fontSize:11, color:C.muted }}>{filtered.length} buyers</div>
         </div>
       </div>
@@ -1045,7 +1184,7 @@ function ScreenBuyers({ buyers, navigate }) {
           <div style={{ padding:"60px 28px", textAlign:"center", color:C.subtle, fontSize:13 }}>No buyers match your search.</div>
         ) : filtered.map((b,i) => {
           const pl = PLATFORMS[b.platform];
-          const st = STATUS_META[b.status];
+          const st = STATUS_META[b.status] || STATUS_META["new"];
           return (
             <div key={b.id} onClick={()=>navigate("buyer-profile", { buyerId:b.id })} style={{ display:"grid", gridTemplateColumns:"1.8fr 0.9fr 0.7fr 0.7fr 0.9fr 0.8fr", padding:"11px 28px", borderBottom:`1px solid #0d0d18`, cursor:"pointer", transition:"background .1s" }}
               onMouseEnter={e=>e.currentTarget.style.background=C.surface2}
@@ -1058,7 +1197,7 @@ function ScreenBuyers({ buyers, navigate }) {
                   <div style={{ fontSize:11, color:C.muted }}>{b.handle}</div>
                 </div>
               </div>
-              <div style={{ alignSelf:"center", display:"flex" }}><PlatformPill code={b.platform} /></div>
+              <div style={{ alignSelf:"center", display:"flex" }}>{pl ? <PlatformPill code={b.platform} /> : <span style={{ fontSize:11, color:C.muted }}>{b.platform || "--"}</span>}</div>
               <div style={{ alignSelf:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:C.text }}>${b.spend.toLocaleString()}</div>
               <div style={{ alignSelf:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"#9ca3af" }}>{b.orders}</div>
               <div style={{ alignSelf:"center", fontSize:12, color:C.muted }}>{b.lastOrder}</div>
@@ -1072,11 +1211,25 @@ function ScreenBuyers({ buyers, navigate }) {
 }
 
 // ─── SCREEN: BUYER PROFILE ────────────────────────────────────────────────────
-function ScreenBuyerProfile({ buyer, persona, navigate }) {
+function ScreenBuyerProfile({ buyer: rawBuyer, persona, navigate, updateBuyer, deleteBuyer }) {
   const [tab, setTab] = useState("overview");
-  if (!buyer) return <div style={{ padding:40, color:C.muted }}>Buyer not found.</div>;
+  if (!rawBuyer) return <div style={{ padding:40, color:C.muted }}>Buyer not found.</div>;
+  // Normalize buyer fields
+  const buyer = {
+    ...rawBuyer,
+    avatar: rawBuyer.avatar || deriveAvatar(rawBuyer.name),
+    lastOrder: rawBuyer.lastOrder || formatTimeAgo(rawBuyer.last_order),
+    handle: rawBuyer.handle || "",
+    spend: Number(rawBuyer.spend) || 0,
+    orders: rawBuyer.orders || 0,
+    status: rawBuyer.status || "new",
+    tags: rawBuyer.tags || [],
+    score: rawBuyer.score ?? "--",
+    email: rawBuyer.email || "",
+    phone: rawBuyer.phone || "",
+  };
   const pl = PLATFORMS[buyer.platform];
-  const st = STATUS_META[buyer.status];
+  const st = STATUS_META[buyer.status] || STATUS_META["new"];
 
   const timeline = [
     { date:"Feb 20, 2025", event:"Placed order #34: Silk Wrap Midi Dress", amount:268 },
@@ -1264,7 +1417,7 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
 
 // ─── SCREEN: SHOWS ────────────────────────────────────────────────────────────
 function ScreenShows({ navigate, persona, shows }) {
-  const allShows = shows || SHOWS;
+  const allShows = shows || [];
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0 }}>
       <div style={{ marginBottom:24 }}>
@@ -1287,6 +1440,9 @@ function ScreenShows({ navigate, persona, shows }) {
       </div>
 
       {/* SHOW CARDS */}
+      {allShows.length === 0 ? (
+        <EmptyState icon="◈" title="No shows yet" description="Plan and run your first live show. Your show history and performance data will appear here." ctaLabel="Plan a Show" onCta={()=>navigate("show-planner")} />
+      ) : (
       <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
         {allShows.map(s=>{
           const showPlatforms = s.platforms || [s.platform];
@@ -1321,6 +1477,7 @@ function ScreenShows({ navigate, persona, shows }) {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
@@ -1337,7 +1494,7 @@ function ScreenShowReport({ show, allShows, buyers, navigate }) {
   const [aiGenerated,  setAiGenerated]  = useState(false);
 
   // ── Derived data ───────────────────────────────────────────────────────────
-  const shows        = allShows || SHOWS;
+  const shows        = allShows || [];
   const showIdx      = shows.findIndex(s => s.id === show.id);
   const prevShow     = showIdx >= 0 ? shows[showIdx + 1] : null;
   const gmvChange    = prevShow ? Math.round((show.gmv - prevShow.gmv) / prevShow.gmv * 100) : null;
@@ -6584,7 +6741,70 @@ function TeamTab({ persona, openCheckout }) {
 }
 
 
-function ScreenSettings({ persona, initialTab, openCheckout }) {
+// ─── PROFILE SETTINGS TAB ────────────────────────────────────────────────────
+function ProfileSettingsTab({ persona, updateProfile }) {
+  const p = persona._profile || {};
+  const [firstName, setFirstName] = useState(p.first_name || "");
+  const [lastName, setLastName] = useState(p.last_name || "");
+  const [shopName, setShopName] = useState(p.shop_name || "");
+  const [slug, setSlug] = useState(p.slug || "");
+  const [category, setCategory] = useState(p.category || "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    if (updateProfile) {
+      await updateProfile({ first_name: firstName.trim(), last_name: lastName.trim(), shop_name: shopName.trim(), slug: slug.trim(), category: category.trim() });
+    }
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const fieldStyle = { width:"100%", background:"#0a0a14", border:`1px solid ${C.border2}`, borderRadius:9, padding:"9px 12px", color:C.text, fontSize:13, outline:"none", boxSizing:"border-box" };
+  const labelStyle = { fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 };
+
+  return (
+    <div className="fade-up" style={{ maxWidth:500 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
+        <div>
+          <div style={labelStyle}>First Name</div>
+          <input value={firstName} onChange={e=>setFirstName(e.target.value)} style={fieldStyle} />
+        </div>
+        <div>
+          <div style={labelStyle}>Last Name</div>
+          <input value={lastName} onChange={e=>setLastName(e.target.value)} style={fieldStyle} />
+        </div>
+      </div>
+      <div style={{ marginBottom:16 }}>
+        <div style={labelStyle}>Shop Name</div>
+        <input value={shopName} onChange={e=>setShopName(e.target.value)} style={fieldStyle} />
+      </div>
+      <div style={{ marginBottom:16 }}>
+        <div style={labelStyle}>Slug</div>
+        <input value={slug} onChange={e=>setSlug(e.target.value)} style={fieldStyle} placeholder="your-shop" />
+      </div>
+      <div style={{ marginBottom:16 }}>
+        <div style={labelStyle}>Category</div>
+        <input value={category} onChange={e=>setCategory(e.target.value)} style={fieldStyle} placeholder="Apparel & Fashion" />
+      </div>
+      <div style={{ marginBottom:16 }}>
+        <div style={labelStyle}>Email</div>
+        <input value={persona.email} disabled style={{...fieldStyle, opacity:0.5, cursor:"not-allowed"}} />
+        <div style={{ fontSize:10, color:C.subtle, marginTop:4 }}>Email is managed via your login credentials</div>
+      </div>
+      <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+        <button onClick={handleSave} disabled={saving} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 24px", borderRadius:9, cursor:saving?"wait":"pointer", opacity:saving?0.7:1 }}>
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
+        {saved && <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Saved</span>}
+      </div>
+    </div>
+  );
+}
+
+function ScreenSettings({ persona, initialTab, openCheckout, updateProfile }) {
   const [tab, setTab]           = useState(initialTab || "channels");
   const [connections, setConnections] = useState({});
   const [modal, setModal]       = useState(null); // { type: "manychat"|"ig"|"tt"|"wn"|"am"|"email"|"sms" }
@@ -7345,24 +7565,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
 
       {/* ── PROFILE TAB ── */}
       {tab==="profile" && (
-        <div className="fade-up" style={{ maxWidth:500 }}>
-          {[
-            { label:"Full Name",   value:persona.name,     type:"text"     },
-            { label:"Shop Name",   value:persona.shop,     type:"text"     },
-            { label:"Email",       value:persona.email,    type:"email"    },
-            { label:"Category",    value:persona.category, type:"text"     },
-            { label:"Short Bio",   value:persona.bio,      type:"textarea" },
-          ].map(f=>(
-            <div key={f.label} style={{ marginBottom:16 }}>
-              <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>{f.label}</div>
-              {f.type==="textarea"
-                ? <textarea defaultValue={f.value} rows={3} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"9px 12px", color:C.text, fontSize:13, outline:"none", resize:"none", fontFamily:"'DM Sans',sans-serif" }} />
-                : <input defaultValue={f.value} type={f.type} style={{ width:"100%", background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"9px 12px", color:C.text, fontSize:13, outline:"none" }} />
-              }
-            </div>
-          ))}
-          <button style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px 24px", borderRadius:9, cursor:"pointer" }}>Save Changes</button>
-        </div>
+        <ProfileSettingsTab persona={persona} updateProfile={updateProfile} />
       )}
 
       {/* ── BILLING TAB ── */}
@@ -7764,13 +7967,72 @@ function LivePixelTab({ persona }) {
     </div>
   );
 }
+// ─── PRODUCT FORM MODAL ──────────────────────────────────────────────────────
+function ProductFormModal({ onClose, onSave, initial }) {
+  const [form, setForm] = useState({
+    name: initial?.name || "",
+    sku: initial?.sku || "",
+    price: initial?.price || "",
+    cost: initial?.cost || "",
+    inventory: initial?.inventory || "",
+    category: initial?.category || "",
+    show_ready: initial?.show_ready ?? initial?.showReady ?? false,
+  });
+  const set = (k,v) => setForm(f => ({...f, [k]:v}));
+  const handleSave = () => {
+    if (!form.name.trim()) return;
+    onSave({
+      name: form.name.trim(),
+      sku: form.sku.trim(),
+      price: Number(form.price) || 0,
+      cost: Number(form.cost) || 0,
+      inventory: Number(form.inventory) || 0,
+      category: form.category.trim(),
+      show_ready: form.show_ready,
+    });
+  };
+  const fieldStyle = { width:"100%", background:"#07070f", border:`1px solid ${C.border2}`, borderRadius:8, padding:"9px 12px", color:C.text, fontSize:12, outline:"none", boxSizing:"border-box" };
+  const labelStyle = { fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", fontWeight:700, marginBottom:5, display:"block" };
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+      <div onClick={e=>e.stopPropagation()} className="pop-in" style={{ background:"#09090f", border:`1px solid ${C.border2}`, borderRadius:16, padding:24, width:420, maxWidth:"94vw" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <div style={{ fontSize:16, fontWeight:700, color:C.text }}>{initial ? "Edit Product" : "Add Product"}</div>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:C.muted, fontSize:16, cursor:"pointer" }}>✕</button>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+          <div style={{ gridColumn:"span 2" }}><label style={labelStyle}>Product Name *</label><input value={form.name} onChange={e=>set("name",e.target.value)} style={fieldStyle} placeholder="Product name" /></div>
+          <div><label style={labelStyle}>SKU</label><input value={form.sku} onChange={e=>set("sku",e.target.value)} style={fieldStyle} placeholder="SKU-001" /></div>
+          <div><label style={labelStyle}>Category</label><input value={form.category} onChange={e=>set("category",e.target.value)} style={fieldStyle} placeholder="Apparel" /></div>
+          <div><label style={labelStyle}>Price ($)</label><input type="number" value={form.price} onChange={e=>set("price",e.target.value)} style={fieldStyle} placeholder="0" /></div>
+          <div><label style={labelStyle}>Cost ($)</label><input type="number" value={form.cost} onChange={e=>set("cost",e.target.value)} style={fieldStyle} placeholder="0" /></div>
+          <div><label style={labelStyle}>Inventory</label><input type="number" value={form.inventory} onChange={e=>set("inventory",e.target.value)} style={fieldStyle} placeholder="0" /></div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, paddingTop:20 }}>
+            <div onClick={()=>set("show_ready",!form.show_ready)} style={{ width:40, height:22, borderRadius:11, background:form.show_ready?C.accent:C.border2, cursor:"pointer", position:"relative", transition:"background .2s" }}>
+              <div style={{ position:"absolute", top:3, left:form.show_ready?20:3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+            </div>
+            <span style={{ fontSize:11, color:C.text }}>Show Ready</span>
+          </div>
+        </div>
+        <button onClick={handleSave} style={{ width:"100%", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px", borderRadius:9, cursor:"pointer", marginTop:8 }}>
+          {initial ? "Save Changes" : "Add Product"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── SCREEN: CATALOG ──────────────────────────────────────────────────────────
-function ScreenCatalog({ persona, navigate }) {
+function ScreenCatalog({ persona, navigate, products: productsProp, loading: productsLoading, createProduct, updateProduct, deleteProduct }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [products, setProducts] = useState(PRODUCTS);
+  const [products, setProducts] = useState(productsProp || []);
   const [syncPulse, setSyncPulse] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Sync products from props
+  useEffect(() => { setProducts(productsProp || []); }, [productsProp]);
 
   // ── Shopify connection state ──────────────────────────────────────────────
   const [shopifyConnected, setShopifyConnected] = useState(false);
@@ -7809,7 +8071,10 @@ function ScreenCatalog({ persona, navigate }) {
   };
 
   const toggleShowReady = (id) => {
-    setProducts(ps => ps.map(p => p.id===id ? {...p, showReady:!p.showReady} : p));
+    const p = products.find(x => x.id === id);
+    const newVal = !(p?.show_ready ?? p?.showReady);
+    setProducts(ps => ps.map(x => x.id===id ? {...x, showReady:newVal, show_ready:newVal} : x));
+    if (updateProduct) updateProduct(id, { show_ready: newVal });
   };
 
   // Talking points editing
@@ -7825,8 +8090,24 @@ function ScreenCatalog({ persona, navigate }) {
     setProducts(ps => ps.map(p => p.id===id ? {...p, talkingPoints:(p.talkingPoints||[]).filter((_,i)=>i!==idx)} : p));
   };
 
-  // ── Pre-connection screen ─────────────────────────────────────────────────
-  if (!shopifyConnected) {
+  // ── Empty state for no products ─────────────────────────────────────────────
+  if (!productsLoading && products.length === 0 && !shopifyConnected) {
+    return (
+      <>
+        <EmptyState
+          icon="◧"
+          title="No products yet"
+          description="Add your first product manually or connect your Shopify store to sync your entire catalog."
+          ctaLabel="Add First Product"
+          onCta={()=>setShowAddModal(true)}
+        />
+        {showAddModal && <ProductFormModal onClose={()=>setShowAddModal(false)} onSave={async (p) => { if(createProduct) await createProduct(p); setShowAddModal(false); }} />}
+      </>
+    );
+  }
+
+  // ── Pre-connection screen (only if no products and user wants Shopify) ─────
+  if (!shopifyConnected && products.length === 0 && false) {
     const STEPS = [
       { n:1, label:"Store URL",    icon:"🏪" },
       { n:2, label:"Install App",  icon:"📦" },
@@ -8007,29 +8288,42 @@ function ScreenCatalog({ persona, navigate }) {
     );
   }
 
-  const filtered = products.filter(p => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+  // Normalize products: support both showReady (mock) and show_ready (Supabase)
+  const normalizedProducts = products.map(p => ({
+    ...p,
+    showReady: p.showReady ?? p.show_ready ?? false,
+    image: p.image || p.image_url || "📦",
+    sku: p.sku || "",
+    platforms: p.platforms || [],
+    aiScore: p.aiScore ?? "--",
+    soldLast30: p.soldLast30 ?? "--",
+    avgPerShow: p.avgPerShow ?? "--",
+  }));
+
+  const filtered = normalizedProducts.filter(p => {
+    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || (p.sku||"").toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter==="all" || (filter==="show-ready" && p.showReady) || (filter==="not-ready" && !p.showReady);
-    const matchPlatform = selectedPlatform==="all" || p.platforms.includes(selectedPlatform);
+    const matchPlatform = selectedPlatform==="all" || (p.platforms||[]).includes(selectedPlatform);
     return matchSearch && matchFilter && matchPlatform;
   });
 
-  const showReadyCount = products.filter(p=>p.showReady).length;
+  const showReadyCount = normalizedProducts.filter(p=>p.showReady).length;
 
   return (
     <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
+      {showAddModal && <ProductFormModal onClose={()=>setShowAddModal(false)} onSave={async (p) => { if(createProduct) await createProduct(p); setShowAddModal(false); }} />}
       <div style={{ padding:"16px 28px 12px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, letterSpacing:"-0.3px" }}>Shopify Catalog</div>
-            <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{products.length} products synced · {showReadyCount} show-ready · Last sync 4 min ago</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text, letterSpacing:"-0.3px" }}>Catalog</div>
+            <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{normalizedProducts.length} products · {showReadyCount} show-ready</div>
           </div>
           <div style={{ display:"flex", gap:8 }}>
-            <button onClick={()=>navigate("show-planner")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
-              + Plan a Show
+            <button onClick={()=>setShowAddModal(true)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
+              + Add Product
             </button>
-            <button onClick={()=>{ setSyncPulse(true); setTimeout(()=>setSyncPulse(false),2000); }} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:syncPulse?C.green:C.muted, fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:9, cursor:"pointer" }}>
-              {syncPulse ? "✓ Synced!" : "↻ Sync Shopify"}
+            <button onClick={()=>navigate("show-planner")} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.muted, fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer" }}>
+              Plan a Show
             </button>
           </div>
         </div>
@@ -8076,7 +8370,7 @@ function ScreenCatalog({ persona, navigate }) {
                 <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:4 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                     <span style={{ fontSize:9, color:"#a78bfa" }}>AI Score</span>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:p.aiScore>=9?"#10b981":p.aiScore>=7.5?"#a78bfa":C.amber }}>{p.aiScore}</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:typeof p.aiScore==="number"?(p.aiScore>=9?"#10b981":p.aiScore>=7.5?"#a78bfa":C.amber):C.muted }}>{p.aiScore}</span>
                   </div>
                   <span style={{ fontSize:8, fontWeight:700, color:C.muted, background:C.surface2, padding:"2px 6px", borderRadius:4, textTransform:"uppercase" }}>{p.category}</span>
                 </div>
@@ -8173,7 +8467,7 @@ function ScreenCatalog({ persona, navigate }) {
 }
 
 // ─── SCREEN: SHOW PLANNER ──────────────────────────────────────────────────────
-function ScreenShowPlanner({ navigate, persona }) {
+function ScreenShowPlanner({ navigate, persona, products: productsPropSP }) {
   const [step, setStep] = useState(1);
   const [showName, setShowName] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState(["WN"]);
@@ -8211,7 +8505,8 @@ function ScreenShowPlanner({ navigate, persona }) {
   const moveUp   = (i) => { if(i===0) return; const a=[...runOrder]; [a[i-1],a[i]]=[a[i],a[i-1]]; setRunOrder(a); };
   const moveDown = (i) => { if(i===runOrder.length-1) return; const a=[...runOrder]; [a[i],a[i+1]]=[a[i+1],a[i]]; setRunOrder(a); };
   const remove   = (i) => { const p=runOrder[i]; setRunOrder(r=>r.filter((_,idx)=>idx!==i)); };
-  const showReadyProducts = PRODUCTS.filter(p=>p.showReady);
+  const _spProducts = (productsPropSP && productsPropSP.length > 0) ? productsPropSP.map(p=>({...p, showReady: p.showReady ?? p.show_ready ?? false, image: p.image || p.image_url || "📦", sku: p.sku || "", platforms: p.platforms || [], aiScore: p.aiScore ?? "--"})) : PRODUCTS;
+  const showReadyProducts = _spProducts.filter(p=>p.showReady);
   const PLANNER_PRESETS = [{label:"30s",secs:30},{label:"1m",secs:60},{label:"90s",secs:90},{label:"2m",secs:120},{label:"3m",secs:180},{label:"5m",secs:300}];
   const totalShowSecs = runOrder.reduce((a,p)=>a+(productTimings[p.id]||90),0);
   const steps = ["Choose Platforms","Select Products","Set Run Order","Show Perks","Go Live"];
@@ -12860,17 +13155,44 @@ function ScreenAcceptInvite({ token }) {
 }
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
-export default function StreamlivePrototype() {
+export default function StreamlivePrototype({ session }) {
   // All hooks must come before any conditional returns (Rules of Hooks)
+  const userId = session?.user?.id;
   const onboardParam = new URLSearchParams(window.location.search).get("onboard");
-  const [personaId, setPersonaId]   = useState("sarah");
   const [view, setView]             = useState(onboardParam === "settings" ? "settings" : "dashboard");
   const [params, setParams]         = useState({});
-  const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
-  const [completedShows, setCompletedShows] = useState(SHOWS);
+  const [completedShows, setCompletedShows] = useState([]);
   // Persist the active live session so navigating away and back restores it
   const [liveSession, setLiveSession] = useState(null); // null = no show running
+
+  // ── Real data hooks ────────────────────────────────────────────────────────
+  const { profile, loading: profileLoading, updateProfile } = useProfile(userId);
+  const { buyers, loading: buyersLoading, createBuyer, updateBuyer, deleteBuyer } = useBuyers(userId);
+  const { products, loading: productsLoading, createProduct, updateProduct, deleteProduct } = useProducts(userId);
+
+  // Build persona adapter from Supabase profile
+  const persona = profile ? {
+    id: profile.id,
+    name: [profile.first_name, profile.last_name].filter(Boolean).join(" ") || session?.user?.email || "User",
+    shop: profile.shop_name || "My Shop",
+    email: session?.user?.email || "",
+    avatar: deriveAvatar([profile.first_name, profile.last_name].filter(Boolean).join(" ") || "U"),
+    plan: profile.plan || "starter",
+    planColor: ({ starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b", enterprise:"#a78bfa" })[profile.plan || "starter"],
+    category: profile.category || "",
+    platforms: profile.platforms || [],
+    buyerCount: buyers.length,
+    showCount: completedShows.length,
+    subscriberCount: 0,
+    slug: profile.slug || "",
+    _profile: profile,
+  } : null;
+
+  // Boot Intercom with current profile identity whenever profile changes
+  useEffect(() => {
+    if (persona) bootIntercom(persona)
+  }, [profile?.id, profile?.plan]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check for invite token in URL: render accept screen instead of app
   const urlInviteToken = new URLSearchParams(window.location.search).get("invite");
@@ -12883,13 +13205,13 @@ export default function StreamlivePrototype() {
   if (urlLiveParam) {
     try {
       const payload = JSON.parse(atob(urlLiveParam));
-      const ro = (payload.o || []).map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+      const ro = (payload.o || []).map(id => products.find(p => p.id === id)).filter(Boolean);
       const liveParams = {
         showStartTime: payload.s || Date.now(),
         runOrder: ro,
         productTimings: payload.t || {},
         showName: payload.n || "Live Show",
-        persona: PERSONAS.find(p => p.slug === payload.p) || PERSONAS[0],
+        persona: persona || { name:"User", shop:"Shop", slug:"shop", plan:"starter", planColor:"#10b981", avatar:"U", platforms:[] },
       };
       return <ScreenLiveShop navigate={() => {}} params={liveParams} persona={liveParams.persona} />;
     } catch(e) {
@@ -12897,13 +13219,17 @@ export default function StreamlivePrototype() {
     }
   }
 
-  const persona  = PERSONAS.find(p=>p.id===personaId);
-  const buyers   = BUYERS_BY_PERSONA[personaId] || [];
-
-  // Boot Intercom with current persona identity whenever persona switches
-  useEffect(() => {
-    if (persona) bootIntercom(persona)
-  }, [personaId]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Loading state
+  if (profileLoading || !persona) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", color:"#a78bfa", fontFamily:"'DM Sans',sans-serif" }}>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ width:32, height:32, border:"3px solid #a78bfa33", borderTop:"3px solid #a78bfa", borderRadius:"50%", animation:"spin .8s linear infinite", margin:"0 auto 16px" }} />
+          <div style={{ fontSize:13, color:"#6b7280" }}>Loading your dashboard…</div>
+        </div>
+      </div>
+    );
+  }
 
   const navigate = (screen, newParams={}) => {
     // Starting a live show: persist the session
@@ -12927,12 +13253,10 @@ export default function StreamlivePrototype() {
     if (screen === "shows" && liveSession) {
       setView("live");
       setParams(liveSession);
-      setShowPersonaMenu(false);
       return;
     }
     setView(screen);
     setParams(newParams);
-    setShowPersonaMenu(false);
   };
 
   // Allows ScreenLive to push runOrder/timing changes back up so Live Shop stays in sync
@@ -12949,7 +13273,7 @@ export default function StreamlivePrototype() {
   };
 
   const activeBuyer = params.buyerId ? buyers.find(b=>b.id===params.buyerId) : null;
-  const activeShow  = params.showId  ? (completedShows.find(s=>s.id===params.showId) || SHOWS.find(s=>s.id===params.showId)) : null;
+  const activeShow  = params.showId  ? completedShows.find(s=>s.id===params.showId) : null;
 
   const isEnterprise = persona.plan === "enterprise";
 
@@ -12964,46 +13288,6 @@ export default function StreamlivePrototype() {
 
       {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
       <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", minHeight:0, overflow:"hidden", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif" }}>
-
-        {/* ── DEMO BANNER ── */}
-        <div style={{ background:"linear-gradient(90deg,#1a0f2e,#2d1f5e,#1a0f2e)", borderBottom:"1px solid #7c3aed33", padding:"4px 16px", display:"flex", alignItems:"center", gap:12, flexShrink:0, flexWrap:"wrap", minHeight:36 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-            <div style={{ width:5, height:5, borderRadius:"50%", background:"#a78bfa", animation:"pulse 2s infinite" }} />
-            <span style={{ fontSize:9, fontWeight:700, color:"#6b5fa0", letterSpacing:"0.08em", textTransform:"uppercase" }}>Demo</span>
-            <span style={{ fontSize:9, color:"#2d2a4a" }}>Switch plan to explore gating →</span>
-          </div>
-          {/* Quick-switch persona pills */}
-          <div style={{ display:"flex", gap:5, flexWrap:"wrap", flex:1 }}>
-            {PERSONAS.map(p=>{
-              const isCurrent = p.id === personaId;
-              const locked = Object.keys(UPGRADE_WALLS).filter(f => !PLAN_FEATURES[p.plan].includes(f));
-              return (
-                <button key={p.id}
-                  onClick={()=>{ setPersonaId(p.id); setView(p.plan==="enterprise"?"network":"dashboard"); setParams({}); setShowPersonaMenu(false); }}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"3px 10px 3px 6px", borderRadius:99,
-                    background: isCurrent ? `${p.planColor}22` : "transparent",
-                    border: `1px solid ${isCurrent ? p.planColor+"55" : "#2a2a4a"}`,
-                    cursor:"pointer", transition:"all .12s" }}>
-                  <div style={{ width:16, height:16, borderRadius:5, background:`${p.planColor}22`, border:`1px solid ${p.planColor}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:7, fontWeight:800, color:p.planColor, flexShrink:0 }}>{p.avatar}</div>
-                  <span style={{ fontSize:10, fontWeight:isCurrent?700:500, color:isCurrent?p.planColor:"#4b5563" }}>{p.name.split(" ")[0]}</span>
-                  <span style={{ fontSize:8, fontWeight:700, color:p.planColor, background:`${p.planColor}18`, padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>{p.plan}</span>
-                  {locked.length > 0 && <span style={{ fontSize:8, color:"#374151" }}>{"🔒"}</span>}
-                </button>
-              );
-            })}
-          </div>
-          {/* Plan feature key */}
-          <div style={{ display:"flex", gap:10, flexShrink:0 }}>
-            {[{f:"Analytics",plan:"Growth+"},{f:"Loyalty",plan:"Growth+"},{f:"Production",plan:"Pro+"}].map(({f,plan})=>(
-              <div key={f} style={{ display:"flex", alignItems:"center", gap:4 }}>
-                <span style={{ fontSize:8, color: PLAN_LEVEL[persona.plan] >= PLAN_LEVEL[plan.toLowerCase().replace("+","")] ? "#10b981" : "#374151" }}>
-                  {PLAN_LEVEL[persona.plan] >= (plan.includes("Pro") ? 2 : 1) ? "✓" : "🔒"}
-                </span>
-                <span style={{ fontSize:9, color:"#374151" }}>{f}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* ── TOP BAR ── */}
         <div style={{ height:50, background:"#050508", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", padding:"0 20px", gap:12, flexShrink:0 }}>
@@ -13042,33 +13326,11 @@ export default function StreamlivePrototype() {
           <div style={{ flex:1 }} />
 
 
-          {/* PERSONA SWITCHER */}
-          <div style={{ position:"relative" }}>
-            <button onClick={()=>setShowPersonaMenu(m=>!m)} style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"5px 10px 5px 6px", cursor:"pointer" }}>
-              <Avatar initials={persona.avatar} color={persona.planColor} size={24} />
-              <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{persona.name}</span>
-              <span style={{ fontSize:9, color:persona.planColor, background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}33`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase", fontWeight:700 }}>{persona.plan}</span>
-              <span style={{ fontSize:10, color:C.subtle }}>▼</span>
-            </button>
-
-            {showPersonaMenu && (
-              <div className="pop-in" style={{ position:"absolute", right:0, top:"calc(100% + 6px)", background:"#0a0a15", border:`1px solid ${C.border2}`, borderRadius:12, padding:"8px", zIndex:100, minWidth:260, boxShadow:"0 8px 32px rgba(0,0,0,.5)" }}>
-                <div style={{ fontSize:9, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.1em", fontWeight:700, padding:"4px 8px 8px" }}>Switch Test Persona</div>
-                {PERSONAS.map(p=>(
-                  <button key={p.id} onClick={()=>{ setPersonaId(p.id); setView(p.plan==="enterprise"?"network":"dashboard"); setParams({}); setShowPersonaMenu(false); }} style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:8, border:"none", background:personaId===p.id?`${p.planColor}12`:"transparent", cursor:"pointer", textAlign:"left" }}>
-                    <Avatar initials={p.avatar} color={p.planColor} size={30} />
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{p.name}</div>
-                      <div style={{ fontSize:10, color:C.muted }}>{p.shop} · {p.buyerCount} buyers</div>
-                    </div>
-                    <span style={{ fontSize:9, fontWeight:700, color:p.planColor, background:`${p.planColor}18`, border:`1px solid ${p.planColor}33`, padding:"2px 7px", borderRadius:5, textTransform:"uppercase" }}>{p.plan}</span>
-                  </button>
-                ))}
-                <div style={{ borderTop:`1px solid ${C.border}`, marginTop:8, paddingTop:8, padding:"8px 10px 4px" }}>
-                  <div style={{ fontSize:10, color:C.subtle }}>Switching persona resets the session to that seller's data.</div>
-                </div>
-              </div>
-            )}
+          {/* USER IDENTITY */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"5px 10px 5px 6px" }}>
+            <Avatar initials={persona.avatar} color={persona.planColor} size={24} />
+            <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{persona.name}</span>
+            <span style={{ fontSize:9, color:persona.planColor, background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}33`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase", fontWeight:700 }}>{persona.plan}</span>
           </div>
         </div>
 
@@ -13206,8 +13468,8 @@ export default function StreamlivePrototype() {
                 {view==="upgrade-loyalty"     && <ScreenUpgrade feature="loyalty"    persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
                 {view==="upgrade-production"  && <ScreenUpgrade feature="production" persona={persona} navigate={navigate} openCheckout={setCheckoutPlan} />}
                 {view==="dashboard"    && <ScreenDashboard    persona={persona} buyers={buyers} navigate={navigate} shows={completedShows} />}
-                {view==="buyers"       && <ScreenBuyers        buyers={buyers} navigate={navigate} />}
-                {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} />}
+                {view==="buyers"       && <ScreenBuyers        buyers={buyers} navigate={navigate} loading={buyersLoading} createBuyer={createBuyer} updateBuyer={updateBuyer} deleteBuyer={deleteBuyer} />}
+                {view==="buyer-profile"&& <ScreenBuyerProfile  buyer={activeBuyer} persona={persona} navigate={navigate} updateBuyer={updateBuyer} deleteBuyer={deleteBuyer} />}
                 {view==="shows"        && <ScreenShows         navigate={navigate} persona={persona} shows={completedShows} />}
                 {view==="show-report"  && <ScreenShowReport    show={activeShow} allShows={completedShows} buyers={buyers} navigate={navigate} />}
                 {/* ScreenLive stays mounted while liveSession is active so its intervals keep ticking */}
@@ -13218,10 +13480,10 @@ export default function StreamlivePrototype() {
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
-                {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"channels":undefined} openCheckout={setCheckoutPlan} />}
+                {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"channels":undefined} openCheckout={setCheckoutPlan} updateProfile={updateProfile} />}
                 {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} onShowComplete={(show)=>setCompletedShows(prev=>[show,...prev])} />}
-                {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} />}
-                {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} persona={persona} />}
+                {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} products={products} loading={productsLoading} createProduct={createProduct} updateProduct={updateProduct} deleteProduct={deleteProduct} />}
+                {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} persona={persona} products={products} />}
                 {view==="loyalty"      && <ScreenLoyalty       buyers={buyers} navigate={navigate} persona={persona} />}
                 {view==="production"   && <ScreenProduction    persona={persona} navigate={navigate} />}
                 {view==="analytics"    && <ScreenAnalytics     buyers={buyers} persona={persona} navigate={navigate} />}
