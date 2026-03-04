@@ -17,6 +17,36 @@ function navigate(path) {
   window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
+// ─── SEO: dynamic title + meta per route ──────────────────────────────────────
+const PAGE_META = {
+  '/':                  { title: 'Streamlive — Live Selling Command Center for Shopify Sellers',                                     desc: 'Multistream to Whatnot, TikTok Shop, Instagram Live, Amazon Live & YouTube Live. Unified buyer CRM, 99% attribution, AI insights — built for independent Shopify live sellers.' },
+  '/changelog':         { title: 'Changelog — Streamlive',                                                                          desc: 'See the latest features and updates to the Streamlive live selling command center.' },
+  '/roadmap':           { title: 'Roadmap — Streamlive',                                                                            desc: 'What\'s coming next to Streamlive. Vote on features and follow along as we build.' },
+  '/about':             { title: 'About — Streamlive',                                                                              desc: 'We\'re building the missing infrastructure for live commerce. Learn about the team behind Streamlive.' },
+  '/blog':              { title: 'Blog — Streamlive',                                                                               desc: 'Tips, strategies, and insights for live sellers on Whatnot, TikTok Shop, Instagram Live, and more.' },
+  '/privacy':           { title: 'Privacy Policy — Streamlive',                                                                     desc: 'How Streamlive collects, uses, and protects your data.' },
+  '/terms':             { title: 'Terms of Service — Streamlive',                                                                   desc: 'Terms and conditions for using the Streamlive platform.' },
+  '/contact':           { title: 'Contact — Streamlive',                                                                            desc: 'Get in touch with the Streamlive team. We read every message.' },
+  '/platform/whatnot':         { title: 'Whatnot Live Selling Tools — Streamlive',         desc: 'Connect Streamlive to Whatnot. Unified buyer CRM, live attribution, loyalty, and multistream — built for Whatnot sellers.' },
+  '/platform/tiktok-shop':     { title: 'TikTok Shop Live Selling Tools — Streamlive',     desc: 'Connect Streamlive to TikTok Shop. Real-time buyer feed, 99% attribution, ManyChat automations — built for TikTok live sellers.' },
+  '/platform/instagram-live':  { title: 'Instagram Live Selling Tools — Streamlive',       desc: 'Connect Streamlive to Instagram Live. Unified buyer CRM, DM automations, and multistream — built for Instagram live sellers.' },
+  '/platform/amazon-live':     { title: 'Amazon Live Selling Tools — Streamlive',          desc: 'Connect Streamlive to Amazon Live. Buyer attribution, CRM sync, and multistream alongside your other platforms.' },
+  '/platform/youtube-live':    { title: 'YouTube Live Selling Tools — Streamlive',         desc: 'Connect Streamlive to YouTube Live. Live Pixel attribution, buyer CRM sync, and multistream — built for YouTube live sellers.' },
+}
+
+function updatePageMeta(route) {
+  const meta = PAGE_META[route] || PAGE_META['/']
+  document.title = meta.title
+  const desc = document.querySelector('meta[name="description"]')
+  if (desc) desc.setAttribute('content', meta.desc)
+  const ogTitle = document.querySelector('meta[property="og:title"]')
+  if (ogTitle) ogTitle.setAttribute('content', meta.title)
+  const ogDesc = document.querySelector('meta[property="og:description"]')
+  if (ogDesc) ogDesc.setAttribute('content', meta.desc)
+  const canonical = document.querySelector('link[rel="canonical"]')
+  if (canonical) canonical.setAttribute('href', 'https://www.strmlive.com' + (route === '/' ? '/' : route))
+}
+
 // ─── INTERCOM ─────────────────────────────────────────────────────────────────
 // Intercom is booted via index.html script tag (anonymous session).
 // These helpers just call update() to pass page/user context — no script injection.
@@ -1056,33 +1086,33 @@ function Landing() {
           <div className="footer-inner" style={{ maxWidth:980, margin:'0 auto' }}>
             <div className="footer-grid" style={{ display:'grid', marginBottom:32 }}>
               <div>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+                <a href="/" onClick={e=>{e.preventDefault();navigate('/')}} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14, textDecoration:'none' }}>
                   <div style={{ width:26, height:26, borderRadius:8, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:900, color:'#fff' }}>S</div>
                   <span style={{ fontFamily:"'Syne',sans-serif", fontSize:15, fontWeight:800, color:'#fff' }}>Streamlive</span>
-                </div>
-                <p style={{ fontSize:12, color:'#374151', lineHeight:1.6, margin:0 }}>Live selling command center for Whatnot, TikTok, Instagram, Amazon, and YouTube.</p>
+                </a>
+                <p style={{ fontSize:12, color:'#374151', lineHeight:1.6, margin:0 }}>Live selling command center for Shopify sellers on Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live.</p>
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Product</div>
                 {[
-                  {label:'Features', action:()=>document.getElementById('features')?.scrollIntoView({behavior:'smooth'})},
-                  {label:'Pricing',  action:()=>document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})},
-                  {label:'Changelog',action:()=>navigate('/changelog')},
-                  {label:'Roadmap',  action:()=>navigate('/roadmap')},
-                ].map(({label,action})=>(
-                  <div key={label} onClick={action} className="footer-link-hover" style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer', transition:'color .15s' }}>{label}</div>
+                  {label:'Features', href:'/#features', action:()=>document.getElementById('features')?.scrollIntoView({behavior:'smooth'})},
+                  {label:'Pricing',  href:'/#pricing',  action:()=>document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})},
+                  {label:'Changelog',href:'/changelog',  action:()=>navigate('/changelog')},
+                  {label:'Roadmap',  href:'/roadmap',    action:()=>navigate('/roadmap')},
+                ].map(({label,href,action})=>(
+                  <a key={label} href={href} onClick={e=>{e.preventDefault();action()}} className="footer-link-hover" style={{ display:'block', fontSize:13, color:'#374151', marginBottom:8, textDecoration:'none', transition:'color .15s' }}>{label}</a>
                 ))}
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Platforms</div>
                 {[
-                  {label:'Whatnot',        slug:'whatnot'},
-                  {label:'TikTok Shop',    slug:'tiktok-shop'},
-                  {label:'Instagram Live', slug:'instagram-live'},
-                  {label:'Amazon Live',    slug:'amazon-live'},
-                  {label:'YouTube Live',   slug:'youtube-live'},
+                  {label:'Whatnot live selling',        slug:'whatnot'},
+                  {label:'TikTok Shop live selling',    slug:'tiktok-shop'},
+                  {label:'Instagram Live selling',      slug:'instagram-live'},
+                  {label:'Amazon Live selling',         slug:'amazon-live'},
+                  {label:'YouTube Live selling',        slug:'youtube-live'},
                 ].map(({label, slug})=>(
-                  <div key={slug} onClick={()=>navigate('/platform/'+slug)} className="footer-link-hover" style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer', transition:'color .15s' }}>{label}</div>
+                  <a key={slug} href={`/platform/${slug}`} onClick={e=>{e.preventDefault();navigate('/platform/'+slug)}} className="footer-link-hover" style={{ display:'block', fontSize:13, color:'#374151', marginBottom:8, textDecoration:'none', transition:'color .15s' }}>{label}</a>
                 ))}
               </div>
               <div>
@@ -1094,7 +1124,7 @@ function Landing() {
                   {label:'Terms of Service',path:'/terms'},
                   {label:'Contact',         path:'/contact'},
                 ].map(({label,path})=>(
-                  <div key={label} onClick={()=>navigate(path)} className="footer-link-hover" style={{ fontSize:13, color:'#374151', marginBottom:8, cursor:'pointer', transition:'color .15s' }}>{label}</div>
+                  <a key={label} href={path} onClick={e=>{e.preventDefault();navigate(path)}} className="footer-link-hover" style={{ display:'block', fontSize:13, color:'#374151', marginBottom:8, textDecoration:'none', transition:'color .15s' }}>{label}</a>
                 ))}
               </div>
             </div>
@@ -3134,6 +3164,7 @@ function LiveCursor() {
 
 export default function App() {
   const route = useRoute()
+  useEffect(() => { updatePageMeta(route) }, [route])
   return (
     <>
       <style>{`
