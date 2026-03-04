@@ -380,10 +380,14 @@ const STRIPE_LINKS = {
 // Enterprise: https://strmlive.com/welcome?plan=enterprise
 
 // ─── INTERCOM ─────────────────────────────────────────────────────────────────
-// Intercom is booted via index.html. Just call update() with user identity.
+// Intercom is booted anonymously via index.html. We shutdown + reboot with
+// the persona's identity so the widget recognises the logged-in user.
 function bootIntercom(persona) {
   if (typeof window.Intercom !== 'function') return
-  window.Intercom('update', {
+  window.Intercom('shutdown')
+  window.Intercom('boot', {
+    api_base: 'https://api-iam.intercom.io',
+    app_id: 'zyj40439',
     name: persona.name,
     email: persona.email,
     user_id: persona.id,
