@@ -2724,7 +2724,9 @@ function OptInPage({ slug, connectedPlatforms }) {
   const seller = SELLER_PROFILES[slug];
   // Use live connected platforms if provided, fall back to profile default
   const activePlatforms = connectedPlatforms || seller?.platforms || [];
-  const [step, setStep] = useState("form"); // form | success
+  const [step, setStep] = useState("method"); // method | details | success
+  const [authMethod, setAuthMethod] = useState(null); // "facebook" | "apple" | "email"
+  const [authLoading, setAuthLoading] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [email, setEmail]         = useState("");
   const [phone, setPhone]         = useState("");
@@ -2733,6 +2735,40 @@ function OptInPage({ slug, connectedPlatforms }) {
   const [smsOptIn, setSmsOptIn]       = useState(true);
   const [submitting, setSubmitting]   = useState(false);
   const [errors, setErrors]           = useState({});
+
+  const handleSocialAuth = (method) => {
+    setAuthMethod(method);
+    setAuthLoading(true);
+    setTimeout(() => {
+      if (method === "facebook") {
+        setFirstName("Jamie");
+        setEmail("jamie@facebook.com");
+      } else if (method === "apple") {
+        setFirstName("Jamie");
+        setEmail("jamie@icloud.com");
+      }
+      setAuthLoading(false);
+      setStep("details");
+    }, 1000);
+  };
+
+  const FB_ICON = (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  );
+
+  const APPLE_ICON = (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
+      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+    </svg>
+  );
+
+  const MAIL_ICON = (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+    </svg>
+  );
 
   const formatPhone = (val) => {
     const digits = val.replace(/\D/g, "").slice(0, 10);
@@ -2743,8 +2779,9 @@ function OptInPage({ slug, connectedPlatforms }) {
 
   const validate = () => {
     const e = {};
-    if (!firstName.trim()) e.firstName = "Required";
-    if (!email.includes("@") || !email.includes(".")) e.email = "Enter a valid email";
+    const isSocial = authMethod === "facebook" || authMethod === "apple";
+    if (!isSocial && !firstName.trim()) e.firstName = "Required";
+    if (!isSocial && (!email.includes("@") || !email.includes("."))) e.email = "Enter a valid email";
     if (smsOptIn && phone.replace(/\D/g,"").length < 10) e.phone = "Enter a valid phone number";
     if (!emailOptIn && !smsOptIn) e.consent = "Please choose at least one way to stay in touch";
     return e;
@@ -2865,11 +2902,11 @@ function OptInPage({ slug, connectedPlatforms }) {
         </div>
       </div>
 
-      {/* FORM */}
+      {/* CONTENT */}
       <div style={{ flex:1, padding:"32px 24px 48px" }}>
         <div style={{ maxWidth:480, margin:"0 auto" }}>
 
-          {/* Perks */}
+          {/* Perks — visible on method & details steps */}
           <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"18px 20px", marginBottom:28 }}>
             <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:12 }}>When you join you get</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
@@ -2882,139 +2919,231 @@ function OptInPage({ slug, connectedPlatforms }) {
             </div>
           </div>
 
-          {/* Form fields */}
-          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          {/* ── STEP 1: METHOD ── */}
+          {step === "method" && (
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
-            {/* Name */}
-            <div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>First Name *</label>
-              <input
-                className={`opt-input${errors.firstName?" error":""}`}
-                placeholder="Your first name"
-                value={firstName}
-                onChange={e=>{ setFirstName(e.target.value); setErrors(er=>({...er,firstName:null})); }}
-              />
-              {errors.firstName && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.firstName}</div>}
+              {/* Auth loading overlay */}
+              {authLoading && (
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 0" }}>
+                  <div style={{ width:40, height:40, border:`3px solid ${accentRgb}33`, borderTop:`3px solid ${accentRgb}`, borderRadius:"50%", animation:"optspin 0.8s linear infinite" }} />
+                  <style>{`@keyframes optspin { to { transform:rotate(360deg); } }`}</style>
+                  <div style={{ fontSize:14, color:"#9ca3af", marginTop:16 }}>Connecting...</div>
+                </div>
+              )}
+
+              {!authLoading && (<>
+                {/* Facebook */}
+                <button
+                  onClick={() => handleSocialAuth("facebook")}
+                  style={{ width:"100%", height:48, background:"#1877F2", border:"none", borderRadius:12, color:"#fff", fontSize:15, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", gap:10, cursor:"pointer", transition:"opacity .15s" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity="0.9"}
+                  onMouseLeave={e => e.currentTarget.style.opacity="1"}
+                >
+                  {FB_ICON} Continue with Facebook
+                </button>
+
+                {/* Apple */}
+                <button
+                  onClick={() => handleSocialAuth("apple")}
+                  style={{ width:"100%", height:48, background:"#000", border:"none", borderRadius:12, color:"#fff", fontSize:15, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", gap:10, cursor:"pointer", transition:"opacity .15s" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity="0.9"}
+                  onMouseLeave={e => e.currentTarget.style.opacity="1"}
+                >
+                  {APPLE_ICON} Continue with Apple
+                </button>
+
+                {/* Divider */}
+                <div style={{ display:"flex", alignItems:"center", gap:12, margin:"4px 0" }}>
+                  <div style={{ flex:1, height:1, background:"#1e1e3a" }} />
+                  <span style={{ fontSize:12, color:"#4b5563", fontWeight:500 }}>or</span>
+                  <div style={{ flex:1, height:1, background:"#1e1e3a" }} />
+                </div>
+
+                {/* Email */}
+                <button
+                  onClick={() => { setAuthMethod("email"); setStep("details"); }}
+                  style={{ width:"100%", height:48, background:"transparent", border:"1.5px solid #1e1e3a", borderRadius:12, color:"#fff", fontSize:15, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", gap:10, cursor:"pointer", transition:"border-color .15s" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor="#374151"}
+                  onMouseLeave={e => e.currentTarget.style.borderColor="#1e1e3a"}
+                >
+                  {MAIL_ICON} Continue with Email
+                </button>
+
+                {/* Legal */}
+                <p style={{ fontSize:11, color:"#4b5563", textAlign:"center", lineHeight:1.6, marginTop:4 }}>
+                  By continuing you agree to receive marketing messages from <strong style={{ color:"#6b7280" }}>{seller.name}</strong> via Streamlive.
+                  Message & data rates may apply. Reply STOP to unsubscribe at any time.{" "}
+                  <a href="#" style={{ color:"#6b7280" }}>Privacy Policy</a>
+                </p>
+              </>)}
             </div>
+          )}
 
-            {/* Email */}
-            <div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>Email Address *</label>
-              <input
-                className={`opt-input${errors.email?" error":""}`}
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e=>{ setEmail(e.target.value); setErrors(er=>({...er,email:null})); }}
-              />
-              {errors.email && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.email}</div>}
-            </div>
+          {/* ── STEP 2: DETAILS ── */}
+          {step === "details" && (
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
-            {/* Phone */}
-            <div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>
-                Phone Number <span style={{ color:"#6b7280", fontWeight:400 }}>(for SMS alerts)</span>
-              </label>
-              <input
-                className={`opt-input${errors.phone?" error":""}`}
-                type="tel"
-                placeholder="(555) 000-0000"
-                value={phone}
-                onChange={e=>{ setPhone(formatPhone(e.target.value)); setErrors(er=>({...er,phone:null})); }}
-              />
-              {errors.phone && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.phone}</div>}
-            </div>
+              {/* Back link */}
+              <button
+                onClick={() => { setStep("method"); setAuthMethod(null); setFirstName(""); setEmail(""); setErrors({}); }}
+                style={{ background:"none", border:"none", color:"#6b7280", fontSize:12, cursor:"pointer", textAlign:"left", padding:0, marginBottom:4, fontFamily:"'DM Sans',sans-serif" }}
+              >
+                ← Back
+              </button>
 
-            {/* Platform handles */}
-            {(() => {
-              const dmPlatforms = activePlatforms.filter(p => DM_PLATFORMS.includes(p));
-              if (dmPlatforms.length === 0) return null;
-              return (
+              {/* Name — read-only for social, editable for email */}
+              {(authMethod === "facebook" || authMethod === "apple") ? (
                 <div>
-                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:4 }}>
-                    Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
-                  </label>
-                  <div style={{ fontSize:11, color:"#6b7280", marginBottom:10, lineHeight:1.5 }}>
-                    Optional. Helps us match you across platforms and send personalized DMs.
-                  </div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                    {dmPlatforms.map(p => {
-                      const pm = PLATFORM_META[p];
-                      const hasHandle = handles[p] && handles[p].length > 1;
-                      return (
-                        <div key={p}>
-                          <div style={{ display:"flex", alignItems:"center", gap:10, background:"#0d0d1a", border:`1.5px solid ${hasHandle?pm.color+"55":"#1e1e3a"}`, borderRadius:10, padding:"10px 14px", transition:"border-color .15s" }}>
-                            <span style={{ fontSize:11, fontWeight:700, color:pm.color, minWidth:68 }}>{pm.label}</span>
-                            <input
-                              style={{ flex:1, background:"none", border:"none", color:"#fff", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
-                              placeholder={pm.placeholder}
-                              value={handles[p]||""}
-                              onChange={e=>setHandles(h=>({...h,[p]:e.target.value}))}
-                            />
-                          </div>
-                          {pm.manychat && hasHandle && (
-                            <div style={{ display:"flex", alignItems:"flex-start", gap:8, background:`${pm.color}0d`, border:`1px solid ${pm.color}22`, borderRadius:8, padding:"9px 12px", marginTop:6 }}>
-                              <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>💬</span>
-                              <div>
-                                <div style={{ fontSize:11, fontWeight:700, color:pm.color, marginBottom:2 }}>Activate {pm.label} DMs</div>
-                                <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.5 }}>
-                                  To receive show alerts via {pm.label} DM, send the message{" "}
-                                  <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0d0d1a", border:`1px solid ${pm.color}33`, padding:"1px 7px", borderRadius:4, color:"#fff", fontWeight:600 }}>JOIN</span>
-                                  {" "}to <span style={{ color:pm.color, fontWeight:600 }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> on {pm.label} after signing up.
+                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>First Name</label>
+                  <div
+                    className="opt-input"
+                    style={{ background:"#0d0d1a", opacity:0.7, cursor:"default" }}
+                  >{firstName}</div>
+                </div>
+              ) : (
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>First Name *</label>
+                  <input
+                    className={`opt-input${errors.firstName?" error":""}`}
+                    placeholder="Your first name"
+                    value={firstName}
+                    onChange={e=>{ setFirstName(e.target.value); setErrors(er=>({...er,firstName:null})); }}
+                  />
+                  {errors.firstName && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.firstName}</div>}
+                </div>
+              )}
+
+              {/* Email — read-only for social, editable for email */}
+              {(authMethod === "facebook" || authMethod === "apple") ? (
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>Email Address</label>
+                  <div
+                    className="opt-input"
+                    style={{ background:"#0d0d1a", opacity:0.7, cursor:"default" }}
+                  >{email}</div>
+                </div>
+              ) : (
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>Email Address *</label>
+                  <input
+                    className={`opt-input${errors.email?" error":""}`}
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={e=>{ setEmail(e.target.value); setErrors(er=>({...er,email:null})); }}
+                  />
+                  {errors.email && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.email}</div>}
+                </div>
+              )}
+
+              {/* Phone */}
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>
+                  Phone Number <span style={{ color:"#6b7280", fontWeight:400 }}>(for SMS alerts)</span>
+                </label>
+                <input
+                  className={`opt-input${errors.phone?" error":""}`}
+                  type="tel"
+                  placeholder="(555) 000-0000"
+                  value={phone}
+                  onChange={e=>{ setPhone(formatPhone(e.target.value)); setErrors(er=>({...er,phone:null})); }}
+                />
+                {errors.phone && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.phone}</div>}
+              </div>
+
+              {/* Platform handles */}
+              {(() => {
+                const dmPlatforms = activePlatforms.filter(p => DM_PLATFORMS.includes(p));
+                if (dmPlatforms.length === 0) return null;
+                return (
+                  <div>
+                    <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:4 }}>
+                      Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
+                    </label>
+                    <div style={{ fontSize:11, color:"#6b7280", marginBottom:10, lineHeight:1.5 }}>
+                      Optional. Helps us match you across platforms and send personalized DMs.
+                    </div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {dmPlatforms.map(p => {
+                        const pm = PLATFORM_META[p];
+                        const hasHandle = handles[p] && handles[p].length > 1;
+                        return (
+                          <div key={p}>
+                            <div style={{ display:"flex", alignItems:"center", gap:10, background:"#0d0d1a", border:`1.5px solid ${hasHandle?pm.color+"55":"#1e1e3a"}`, borderRadius:10, padding:"10px 14px", transition:"border-color .15s" }}>
+                              <span style={{ fontSize:11, fontWeight:700, color:pm.color, minWidth:68 }}>{pm.label}</span>
+                              <input
+                                style={{ flex:1, background:"none", border:"none", color:"#fff", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+                                placeholder={pm.placeholder}
+                                value={handles[p]||""}
+                                onChange={e=>setHandles(h=>({...h,[p]:e.target.value}))}
+                              />
+                            </div>
+                            {pm.manychat && hasHandle && (
+                              <div style={{ display:"flex", alignItems:"flex-start", gap:8, background:`${pm.color}0d`, border:`1px solid ${pm.color}22`, borderRadius:8, padding:"9px 12px", marginTop:6 }}>
+                                <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>💬</span>
+                                <div>
+                                  <div style={{ fontSize:11, fontWeight:700, color:pm.color, marginBottom:2 }}>Activate {pm.label} DMs</div>
+                                  <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.5 }}>
+                                    To receive show alerts via {pm.label} DM, send the message{" "}
+                                    <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0d0d1a", border:`1px solid ${pm.color}33`, padding:"1px 7px", borderRadius:4, color:"#fff", fontWeight:600 }}>JOIN</span>
+                                    {" "}to <span style={{ color:pm.color, fontWeight:600 }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> on {pm.label} after signing up.
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
+                );
+              })()}
+
+              {/* Consent checkboxes */}
+              <div style={{ background:"#0d0d1a", border:`1px solid ${errors.consent?"#ef444444":"#1e1e3a"}`, borderRadius:12, padding:"16px 18px" }}>
+                <div style={{ fontSize:12, fontWeight:700, color:"#9ca3af", marginBottom:12 }}>How do you want to hear from {seller.name}?</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setEmailOptIn(v=>!v)}>
+                    <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${emailOptIn?accentRgb:"#374151"}`, background:emailOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
+                      {emailOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
+                    </div>
+                    <div>
+                      <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Email updates</div>
+                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Show schedules, exclusive drops, and VIP offers</div>
+                    </div>
+                  </label>
+                  <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setSmsOptIn(v=>!v)}>
+                    <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${smsOptIn?accentRgb:"#374151"}`, background:smsOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
+                      {smsOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
+                    </div>
+                    <div>
+                      <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>SMS alerts</div>
+                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Instant show alerts. Never miss a live drop.</div>
+                    </div>
+                  </label>
                 </div>
-              );
-            })()}
-
-            {/* Consent checkboxes */}
-            <div style={{ background:"#0d0d1a", border:`1px solid ${errors.consent?"#ef444444":"#1e1e3a"}`, borderRadius:12, padding:"16px 18px" }}>
-              <div style={{ fontSize:12, fontWeight:700, color:"#9ca3af", marginBottom:12 }}>How do you want to hear from {seller.name}?</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setEmailOptIn(v=>!v)}>
-                  <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${emailOptIn?accentRgb:"#374151"}`, background:emailOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
-                    {emailOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
-                  </div>
-                  <div>
-                    <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Email updates</div>
-                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Show schedules, exclusive drops, and VIP offers</div>
-                  </div>
-                </label>
-                <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setSmsOptIn(v=>!v)}>
-                  <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${smsOptIn?accentRgb:"#374151"}`, background:smsOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
-                    {smsOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
-                  </div>
-                  <div>
-                    <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>SMS alerts</div>
-                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Instant show alerts. Never miss a live drop.</div>
-                  </div>
-                </label>
+                {errors.consent && <div style={{ fontSize:11, color:"#ef4444", marginTop:10 }}>{errors.consent}</div>}
               </div>
-              {errors.consent && <div style={{ fontSize:11, color:"#ef4444", marginTop:10 }}>{errors.consent}</div>}
+
+              {/* CTA Button */}
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                style={{ width:"100%", background:submitting?"#374151":`linear-gradient(135deg,${accentRgb},${accentRgb}cc)`, border:"none", color:"#fff", fontSize:15, fontWeight:700, padding:"15px", borderRadius:12, cursor:submitting?"not-allowed":"pointer", transition:"all .2s", marginTop:4, letterSpacing:"-0.2px" }}
+              >
+                {submitting ? "Creating Account..." : `Create Account & Join ${seller.name}'s VIP List →`}
+              </button>
+
+              {/* Legal */}
+              <p style={{ fontSize:11, color:"#4b5563", textAlign:"center", lineHeight:1.6 }}>
+                By subscribing you agree to receive marketing messages from <strong style={{ color:"#6b7280" }}>{seller.name}</strong> via Streamlive.
+                Message & data rates may apply. Reply STOP to unsubscribe at any time.{" "}
+                <a href="#" style={{ color:"#6b7280" }}>Privacy Policy</a>
+              </p>
             </div>
+          )}
 
-            {/* CTA Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              style={{ width:"100%", background:submitting?"#374151":`linear-gradient(135deg,${accentRgb},${accentRgb}cc)`, border:"none", color:"#fff", fontSize:15, fontWeight:700, padding:"15px", borderRadius:12, cursor:submitting?"not-allowed":"pointer", transition:"all .2s", marginTop:4, letterSpacing:"-0.2px" }}
-            >
-              {submitting ? "Joining..." : `Join ${seller.name}'s VIP List →`}
-            </button>
-
-            {/* Legal */}
-            <p style={{ fontSize:11, color:"#4b5563", textAlign:"center", lineHeight:1.6 }}>
-              By subscribing you agree to receive marketing messages from <strong style={{ color:"#6b7280" }}>{seller.name}</strong> via Streamlive.
-              Message & data rates may apply. Reply STOP to unsubscribe at any time.{" "}
-              <a href="#" style={{ color:"#6b7280" }}>Privacy Policy</a>
-            </p>
-          </div>
         </div>
       </div>
 
