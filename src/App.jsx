@@ -1104,7 +1104,7 @@ function Landing() {
                 ))}
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Platforms</div>
+                <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Channels</div>
                 {[
                   {label:'Whatnot live selling',        slug:'whatnot'},
                   {label:'TikTok Shop live selling',    slug:'tiktok-shop'},
@@ -1258,7 +1258,7 @@ function Landing() {
                   />
                 </div>
                 <div style={{ marginBottom:12 }}>
-                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Platforms you sell on</label>
+                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Channels you sell on</label>
                   <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
                     {[['WN','Whatnot','167,139,250'],['TT','TikTok','244,63,94'],['IG','Instagram','236,72,153'],['AM','Amazon','245,158,11'],['YT','YouTube','248,68,68']].map(([code,label,col])=>{
                       const sel = salesForm.platforms.includes(code)
