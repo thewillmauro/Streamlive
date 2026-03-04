@@ -504,35 +504,8 @@ function CheckoutModal({ plan, onClose }) {
 }
 
 
-// ─── SHOPIFY CATALOG DATA ─────────────────────────────────────────────────────
-const PRODUCTS = [
-  // ── Banana Republic (Pro): Apparel & Fashion ───────────────────────────────
-  { id:"p1",  name:"Merino Wool Blazer",               sku:"BR-BLZ-001", price:228, cost:82,  inventory:48,  category:"Blazers",      image:"🧥", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_001", aiScore:9.4, soldLast30:62,  avgPerShow:5.8, talkingPoints:["This is our #1 repeat-buyer product — mention the Merino grade upfront","Pair it with the linen trousers for the bundle close","Hold the lapel to camera — the texture sells itself"] },
-  { id:"p2",  name:"Italian Linen Trousers",            sku:"BR-TRS-002", price:148, cost:51,  inventory:84,  category:"Bottoms",      image:"👖", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_002", aiScore:8.9, soldLast30:88,  avgPerShow:7.2 },
-  { id:"p3",  name:"Leather Crossbody Bag",             sku:"BR-BAG-003", price:198, cost:74,  inventory:36,  category:"Accessories",  image:"👜", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_003", aiScore:9.1, soldLast30:44,  avgPerShow:3.9 },
-  { id:"p4",  name:"Silk Wrap Midi Dress",              sku:"BR-DRS-004", price:268, cost:96,  inventory:22,  category:"Dresses",      image:"👗", platforms:["TT","IG","YT"],    showReady:true,  shopifyId:"sh_004", aiScore:9.6, soldLast30:38,  avgPerShow:4.1, talkingPoints:["Only 22 left — say it in the first 10 seconds","Ask viewers to comment their size for social proof","Describe how it wraps differently on each body type — invite DMs"] },
-  { id:"p5",  name:"Cashmere Crewneck Sweater",         sku:"BR-KNT-005", price:188, cost:68,  inventory:60,  category:"Knitwear",     image:"🧶", platforms:["TT","IG","AM"],    showReady:false, shopifyId:"sh_005", aiScore:8.4, soldLast30:52,  avgPerShow:5.0 },
-  { id:"p6",  name:"Slim Chino Shorts",                 sku:"BR-SHT-006", price:80,  cost:28,  inventory:120, category:"Bottoms",      image:"🩳", platforms:["TT","AM"],         showReady:true,  shopifyId:"sh_006", aiScore:7.8, soldLast30:94,  avgPerShow:8.4 },
-  { id:"p7",  name:"Suede Chelsea Boots",               sku:"BR-BOO-007", price:298, cost:108, inventory:18,  category:"Footwear",     image:"👢", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_007", aiScore:8.2, soldLast30:28,  avgPerShow:2.6 },
-  { id:"p8",  name:"Spring Style Bundle (3pc)",         sku:"BR-BND-008", price:148, cost:48,  inventory:30,  category:"Bundles",      image:"🎁", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_008", aiScore:9.2, soldLast30:71,  avgPerShow:6.8 },
-  { id:"p9",  name:"Tailored Wool Overcoat",            sku:"BR-OVR-009", price:498, cost:182, inventory:12,  category:"Outerwear",    image:"🧣", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_009", aiScore:7.4, soldLast30:14,  avgPerShow:1.4 },
-  { id:"p10", name:"Linen Button-Down Shirt",           sku:"BR-SHR-010", price:98,  cost:34,  inventory:96,  category:"Tops",         image:"👔", platforms:["TT","IG","AM","YT"], showReady:true,  shopifyId:"sh_010", aiScore:8.7, soldLast30:108, avgPerShow:9.1 },
-
-  // ── Kylie Cosmetics (Growth): Beauty ──────────────────────────────────────
-  { id:"p11", name:"Matte Lip Kit: Ruby",              sku:"KC-LIP-001", price:29,  cost:7,   inventory:840, category:"Lip",          image:"💄", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_011", aiScore:9.8, soldLast30:482, avgPerShow:48.2 },
-  { id:"p12", name:"Kyshadow Palette: Bronze",         sku:"KC-EYE-002", price:45,  cost:11,  inventory:420, category:"Eye",          image:"✨", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_012", aiScore:9.4, soldLast30:314, avgPerShow:31.4 },
-  { id:"p13", name:"Skin Tint SPF 30",                  sku:"KC-FAC-003", price:38,  cost:9,   inventory:560, category:"Face",         image:"🌟", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_013", aiScore:9.2, soldLast30:268, avgPerShow:26.8 },
-  { id:"p14", name:"Gloss Drip: Clear",                sku:"KC-GLS-004", price:16,  cost:4,   inventory:1200,category:"Lip",          image:"💋", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_014", aiScore:8.8, soldLast30:620, avgPerShow:62.0 },
-  { id:"p15", name:"Holiday Collection Set (6pc)",      sku:"KC-SET-005", price:89,  cost:22,  inventory:180, category:"Sets",         image:"🎀", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_015", aiScore:9.6, soldLast30:188, avgPerShow:18.8 },
-  { id:"p16", name:"Pressed Blush: Peach Sorbet",      sku:"KC-BLH-006", price:24,  cost:6,   inventory:680, category:"Face",         image:"🍑", platforms:["TT","IG"],         showReady:false, shopifyId:"sh_016", aiScore:8.6, soldLast30:244, avgPerShow:24.4 },
-  { id:"p17", name:"Kylighter Highlighter Stick",       sku:"KC-HGL-007", price:21,  cost:5,   inventory:740, category:"Face",         image:"💫", platforms:["TT","IG"],         showReady:true,  shopifyId:"sh_017", aiScore:8.4, soldLast30:312, avgPerShow:31.2 },
-
-  // ── Tropicfeel (Starter): Travel Footwear & Gear ──────────────────────────
-  { id:"p18", name:"Canyon All-Terrain Sneaker",        sku:"TF-SNK-001", price:148, cost:58,  inventory:84,  category:"Shoes",        image:"👟", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_018", aiScore:8.4, soldLast30:24,  avgPerShow:3.2 },
-  { id:"p19", name:"Shell Travel Backpack 26L",         sku:"TF-BAG-001", price:178, cost:68,  inventory:42,  category:"Bags",         image:"🎒", platforms:["IG","AM"],         showReady:true,  shopifyId:"sh_019", aiScore:8.0, soldLast30:14,  avgPerShow:2.4 },
-  { id:"p20", name:"Nest 2-in-1 Sandal",                sku:"TF-SND-001", price:118, cost:44,  inventory:62,  category:"Shoes",        image:"🩴", platforms:["IG"],              showReady:true,  shopifyId:"sh_020", aiScore:7.6, soldLast30:18,  avgPerShow:2.8 },
-  { id:"p21", name:"Tropicfeel Starter Bundle",         sku:"TF-BND-001", price:228, cost:82,  inventory:24,  category:"Bundles",      image:"🌴", platforms:["IG","AM"],         showReady:false, shopifyId:"sh_021", aiScore:7.2, soldLast30:8,   avgPerShow:1.4 },
-];
+// ─── PRODUCTS (empty — real data comes from Supabase via useProducts hook) ───
+const PRODUCTS = [];
 
 // ─── HELPER UTILITIES ────────────────────────────────────────────────────────
 function formatTimeAgo(dateStr) {
