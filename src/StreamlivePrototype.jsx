@@ -9761,14 +9761,14 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
               <KPI label="Best GMV"       value={filteredShows.length>0?`$${Math.max(...filteredShows.map(s=>s.gmv)).toLocaleString()}`:" - "} color={C.green} sub="single show" />
               <KPI label="Avg Show GMV"   value={filteredShows.length>0?`$${Math.round(filteredShows.reduce((a,s)=>a+s.gmv,0)/filteredShows.length).toLocaleString()}`:" - "} color={C.accent} />
               <KPI label="Avg Buyers/Show" value={filteredShows.length>0?Math.round(filteredShows.reduce((a,s)=>a+s.buyers,0)/filteredShows.length):":"} color="#a78bfa" />
-              <KPI label="Best Platform"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]?PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]:":"} color="#f59e0b" sub="by GMV" />
+              <KPI label="Best Channel"   value={Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0]?.[0]?PN[Object.entries(platformGMV).sort((a,b)=>b[1]-a[1])[0][0]]:":"} color="#f59e0b" sub="by GMV" />
             </div>
 
             {/* Show performance table */}
-            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:20 }}>
+            <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px", marginBottom:20, overflow:"hidden" }}>
               <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Show-by-Show Performance</div>
               <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr 1fr 80px", gap:0 }}>
-                {["Show","Platform","Date","GMV","Buyers","Repeat Rate","New Buyers",""].map(h=>(
+                {["Show","Channel","Date","GMV","Buyers","Repeat Rate","New Buyers",""].map(h=>(
                   <div key={h} style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", padding:"0 0 10px" }}>{h}</div>
                 ))}
                 {(filteredShows.length>0?[...filteredShows]:[...SHOWS]).sort((a,b)=>new Date(b.date)-new Date(a.date)).map((s,i)=>[
@@ -9791,7 +9791,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
             {/* Platform comparison */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
               <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Platform Comparison</div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Channel Comparison</div>
                 {Object.entries(platformGMV).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
                   const shows = (filteredShows.length>0?filteredShows:SHOWS).filter(s=>s.platform===k);
                   const avgRR = shows.length ? Math.round(shows.reduce((a,s)=>a+s.repeatRate,0)/shows.length) : 0;
