@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import StreamlivePrototype from './StreamlivePrototype.jsx'
-import { supabase } from './lib/supabase.js'
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 function useRoute() {
@@ -31,9 +30,8 @@ const PAGE_META = {
   '/platform/whatnot':         { title: 'Whatnot Live Selling Tools — Streamlive',         desc: 'Connect Streamlive to Whatnot. Unified buyer CRM, live attribution, loyalty, and multistream — built for Whatnot sellers.' },
   '/platform/tiktok-shop':     { title: 'TikTok Shop Live Selling Tools — Streamlive',     desc: 'Connect Streamlive to TikTok Shop. Real-time buyer feed, 99% attribution, ManyChat automations — built for TikTok live sellers.' },
   '/platform/instagram-live':  { title: 'Instagram Live Selling Tools — Streamlive',       desc: 'Connect Streamlive to Instagram Live. Unified buyer CRM, DM automations, and multistream — built for Instagram live sellers.' },
-  '/platform/amazon-live':     { title: 'Amazon Live Selling Tools — Streamlive',          desc: 'Connect Streamlive to Amazon Live. Buyer attribution, CRM sync, and multistream alongside your other channels.' },
+  '/platform/amazon-live':     { title: 'Amazon Live Selling Tools — Streamlive',          desc: 'Connect Streamlive to Amazon Live. Buyer attribution, CRM sync, and multistream alongside your other platforms.' },
   '/platform/youtube-live':    { title: 'YouTube Live Selling Tools — Streamlive',         desc: 'Connect Streamlive to YouTube Live. Live Pixel attribution, buyer CRM sync, and multistream — built for YouTube live sellers.' },
-  '/signin':                   { title: 'Sign In — Streamlive',                                                                           desc: 'Sign in or create your Streamlive account.' },
 }
 
 function updatePageMeta(route) {
@@ -80,15 +78,15 @@ const PLANS = {
     id:'starter', name:'Starter', price:79, color:'#10b981', bg:'#0a1e16', border:'#10b98133',
     emoji:'🌱', tagline:'Get started with live selling',
     headline:"You're in. Let's import your buyers.",
-    subline:"Your Streamlive account is active. Connect your first channel and we'll import your buyers immediately.",
+    subline:"Your Streamlive account is active. Connect your first platform and we'll import your buyers immediately.",
     features:[
-      'Buyer CRM across all channels',
+      'Buyer CRM across all platforms',
       'Show Planner + run order',
       'Loyalty program',
       'Opt-in pages & email campaigns',
-      'Up to 2 channels',
+      'Up to 2 platforms',
     ],
-    nextLabel:'Connect your first channel →',
+    nextLabel:'Connect your first platform →',
     nextHint:"Takes 2 minutes. We'll import your buyers immediately.",
     billing:'Billed monthly. Cancel anytime.',
   },
@@ -102,9 +100,9 @@ const PLANS = {
       'Live Companion: real-time GMV & buyer feed',
       'Analytics + 6 AI insights per show',
       'SMS campaigns & DM automations',
-      'All 5 channels simultaneously',
+      'All 5 platforms simultaneously',
     ],
-    nextLabel:'Set up your channels →',
+    nextLabel:'Set up your platforms →',
     nextHint:"Connect Whatnot and it activates automatically when you go live.",
     billing:'Billed monthly. Cancel anytime.',
   },
@@ -112,16 +110,16 @@ const PLANS = {
     id:'pro', name:'Pro', price:399, color:'#f59e0b', bg:'#2e1f0a22', border:'#f59e0b33',
     emoji:'⚡', tagline:'Full production control',
     headline:"Pro activated. You're operating at full power.",
-    subline:'Every feature unlocked. Production suite, full AI, and multi-channel at scale.',
+    subline:'Every feature unlocked. Production suite, full AI, and multi-platform at scale.',
     features:[
       'Everything in Growth',
       'Production Suite: cameras, lights & OBS',
       'Host Briefing auto-advances with show clock',
-      'Cross-channel buyer identity matching',
+      'Cross-platform buyer identity matching',
       'Priority support',
     ],
-    nextLabel:'Set up your channels →',
-    nextHint:"Connect all 4 channels and let Streamlive do the rest.",
+    nextLabel:'Set up your platforms →',
+    nextHint:"Connect all 4 platforms and let Streamlive do the rest.",
     billing:'Billed monthly. Cancel anytime.',
   }
 }
@@ -137,7 +135,6 @@ const GLOBAL_CSS = `
   @keyframes pop       { 0% { transform:scale(.85);opacity:0 } 60% { transform:scale(1.06) } 100% { transform:scale(1);opacity:1 } }
   @keyframes pulse     { 0%,100% { opacity:1 } 50% { opacity:.35 } }
   @keyframes shimmer   { 0% { background-position:-200% 0 } 100% { background-position:200% 0 } }
-  @keyframes spin      { to { transform:rotate(360deg) } }
 
   .fade-a0 { animation: fadeUp .55s ease both; }
   .fade-a1 { animation: fadeUp .55s .08s ease both; }
@@ -171,7 +168,6 @@ function Nav({ currentPlan }) {
       <div style={{ display:'flex', alignItems:'center', gap:16 }}>
         <a href="#features"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
         <a href="#pricing"   style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-        <a href="/signin" style={{ fontSize:13, color:'#9ca3af', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();navigate('/signin')}}>Sign In</a>
         {p && (
           <div style={{ display:'flex', alignItems:'center', gap:6, background:`${p.color}12`, border:`1px solid ${p.color}33`, borderRadius:6, padding:'4px 12px' }}>
             <div style={{ width:5, height:5, borderRadius:'50%', background:p.color, animation:'pulse 2s infinite' }} />
@@ -307,20 +303,20 @@ function Landing() {
   }
 
   const FEATURES = [
-    { icon:'◉', color:'#7c3aed', label:'Buyer CRM',             desc:'All 5 channels. One buyer view.' },
+    { icon:'◉', color:'#7c3aed', label:'Buyer CRM',             desc:'All 5 platforms. One buyer view.' },
     { icon:'◈', color:'#10b981', label:'Live Companion',         desc:'Real-time GMV, orders, and VIP alerts.' },
     { icon:'◑', color:'#f59e0b', label:'Analytics',              desc:'AI insights after every show.' },
     { icon:'⬛', color:'#a78bfa', label:'Production Suite',       desc:'Cameras, lights, and OBS. One panel.' },
     { icon:'◆', color:'#ec4899', label:'Campaigns',              desc:'Email, SMS, and DM automations.' },
-    { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',            desc:'4-tier program. Auto across all channels.' },
+    { icon:'♦', color:'#f43f5e', label:'Loyalty Hub',            desc:'4-tier program. Auto across all platforms.' },
     { icon:'●', color:'#3b82f6', label:'Opt-in Pages',           desc:'Collect email and phone. TCPA-compliant.' },
     { icon:'◧', color:'#10b981', label:'Show Planner',           desc:'AI run order. Perks. Go live in minutes.' },
     { icon:'📋', color:'#a78bfa', label:'Host Briefing',          desc:'Live script. Countdown. Talking points.' },
-    { icon:'🔗', color:'#ec4899', label:'Multi-Channel Sync',   desc:'All 5 simultaneously. Always in sync.' },
+    { icon:'🔗', color:'#ec4899', label:'Multi-Platform Sync',   desc:'All 5 simultaneously. Always in sync.' },
   ]
 
   const STATS = [
-    { value:'5',    label:'Channels',   sub:'Simultaneous live streaming' },
+    { value:'5',    label:'Platforms',   sub:'Simultaneous live streaming' },
     { value:'99%',  label:'Attribution', sub:'vs 55–82% with guesswork' },
     { value:'LIVE_GMV', label:'Live GMV', sub:'Real orders · resets every show' },
     { value:'6+',   label:'AI Insights', sub:'Confidence-scored, per show' },
@@ -338,17 +334,17 @@ function Landing() {
     {
       tag:'PLAN THE SHOW',
       headline:"Name it. Build it.\nLaunch it.",
-      desc:"AI-ranked run order, perks configured, channels selected: before you go live.",
+      desc:"AI-ranked run order, perks configured, platforms selected: before you go live.",
       color:'#7c3aed',
-      stats:[{ label:'AI product ranking', value:'✓' },{ label:'Show perks', value:'✓' },{ label:'Channels', value:'5' }],
+      stats:[{ label:'AI product ranking', value:'✓' },{ label:'Show perks', value:'✓' },{ label:'Platforms', value:'5' }],
       side:'right',
     },
     {
       tag:'LIVE COMMAND CENTER',
       headline:"Stream everywhere.\nAttribute every sale.",
-      desc:"Live buyer feed, real GMV, and 99% attribution across all 5 channels simultaneously.",
+      desc:"Live buyer feed, real GMV, and 99% attribution across all 5 platforms simultaneously.",
       color:'#10b981',
-      stats:[{ label:'Channels live', value:'5' },{ label:'Attribution', value:'99%' },{ label:'Buyer lookup', value:'< 1s' }],
+      stats:[{ label:'Platforms live', value:'5' },{ label:'Attribution', value:'99%' },{ label:'Buyer lookup', value:'< 1s' }],
       side:'left',
     },
     {
@@ -362,7 +358,7 @@ function Landing() {
     {
       tag:'AFTER THE SHOW',
       headline:"Insights and analytics.\nEvery single show.",
-      desc:"AI recommendations, revenue trends, and channel breakdowns: all waiting when you go offline.",
+      desc:"AI recommendations, revenue trends, and platform breakdowns: all waiting when you go offline.",
       color:'#a78bfa',
       stats:[{ label:'Insights/show', value:'6+' },{ label:'Analytics', value:'✓' },{ label:'Data sources', value:'5' }],
       side:'left',
@@ -370,13 +366,13 @@ function Landing() {
   ]
 
   const FAQS = [
-    { q:'Do I actually stream to all 5 channels at the same time?', a:'Yes. One stream out, five channels live simultaneously. Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. Streamlive handles the multistream routing so you can focus on selling.' },
+    { q:'Do I actually stream to all 5 platforms at the same time?', a:'Yes. One stream out, five platforms live simultaneously. Whatnot, TikTok Shop, Instagram Live, Amazon Live, and YouTube Live. Streamlive handles the multistream routing so you can focus on selling.' },
     { q:'How does the Host Briefing work?', a:'The Briefing is a companion window you open on a second screen or tablet while you sell. It shows your current product, countdown timer, and AI-generated talking points that auto-advance with your run order so you always know what to say next.' },
-    { q:'What problem does the Live Command Center actually solve?', a:'Right now most sellers have to watch 5 different browser tabs to track who is buying on which channel. The Command Center gives you one live feed: real-time GMV, buyer names across all channels, and VIP alerts as orders land.' },
-    { q:'How does attribution work across channels?', a:'Each order is matched to a buyer profile in your CRM using channel ID, email, and order timing. For YouTube, Streamlive uses a lightweight pixel installed on your Shopify store that ties sessions back to specific shows. Attribution accuracy sits at 99% across all five channels.' },
+    { q:'What problem does the Live Command Center actually solve?', a:'Right now most sellers have to watch 5 different browser tabs to track who is buying on which platform. The Command Center gives you one live feed: real-time GMV, buyer names across all platforms, and VIP alerts as orders land.' },
+    { q:'How does attribution work across platforms?', a:'Each order is matched to a buyer profile in your CRM using platform ID, email, and order timing. For YouTube, Streamlive uses a lightweight pixel installed on your Shopify store that ties sessions back to specific shows. Attribution accuracy sits at 99% across all five platforms.' },
     { q:'What does the Production Suite actually control?', a:'Camera switching (Sony FX3, FX6, and others), lighting levels for Elgato, Aputure, and Godox fixtures, and OBS scene changes via WebSocket. All from one panel. You set up automation rules so your lighting and scenes switch automatically as your run order advances.' },
-    { q:'What insights does Streamlive generate after each show?', a:'Six AI recommendations scored by confidence and revenue impact. Things like which channel drove the most conversions that show, which products underperformed their AI rank, and which buyers are at risk of churning. Delivered as a report the moment you go offline.' },
-    { q:'Is my buyer data combined across channels?', a:'Yes. When the same buyer shops on Whatnot and TikTok, Streamlive matches their profiles using email, phone, and behavioral signals. You get one buyer record with full cross-channel purchase history, not five separate lists.' },
+    { q:'What insights does Streamlive generate after each show?', a:'Six AI recommendations scored by confidence and revenue impact. Things like which platform drove the most conversions that show, which products underperformed their AI rank, and which buyers are at risk of churning. Delivered as a report the moment you go offline.' },
+    { q:'Is my buyer data combined across platforms?', a:'Yes. When the same buyer shops on Whatnot and TikTok, Streamlive matches their profiles using email, phone, and behavioral signals. You get one buyer record with full cross-platform purchase history, not five separate lists.' },
     { q:'What does it cost?', a:'Free during beta. Paid plans start at $79/mo when we launch. Beta users who join now lock in founding-member pricing.' },
   ]
 
@@ -532,7 +528,6 @@ function Landing() {
           <div className="nav-links" style={{ alignItems:'center', gap:20 }}>
             <a href="#features" style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
             <a href="#pricing"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-            <a href="/signin" style={{ fontSize:13, color:'#9ca3af', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();navigate('/signin')}}>Sign In</a>
             <button onClick={()=>openDemo()} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Open App →</button>
           </div>
           <button className="nav-hamburger" onClick={()=>setMenuOpen(m=>!m)} style={{ background:'none', border:'1px solid #1e1e3a', borderRadius:8, color:'#9ca3af', padding:'6px 10px', cursor:'pointer', fontSize:16, display:'none', alignItems:'center', justifyContent:'center' }}>
@@ -543,7 +538,6 @@ function Landing() {
         <div className={`mobile-menu${menuOpen?' open':''}`} style={{ background:'#07070f', borderBottom:'1px solid #14142a', padding:'16px 24px', gap:0, position:'sticky', top:58, zIndex:49 }}>
           <a href="#features" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
           <a href="#pricing"  style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-          <a href="/signin" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);navigate('/signin')}}>Sign In</a>
           <button onClick={()=>{setMenuOpen(false);openDemo()}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Open App →</button>
         </div>
 
@@ -588,8 +582,7 @@ function Landing() {
               </div>
             )}
           </div>
-          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:8 }}>Free during beta · No credit card required</p>
-          <p className="fade-a3" style={{ fontSize:12, color:'#4b5563', marginBottom:24 }}>Already have an account? <a href="/signin" onClick={e=>{e.preventDefault();navigate('/signin')}} style={{ color:'#a78bfa', fontWeight:600, textDecoration:'none' }}>Sign in</a></p>
+          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:24 }}>Free during beta · No credit card required</p>
 
           {/* Live viewer count: mirrors Live Companion platform strip behavior */}
           <div style={{ display:'flex', justifyContent:'center', marginBottom:0 }}>
@@ -601,7 +594,7 @@ function Landing() {
                 <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:700, color:'#fff' }}>
                   {Object.values(liveViewers).reduce((a,v)=>a+v,0).toLocaleString()}
                 </span>
-                <span className="viewer-label" style={{ fontSize:11, color:'#6b7280' }}>viewers across 5 channels</span>
+                <span className="viewer-label" style={{ fontSize:11, color:'#6b7280' }}>viewers across 5 platforms</span>
               </div>
               <div style={{ display:'flex', gap:5, flexWrap:'wrap', justifyContent:'center' }}>
                 {[
@@ -697,9 +690,9 @@ function Landing() {
         <div className="features-section" style={{ maxWidth:900, margin:'0 auto' }}>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:10 }}>
             {[
-              { num:'01', tag:'PLAN', label:'Show Planner', bullets:['AI-ranked run order','Perks & bundle config','Multi-channel in one click'], color:'#7c3aed' },
+              { num:'01', tag:'PLAN', label:'Show Planner', bullets:['AI-ranked run order','Perks & bundle config','Multi-platform in one click'], color:'#7c3aed' },
               { num:'02', tag:'SETUP', label:'Production Suite', bullets:['Camera & lighting control','OBS scene switching','All gear, one panel'], color:'#f59e0b' },
-              { num:'03', tag:'LIVE', label:'Live Companion', bullets:['Real-time GMV counter','Buyer feed across 5 channels','VIP alerts as orders land'], color:'#10b981' },
+              { num:'03', tag:'LIVE', label:'Live Companion', bullets:['Real-time GMV counter','Buyer feed across 5 platforms','VIP alerts as orders land'], color:'#10b981' },
               { num:'04', tag:'AFTER', label:'AI Insights', bullets:['6 recs per show','Confidence-scored','Revenue impact estimated'], color:'#a78bfa' },
             ].map(s=>(
               <div key={s.num} style={{ background:'#08080f', border:`1px solid ${s.color}22`, borderRadius:16, padding:'20px 18px' }}>
@@ -933,7 +926,7 @@ function Landing() {
                       </div>
                       {/* Platform revenue bar */}
                       <div style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:9, padding:'9px 11px', marginBottom:8 }}>
-                        <div style={{ fontSize:8,fontWeight:800,color:'#4b5563',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:8 }}>Revenue by Channel</div>
+                        <div style={{ fontSize:8,fontWeight:800,color:'#4b5563',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:8 }}>Revenue by Platform</div>
                         {[{p:'TikTok',pct:42,val:'$2,024',c:'#f43f5e'},{p:'Whatnot',pct:31,val:'$1,494',c:'#7c3aed'},{p:'Instagram',pct:18,val:'$868',c:'#ec4899'},{p:'Amazon',pct:9,val:'$434',c:'#f59e0b'}].map(pl=>(
                           <div key={pl.p} style={{ display:'flex',alignItems:'center',gap:8,marginBottom:5 }}>
                             <span style={{ fontSize:8,color:'#6b7280',width:44,flexShrink:0 }}>{pl.p}</span>
@@ -985,7 +978,7 @@ function Landing() {
         <div id="pricing" className="pricing-section" style={{ maxWidth:860, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:48 }}>
             <span className="section-label">Pricing</span>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Stream five channels. Pay one bill.</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Stream five platforms. Pay one bill.</div>
           </div>
 
           <div className="pricing-grid" style={{ display:'grid', alignItems:'stretch' }}>
@@ -1085,8 +1078,7 @@ function Landing() {
               </div>
             )}
           </div>
-          {!submitted && <p style={{ fontSize:11, color:'#374151', marginBottom:6 }}>Free during beta · No credit card</p>}
-          <p style={{ fontSize:12, color:'#4b5563' }}>Already have an account? <a href="/signin" onClick={e=>{e.preventDefault();navigate('/signin')}} style={{ color:'#a78bfa', fontWeight:600, textDecoration:'none' }}>Sign in</a></p>
+          {!submitted && <p style={{ fontSize:11, color:'#374151' }}>Free during beta · No credit card</p>}
         </div>
 
         {/* ── FOOTER ───────────────────────────────────────────────────────── */}
@@ -1107,13 +1099,12 @@ function Landing() {
                   {label:'Pricing',  href:'/#pricing',  action:()=>document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})},
                   {label:'Changelog',href:'/changelog',  action:()=>navigate('/changelog')},
                   {label:'Roadmap',  href:'/roadmap',    action:()=>navigate('/roadmap')},
-                  {label:'Sign In', href:'/signin',     action:()=>navigate('/signin')},
                 ].map(({label,href,action})=>(
                   <a key={label} href={href} onClick={e=>{e.preventDefault();action()}} className="footer-link-hover" style={{ display:'block', fontSize:13, color:'#374151', marginBottom:8, textDecoration:'none', transition:'color .15s' }}>{label}</a>
                 ))}
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Channels</div>
+                <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Platforms</div>
                 {[
                   {label:'Whatnot live selling',        slug:'whatnot'},
                   {label:'TikTok Shop live selling',    slug:'tiktok-shop'},
@@ -1165,7 +1156,7 @@ function Landing() {
                   <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.65 }}>Enter your email to get full access. No credit card needed.</div>
                 </div>
                 <div style={{ background:'#07070f', border:'1px solid #14142a', borderRadius:12, padding:'12px 16px', marginBottom:20 }}>
-                  {[['◉','Buyer CRM across all channels'],['◈','Live Companion & real-time show data'],['◑','Analytics & AI Insights'],['◆','Show Planner + Production Suite']].map(([icon,label]) => (
+                  {[['◉','Buyer CRM across all platforms'],['◈','Live Companion & real-time show data'],['◑','Analytics & AI Insights'],['◆','Show Planner + Production Suite']].map(([icon,label]) => (
                     <div key={label} style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 0', borderBottom:'1px solid #0d0d1a' }}>
                       <span style={{ fontSize:13, color:'#7c3aed', flexShrink:0 }}>{icon}</span>
                       <span style={{ fontSize:13, color:'#9ca3af' }}>{label}</span>
@@ -1267,7 +1258,7 @@ function Landing() {
                   />
                 </div>
                 <div style={{ marginBottom:12 }}>
-                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Channels you sell on</label>
+                  <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6b7280', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>Platforms you sell on</label>
                   <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
                     {[['WN','Whatnot','167,139,250'],['TT','TikTok','244,63,94'],['IG','Instagram','236,72,153'],['AM','Amazon','245,158,11'],['YT','YouTube','248,68,68']].map(([code,label,col])=>{
                       const sel = salesForm.platforms.includes(code)
@@ -1354,7 +1345,7 @@ function ChangelogPage() {
       items:[
         {type:'✦', text:'Live Shop page: shareable buyer-facing URL per show with full product lineup and Shopify deeplinks'},
         {type:'✦', text:'Quick Message tab: SMS, Instagram DM, and TikTok DM templates with one-tap live shop link sharing'},
-        {type:'◈', text:'Live Companion two-row header: Total Viewers, condensed per-channel badges, copy-link widget'},
+        {type:'◈', text:'Live Companion two-row header: Total Viewers, condensed per-platform badges, copy-link widget'},
         {type:'◈', text:'Show name flows from Show Planner → Live Companion → Order Review → Show History automatically'},
         {type:'✓', text:'Fixed: live shop URL now includes show slug so every show gets a unique, bookmarkable link'},
       ]
@@ -1364,23 +1355,23 @@ function ChangelogPage() {
       items:[
         {type:'◈', text:'Perks tab in Live Companion: assign live-only discounts and bundles to individual buyers mid-show'},
         {type:'◈', text:'Loyalty Hub: 4-tier program (Bronze → Silver → Gold → VIP) with points, rewards, birthday discounts'},
-        {type:'◉', text:'Buyer Profile: full purchase history, churn risk score, LTV, and cross-channel handle registry'},
+        {type:'◉', text:'Buyer Profile: full purchase history, churn risk score, LTV, and cross-platform handle registry'},
         {type:'◉', text:'Order Review: post-show summary with per-buyer breakdown, total GMV, and CSV export'},
-        {type:'✓', text:'Fixed: channel viewer counts now update in real-time during show without page refresh'},
+        {type:'✓', text:'Fixed: platform viewer counts now update in real-time during show without page refresh'},
         {type:'✓', text:'Fixed: Show Planner run order correctly persists into Live Companion on session start'},
       ]
     },
     {
       version:'v0.9.0', date:'December 2025', tag:'Launch', tagColor:'#f59e0b',
       items:[
-        {type:'✦', text:'Beta launch: full product available to founding members across all 5 channels'},
+        {type:'✦', text:'Beta launch: full product available to founding members across all 5 platforms'},
         {type:'✦', text:'Buyer CRM: unified buyer database across Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live'},
         {type:'✦', text:'Live Companion: real-time buyer feed, GMV counter, per-order tracking, and VIP alerts'},
-        {type:'✦', text:'Analytics dashboard: revenue trends, audience health, channel comparison, LTV distribution'},
+        {type:'✦', text:'Analytics dashboard: revenue trends, audience health, platform comparison, LTV distribution'},
         {type:'✦', text:'AI Insights: 6 weekly recommendations with confidence scores after every show'},
         {type:'✦', text:'Production Suite: Sony FX3/FX6 camera control, Elgato/Aputure lighting, OBS scene switching'},
         {type:'✦', text:'Opt-in pages at strmlive.com/s/yourshop with TCPA-compliant email, SMS, and DM capture'},
-        {type:'✦', text:'Show Planner: channel selection, AI-ranked run order, perk assignment, show history'},
+        {type:'✦', text:'Show Planner: platform selection, AI-ranked run order, perk assignment, show history'},
         {type:'✦', text:'YouTube Live Pixel: first-party attribution from stream → site → purchase, 99% accuracy'},
       ]
     },
@@ -1440,7 +1431,7 @@ function RoadmapPage() {
     { period:'Q1 2026', label:'In Progress', color:'#10b981',
       items:[
         {title:'Shopify live sync', desc:'Real-time inventory deduction during shows. When a buyer claims an item, stock drops instantly on Shopify: no more overselling.'},
-        {title:'Show templates', desc:'Save your best-performing show structure as a reusable template. Channel mix, run order strategy, perk assignments: all saved and reapplied in seconds.'},
+        {title:'Show templates', desc:'Save your best-performing show structure as a reusable template. Platform mix, run order strategy, perk assignments: all saved and reapplied in seconds.'},
         {title:'Buyer segments', desc:"Create saved segments: VIPs who haven't bought in 60 days, buyers who watch but never purchase, high-spenders. Target them directly in campaigns."},
         {title:'Live co-hosting', desc:'Invite a second seller or brand account into your live session. Both streams stay synced; both buyer CRMs update.'},
       ]
@@ -1449,7 +1440,7 @@ function RoadmapPage() {
       items:[
         {title:'Waitlist & pre-orders', desc:'Let buyers reserve items before a show. Waitlist fills automatically in Live Companion as the run order progresses: no manual tracking.'},
         {title:'Post-show email automation', desc:'Trigger personalized emails after every show: thank-you notes, "you missed it" restock alerts, and VIP early-access invites based on what each buyer watched and bought.'},
-        {title:'AI show scripting', desc:'Generate a full show script from your run order: talking points, pricing callouts, urgency hooks, and channel-specific language. Edit inline before going live.'},
+        {title:'AI show scripting', desc:'Generate a full show script from your run order: talking points, pricing callouts, urgency hooks, and platform-specific language. Edit inline before going live.'},
         {title:'Affiliate seller network', desc:'Invite other sellers to promote your products during their shows. Track clicks, views, and purchases back to each affiliate automatically.'},
       ]
     },
@@ -1505,7 +1496,7 @@ function AboutPage() {
   const values = [
     {icon:'◉', label:'Sellers first', desc:"Every decision starts with one question: does this make a seller's show better? Not a nice-to-have: does it actually move GMV or reduce friction during a live show."},
     {icon:'◈', label:'Attribution without compromise', desc:'Live commerce has a $0 attribution problem. Everyone tracks clicks. Nobody tracks what happened in the stream. We built a first-party pixel that follows the full path from stream to purchase: no cookies, no guessing.'},
-    {icon:'◆', label:'One tool, all channels', desc:"A seller shouldn't need five dashboards to understand their business. We built one source of truth for buyer data, analytics, and live operations: regardless of whether you sell on TikTok, Whatnot, Amazon, Instagram, or YouTube."},
+    {icon:'◆', label:'One tool, all platforms', desc:"A seller shouldn't need five dashboards to understand their business. We built one source of truth for buyer data, analytics, and live operations: regardless of whether you sell on TikTok, Whatnot, Amazon, Instagram, or YouTube."},
     {icon:'✦', label:'Transparency in how we build', desc:"Our roadmap is public. Our changelog is honest. When we ship something broken, we say so. Founding members know exactly what stage we're at."},
   ]
   return (
@@ -1517,7 +1508,7 @@ function AboutPage() {
 
         <SectionTitle>The problem we're solving</SectionTitle>
         <Body>Live commerce is one of the fastest-growing retail channels in the world. In China, it already accounts for over 20% of e-commerce. In the US, sellers on Whatnot, TikTok Shop, and Amazon Live are building seven-figure businesses one show at a time.</Body>
-        <Body>But the infrastructure hasn't kept up. Sellers stream across 5 channels simultaneously with no way to unify buyer data. They have no real-time visibility into who's buying during a show. They can't attribute revenue back to a specific item, a specific moment, or a specific channel. They manage loyalty in notes apps and DM fans manually to remind them about upcoming shows.</Body>
+        <Body>But the infrastructure hasn't kept up. Sellers stream across 5 platforms simultaneously with no way to unify buyer data. They have no real-time visibility into who's buying during a show. They can't attribute revenue back to a specific item, a specific moment, or a specific platform. They manage loyalty in notes apps and DM fans manually to remind them about upcoming shows.</Body>
         <Body>Streamlive is the operating system for live commerce. The buyer CRM, live command center, attribution layer, and analytics platform: all in one place, purpose-built for sellers who go live.</Body>
 
         <Divider2/>
@@ -1569,7 +1560,7 @@ function BlogPage() {
         {h:'What we built instead'},
         {p:'The Streamlive Live Pixel is a first-party script on your Shopify store. When a live show starts, the Pixel creates a session token tied to that show ID. Every visitor during the show window gets the token in their browser.'},
         {p:'When that visitor converts: whether through a chat link, typing your URL directly, or returning three hours later: the Pixel links their order to the show session. No third-party cookies. No cross-site tracking. Just a direct connection between your live show and your Shopify orders.'},
-        {p:'The result: 99% attribution accuracy on purchases made during and immediately after a live show. You know exactly which show drove which revenue, which product performed, and which channel your buyers came from.'},
+        {p:'The result: 99% attribution accuracy on purchases made during and immediately after a live show. You know exactly which show drove which revenue, which product performed, and which platform your buyers came from.'},
       ]
     },
     {
@@ -1581,27 +1572,27 @@ function BlogPage() {
         {p:"There's a pattern with the top-performing live sellers on our platform. They don't treat shows as isolated events. They treat each show as a data collection opportunity."},
         {p:"After 10 shows, they know which of their 200 buyers purchases every week. They know who hasn't been seen in 45 days. They know who consistently spends over $200 and who's a one-time buyer. They know which buyers watch on TikTok but buy on the website."},
         {h:'The compounding advantage'},
-        {p:'Buyer data compounds. A seller with 500 buyers in their CRM: with real purchase history, channel handles, and loyalty tiers: has a fundamentally different business than a seller with 500 TikTok followers.'},
-        {p:'The unified CRM in Streamlive is built around this idea. Every buyer across every channel gets a single profile. Every purchase, every show appearance, every opt-in flows in automatically. You always know who your best buyers are, which channel they prefer, and when you last saw them.'},
+        {p:'Buyer data compounds. A seller with 500 buyers in their CRM: with real purchase history, platform handles, and loyalty tiers: has a fundamentally different business than a seller with 500 TikTok followers.'},
+        {p:'The unified CRM in Streamlive is built around this idea. Every buyer across every platform gets a single profile. Every purchase, every show appearance, every opt-in flows in automatically. You always know who your best buyers are, which platform they prefer, and when you last saw them.'},
         {h:'What you can do with it'},
         {p:"Segment your VIP buyers and DM them before a show. Build a re-engagement campaign for buyers who haven't purchased in 60 days. Send a birthday discount to every buyer in their birthday month. Create a waitlist for popular products and notify the most likely buyers first."},
         {p:"None of this requires a marketing team. It requires data, and the tools to act on it. That's what we built."},
       ]
     },
     {
-      slug:'five-channels', date:'January 14, 2026', tag:'Guide', tagColor:'#f59e0b', readTime:'10 min',
-      title:'How to run a 5-channel live show without losing your mind',
-      summary:"Going live on Whatnot, TikTok, Instagram, Amazon, and YouTube simultaneously sounds chaotic. Here's the system top multi-channel sellers use to make it manageable.",
+      slug:'five-platforms', date:'January 14, 2026', tag:'Guide', tagColor:'#f59e0b', readTime:'10 min',
+      title:'How to run a 5-platform live show without losing your mind',
+      summary:"Going live on Whatnot, TikTok, Instagram, Amazon, and YouTube simultaneously sounds chaotic. Here's the system top multi-platform sellers use to make it manageable.",
       body:[
         {h:''},
-        {p:"The case for streaming across all five channels is straightforward: you're already producing the content, and every channel has a different audience. Going live only on TikTok means the buyers who only watch Whatnot never see your show."},
+        {p:"The case for streaming across all five platforms is straightforward: you're already producing the content, and every platform has a different audience. Going live only on TikTok means the buyers who only watch Whatnot never see your show."},
         {p:'The counterargument is equally clear: managing five live chats, five sets of questions, and five comment feeds while running a show is operationally impossible for a solo seller.'},
         {h:'Separate the production from the distribution'},
-        {p:'The sellers who do this well have separated their production infrastructure from their distribution infrastructure. The show: the camera feed, product presentation, the lighting: runs once. The distribution layer handles all five channels.'},
-        {p:"OBS handles the multi-channel stream routing. Streamlive's Production Suite controls camera feeds, scene switching, and lighting presets from a single interface, without touching OBS during the show."},
-        {p:"The Live Companion aggregates buyer activity across all five channels into one feed. You're not watching five chats. You're watching one buyer feed sorted by who just bought, who just joined, and who your VIPs are."},
+        {p:'The sellers who do this well have separated their production infrastructure from their distribution infrastructure. The show: the camera feed, product presentation, the lighting: runs once. The distribution layer handles all five platforms.'},
+        {p:"OBS handles the multi-platform stream routing. Streamlive's Production Suite controls camera feeds, scene switching, and lighting presets from a single interface, without touching OBS during the show."},
+        {p:"The Live Companion aggregates buyer activity across all five platforms into one feed. You're not watching five chats. You're watching one buyer feed sorted by who just bought, who just joined, and who your VIPs are."},
         {h:'The setup'},
-        {p:'Run OBS on a dedicated machine. Connect your streaming keys for all five channels. Connect Streamlive to all five channel APIs so buyer data flows in real time. Start your show from the Show Planner, which pushes your run order into the Live Companion automatically.'},
+        {p:'Run OBS on a dedicated machine. Connect your streaming keys for all five platforms. Connect Streamlive to all five platform APIs so buyer data flows in real time. Start your show from the Show Planner, which pushes your run order into the Live Companion automatically.'},
         {p:"Your GMV counter tracks only verified purchases. Your run order keeps you on script. You don't need to watch five feeds. You need to watch one."},
       ]
     },
@@ -1668,11 +1659,11 @@ function PrivacyPage() {
     { title:'What information we collect',
       body:`We collect information you provide when you create an account or set up your seller profile: name, email, business name, Shopify store domain, and payment information.
 
-We collect buyer data through your connected channel accounts (Whatnot, TikTok, Instagram Live, Amazon Live, YouTube Live). This includes buyer usernames, purchase history, opt-in consent records, and email addresses or phone numbers provided through your opt-in pages.
+We collect buyer data through your connected platform accounts (Whatnot, TikTok, Instagram Live, Amazon Live, YouTube Live). This includes buyer usernames, purchase history, opt-in consent records, and email addresses or phone numbers provided through your opt-in pages.
 
 We collect data through the Streamlive Live Pixel installed on your Shopify store: session identifiers, page view data, and order IDs for purchases made during or after your live shows.` },
     { title:'How we use your information',
-      body:`We use information collected to power your Buyer CRM: unifying buyer data across channels and calculating loyalty tiers, churn risk scores, and lifetime value metrics.
+      body:`We use information collected to power your Buyer CRM: unifying buyer data across platforms and calculating loyalty tiers, churn risk scores, and lifetime value metrics.
 
 We use it to provide live show analytics, post-show reports, and AI Insights. To process your Streamlive subscription payments. To send operational emails about your account, billing, and product updates. To attribute purchases to specific shows via the Live Pixel.` },
     { title:'Your buyer data',
@@ -1721,7 +1712,7 @@ If you are in the European Economic Area, you have additional rights under GDPR 
 function TermsPage() {
   const sections = [
     { title:'Acceptance of terms',
-      body:`By creating a Streamlive account or using any part of the service, you agree to be bound by these Terms. If you do not agree, do not use Streamlive.
+      body:`By creating a Streamlive account or using any part of the platform, you agree to be bound by these Terms. If you do not agree, do not use Streamlive.
 
 These terms constitute a binding legal agreement between you (the "Seller") and Streamlive, Inc. If you are accepting on behalf of a company, you represent that you have authority to bind that company.` },
     { title:'The service',
@@ -1857,7 +1848,7 @@ function PlatformPage({ slug }) {
       audienceNote: "Whatnot buyers tend to be highly engaged collectors and enthusiasts. They're repeat buyers who follow specific sellers and tune in regularly. Show loyalty is strong: many Whatnot sellers build audiences that return every week for years.",
       features: [
         { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive pulls your full Whatnot buyer history automatically: every buyer, every order, every item sold: into your unified CRM. Buyer handles, spend history, and auction wins are all captured and linked to a single buyer profile." },
-        { icon: '◈', title: 'Live Companion integration', body: "When you go live on Whatnot, the Live Companion activates automatically. Your Whatnot viewer count appears in the channel strip. Every bid and purchase shows up in your real-time buyer feed with the buyer's full history: loyalty tier, lifetime spend, notes, and past orders." },
+        { icon: '◈', title: 'Live Companion integration', body: "When you go live on Whatnot, the Live Companion activates automatically. Your Whatnot viewer count appears in the platform strip. Every bid and purchase shows up in your real-time buyer feed with the buyer's full history: loyalty tier, lifetime spend, notes, and past orders." },
         { icon: '◆', title: 'Show attribution', body: "Every show you run on Whatnot is logged in Show History with total GMV, number of items sold, and per-buyer breakdowns. Post-show Order Review gives you a clean summary you can use to plan your next show or export for records." },
         { icon: '✦', title: 'Opt-in & loyalty', body: "Whatnot buyers who opt in through your Streamlive link get added to your buyer CRM with SMS and email consent on file. You can enroll them in your loyalty program and send show reminders to bring them back to your next live." },
       ],
@@ -1868,12 +1859,12 @@ function PlatformPage({ slug }) {
       emoji: '🎵',
       tagline: 'The fastest-growing live commerce channel in the world.',
       about: "TikTok Shop launched in the US in 2023 and grew faster than any live commerce platform in history. It combines TikTok's algorithm-driven discovery with native shopping: viewers can buy products without leaving the app. Live selling on TikTok happens through TikTok LIVE, where creators and sellers stream to their followers and algorithmically distributed audiences simultaneously.",
-      audienceNote: "TikTok audiences skew younger and are highly impulse-driven. Discovery is algorithm-powered, so new viewers can find your show without being a follower first. This makes TikTok exceptional for new customer acquisition: but buyer loyalty requires active nurturing off-channel.",
+      audienceNote: "TikTok audiences skew younger and are highly impulse-driven. Discovery is algorithm-powered, so new viewers can find your show without being a follower first. This makes TikTok exceptional for new customer acquisition: but buyer loyalty requires active nurturing off-platform.",
       features: [
-        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive connects to your TikTok Shop seller account and imports your full order history: buyer usernames, items purchased, order values, and dates. Every TikTok buyer gets a unified profile in your CRM alongside their activity on other channels." },
-        { icon: '◈', title: 'Live Companion integration', body: "TikTok viewer counts and order activity appear in the Live Companion in real time during your show. When a TikTok viewer converts to a buyer, they surface immediately in your buyer feed with their full profile: even if they also buy on other channels." },
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive connects to your TikTok Shop seller account and imports your full order history: buyer usernames, items purchased, order values, and dates. Every TikTok buyer gets a unified profile in your CRM alongside their activity on other platforms." },
+        { icon: '◈', title: 'Live Companion integration', body: "TikTok viewer counts and order activity appear in the Live Companion in real time during your show. When a TikTok viewer converts to a buyer, they surface immediately in your buyer feed with their full profile: even if they also buy on other platforms." },
         { icon: '◆', title: 'ManyChat keyword automations', body: "Streamlive connects to ManyChat to power TikTok keyword DM automations. A viewer types a keyword in your TikTok LIVE chat, ManyChat sends them a DM with your product link or opt-in page automatically. No manual follow-up required." },
-        { icon: '✦', title: 'Cross-channel attribution', body: "TikTok often drives buyers who then purchase on your Shopify store. Streamlive's Live Pixel captures these cross-channel conversions and links them back to the specific TikTok show that drove them: so your TikTok GMV is never undercounted." },
+        { icon: '✦', title: 'Cross-platform attribution', body: "TikTok often drives buyers who then purchase on your Shopify store. Streamlive's Live Pixel captures these cross-platform conversions and links them back to the specific TikTok show that drove them: so your TikTok GMV is never undercounted." },
       ],
     },
     'instagram-live': {
@@ -1884,8 +1875,8 @@ function PlatformPage({ slug }) {
       about: "Instagram Live is Meta's live video feature inside Instagram. Sellers go live directly from their Instagram profile and sell to their existing followers in real time. Instagram Live Shopping allows sellers to tag products from their Instagram Shop catalog during a live session, letting viewers tap to buy without leaving the app. It's less discovery-driven than TikTok, making it best suited for selling to an established, warm audience.",
       audienceNote: "Instagram Live audiences are typically existing followers: people who already know your brand and have opted in to see your content. This makes Instagram Live high-converting for repeat buyers and VIP audiences, but it requires a built-up following to drive meaningful volume.",
       features: [
-        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Instagram buyer history through your Meta Business account: order records, buyer profiles, and purchase history all flow into your unified CRM. Instagram handles are linked to buyer profiles so you recognize buyers across channels." },
-        { icon: '◈', title: 'Live Companion integration', body: "Instagram Live viewer counts appear in the Live Companion channel strip during your show. Order activity from Instagram Live Shopping surfaces in your buyer feed in real time, with full buyer profiles attached: including their history from TikTok, Whatnot, or any other connected channel." },
+        { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Instagram buyer history through your Meta Business account: order records, buyer profiles, and purchase history all flow into your unified CRM. Instagram handles are linked to buyer profiles so you recognize buyers across platforms." },
+        { icon: '◈', title: 'Live Companion integration', body: "Instagram Live viewer counts appear in the Live Companion platform strip during your show. Order activity from Instagram Live Shopping surfaces in your buyer feed in real time, with full buyer profiles attached: including their history from TikTok, Whatnot, or any other connected platform." },
         { icon: '◆', title: 'DM opt-in flow', body: "Streamlive connects to ManyChat to enable Instagram DM keyword automations. A viewer comments a keyword during your Instagram Live, and ManyChat automatically sends them a DM with your opt-in link or product URL. Opt-ins from Instagram capture consent and flow directly into your buyer CRM." },
         { icon: '✦', title: 'Quick Message', body: "After a show, use Streamlive's Quick Message tab in the Live Companion to send a pre-built Instagram DM to followers with a link to your Live Shop page: so viewers who missed the show can still browse and buy the full lineup." },
       ],
@@ -1899,9 +1890,9 @@ function PlatformPage({ slug }) {
       audienceNote: "Amazon Live audiences are purchase-intent shoppers. Unlike TikTok or Instagram where discovery is social, Amazon Live viewers find shows through product searches and Amazon's recommendation engine. They're already primed to buy: your job is to demonstrate and convince.",
       features: [
         { icon: '◉', title: 'Buyer CRM sync', body: "Streamlive imports your Amazon Live order data: buyer identifiers, product purchases, show dates, and order values: into your unified buyer CRM. Amazon buyer privacy restrictions mean we work with the data Amazon makes available to sellers through the API." },
-        { icon: '◈', title: 'Live Companion integration', body: "Amazon Live viewer counts and purchase activity appear in your Live Companion during a show. Amazon orders convert in real time and surface in your buyer feed as they come in, giving you a live view of your Amazon GMV ticking up alongside your other channels." },
-        { icon: '◆', title: 'Show attribution', body: "Every Amazon Live show is tracked in your Show History with product-level attribution. You can see exactly which items sold, at what volume, and compare Amazon performance against other channels for the same show: all in one post-show report." },
-        { icon: '✦', title: 'Cross-channel buyer matching', body: "Buyers who purchase on Amazon and also engage on TikTok or Instagram can be matched in your CRM using email or contact information when available. This gives you a more complete view of your highest-value buyers across every channel they use." },
+        { icon: '◈', title: 'Live Companion integration', body: "Amazon Live viewer counts and purchase activity appear in your Live Companion during a show. Amazon orders convert in real time and surface in your buyer feed as they come in, giving you a live view of your Amazon GMV ticking up alongside your other platforms." },
+        { icon: '◆', title: 'Show attribution', body: "Every Amazon Live show is tracked in your Show History with product-level attribution. You can see exactly which items sold, at what volume, and compare Amazon performance against other platforms for the same show: all in one post-show report." },
+        { icon: '✦', title: 'Cross-platform buyer matching', body: "Buyers who purchase on Amazon and also engage on TikTok or Instagram can be matched in your CRM using email or contact information when available. This gives you a more complete view of your highest-value buyers across every channel they use." },
       ],
     },
     'youtube-live': {
@@ -1912,8 +1903,8 @@ function PlatformPage({ slug }) {
       about: "YouTube Live is Google's live streaming platform, the largest video platform in the world by watch time. YouTube Live Shopping launched in 2023, allowing creators and sellers to tag products directly in their live stream for viewers to purchase. YouTube's audiences tend toward longer watch times than TikTok or Instagram: viewers will stay for hours: making it well-suited for in-depth product demonstrations, unboxings, and educational selling.",
       audienceNote: "YouTube Live audiences are engaged, long-session viewers who are comfortable watching extended content. They research before buying and respond well to detailed product explanations, comparisons, and demonstrations. Building a YouTube audience takes longer than TikTok, but the buyer quality and average order value tend to be higher.",
       features: [
-        { icon: '◉', title: 'Live Pixel attribution', body: "YouTube doesn't expose buyer data the same way as other channels. Streamlive solves this with the YouTube Live Pixel: a lightweight JavaScript snippet installed on your Shopify store. When a viewer clicks from your stream to your store, the Pixel creates a session ID that follows them through checkout and links their purchase back to your specific YouTube show with 99% accuracy." },
-        { icon: '◈', title: 'Live Companion integration', body: "YouTube viewer counts appear in your Live Companion channel strip in real time. Purchases attributed via Live Pixel surface in your buyer feed as they're confirmed: typically within seconds of checkout completion. Your YouTube GMV ticks up live alongside all other channels." },
+        { icon: '◉', title: 'Live Pixel attribution', body: "YouTube doesn't expose buyer data the same way as other platforms. Streamlive solves this with the YouTube Live Pixel: a lightweight JavaScript snippet installed on your Shopify store. When a viewer clicks from your stream to your store, the Pixel creates a session ID that follows them through checkout and links their purchase back to your specific YouTube show with 99% accuracy." },
+        { icon: '◈', title: 'Live Companion integration', body: "YouTube viewer counts appear in your Live Companion platform strip in real time. Purchases attributed via Live Pixel surface in your buyer feed as they're confirmed: typically within seconds of checkout completion. Your YouTube GMV ticks up live alongside all other platforms." },
         { icon: '◆', title: 'Show attribution & reporting', body: "Post-show, your YouTube revenue is broken out in Order Review and Show History alongside TikTok, Whatnot, Instagram, and Amazon. You can see your total show GMV and exactly what percentage came from YouTube: the number most sellers have never been able to measure before." },
         { icon: '✦', title: 'Pixel setup', body: "Installing the Live Pixel takes under 5 minutes. Add a single script tag to your Shopify theme, connect your YouTube channel in Streamlive settings, and the Pixel activates automatically at the start of every YouTube Live. No ongoing maintenance required." },
       ],
@@ -1927,7 +1918,7 @@ function PlatformPage({ slug }) {
       <PageShell>
         <div style={{ textAlign:'center', padding:'60px 0' }}>
           <div style={{ fontSize:48, marginBottom:16 }}>📡</div>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', marginBottom:8 }}>Channel not found</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', marginBottom:8 }}>Platform not found</div>
           <button onClick={()=>navigate('/')} style={{ fontSize:13, color:'#7c3aed', background:'none', border:'none', cursor:'pointer', marginTop:8 }}>← Back to home</button>
         </div>
       </PageShell>
@@ -1941,7 +1932,7 @@ function PlatformPage({ slug }) {
         <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
           <div style={{ width:52, height:52, borderRadius:16, background:`${p.color}18`, border:`1px solid ${p.color}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, flexShrink:0 }}>{p.emoji}</div>
           <div>
-            <PLabel t="Channel"/>
+            <PLabel t="Platform"/>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:800, color:'#fff', letterSpacing:'-0.8px', lineHeight:1.1 }}>{p.name}</div>
           </div>
         </div>
@@ -1976,7 +1967,7 @@ function PlatformPage({ slug }) {
         {/* CTA */}
         <div style={{ background:'linear-gradient(135deg,#0d0d1e,#12103a)', border:`1px solid ${p.color}33`, borderRadius:16, padding:'28px', textAlign:'center' }}>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:'#fff', marginBottom:8 }}>See {p.name} in the Live Companion</div>
-          <div style={{ fontSize:13, color:'#6b7280', marginBottom:20 }}>Every channel is connected and running in the interactive demo.</div>
+          <div style={{ fontSize:13, color:'#6b7280', marginBottom:20 }}>Every platform is connected and running in the interactive demo.</div>
           <button onClick={()=>navigate('/')} style={{ background:`linear-gradient(135deg,${p.color},${p.color}bb)`, border:'none', color:'#fff', fontSize:13, fontWeight:700, padding:'11px 26px', borderRadius:10, cursor:'pointer' }}>Explore Streamlive →</button>
         </div>
       </div>
@@ -2372,7 +2363,7 @@ const SELLER_PROFILES = {
       "💄 First access to new shade launches",
       "✨ Subscriber-only bundles and kits",
       "📲 Live drop alerts. Never miss a launch.",
-      "🎁 Loyalty rewards on every order",
+      "🎁 VIP loyalty rewards on every order",
     ],
   },
   tropicfeel: {
@@ -2404,7 +2395,7 @@ const SELLER_PROFILES = {
     followers: "124K",
     perks: [
       "⚡ Flash deals before they go public",
-      "💌 Early access across all brand shows",
+      "💌 VIP early access across all brand shows",
       "🎁 Loyalty rewards on every live purchase",
       "📲 Alerts for your favorite brand drops",
     ],
@@ -2733,9 +2724,7 @@ function OptInPage({ slug, connectedPlatforms }) {
   const seller = SELLER_PROFILES[slug];
   // Use live connected platforms if provided, fall back to profile default
   const activePlatforms = connectedPlatforms || seller?.platforms || [];
-  const [step, setStep] = useState("method"); // method | details | success
-  const [authMethod, setAuthMethod] = useState(null); // "facebook" | "apple" | "email"
-  const [authLoading, setAuthLoading] = useState(false);
+  const [step, setStep] = useState("form"); // form | success
   const [firstName, setFirstName] = useState("");
   const [email, setEmail]         = useState("");
   const [phone, setPhone]         = useState("");
@@ -2744,40 +2733,6 @@ function OptInPage({ slug, connectedPlatforms }) {
   const [smsOptIn, setSmsOptIn]       = useState(true);
   const [submitting, setSubmitting]   = useState(false);
   const [errors, setErrors]           = useState({});
-
-  const handleSocialAuth = (method) => {
-    setAuthMethod(method);
-    setAuthLoading(true);
-    setTimeout(() => {
-      if (method === "facebook") {
-        setFirstName("Jamie");
-        setEmail("jamie@facebook.com");
-      } else if (method === "apple") {
-        setFirstName("Jamie");
-        setEmail("jamie@icloud.com");
-      }
-      setAuthLoading(false);
-      setStep("details");
-    }, 1000);
-  };
-
-  const FB_ICON = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
-      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-    </svg>
-  );
-
-  const APPLE_ICON = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
-      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-    </svg>
-  );
-
-  const MAIL_ICON = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-    </svg>
-  );
 
   const formatPhone = (val) => {
     const digits = val.replace(/\D/g, "").slice(0, 10);
@@ -2788,9 +2743,8 @@ function OptInPage({ slug, connectedPlatforms }) {
 
   const validate = () => {
     const e = {};
-    const isSocial = authMethod === "facebook" || authMethod === "apple";
-    if (!isSocial && !firstName.trim()) e.firstName = "Required";
-    if (!isSocial && (!email.includes("@") || !email.includes("."))) e.email = "Enter a valid email";
+    if (!firstName.trim()) e.firstName = "Required";
+    if (!email.includes("@") || !email.includes(".")) e.email = "Enter a valid email";
     if (smsOptIn && phone.replace(/\D/g,"").length < 10) e.phone = "Enter a valid phone number";
     if (!emailOptIn && !smsOptIn) e.consent = "Please choose at least one way to stay in touch";
     return e;
@@ -2825,8 +2779,8 @@ function OptInPage({ slug, connectedPlatforms }) {
           <div style={{ width:80, height:80, borderRadius:"50%", background:`${accentRgb}22`, border:`2px solid ${accentRgb}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, margin:"0 auto 24px" }}>✓</div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:800, color:"#fff", marginBottom:8, letterSpacing:"-0.5px" }}>You're in, {firstName}!</div>
           <div style={{ fontSize:15, color:"#9ca3af", lineHeight:1.7, marginBottom:32 }}>
-            You're signed up for <span style={{ color:"#fff", fontWeight:600 }}>{seller.name}</span> live stream perks.
-            You'll be the first to know about upcoming shows, exclusive drops, and member-only deals.
+            Welcome to the <span style={{ color:"#fff", fontWeight:600 }}>{seller.name}</span> subscriber list.
+            You'll be the first to know about shows, exclusive drops, and VIP offers.
           </div>
           <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
             <div style={{ fontSize:11, color:"#6b7280", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>What to expect</div>
@@ -2842,7 +2796,7 @@ function OptInPage({ slug, connectedPlatforms }) {
             <div style={{ background:"#0d1a1f", border:"1px solid #1e3a2e", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
               <div style={{ fontSize:11, color:"#34d399", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>🔔 Activate your DM alerts</div>
               <div style={{ fontSize:12, color:"#9ca3af", marginBottom:14, lineHeight:1.6 }}>
-                To receive show alerts as a direct message, send <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0a1e16", border:"1px solid #34d39933", padding:"2px 8px", borderRadius:4, color:"#34d399", fontWeight:600 }}>JOIN</span> to {seller.name} on each channel:
+                To receive show alerts as a direct message, send <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0a1e16", border:"1px solid #34d39933", padding:"2px 8px", borderRadius:4, color:"#34d399", fontWeight:600 }}>JOIN</span> to {seller.name} on each platform:
               </div>
               {activePlatforms.filter(p=>PLATFORM_META[p]?.manychat).map(p => {
                 const pm = PLATFORM_META[p];
@@ -2860,7 +2814,7 @@ function OptInPage({ slug, connectedPlatforms }) {
                 );
               })}
               <div style={{ fontSize:11, color:"#4b5563", marginTop:12, lineHeight:1.5 }}>
-                This activates ManyChat so {seller.name} can send you instant alerts on these channels. Only takes 30 seconds.
+                This activates ManyChat so {seller.name} can send you instant alerts on these platforms. Only takes 30 seconds.
               </div>
             </div>
           )}
@@ -2890,11 +2844,11 @@ function OptInPage({ slug, connectedPlatforms }) {
         <div style={{ maxWidth:560, margin:"0 auto", textAlign:"center" }}>
           {/* Avatar */}
           <div style={{ width:72, height:72, borderRadius:"50%", background:`${accentRgb}22`, border:`2px solid ${accentRgb}55`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:accentRgb }}>
-            {seller.avatar}
+            {resolvedSeller.avatar}
           </div>
           <div style={{ fontSize:11, fontWeight:700, color:accentRgb, textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:8 }}>{seller.category}</div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", marginBottom:12, lineHeight:1.2 }}>
-            Unlock Perks for {seller.name}<br />Live Streams {seller.badge}
+            Join the {seller.name}<br />VIP List {seller.badge}
           </div>
           <div style={{ fontSize:15, color:"#9ca3af", lineHeight:1.7, maxWidth:420, margin:"0 auto 20px" }}>{seller.bio}</div>
           {/* Social proof */}
@@ -2911,11 +2865,11 @@ function OptInPage({ slug, connectedPlatforms }) {
         </div>
       </div>
 
-      {/* CONTENT */}
+      {/* FORM */}
       <div style={{ flex:1, padding:"32px 24px 48px" }}>
         <div style={{ maxWidth:480, margin:"0 auto" }}>
 
-          {/* Perks — visible on method & details steps */}
+          {/* Perks */}
           <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"18px 20px", marginBottom:28 }}>
             <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:12 }}>When you join you get</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
@@ -2928,231 +2882,139 @@ function OptInPage({ slug, connectedPlatforms }) {
             </div>
           </div>
 
-          {/* ── STEP 1: METHOD ── */}
-          {step === "method" && (
-            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          {/* Form fields */}
+          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
-              {/* Auth loading overlay */}
-              {authLoading && (
-                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 0" }}>
-                  <div style={{ width:40, height:40, border:`3px solid ${accentRgb}33`, borderTop:`3px solid ${accentRgb}`, borderRadius:"50%", animation:"optspin 0.8s linear infinite" }} />
-                  <style>{`@keyframes optspin { to { transform:rotate(360deg); } }`}</style>
-                  <div style={{ fontSize:14, color:"#9ca3af", marginTop:16 }}>Connecting...</div>
-                </div>
-              )}
-
-              {!authLoading && (<>
-                {/* Facebook */}
-                <button
-                  onClick={() => handleSocialAuth("facebook")}
-                  style={{ width:"100%", height:48, background:"#1877F2", border:"none", borderRadius:12, color:"#fff", fontSize:15, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", gap:10, cursor:"pointer", transition:"opacity .15s" }}
-                  onMouseEnter={e => e.currentTarget.style.opacity="0.9"}
-                  onMouseLeave={e => e.currentTarget.style.opacity="1"}
-                >
-                  {FB_ICON} Continue with Facebook
-                </button>
-
-                {/* Apple */}
-                <button
-                  onClick={() => handleSocialAuth("apple")}
-                  style={{ width:"100%", height:48, background:"#000", border:"none", borderRadius:12, color:"#fff", fontSize:15, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", gap:10, cursor:"pointer", transition:"opacity .15s" }}
-                  onMouseEnter={e => e.currentTarget.style.opacity="0.9"}
-                  onMouseLeave={e => e.currentTarget.style.opacity="1"}
-                >
-                  {APPLE_ICON} Continue with Apple
-                </button>
-
-                {/* Divider */}
-                <div style={{ display:"flex", alignItems:"center", gap:12, margin:"4px 0" }}>
-                  <div style={{ flex:1, height:1, background:"#1e1e3a" }} />
-                  <span style={{ fontSize:12, color:"#4b5563", fontWeight:500 }}>or</span>
-                  <div style={{ flex:1, height:1, background:"#1e1e3a" }} />
-                </div>
-
-                {/* Email */}
-                <button
-                  onClick={() => { setAuthMethod("email"); setStep("details"); }}
-                  style={{ width:"100%", height:48, background:"transparent", border:"1.5px solid #1e1e3a", borderRadius:12, color:"#fff", fontSize:15, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", gap:10, cursor:"pointer", transition:"border-color .15s" }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor="#374151"}
-                  onMouseLeave={e => e.currentTarget.style.borderColor="#1e1e3a"}
-                >
-                  {MAIL_ICON} Continue with Email
-                </button>
-
-                {/* Legal */}
-                <p style={{ fontSize:11, color:"#4b5563", textAlign:"center", lineHeight:1.6, marginTop:4 }}>
-                  By continuing you agree to receive marketing messages from <strong style={{ color:"#6b7280" }}>{seller.name}</strong> via Streamlive.
-                  Message & data rates may apply. Reply STOP to unsubscribe at any time.{" "}
-                  <a href="#" style={{ color:"#6b7280" }}>Privacy Policy</a>
-                </p>
-              </>)}
+            {/* Name */}
+            <div>
+              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>First Name *</label>
+              <input
+                className={`opt-input${errors.firstName?" error":""}`}
+                placeholder="Your first name"
+                value={firstName}
+                onChange={e=>{ setFirstName(e.target.value); setErrors(er=>({...er,firstName:null})); }}
+              />
+              {errors.firstName && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.firstName}</div>}
             </div>
-          )}
 
-          {/* ── STEP 2: DETAILS ── */}
-          {step === "details" && (
-            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            {/* Email */}
+            <div>
+              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>Email Address *</label>
+              <input
+                className={`opt-input${errors.email?" error":""}`}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={e=>{ setEmail(e.target.value); setErrors(er=>({...er,email:null})); }}
+              />
+              {errors.email && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.email}</div>}
+            </div>
 
-              {/* Back link */}
-              <button
-                onClick={() => { setStep("method"); setAuthMethod(null); setFirstName(""); setEmail(""); setErrors({}); }}
-                style={{ background:"none", border:"none", color:"#6b7280", fontSize:12, cursor:"pointer", textAlign:"left", padding:0, marginBottom:4, fontFamily:"'DM Sans',sans-serif" }}
-              >
-                ← Back
-              </button>
+            {/* Phone */}
+            <div>
+              <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>
+                Phone Number <span style={{ color:"#6b7280", fontWeight:400 }}>(for SMS alerts)</span>
+              </label>
+              <input
+                className={`opt-input${errors.phone?" error":""}`}
+                type="tel"
+                placeholder="(555) 000-0000"
+                value={phone}
+                onChange={e=>{ setPhone(formatPhone(e.target.value)); setErrors(er=>({...er,phone:null})); }}
+              />
+              {errors.phone && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.phone}</div>}
+            </div>
 
-              {/* Name — read-only for social, editable for email */}
-              {(authMethod === "facebook" || authMethod === "apple") ? (
+            {/* Platform handles */}
+            {(() => {
+              const dmPlatforms = activePlatforms.filter(p => DM_PLATFORMS.includes(p));
+              if (dmPlatforms.length === 0) return null;
+              return (
                 <div>
-                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>First Name</label>
-                  <div
-                    className="opt-input"
-                    style={{ background:"#0d0d1a", opacity:0.7, cursor:"default" }}
-                  >{firstName}</div>
-                </div>
-              ) : (
-                <div>
-                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>First Name *</label>
-                  <input
-                    className={`opt-input${errors.firstName?" error":""}`}
-                    placeholder="Your first name"
-                    value={firstName}
-                    onChange={e=>{ setFirstName(e.target.value); setErrors(er=>({...er,firstName:null})); }}
-                  />
-                  {errors.firstName && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.firstName}</div>}
-                </div>
-              )}
-
-              {/* Email — read-only for social, editable for email */}
-              {(authMethod === "facebook" || authMethod === "apple") ? (
-                <div>
-                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>Email Address</label>
-                  <div
-                    className="opt-input"
-                    style={{ background:"#0d0d1a", opacity:0.7, cursor:"default" }}
-                  >{email}</div>
-                </div>
-              ) : (
-                <div>
-                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>Email Address *</label>
-                  <input
-                    className={`opt-input${errors.email?" error":""}`}
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={e=>{ setEmail(e.target.value); setErrors(er=>({...er,email:null})); }}
-                  />
-                  {errors.email && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.email}</div>}
-                </div>
-              )}
-
-              {/* Phone */}
-              <div>
-                <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:6 }}>
-                  Phone Number <span style={{ color:"#6b7280", fontWeight:400 }}>(for SMS alerts)</span>
-                </label>
-                <input
-                  className={`opt-input${errors.phone?" error":""}`}
-                  type="tel"
-                  placeholder="(555) 000-0000"
-                  value={phone}
-                  onChange={e=>{ setPhone(formatPhone(e.target.value)); setErrors(er=>({...er,phone:null})); }}
-                />
-                {errors.phone && <div style={{ fontSize:11, color:"#ef4444", marginTop:4 }}>{errors.phone}</div>}
-              </div>
-
-              {/* Platform handles */}
-              {(() => {
-                const dmPlatforms = activePlatforms.filter(p => DM_PLATFORMS.includes(p));
-                if (dmPlatforms.length === 0) return null;
-                return (
-                  <div>
-                    <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:4 }}>
-                      Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
-                    </label>
-                    <div style={{ fontSize:11, color:"#6b7280", marginBottom:10, lineHeight:1.5 }}>
-                      Optional. Helps us match you across channels and send personalized DMs.
-                    </div>
-                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                      {dmPlatforms.map(p => {
-                        const pm = PLATFORM_META[p];
-                        const hasHandle = handles[p] && handles[p].length > 1;
-                        return (
-                          <div key={p}>
-                            <div style={{ display:"flex", alignItems:"center", gap:10, background:"#0d0d1a", border:`1.5px solid ${hasHandle?pm.color+"55":"#1e1e3a"}`, borderRadius:10, padding:"10px 14px", transition:"border-color .15s" }}>
-                              <span style={{ fontSize:11, fontWeight:700, color:pm.color, minWidth:68 }}>{pm.label}</span>
-                              <input
-                                style={{ flex:1, background:"none", border:"none", color:"#fff", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
-                                placeholder={pm.placeholder}
-                                value={handles[p]||""}
-                                onChange={e=>setHandles(h=>({...h,[p]:e.target.value}))}
-                              />
-                            </div>
-                            {pm.manychat && hasHandle && (
-                              <div style={{ display:"flex", alignItems:"flex-start", gap:8, background:`${pm.color}0d`, border:`1px solid ${pm.color}22`, borderRadius:8, padding:"9px 12px", marginTop:6 }}>
-                                <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>💬</span>
-                                <div>
-                                  <div style={{ fontSize:11, fontWeight:700, color:pm.color, marginBottom:2 }}>Activate {pm.label} DMs</div>
-                                  <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.5 }}>
-                                    To receive show alerts via {pm.label} DM, send the message{" "}
-                                    <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0d0d1a", border:`1px solid ${pm.color}33`, padding:"1px 7px", borderRadius:4, color:"#fff", fontWeight:600 }}>JOIN</span>
-                                    {" "}to <span style={{ color:pm.color, fontWeight:600 }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> on {pm.label} after signing up.
-                                  </div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#9ca3af", display:"block", marginBottom:4 }}>
+                    Your Handles <span style={{ color:"#6b7280", fontWeight:400 }}>(so we can recognize you in chat)</span>
+                  </label>
+                  <div style={{ fontSize:11, color:"#6b7280", marginBottom:10, lineHeight:1.5 }}>
+                    Optional. Helps us match you across platforms and send personalized DMs.
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {dmPlatforms.map(p => {
+                      const pm = PLATFORM_META[p];
+                      const hasHandle = handles[p] && handles[p].length > 1;
+                      return (
+                        <div key={p}>
+                          <div style={{ display:"flex", alignItems:"center", gap:10, background:"#0d0d1a", border:`1.5px solid ${hasHandle?pm.color+"55":"#1e1e3a"}`, borderRadius:10, padding:"10px 14px", transition:"border-color .15s" }}>
+                            <span style={{ fontSize:11, fontWeight:700, color:pm.color, minWidth:68 }}>{pm.label}</span>
+                            <input
+                              style={{ flex:1, background:"none", border:"none", color:"#fff", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+                              placeholder={pm.placeholder}
+                              value={handles[p]||""}
+                              onChange={e=>setHandles(h=>({...h,[p]:e.target.value}))}
+                            />
+                          </div>
+                          {pm.manychat && hasHandle && (
+                            <div style={{ display:"flex", alignItems:"flex-start", gap:8, background:`${pm.color}0d`, border:`1px solid ${pm.color}22`, borderRadius:8, padding:"9px 12px", marginTop:6 }}>
+                              <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>💬</span>
+                              <div>
+                                <div style={{ fontSize:11, fontWeight:700, color:pm.color, marginBottom:2 }}>Activate {pm.label} DMs</div>
+                                <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.5 }}>
+                                  To receive show alerts via {pm.label} DM, send the message{" "}
+                                  <span style={{ fontFamily:"'JetBrains Mono',monospace", background:"#0d0d1a", border:`1px solid ${pm.color}33`, padding:"1px 7px", borderRadius:4, color:"#fff", fontWeight:600 }}>JOIN</span>
+                                  {" "}to <span style={{ color:pm.color, fontWeight:600 }}>@{seller.name.toLowerCase().replace(/\s/g,"")}</span> on {pm.label} after signing up.
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })()}
-
-              {/* Consent checkboxes */}
-              <div style={{ background:"#0d0d1a", border:`1px solid ${errors.consent?"#ef444444":"#1e1e3a"}`, borderRadius:12, padding:"16px 18px" }}>
-                <div style={{ fontSize:12, fontWeight:700, color:"#9ca3af", marginBottom:12 }}>How do you want to hear from {seller.name}?</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                  <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setEmailOptIn(v=>!v)}>
-                    <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${emailOptIn?accentRgb:"#374151"}`, background:emailOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
-                      {emailOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
-                    </div>
-                    <div>
-                      <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Email updates</div>
-                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Show schedules, exclusive drops, and member deals</div>
-                    </div>
-                  </label>
-                  <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setSmsOptIn(v=>!v)}>
-                    <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${smsOptIn?accentRgb:"#374151"}`, background:smsOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
-                      {smsOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
-                    </div>
-                    <div>
-                      <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>SMS alerts</div>
-                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Instant show alerts. Never miss a live drop.</div>
-                    </div>
-                  </label>
                 </div>
-                {errors.consent && <div style={{ fontSize:11, color:"#ef4444", marginTop:10 }}>{errors.consent}</div>}
+              );
+            })()}
+
+            {/* Consent checkboxes */}
+            <div style={{ background:"#0d0d1a", border:`1px solid ${errors.consent?"#ef444444":"#1e1e3a"}`, borderRadius:12, padding:"16px 18px" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"#9ca3af", marginBottom:12 }}>How do you want to hear from {seller.name}?</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setEmailOptIn(v=>!v)}>
+                  <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${emailOptIn?accentRgb:"#374151"}`, background:emailOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
+                    {emailOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
+                  </div>
+                  <div>
+                    <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Email updates</div>
+                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Show schedules, exclusive drops, and VIP offers</div>
+                  </div>
+                </label>
+                <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setSmsOptIn(v=>!v)}>
+                  <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${smsOptIn?accentRgb:"#374151"}`, background:smsOptIn?accentRgb:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", marginTop:1, transition:"all .15s" }}>
+                    {smsOptIn && <span style={{ color:"#fff", fontSize:12, fontWeight:700 }}>✓</span>}
+                  </div>
+                  <div>
+                    <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>SMS alerts</div>
+                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Instant show alerts. Never miss a live drop.</div>
+                  </div>
+                </label>
               </div>
-
-              {/* CTA Button */}
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                style={{ width:"100%", background:submitting?"#374151":`linear-gradient(135deg,${accentRgb},${accentRgb}cc)`, border:"none", color:"#fff", fontSize:15, fontWeight:700, padding:"15px", borderRadius:12, cursor:submitting?"not-allowed":"pointer", transition:"all .2s", marginTop:4, letterSpacing:"-0.2px" }}
-              >
-                {submitting ? "Creating Account..." : `Create Account & Unlock Perks →`}
-              </button>
-
-              {/* Legal */}
-              <p style={{ fontSize:11, color:"#4b5563", textAlign:"center", lineHeight:1.6 }}>
-                By subscribing you agree to receive marketing messages from <strong style={{ color:"#6b7280" }}>{seller.name}</strong> via Streamlive.
-                Message & data rates may apply. Reply STOP to unsubscribe at any time.{" "}
-                <a href="#" style={{ color:"#6b7280" }}>Privacy Policy</a>
-              </p>
+              {errors.consent && <div style={{ fontSize:11, color:"#ef4444", marginTop:10 }}>{errors.consent}</div>}
             </div>
-          )}
 
+            {/* CTA Button */}
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              style={{ width:"100%", background:submitting?"#374151":`linear-gradient(135deg,${accentRgb},${accentRgb}cc)`, border:"none", color:"#fff", fontSize:15, fontWeight:700, padding:"15px", borderRadius:12, cursor:submitting?"not-allowed":"pointer", transition:"all .2s", marginTop:4, letterSpacing:"-0.2px" }}
+            >
+              {submitting ? "Joining..." : `Join ${seller.name}'s VIP List →`}
+            </button>
+
+            {/* Legal */}
+            <p style={{ fontSize:11, color:"#4b5563", textAlign:"center", lineHeight:1.6 }}>
+              By subscribing you agree to receive marketing messages from <strong style={{ color:"#6b7280" }}>{seller.name}</strong> via Streamlive.
+              Message & data rates may apply. Reply STOP to unsubscribe at any time.{" "}
+              <a href="#" style={{ color:"#6b7280" }}>Privacy Policy</a>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -3300,331 +3162,9 @@ function LiveCursor() {
   );
 }
 
-// ─── SIGN IN PAGE ────────────────────────────────────────────────────────────
-function SignInPage() {
-  const [mode, setMode] = useState('signin') // 'signin' | 'signup' | 'reset' | 'reset-sent'
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [accountType, setAccountType] = useState('business') // 'business' | 'partner'
-  useIntercom()
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      if (mode === 'signin') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-      } else if (mode === 'signup') {
-        if (password.length < 6) { setError('Password must be at least 6 characters'); setLoading(false); return }
-        if (password !== confirmPassword) { setError('Passwords do not match'); setLoading(false); return }
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { first_name: firstName, account_type: accountType } }
-        })
-        if (error) throw error
-      } else if (mode === 'reset') {
-        const { error } = await supabase.auth.resetPasswordForEmail(email)
-        if (error) throw error
-        setMode('reset-sent')
-      }
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleGoogleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin + '/app' }
-    })
-    if (error) setError(error.message)
-  }
-
-  const googleSvg = (
-    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.08 24.08 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-  )
-
-  const eyeIcon = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      {showPassword ? (
-        <>
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>
-        </>
-      ) : (
-        <>
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </>
-      )}
-    </svg>
-  )
-
-  const inputStyle = {
-    width:'100%', padding:'12px 16px', background:'#0d0d1a', border:'1px solid #1e1e3a',
-    borderRadius:10, color:'#e2e8f0', fontSize:14, fontFamily:"'DM Sans',sans-serif",
-    outline:'none', transition:'border-color .15s ease',
-  }
-
-  return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'row', background:'#06060e' }}>
-      <style>{FONT}{GLOBAL_CSS}{`
-        @media(max-width:768px){
-          .signin-split { flex-direction:column !important; }
-          .signin-left { min-height:auto !important; padding:40px 24px 24px !important; }
-          .signin-left .signin-orbs { display:none !important; }
-          .signin-left .signin-stats { display:none !important; }
-          .signin-right { padding:0 24px 40px !important; }
-          .signin-card { padding:28px 20px !important; max-width:100% !important; }
-        }
-      `}</style>
-
-      <div className="signin-split" style={{ display:'flex', flex:1, minHeight:'100vh' }}>
-        {/* Left branded panel */}
-        <div className="signin-left" style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', position:'relative', overflow:'hidden', padding:'60px 40px', background:'#06060e', minHeight:'100vh' }}>
-          <div className="signin-orbs" style={{ position:'absolute', inset:0, pointerEvents:'none' }}>
-            <div style={{ position:'absolute', top:'20%', left:'15%', width:400, height:400, borderRadius:'50%', background:'#7c3aed', opacity:0.04, filter:'blur(120px)' }} />
-            <div style={{ position:'absolute', bottom:'25%', right:'10%', width:340, height:340, borderRadius:'50%', background:'#4f46e5', opacity:0.03, filter:'blur(100px)' }} />
-          </div>
-
-          <div style={{ position:'relative', zIndex:1, textAlign:'center', maxWidth:400 }}>
-            <button onClick={()=>navigate('/')} style={{ display:'inline-flex', alignItems:'center', gap:10, background:'none', border:'none', cursor:'pointer', padding:0, marginBottom:40 }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:'#fff', boxShadow:'0 2px 16px rgba(124,58,237,.45)' }}>S</div>
-              <span style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>Streamlive</span>
-            </button>
-
-            <h2 style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(24px,3vw,36px)', fontWeight:800, color:'#fff', lineHeight:1.15, letterSpacing:'-1px', marginBottom:16 }}>
-              The command center<br />for live commerce.
-            </h2>
-            <p style={{ fontSize:15, color:'#4b5563', lineHeight:1.6, marginBottom:32 }}>
-              Multistream, track every buyer, and grow your live selling business — all from one dashboard.
-            </p>
-
-            <div className="signin-stats" style={{ display:'flex', justifyContent:'center', gap:10, flexWrap:'wrap' }}>
-              {['5 Channels','99% Attribution','2,400+ Sellers'].map(s => (
-                <span key={s} style={{ fontSize:11, fontWeight:600, color:'#6b7280', background:'#0d0d1a', border:'1px solid #1e1e3a', borderRadius:99, padding:'5px 14px' }}>{s}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right form panel */}
-        <div className="signin-right" style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:'60px 40px', minHeight:'100vh' }}>
-          <div className="signin-card fade-a0" style={{ width:'100%', maxWidth:420, background:'#0a0a14', border:'1px solid #1e1e3a', borderRadius:16, padding:40 }}>
-            {/* Business / Partner toggle */}
-            <div style={{ display:'flex', background:'#0d0d1a', border:'1px solid #1e1e3a', borderRadius:10, padding:3, marginBottom:24 }}>
-              {['business','partner'].map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={()=>setAccountType(t)}
-                  style={{
-                    flex:1, padding:'8px 0', fontSize:13, fontWeight:600, border:'none', borderRadius:8, cursor:'pointer',
-                    background: accountType === t ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : 'transparent',
-                    color: accountType === t ? '#fff' : '#6b7280',
-                    transition:'all .2s ease',
-                    textTransform:'capitalize',
-                  }}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-
-            <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:700, color:'#fff', marginBottom:6 }}>
-              {mode === 'signin' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset password' : 'Check your email'}
-            </h1>
-            <p style={{ fontSize:14, color:'#6b7280', marginBottom:28 }}>
-              {mode === 'signin' ? 'Sign in to your account' : mode === 'signup' ? 'Get started with Streamlive' : mode === 'reset' ? 'Enter your email to receive a reset link' : 'We sent a password reset link to your email'}
-            </p>
-
-            {mode === 'reset-sent' ? (
-              <>
-                <div style={{ textAlign:'center', padding:'20px 0' }}>
-                  <div style={{ fontSize:40, marginBottom:16 }}>&#9993;</div>
-                  <p style={{ fontSize:14, color:'#9ca3af', lineHeight:1.6, marginBottom:24 }}>
-                    If an account exists for <strong style={{ color:'#e2e8f0' }}>{email}</strong>, you'll receive a password reset link shortly.
-                  </p>
-                </div>
-                <button
-                  onClick={()=>{ setError(''); setMode('signin') }}
-                  className="cta-btn"
-                  style={{ width:'100%', height:48, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:15, fontWeight:700, borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
-                >
-                  Back to Sign In
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Google button — only on signin/signup */}
-                {(mode === 'signin' || mode === 'signup') && (
-                  <>
-                    <button
-                      onClick={handleGoogleSignIn}
-                      style={{ width:'100%', height:48, display:'flex', alignItems:'center', justifyContent:'center', gap:10, background:'#fff', color:'#1f2937', fontSize:14, fontWeight:600, border:'none', borderRadius:12, cursor:'pointer', transition:'opacity .15s' }}
-                      onMouseEnter={e=>e.currentTarget.style.opacity='0.9'}
-                      onMouseLeave={e=>e.currentTarget.style.opacity='1'}
-                    >
-                      {googleSvg}
-                      Continue with Google
-                    </button>
-
-                    {/* Divider */}
-                    <div style={{ display:'flex', alignItems:'center', gap:12, margin:'24px 0' }}>
-                      <div style={{ flex:1, height:1, background:'#1e1e3a' }} />
-                      <span style={{ fontSize:12, color:'#4b5563', fontWeight:500 }}>or</span>
-                      <div style={{ flex:1, height:1, background:'#1e1e3a' }} />
-                    </div>
-                  </>
-                )}
-
-                <form onSubmit={handleSubmit}>
-                  {mode === 'signup' && (
-                    <div style={{ marginBottom:14 }}>
-                      <input
-                        type="text"
-                        placeholder="First name"
-                        value={firstName}
-                        onChange={e=>setFirstName(e.target.value)}
-                        style={inputStyle}
-                        onFocus={e=>e.target.style.borderColor='#7c3aed'}
-                        onBlur={e=>e.target.style.borderColor='#1e1e3a'}
-                      />
-                    </div>
-                  )}
-
-                  <div style={{ marginBottom:14 }}>
-                    <input
-                      type="email"
-                      placeholder="Email address"
-                      value={email}
-                      onChange={e=>setEmail(e.target.value)}
-                      style={inputStyle}
-                      onFocus={e=>e.target.style.borderColor='#7c3aed'}
-                      onBlur={e=>e.target.style.borderColor='#1e1e3a'}
-                    />
-                  </div>
-
-                  {(mode === 'signin' || mode === 'signup') && (
-                    <div style={{ position:'relative', marginBottom: mode === 'signin' ? 8 : 14 }}>
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Password"
-                        value={password}
-                        onChange={e=>setPassword(e.target.value)}
-                        style={{ ...inputStyle, paddingRight:44 }}
-                        onFocus={e=>e.target.style.borderColor='#7c3aed'}
-                        onBlur={e=>e.target.style.borderColor='#1e1e3a'}
-                      />
-                      <button
-                        type="button"
-                        onClick={()=>setShowPassword(v=>!v)}
-                        style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', padding:2, display:'flex' }}
-                      >
-                        {eyeIcon}
-                      </button>
-                    </div>
-                  )}
-
-                  {mode === 'signin' && (
-                    <div style={{ textAlign:'right', marginBottom:20 }}>
-                      <button type="button" onClick={()=>{ setError(''); setMode('reset') }} style={{ background:'none', border:'none', color:'#6b7280', fontSize:12, cursor:'pointer', fontWeight:500 }}>Forgot password?</button>
-                    </div>
-                  )}
-
-                  {mode === 'signup' && (
-                    <div style={{ position:'relative', marginBottom:20 }}>
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Confirm password"
-                        value={confirmPassword}
-                        onChange={e=>setConfirmPassword(e.target.value)}
-                        style={inputStyle}
-                        onFocus={e=>e.target.style.borderColor='#7c3aed'}
-                        onBlur={e=>e.target.style.borderColor='#1e1e3a'}
-                      />
-                    </div>
-                  )}
-
-                  {error && (
-                    <p style={{ color:'#ef4444', fontSize:13, marginBottom:14, lineHeight:1.4 }}>{error}</p>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="cta-btn"
-                    style={{ width:'100%', height:48, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:15, fontWeight:700, borderRadius:12, cursor: loading ? 'wait' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, opacity: loading ? 0.7 : 1 }}
-                  >
-                    {loading ? (
-                      <div style={{ width:20, height:20, border:'2px solid #fff4', borderTop:'2px solid #fff', borderRadius:'50%', animation:'spin .7s linear infinite' }} />
-                    ) : (
-                      mode === 'signin' ? 'Sign In →' : mode === 'signup' ? 'Create Account →' : 'Send Reset Link →'
-                    )}
-                  </button>
-                </form>
-
-                <p style={{ textAlign:'center', fontSize:13, color:'#6b7280', marginTop:24 }}>
-                  {mode === 'signin' ? (
-                    <>Don't have an account?{' '}<button onClick={()=>{ setError(''); setMode('signup') }} style={{ background:'none', border:'none', color:'#a78bfa', fontWeight:600, cursor:'pointer', fontSize:13 }}>Create one</button></>
-                  ) : (
-                    <>Already have an account?{' '}<button onClick={()=>{ setError(''); setMode('signin') }} style={{ background:'none', border:'none', color:'#a78bfa', fontWeight:600, cursor:'pointer', fontSize:13 }}>Sign in</button></>
-                  )}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function App() {
   const route = useRoute()
-  const [session, setSession] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
-
   useEffect(() => { updatePageMeta(route) }, [route])
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setAuthLoading(false)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      if (session) {
-        intercomUpdate({
-          email: session.user.email,
-          user_id: session.user.id,
-          name: session.user.user_metadata?.first_name
-        })
-      }
-      if (session && window.location.pathname === '/signin') navigate('/app')
-      if (!session && window.location.pathname.startsWith('/app')) navigate('/signin')
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
-  // Route guards
-  if (route === '/app') {
-    if (authLoading) return null
-    if (!session) { navigate('/signin'); return null }
-  }
-  if (route === '/signin' && session) { navigate('/app'); return null }
-
   return (
     <>
       <style>{`
@@ -3635,7 +3175,7 @@ export default function App() {
         }
       `}</style>
       <LiveCursor />
-      {route === '/app'         ? <StreamlivePrototype session={session} /> :
+      {route === '/app'         ? <StreamlivePrototype /> :
        route === '/checkout'    ? <Checkout /> :
        route === '/welcome'     ? <Welcome /> :
        route.startsWith('/s/')  ? <OptInPage slug={route.split('/s/')[1]?.split('/')[0]} connectedPlatforms={PERSONA_PLATFORMS[route.split('/s/')[1]?.split('/')[0]]} /> :
@@ -3651,7 +3191,6 @@ export default function App() {
        route === '/blog'           ? <BlogPage /> :
        route === '/privacy'        ? <PrivacyPage /> :
        route === '/terms'          ? <TermsPage /> :
-       route === '/signin'         ? <SignInPage /> :
        route === '/contact'        ? <ContactPage /> :
        route.startsWith('/platform/') ? <PlatformPage slug={route.split('/platform/')[1]} /> :
        <Landing />}

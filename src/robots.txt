@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Exclude app screens — these require auth and have no SEO value
+Disallow: /app
+Disallow: /checkout
+Disallow: /welcome
+
+Sitemap: https://www.strmlive.com/sitemap.xml

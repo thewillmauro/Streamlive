@@ -1,0 +1,62 @@
+import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
+
+export default async function handler(req, res) {
+  const { shop, token } = req.query;
+
+  if (!shop) {
+    return res.status(400).json({ error: "Missing shop parameter" });
+  }
+
+  const {
+    SHOPIFY_API_KEY,
+    SHOPIFY_API_SECRET,
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+    APP_URL,
+  } = process.env;
+
+  if (!SHOPIFY_API_KEY || !SHOPIFY_API_SECRET || !APP_URL) {
+    return res.status(500).json({ error: "Server misconfigured: missing Shopify or APP_URL env vars" });
+  }
+
+  // Verify JWT via Supabase to extract userId (optional — falls back to "anonymous")
+  let userId = "anonymous";
+  if (token && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error || !user) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+      userId = user.id;
+    } catch {
+      return res.status(401).json({ error: "Token verification failed" });
+    }
+  }
+
+  // Generate nonce for CSRF protection
+  const nonce = crypto.randomBytes(16).toString("hex");
+  const state = Buffer.from(JSON.stringify({ userId, nonce })).toString("base64");
+
+  // Set nonce in httpOnly cookie
+  res.setHeader(
+    "Set-Cookie",
+    `shopify_oauth_nonce=${nonce}; HttpOnly; SameSite=Lax; Path=/; Max-Age=600; Secure`
+  );
+
+  // Normalize shop domain
+  const shopDomain = shop.includes(".") ? shop : `${shop}.myshopify.com`;
+
+  // 302 redirect to Shopify OAuth authorize
+  const redirectUri = `${APP_URL}/api/shopify/callback`;
+  const scopes = "read_products";
+  const authUrl =
+    `https://${shopDomain}/admin/oauth/authorize` +
+    `?client_id=${SHOPIFY_API_KEY}` +
+    `&scope=${scopes}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&state=${encodeURIComponent(state)}`;
+
+  res.redirect(302, authUrl);
+}
