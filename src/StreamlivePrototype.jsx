@@ -1029,7 +1029,7 @@ function ScreenBuyers({ buyers, navigate }) {
 
       {/* TABLE HEADER */}
       <div style={{ display:"grid", gridTemplateColumns:"1.8fr 0.9fr 0.7fr 0.7fr 0.9fr 0.8fr", padding:"9px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
-        {["Buyer","Platform","Spend","Orders","Last Order","Status"].map(h=>(
+        {["Buyer","Channel","Spend","Orders","Last Order","Status"].map(h=>(
           <div key={h} style={{ fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700 }}>{h}</div>
         ))}
       </div>
@@ -3164,7 +3164,7 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime, showTa
               { label:"Avg per show",  value: bp.avgPerShow  || ":", color:"#38bdf8" },
               { label:"Margin",        value: margin !== null ? margin + "%" : ":", color:"#10b981" },
               { label:"Category",      value: bp.category    || ":", color:C.text },
-              { label:"Platforms",     value: (bp.platforms  || []).join(", ") || ":", color:C.text },
+              { label:"Channels",     value: (bp.platforms  || []).join(", ") || ":", color:C.text },
             ].map(function(s, i) {
               return (
                 <div key={i} style={{ background:"#0a0a14", border:"1px solid #1e1e3a", borderRadius:9, padding:"10px 12px" }}>
@@ -3621,7 +3621,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
               { id:"catalog",    label:"Catalog" },
               { id:"perks",      label:"Perks" },
               { id:"briefing",   label:"Briefing" },
-              { id:"platforms",  label:"Platforms" },
+              { id:"channels",  label:"Channels" },
             ].map(t=>(
               <button key={t.id} onClick={()=>setLiveTab(t.id)} style={{
                 padding:"0 20px", height:38, background:"none", border:"none",
@@ -4235,7 +4235,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
           )}
 
           {/* ── PLATFORMS TAB ── */}
-          {liveTab === "platforms" && (
+          {liveTab === "channels" && (
             <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
               <div style={{ marginBottom:8 }}>
                 <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Platform Connections</div>
@@ -6580,7 +6580,7 @@ function TeamTab({ persona, openCheckout }) {
 
 
 function ScreenSettings({ persona, initialTab, openCheckout }) {
-  const [tab, setTab]           = useState(initialTab || "platforms");
+  const [tab, setTab]           = useState(initialTab || "channels");
   const [connections, setConnections] = useState({});
   const [modal, setModal]       = useState(null); // { type: "manychat"|"ig"|"tt"|"wn"|"am"|"email"|"sms" }
   const [modalStep, setModalStep]     = useState(1);
@@ -7186,7 +7186,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
 
       {/* TABS */}
       <div style={{ display:"flex", gap:0, marginBottom:24, borderBottom:`1px solid ${C.border}` }}>
-        {["platforms","messaging","profile","billing","team","pixel"].map(t=>(
+        {["channels","messaging","profile","billing","team","pixel"].map(t=>(
           <button key={t} onClick={()=>setTab(t)} style={{ background:"none", border:"none", borderBottom:`2px solid ${tab===t?C.accent:"transparent"}`, color:tab===t?"#a78bfa":C.muted, fontSize:12, fontWeight:tab===t?700:400, padding:"0 16px 12px", cursor:"pointer", textTransform:"capitalize", display:"flex", alignItems:"center", gap:5 }}>
             {t === "pixel" ? <><span style={{ color:tab===t?"#f43f5e":C.muted, fontSize:10 }}>●</span> Live Pixel</> : t}
           </button>
@@ -7194,9 +7194,9 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       </div>
 
       {/* ── PLATFORMS TAB ── */}
-      {tab==="platforms" && (
+      {tab==="channels" && (
         <div className="fade-up" style={{ maxWidth:620 }}>
-          <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Connect your selling platforms to import buyer and order data.</div>
+          <div style={{ fontSize:12, color:C.muted, marginBottom:20 }}>Connect your selling channels to import buyer and order data.</div>
           {PLATFORM_LIST.map(pid=>{
             const p  = PLATFORMS[pid];
             const pd = platformData[pid];
@@ -13204,7 +13204,7 @@ export default function StreamlivePrototype() {
                 {view==="campaigns"    && <ScreenCampaigns     navigate={navigate} persona={persona} />}
                 {view==="composer"     && <ScreenComposer      navigate={navigate} persona={persona} />}
                 {view==="subscribers"  && <ScreenSubscribers   persona={persona} />}
-                {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} openCheckout={setCheckoutPlan} />}
+                {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"channels":undefined} openCheckout={setCheckoutPlan} />}
                 {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} onShowComplete={(show)=>setCompletedShows(prev=>[show,...prev])} />}
                 {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} />}
                 {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} persona={persona} />}
