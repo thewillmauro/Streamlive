@@ -8030,6 +8030,7 @@ function ScreenCatalog({ persona, navigate, products: productsProp, loading: pro
   const [syncPulse, setSyncPulse] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showShopifyConnect, setShowShopifyConnect] = useState(false);
 
   // Sync products from props
   useEffect(() => { setProducts(productsProp || []); }, [productsProp]);
@@ -8090,24 +8091,30 @@ function ScreenCatalog({ persona, navigate, products: productsProp, loading: pro
     setProducts(ps => ps.map(p => p.id===id ? {...p, talkingPoints:(p.talkingPoints||[]).filter((_,i)=>i!==idx)} : p));
   };
 
-  // ── Empty state for no products ─────────────────────────────────────────────
-  if (!productsLoading && products.length === 0 && !shopifyConnected) {
+  // ── Empty state for no products — show Shopify connect OR add manually ─────
+  if (!productsLoading && products.length === 0 && !shopifyConnected && !showShopifyConnect) {
     return (
       <>
-        <EmptyState
-          icon="◧"
-          title="No products yet"
-          description="Add your first product manually or connect your Shopify store to sync your entire catalog."
-          ctaLabel="Add First Product"
-          onCta={()=>setShowAddModal(true)}
-        />
+        <div className="fade-up" style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flex:1, padding:"60px 32px", textAlign:"center" }}>
+          <div style={{ width:64, height:64, borderRadius:18, background:`${C.accent}12`, border:`1px solid ${C.accent}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, marginBottom:20 }}>◧</div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.5px", marginBottom:8 }}>No products yet</div>
+          <div style={{ fontSize:13, color:C.muted, maxWidth:380, lineHeight:1.6, marginBottom:24 }}>Connect your Shopify store to sync your catalog, or add products manually.</div>
+          <div style={{ display:"flex", gap:12 }}>
+            <button onClick={()=>setShowShopifyConnect(true)} style={{ background:"linear-gradient(135deg,#96BF48,#5A8E00)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"11px 28px", borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", gap:8 }}>
+              🛒 Connect Shopify
+            </button>
+            <button onClick={()=>setShowAddModal(true)} style={{ background:C.surface2, border:`1px solid ${C.border2}`, color:C.text, fontSize:13, fontWeight:600, padding:"11px 28px", borderRadius:10, cursor:"pointer" }}>
+              + Add Manually
+            </button>
+          </div>
+        </div>
         {showAddModal && <ProductFormModal onClose={()=>setShowAddModal(false)} onSave={async (p) => { if(createProduct) await createProduct(p); setShowAddModal(false); }} />}
       </>
     );
   }
 
-  // ── Pre-connection screen (only if no products and user wants Shopify) ─────
-  if (!shopifyConnected && products.length === 0 && false) {
+  // ── Shopify connection flow ────────────────────────────────────────────────
+  if (!shopifyConnected && (products.length === 0 && showShopifyConnect)) {
     const STEPS = [
       { n:1, label:"Store URL",    icon:"🏪" },
       { n:2, label:"Install App",  icon:"📦" },
