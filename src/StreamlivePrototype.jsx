@@ -9269,10 +9269,11 @@ const LineChart = ({ data, color="#10b981", height=80 }) => {
   const max = Math.max(...data);
   const min = Math.min(...data);
   const range = max-min||1;
-  const W = 100;
+  const W = 500;
+  const H = height * (500 / 100); // scale height proportionally to avoid distortion
   const pts = data.map((v,i) => ({
     x: (i/(data.length-1))*W,
-    y: height-((v-min)/range)*(height-10)-5,
+    y: H-((v-min)/range)*(H-50)-25,
   }));
 
   // Build smooth cubic bezier path
@@ -9283,17 +9284,18 @@ const LineChart = ({ data, color="#10b981", height=80 }) => {
     return `${acc} C ${cpx},${prev.y} ${cpx},${p.y} ${p.x},${p.y}`;
   }, "");
 
-  const area = `${smooth} L ${W},${height} L 0,${height} Z`;
+  const area = `${smooth} L ${W},${H} L 0,${H} Z`;
+  const gradId = `lineGrad_${color.replace('#','')}`;
 
   return (
-    <svg width="100%" height={height} viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" style={{ display:"block" }}>
+    <svg width="100%" height={height} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:"block" }}>
       <defs>
-        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25"/>
           <stop offset="100%" stopColor={color} stopOpacity="0"/>
         </linearGradient>
       </defs>
-      <path d={area} fill="url(#lineGrad)" />
+      <path d={area} fill={`url(#${gradId})`} />
       <path d={smooth} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
       {pts.map((p,i) => (
         <circle key={i} cx={p.x} cy={p.y} r="1.5" fill={color} vectorEffect="non-scaling-stroke"/>
