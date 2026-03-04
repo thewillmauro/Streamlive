@@ -2363,7 +2363,7 @@ const SELLER_PROFILES = {
       "💄 First access to new shade launches",
       "✨ Subscriber-only bundles and kits",
       "📲 Live drop alerts. Never miss a launch.",
-      "🎁 VIP loyalty rewards on every order",
+      "🎁 Loyalty rewards on every order",
     ],
   },
   tropicfeel: {
@@ -2395,7 +2395,7 @@ const SELLER_PROFILES = {
     followers: "124K",
     perks: [
       "⚡ Flash deals before they go public",
-      "💌 VIP early access across all brand shows",
+      "💌 Early access across all brand shows",
       "🎁 Loyalty rewards on every live purchase",
       "📲 Alerts for your favorite brand drops",
     ],
@@ -2816,8 +2816,8 @@ function OptInPage({ slug, connectedPlatforms }) {
           <div style={{ width:80, height:80, borderRadius:"50%", background:`${accentRgb}22`, border:`2px solid ${accentRgb}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, margin:"0 auto 24px" }}>✓</div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:800, color:"#fff", marginBottom:8, letterSpacing:"-0.5px" }}>You're in, {firstName}!</div>
           <div style={{ fontSize:15, color:"#9ca3af", lineHeight:1.7, marginBottom:32 }}>
-            Welcome to the <span style={{ color:"#fff", fontWeight:600 }}>{seller.name}</span> subscriber list.
-            You'll be the first to know about shows, exclusive drops, and VIP offers.
+            You're signed up for <span style={{ color:"#fff", fontWeight:600 }}>{seller.name}</span> live stream perks.
+            You'll be the first to know about upcoming shows, exclusive drops, and member-only deals.
           </div>
           <div style={{ background:"#0d0d1a", border:"1px solid #1e1e3a", borderRadius:14, padding:"20px 24px", marginBottom:16, textAlign:"left" }}>
             <div style={{ fontSize:11, color:"#6b7280", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:14 }}>What to expect</div>
@@ -2885,7 +2885,7 @@ function OptInPage({ slug, connectedPlatforms }) {
           </div>
           <div style={{ fontSize:11, fontWeight:700, color:accentRgb, textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:8 }}>{seller.category}</div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", marginBottom:12, lineHeight:1.2 }}>
-            Join the {seller.name}<br />VIP List {seller.badge}
+            Unlock Perks for {seller.name}<br />Live Streams {seller.badge}
           </div>
           <div style={{ fontSize:15, color:"#9ca3af", lineHeight:1.7, maxWidth:420, margin:"0 auto 20px" }}>{seller.bio}</div>
           {/* Social proof */}
@@ -3110,7 +3110,7 @@ function OptInPage({ slug, connectedPlatforms }) {
                     </div>
                     <div>
                       <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Email updates</div>
-                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Show schedules, exclusive drops, and VIP offers</div>
+                      <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Show schedules, exclusive drops, and member deals</div>
                     </div>
                   </label>
                   <label style={{ display:"flex", alignItems:"flex-start", gap:12, cursor:"pointer" }} onClick={()=>setSmsOptIn(v=>!v)}>
@@ -3132,7 +3132,7 @@ function OptInPage({ slug, connectedPlatforms }) {
                 disabled={submitting}
                 style={{ width:"100%", background:submitting?"#374151":`linear-gradient(135deg,${accentRgb},${accentRgb}cc)`, border:"none", color:"#fff", fontSize:15, fontWeight:700, padding:"15px", borderRadius:12, cursor:submitting?"not-allowed":"pointer", transition:"all .2s", marginTop:4, letterSpacing:"-0.2px" }}
               >
-                {submitting ? "Creating Account..." : `Create Account & Join ${seller.name}'s VIP List →`}
+                {submitting ? "Creating Account..." : `Create Account & Unlock Perks →`}
               </button>
 
               {/* Legal */}
