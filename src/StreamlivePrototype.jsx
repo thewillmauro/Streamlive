@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { supabase } from "./lib/supabase.js";
+import { useProfile, useBuyers, useProducts } from "./hooks/useSupabase.js";
+
+function deriveAvatar(name) {
+  return (name || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+}
 
 // ─── FONTS ────────────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
