@@ -13,6 +13,7 @@ function useRoute() {
 }
 
 function navigate(path) {
+  window.scrollTo(0, 0)
   window.history.pushState({}, '', path)
   window.dispatchEvent(new PopStateEvent('popstate'))
 }
@@ -1113,11 +1114,11 @@ function Landing() {
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Platforms</div>
                 {[
-                  {label:'Whatnot live selling',        slug:'whatnot'},
-                  {label:'TikTok Shop live selling',    slug:'tiktok-shop'},
-                  {label:'Instagram Live selling',      slug:'instagram-live'},
-                  {label:'Amazon Live selling',         slug:'amazon-live'},
-                  {label:'YouTube Live selling',        slug:'youtube-live'},
+                  {label:'Whatnot',        slug:'whatnot'},
+                  {label:'TikTok Shop',    slug:'tiktok-shop'},
+                  {label:'Instagram Live',      slug:'instagram-live'},
+                  {label:'Amazon Live',         slug:'amazon-live'},
+                  {label:'YouTube Live',        slug:'youtube-live'},
                 ].map(({label, slug})=>(
                   <a key={slug} href={`/platform/${slug}`} onClick={e=>{e.preventDefault();navigate('/platform/'+slug)}} className="footer-link-hover" style={{ display:'block', fontSize:13, color:'#374151', marginBottom:8, textDecoration:'none', transition:'color .15s' }}>{label}</a>
                 ))}
