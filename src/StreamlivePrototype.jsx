@@ -70,8 +70,8 @@ const STATUS_META = {
 // ─── TEST PERSONAS ────────────────────────────────────────────────────────────
 const PERSONAS = [
   {
-    id: "sarah",
-    name: "Jamie Ellis",
+    id: "placeholder",
+    name: "Placeholder",
     shop: "Banana Republic",
     email: "jamie.ellis@bananarepublic.com",
     avatar: "BR",
@@ -156,166 +156,17 @@ const PERSONAS = [
   },
 ];
 
-// ─── BUYER DATA (per persona) ─────────────────────────────────────────────────
-const BUYERS_BY_PERSONA = {
-  sarah: [  // Banana Republic
-    { id:"b1", name:"Olivia Bennett",   handle:"@oliviastyle",      platform:"IG", spend:6840, orders:48, lastOrder:"1d ago",  category:"Outerwear",    status:"vip",     score:9.6, avatar:"OB", tags:["VIP","Member"],      email:"o.bennett@example.com", phone:"+1-555-0101" },
-    { id:"b2", name:"Claire Fontaine",  handle:"@clairef_fashion",  platform:"TT", spend:4210, orders:31, lastOrder:"2d ago",  category:"Dresses",      status:"vip",     score:9.1, avatar:"CF", tags:["VIP"],               email:"cf@example.com",        phone:"+1-555-0102" },
-    { id:"b3", name:"Marcus Duval",     handle:"@marcusd",          platform:"AM", spend:3480, orders:24, lastOrder:"4d ago",  category:"Blazers",      status:"vip",     score:8.4, avatar:"MD", tags:["VIP","Big Spender"], email:"md@example.com",        phone:"+1-555-0103" },
-    { id:"b4", name:"Natalie Rhodes",   handle:"@nat_styled",       platform:"IG", spend:1920, orders:14, lastOrder:"29d ago", category:"Accessories",  status:"risk",    score:5.1, avatar:"NR", tags:[],                    email:"nr@example.com",        phone:"+1-555-0104" },
-    { id:"b5", name:"Tom Archer",       handle:"@tomarcher",        platform:"TT", spend:1240, orders:9,  lastOrder:"35d ago", category:"Trousers",     status:"risk",    score:4.6, avatar:"TA", tags:[],                    email:"ta@example.com",        phone:"+1-555-0105" },
-    { id:"b6", name:"Zoe Kim",          handle:"@zoekim_looks",     platform:"IG", spend:980,  orders:7,  lastOrder:"3d ago",  category:"Knitwear",     status:"active",  score:6.8, avatar:"ZK", tags:["New"],               email:"zk@example.com",        phone:"+1-555-0106" },
-    { id:"b7", name:"Ellie Hoffman",    handle:"@ellieh",           platform:"TT", spend:620,  orders:4,  lastOrder:"11d ago",  category:"Dresses",      status:"active",  score:5.9, avatar:"EH", tags:[],                    email:"eh@example.com",        phone:"+1-555-0107" },
-    { id:"b8", name:"James Weston",     handle:"@jwestonshops",     platform:"AM", spend:290,  orders:2,  lastOrder:"88d ago", category:"Outerwear",    status:"dormant", score:2.3, avatar:"JW", tags:[],                    email:"jw@example.com",        phone:"+1-555-0108" },
-    // YouTube buyers: sourced from Shopify, attributed to YouTube shows
-    { id:"b9",  name:"Ryan Callahan",   handle:"youtube/ryancall",  platform:"YT", spend:456,  orders:2,  lastOrder:"18d ago", category:"Blazers",      status:"new",     score:6.2, avatar:"RC", tags:["New","YouTube"],     email:"rcallahan@gmail.com",   phone:"+1-555-0109", shopifyCustomerId:"cust_sh_4821", ytAttribution:"time-window" },
-    { id:"b10", name:"Sarah Mitchell",  handle:"youtube/smitch",    platform:"YT", spend:228,  orders:1,  lastOrder:"18d ago", category:"Blazers",      status:"new",     score:5.8, avatar:"SM", tags:["New","YouTube"],     email:"sarah.m@gmail.com",     phone:"+1-555-0110", shopifyCustomerId:"cust_sh_4822", ytAttribution:"utm-link" },
-    { id:"b11", name:"Derek Huang",     handle:"youtube/dhuang",    platform:"YT", spend:376,  orders:2,  lastOrder:"18d ago", category:"Trousers",     status:"new",     score:6.4, avatar:"DH", tags:["New","YouTube"],     email:"dhuang91@gmail.com",    phone:"+1-555-0111", shopifyCustomerId:"cust_sh_4823", ytAttribution:"utm-link" },
-    { id:"b12", name:"Priya Sharma",    handle:"youtube/priya_s",   platform:"YT", spend:148,  orders:1,  lastOrder:"18d ago", category:"Trousers",     status:"new",     score:5.4, avatar:"PS", tags:["New","YouTube"],     email:"priya.s@gmail.com",     phone:"+1-555-0112", shopifyCustomerId:"cust_sh_4824", ytAttribution:"manual" },
-  ],
-  tyler: [  // Kylie Cosmetics
-    { id:"b1", name:"Sienna Lopez",     handle:"@siennaglam",       platform:"TT", spend:4820, orders:62, lastOrder:"1d ago",  category:"Lip",          status:"vip",     score:9.8, avatar:"SL", tags:["VIP","Lip Obsessed"], email:"sl@example.com",       phone:"+1-555-0201" },
-    { id:"b2", name:"Maya Patel",       handle:"@mayabeauty",       platform:"IG", spend:3640, orders:44, lastOrder:"2d ago",  category:"Face",         status:"vip",     score:9.2, avatar:"MP", tags:["VIP"],               email:"mp@example.com",       phone:"+1-555-0202" },
-    { id:"b3", name:"Jade Wu",          handle:"@jadewumakeup",     platform:"TT", spend:2190, orders:28, lastOrder:"5d ago",  category:"Eye",          status:"active",  score:7.6, avatar:"JW", tags:[],                    email:"jw@example.com",       phone:"+1-555-0203" },
-    { id:"b4", name:"Brianna Cole",     handle:"@bricole_beauty",   platform:"IG", spend:980,  orders:12, lastOrder:"41d ago", category:"Lip",          status:"risk",    score:4.4, avatar:"BC", tags:[],                    email:"bc@example.com",       phone:"+1-555-0204" },
-    { id:"b5", name:"Ava Torres",       handle:"@avatorres",        platform:"TT", spend:540,  orders:7,  lastOrder:"6d ago",  category:"Sets",         status:"new",     score:6.1, avatar:"AT", tags:["New"],               email:"at@example.com",       phone:"+1-555-0205" },
-  ],
-  devon: [  // Tropicfeel
-    { id:"b1", name:"Luca Martini",     handle:"@lucatravel",       platform:"IG", spend:1480, orders:6,  lastOrder:"2d ago",  category:"Shoes",        status:"vip",     score:8.8, avatar:"LM", tags:["VIP"],               email:"lm@example.com",       phone:"+1-555-0301" },
-    { id:"b2", name:"Sofia Reyes",      handle:"@sofiawanders",     platform:"AM", spend:890,  orders:4,  lastOrder:"5d ago",  category:"Bags",         status:"active",  score:7.2, avatar:"SR", tags:[],                    email:"sr@example.com",       phone:"+1-555-0302" },
-    { id:"b3", name:"Nils Bergman",     handle:"@nilsroams",        platform:"IG", spend:340,  orders:2,  lastOrder:"58d ago", category:"Accessories",  status:"risk",    score:3.8, avatar:"NB", tags:[],                    email:"nb@example.com",       phone:"+1-555-0303" },
-  ],
-  mia: [  // Walmart Live
-    { id:"b1",  name:"Jennifer Walsh",  handle:"@jenwshops",        platform:"AM", spend:18400, orders:124, lastOrder:"1d ago",  category:"Electronics",  status:"vip",    score:9.8, avatar:"JW", tags:["VIP","Power Buyer"],  email:"jw@example.com",       phone:"+1-555-0401" },
-    { id:"b2",  name:"Carlos Mendez",   handle:"@carlom",           platform:"TT", spend:12800, orders:98,  lastOrder:"2d ago",  category:"Fashion",      status:"vip",    score:9.4, avatar:"CM", tags:["VIP","Multi-Brand"],  email:"cm@example.com",       phone:"+1-555-0402" },
-    { id:"b3",  name:"Rachel Kim",      handle:"@rachelklive",      platform:"IG", spend:9840,  orders:72,  lastOrder:"1d ago",  category:"Beauty",       status:"vip",    score:9.1, avatar:"RK", tags:["VIP"],               email:"rk@example.com",       phone:"+1-555-0403" },
-    { id:"b4",  name:"David Park",      handle:"@dpark_deals",      platform:"AM", spend:7200,  orders:54,  lastOrder:"3d ago",  category:"Home",         status:"vip",    score:8.8, avatar:"DP", tags:["VIP","Deal Hunter"], email:"dp@example.com",       phone:"+1-555-0404" },
-    { id:"b5",  name:"Amber Stone",     handle:"@amberstone",       platform:"TT", spend:5600,  orders:42,  lastOrder:"4d ago",  category:"Beauty",       status:"vip",    score:8.4, avatar:"AS", tags:["VIP"],               email:"as@example.com",       phone:"+1-555-0405" },
-    { id:"b6",  name:"Mike Torres",     handle:"@miket_shop",       platform:"AM", spend:3800,  orders:28,  lastOrder:"7d ago",  category:"Electronics",  status:"active", score:8.0, avatar:"MT", tags:["Big Spender"],       email:"mt@example.com",       phone:"+1-555-0406" },
-    { id:"b7",  name:"Lisa Chang",      handle:"@lisachang",        platform:"IG", spend:2640,  orders:20,  lastOrder:"9d ago",  category:"Fashion",      status:"active", score:7.3, avatar:"LC", tags:[],                    email:"lc@example.com",       phone:"+1-555-0407" },
-    { id:"b8",  name:"Rob Martinez",    handle:"@robm",             platform:"TT", spend:1980,  orders:14,  lastOrder:"6d ago",  category:"Toys",         status:"active", score:7.0, avatar:"RM", tags:[],                    email:"rm@example.com",       phone:"+1-555-0408" },
-    { id:"b9",  name:"Tanya Brown",     handle:"@tanyab",           platform:"AM", spend:1420,  orders:10,  lastOrder:"12d ago", category:"Home",         status:"active", score:6.6, avatar:"TB", tags:[],                    email:"tb@example.com",       phone:"+1-555-0409" },
-    { id:"b10", name:"Kevin Liu",       handle:"@kliu_shop",        platform:"TT", spend:980,   orders:7,   lastOrder:"15d ago", category:"Electronics",  status:"active", score:6.1, avatar:"KL", tags:[],                    email:"kl@example.com",       phone:"+1-555-0410" },
-    { id:"b11", name:"Sarah Odom",      handle:"@sarahodom",        platform:"AM", spend:640,   orders:4,   lastOrder:"36d ago", category:"Grocery",      status:"risk",   score:4.9, avatar:"SO", tags:[],                    email:"so@example.com",       phone:"+1-555-0411" },
-    { id:"b12", name:"Paul Grant",      handle:"@pgrant",           platform:"TT", spend:420,   orders:3,   lastOrder:"44d ago", category:"Fashion",      status:"risk",   score:4.2, avatar:"PG", tags:[],                    email:"pg@example.com",       phone:"+1-555-0412" },
-  ],
-};
+// ─── BUYER DATA (cleared — real buyers come from Supabase) ────────────────────
+const BUYERS_BY_PERSONA = {};
 
-// ─── SHOWS DATA ───────────────────────────────────────────────────────────────
-const SHOWS = [
-  // ── Last 7 days ──────────────────────────────────────────────────────────────
-  { id:"sh1",  title:"Spring Collection Launch",         date:"Feb 22, 2025", platform:"IG", platforms:["IG","TT"],      gmv:18420, buyers:84,  repeatRate:72, duration:"1h 48m", aiDebrief:"Strong launch: the Silk Wrap Dress drove 40% of GMV in the first 20 minutes. Olivia and Claire both went straight to checkout during the try-on segment. Schedule a follow-up members-only show before the full spring drop goes public.", topItem:"Silk Wrap Midi Dress", newBuyers:22 },
-  { id:"sh2",  title:"TikTok Style Drop #18",            date:"Feb 17, 2025", platform:"TT", platforms:["TT"],           gmv:12840, buyers:61,  repeatRate:58, duration:"1h 12m", aiDebrief:"Good reach: 28 first-time buyers. The bundle reveal outperformed individual items 3:1 on TikTok. Lower repeat rate is expected for TT but worth an SMS follow-up to the 33 new subscribers captured.", topItem:"Spring Style Bundle (3pc)", newBuyers:28 },
-  // ── Last 30 days (not in 7d) ─────────────────────────────────────────────────
-  { id:"sh3",  title:"Amazon Members Flash Sale",        date:"Feb 12, 2025", platform:"AM", platforms:["AM","IG"],      gmv:9210,  buyers:48,  repeatRate:44, duration:"58m",    aiDebrief:"Amazon buyers skewed transactional: high conversion but low dwell time. The Linen Shirt was the breakout hit. Consider a targeted win-back email for the 26 buyers who browsed the blazer but didn't purchase.", topItem:"Linen Button-Down Shirt", newBuyers:31 },
-  { id:"sh4",  title:"Winter Clearance Event",           date:"Feb 10, 2025", platform:"IG", platforms:["IG","TT","AM"], gmv:21800, buyers:96,  repeatRate:78, duration:"2h 06m", aiDebrief:"Best show this month. 78% repeat rate driven by member early-access. The Wool Overcoat sold out in 12 minutes. Restock and schedule a dedicated outerwear show before end of season.", topItem:"Tailored Wool Overcoat", newBuyers:14 },
-  { id:"sh5",  title:"YouTube: New Arrivals Haul",       date:"Feb 8, 2025",  platform:"YT", platforms:["YT"],           gmv:7640,  buyers:38,  repeatRate:52, duration:"1h 22m", aiDebrief:"First YouTube show: strong top-of-funnel with 4.2K peak concurrent viewers. 38 buyers confirmed via Shopify attribution.", topItem:"Merino Wool Blazer", newBuyers:38,
-    ytAttribution: { method:"mixed", pixel:{ orders:14, confidence:"verified", sessionsCaptured:284 }, timeWindow:{ orders:12, confidence:"high", windowMins:15 }, utm:{ orders:6, link:"strmlive.com/yt/br-2025-02-08", clicks:284 }, manual:{ orders:6, pending:2 }, shopifyOrders:38, unattributed:0 }
-  },
-  { id:"sh6",  title:"Valentine's Weekend Drop",         date:"Feb 1, 2025",  platform:"IG", platforms:["IG","TT"],      gmv:16340, buyers:74,  repeatRate:68, duration:"1h 36m", aiDebrief:"Valentine's theme drove strong gifting purchases. Accessories outperformed apparel 2:1. Email pre-campaign drove 38% of attendance.", topItem:"Leather Crossbody Bag", newBuyers:19 },
-  // ── Last 90 days (not in 30d) ────────────────────────────────────────────────
-  { id:"sh7",  title:"Whatnot VIP Members Night",        date:"Jan 18, 2025", platform:"WN", platforms:["WN"],           gmv:11280, buyers:52,  repeatRate:81, duration:"1h 04m", aiDebrief:"Highest repeat rate of the quarter. VIP-only format drove intense engagement and 4.2x avg order vs standard shows.", topItem:"Merino Wool Blazer", newBuyers:6 },
-  { id:"sh8",  title:"New Year New Wardrobe",            date:"Jan 5, 2025",  platform:"TT", platforms:["TT","IG"],      gmv:8920,  buyers:44,  repeatRate:48, duration:"1h 18m", aiDebrief:"Post-holiday buyers are in value mode. Bundle pricing outperformed single items. TikTok LIVE traffic spiked mid-show after a comment went viral.", topItem:"Slim Chino Shorts", newBuyers:33 },
-  { id:"sh9",  title:"Holiday Gifts Last Call",          date:"Dec 21, 2024", platform:"IG", platforms:["IG","AM"],      gmv:24600, buyers:112, repeatRate:62, duration:"2h 14m", aiDebrief:"Best GMV show of Q4. Gifting urgency drove rapid checkout. Amazon simulcast added 28 incremental buyers. Repeat rate softer as many were one-time holiday shoppers.", topItem:"Spring Style Bundle (3pc)", newBuyers:48 },
-  { id:"sh10", title:"TikTok Holiday Countdown #3",      date:"Dec 14, 2024", platform:"TT", platforms:["TT"],           gmv:6840,  buyers:36,  repeatRate:41, duration:"58m",    aiDebrief:"Third holiday TikTok show: audience fatigue showing vs show #1. Shorter runtime matched engagement curve. SMS follow-up captured 18 new subscribers.", topItem:"Linen Button-Down Shirt", newBuyers:29 },
-  // ── All time (not in 90d) ─────────────────────────────────────────────────────
-  { id:"sh11", title:"Fall Collection Preview",          date:"Nov 20, 2024", platform:"IG", platforms:["IG","TT","AM"], gmv:14200, buyers:68,  repeatRate:65, duration:"1h 42m", aiDebrief:"Strong fall debut. Layering pieces drove bundles. Instagram simulcast outperformed TikTok 3:1 in revenue per viewer. First time using Show Planner: run order AI suggestion was accurate.", topItem:"Tailored Wool Overcoat", newBuyers:24 },
-  { id:"sh12", title:"Whatnot Flash: Outerwear Drop",    date:"Nov 8, 2024",  platform:"WN", platforms:["WN"],           gmv:9480,  buyers:46,  repeatRate:76, duration:"52m",    aiDebrief:"Compact high-intensity show. Whatnot buyers responded to scarcity messaging. Sold out 2 SKUs within 10 minutes. Repeat rate strong: core audience engaged.", topItem:"Tailored Wool Overcoat", newBuyers:8 },
-  { id:"sh13", title:"Back to School TikTok Live",       date:"Oct 12, 2024", platform:"TT", platforms:["TT","IG"],      gmv:5620,  buyers:31,  repeatRate:38, duration:"1h 02m", aiDebrief:"Seasonal relevance helped with discovery. Lower repeat rate expected for back-to-school demographic. 31 new buyers: good acquisition show.", topItem:"Slim Chino Shorts", newBuyers:31 },
-];
+// ─── SHOWS DATA (cleared — real shows come from Supabase) ─────────────────────
+const SHOWS = [];
 
-// ─── CAMPAIGNS DATA ───────────────────────────────────────────────────────────
-const CAMPAIGNS = [
-  // ── Last 7 days ──────────────────────────────────────────────────────────────
-  { id:"c1",  name:"Spring Launch Reminder",          type:"email",  status:"sent",  sentAt:"Feb 21, 2025", recipients:3420, opened:64, clicked:41, converted:28, gmv:8840  },
-  { id:"c2",  name:"VIP Members Early Access",        type:"sms",    status:"sent",  sentAt:"Feb 19, 2025", recipients:480,  opened:91, clicked:68, converted:52, gmv:12600 },
-  { id:"c5",  name:"IG Keyword: DM STYLE",            type:"ig_dm",  status:"sent",  sentAt:"Feb 20, 2025", recipients:1840, opened:96, clicked:74, converted:44, gmv:9820  },
-  // ── Last 30 days (not in 7d) ─────────────────────────────────────────────────
-  { id:"c3",  name:"Win-Back: 30-Day Inactive",       type:"email",  status:"sent",  sentAt:"Feb 8, 2025",  recipients:820,  opened:36, clicked:19, converted:11, gmv:2140  },
-  { id:"c6",  name:"TikTok Drop Announcement",        type:"tt_dm",  status:"sent",  sentAt:"Feb 15, 2025", recipients:1120, opened:89, clicked:66, converted:31, gmv:5640  },
-  { id:"c7",  name:"Amazon Deal Notification",        type:"am_msg", status:"sent",  sentAt:"Feb 11, 2025", recipients:640,  opened:71, clicked:48, converted:24, gmv:3980  },
-  { id:"c9",  name:"Valentine's VIP Teaser",          type:"sms",    status:"sent",  sentAt:"Jan 30, 2025", recipients:520,  opened:88, clicked:62, converted:41, gmv:7280  },
-  { id:"c10", name:"February Buyers Newsletter",      type:"email",  status:"sent",  sentAt:"Feb 2, 2025",  recipients:2840, opened:48, clicked:29, converted:16, gmv:3620  },
-  // ── Last 90 days (not in 30d) ────────────────────────────────────────────────
-  { id:"c11", name:"January New Arrivals",            type:"email",  status:"sent",  sentAt:"Jan 12, 2025", recipients:3100, opened:41, clicked:24, converted:14, gmv:3180  },
-  { id:"c12", name:"VIP Winter Preview SMS",          type:"sms",    status:"sent",  sentAt:"Jan 6, 2025",  recipients:440,  opened:84, clicked:61, converted:38, gmv:6840  },
-  { id:"c13", name:"Holiday Win-Back",                type:"email",  status:"sent",  sentAt:"Dec 28, 2024", recipients:1240, opened:39, clicked:21, converted:13, gmv:2640  },
-  { id:"c14", name:"Christmas Last Call SMS",         type:"sms",    status:"sent",  sentAt:"Dec 23, 2024", recipients:560,  opened:94, clicked:72, converted:55, gmv:11400 },
-  { id:"c15", name:"Holiday IG Automation",           type:"ig_dm",  status:"sent",  sentAt:"Dec 18, 2024", recipients:2240, opened:91, clicked:68, converted:39, gmv:8420  },
-  // ── All time (not in 90d) ─────────────────────────────────────────────────────
-  { id:"c16", name:"Fall Collection Announcement",    type:"email",  status:"sent",  sentAt:"Nov 18, 2024", recipients:2680, opened:44, clicked:26, converted:15, gmv:3840  },
-  { id:"c17", name:"Black Friday VIP Early Access",   type:"sms",    status:"sent",  sentAt:"Nov 27, 2024", recipients:510,  opened:96, clicked:81, converted:64, gmv:14200 },
-  { id:"c18", name:"Back to School TikTok Push",      type:"tt_dm",  status:"sent",  sentAt:"Oct 10, 2024", recipients:980,  opened:77, clicked:54, converted:28, gmv:4120  },
-  // ── Drafts ───────────────────────────────────────────────────────────────────
-  { id:"c4",  name:"New Arrivals Drop Alert",         type:"sms",    status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
-  { id:"c8",  name:"IG: Bundle Drop Teaser",          type:"ig_dm",  status:"draft", sentAt:null,           recipients:0,    opened:0,  clicked:0,  converted:0,  gmv:0     },
-];
+// ─── CAMPAIGNS DATA (cleared — real campaigns come from Supabase) ─────────────
+const CAMPAIGNS = [];
 
 
-const KEYWORD_AUTOMATIONS = [
-  {
-    id: "ka1",
-    name: "Main Opt-In",
-    status: "active",
-    platforms: ["TT", "IG"],
-    keywords: [
-      { word: "JOIN",      optIns: 312, thisWeek: 28 },
-      { word: "SUBSCRIBE", optIns: 94,  thisWeek: 11 },
-      { word: "IN",        optIns: 58,  thisWeek: 7  },
-    ],
-    reply: "Hey {first_name}! 🎉 You're officially on the {shop_name} insider list. You'll get first access to new collections, live drops, and member-only offers. Stay tuned!",
-    goal: "list_growth",
-    createdAt: "Jan 10, 2025",
-    totalOptIns: 464,
-    byPlatform: { TT: 268, IG: 196 },
-  },
-  {
-    id: "ka2",
-    name: "Spring Launch Hype",
-    status: "active",
-    platforms: ["TT", "IG"],
-    keywords: [
-      { word: "STYLE",  optIns: 284, thisWeek: 68 },
-      { word: "SPRING", optIns: 142, thisWeek: 44 },
-    ],
-    reply: "You're in for the Spring Collection launch! 🌸 I'll DM you 1 hour before we go live with the direct link and a members-only discount. See you there!",
-    goal: "event",
-    createdAt: "Feb 1, 2025",
-    totalOptIns: 426,
-    byPlatform: { TT: 248, IG: 178 },
-  },
-  {
-    id: "ka3",
-    name: "VIP Member Access",
-    status: "active",
-    platforms: ["IG"],
-    keywords: [
-      { word: "VIP",    optIns: 198, thisWeek: 22 },
-      { word: "MEMBER", optIns: 86,  thisWeek: 14 },
-    ],
-    reply: "Welcome to the VIP list 👑 You'll get member-early access to every collection drop before it goes public. Watch your DMs: your welcome offer lands tomorrow.",
-    goal: "vip_access",
-    createdAt: "Jan 28, 2025",
-    totalOptIns: 284,
-    byPlatform: { TT: 0, IG: 284 },
-  },
-  {
-    id: "ka4",
-    name: "Bundle Drop Campaign",
-    status: "active",
-    platforms: ["TT"],
-    keywords: [
-      { word: "BUNDLE",  optIns: 188, thisWeek: 58 },
-      { word: "DEAL",    optIns: 94,  thisWeek: 32 },
-      { word: "SET",     optIns: 62,  thisWeek: 18 },
-    ],
-    reply: "You're in for the bundle drop! 🎁 Limited stock goes live tonight: I'll DM you the direct link the moment it's live. First 50 orders get free shipping!",
-    goal: "product_drop",
-    createdAt: "Feb 10, 2025",
-    totalOptIns: 344,
-    byPlatform: { TT: 344, IG: 0 },
-  },
-];
+const KEYWORD_AUTOMATIONS = [];
 
 const GOAL_META = {
   list_growth:  { label: "List Growth",   color: "#10b981", bg: "#0a1e16",  icon: "📈" },
@@ -586,16 +437,7 @@ const LOYALTY_TIERS = [
   { id:"vip",    label:"VIP",     minPoints:5000, maxPoints:null, color:"#7c3aed", bg:"#2d1f5e", icon:"👑", perks:["Birthday discount 25%","Private VIP-only shows","Free shipping always","Monthly mystery bonus","Direct seller DM access","First pick on limited items"] },
 ];
 
-const LOYALTY_BUYERS = {
-  b1: { points:4820, tier:"gold",   pointsToNext:180,  history:[{date:"Feb 20",event:"Order #34",pts:+64},{date:"Feb 15",event:"Order #33",pts:+43},{date:"Feb 1",event:"Order #32",pts:+89}] },
-  b2: { points:3210, tier:"gold",   pointsToNext:1790, history:[{date:"Feb 20",event:"Order #22",pts:+48},{date:"Jan 14",event:"Order #21",pts:+36}] },
-  b3: { points:2980, tier:"gold",   pointsToNext:2020, history:[{date:"Feb 15",event:"Order #19",pts:+72},{date:"Feb 1",event:"Order #18",pts:+55}] },
-  b4: { points:740,  tier:"silver", pointsToNext:1260, history:[{date:"Jan 5",event:"Order #12",pts:+28}] },
-  b5: { points:390,  tier:"bronze", pointsToNext:110,  history:[{date:"Dec 20",event:"Order #6",pts:+18}] },
-  b6: { points:640,  tier:"silver", pointsToNext:1360, history:[{date:"Feb 20",event:"Order #4",pts:+32}] },
-  b7: { points:420,  tier:"bronze", pointsToNext:80,   history:[{date:"Feb 10",event:"Order #3",pts:+24}] },
-  b8: { points:50,   tier:"bronze", pointsToNext:450,  history:[{date:"Nov 1",event:"Order #2",pts:+12}] },
-};
+const LOYALTY_BUYERS = {};
 
 // ─── SHOW PLANNER DATA ────────────────────────────────────────────────────────
 const UPCOMING_SHOW = {
@@ -748,6 +590,27 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
   const atRisk  = buyers.filter(b=>b.status==="risk").length;
   const dormant = buyers.filter(b=>b.status==="dormant").length;
   const totalGMV = recentShows.reduce((a,s)=>a+s.gmv,0);
+
+  // ── EMPTY STATE ────────────────────────────────────────────────────────────
+  if (buyers.length === 0 && recentShows.length === 0 && persona.plan !== "enterprise") {
+    return (
+      <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0 }}>
+        <div style={{ marginBottom:32 }}>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>
+            Welcome, {persona.name.split(" ")[0]} 👋
+          </div>
+          <div style={{ fontSize:13, color:C.muted, marginTop:6 }}>Your command center is ready. Let's get set up.</div>
+        </div>
+        <EmptyState
+          icon="🚀"
+          title="Get started"
+          description="Connect your first platform in Settings to import your buyers and start tracking your live selling business."
+          ctaLabel="Go to Settings"
+          onCta={()=>navigate("settings")}
+        />
+      </div>
+    );
+  }
 
   // ── ENTERPRISE DASHBOARD ───────────────────────────────────────────────────
   if (persona.plan === "enterprise") {
@@ -4825,6 +4688,20 @@ function ScreenCampaigns({ navigate, persona }) {
 function BroadcastsTab({ navigate, persona }) {
   const connectedChannels = useChannelConnections();
   const [filterType, setFilterType] = useState("all");
+
+  // Empty state
+  if (CAMPAIGNS.length === 0) {
+    return (
+      <EmptyState
+        icon="◈"
+        title="No campaigns yet"
+        description="Create your first broadcast to reach your buyers across email, SMS, and DM channels."
+        ctaLabel="+ New Broadcast"
+        onCta={()=>navigate("composer")}
+      />
+    );
+  }
+
   const filtered = filterType==="all" ? CAMPAIGNS : CAMPAIGNS.filter(c=>c.type===filterType);
   const totalGMV     = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.gmv,0);
   const totalSent    = CAMPAIGNS.filter(c=>c.status==="sent").reduce((a,c)=>a+c.recipients,0);
@@ -5975,13 +5852,7 @@ function ScreenSubscribers({ persona }) {
   const hasTT = persona.platforms?.includes("TT");
   const hasIG = persona.platforms?.includes("IG");
 
-  const subs = [
-    { name:"Marcus Webb",  email:"m.webb@example.com",  channels:["email","sms"],          joinedAt:"Jan 4, 2025",  opens:12 },
-    { name:"Priya Nair",   email:"priya@example.com",   channels:["email","tt_dm"],        joinedAt:"Jan 14, 2025", opens:8  },
-    { name:"Devon Price",  email:"dp@example.com",      channels:["sms"],                  joinedAt:"Feb 1, 2025",  opens:5  },
-    { name:"Amy Chen",     email:"amyc@example.com",    channels:["email","ig_dm"],        joinedAt:"Feb 8, 2025",  opens:2  },
-    { name:"Jordan Mills", email:"jm@example.com",      channels:["email","sms","tt_dm"],  joinedAt:"Feb 12, 2025", opens:9  },
-  ];
+  const subs = [];
 
   const CHANNEL_META = {
     email: { label:"EMAIL",  color:"#3b82f6", bg:"#0f1e2e" },
@@ -5989,6 +5860,19 @@ function ScreenSubscribers({ persona }) {
     tt_dm: { label:"TT DM",  color:"#69c9d0", bg:"#0d2828" },
     ig_dm: { label:"IG DM",  color:"#e1306c", bg:"#2d1020" },
   };
+
+  // Empty state
+  if (persona.subscriberCount === 0 && subs.length === 0 && totalMC === 0) {
+    return (
+      <EmptyState
+        icon="◎"
+        title="No subscribers yet"
+        description="Share your opt-in page to start building your subscriber list. Subscribers will appear here once people sign up."
+        ctaLabel={persona.slug ? "Copy Opt-in Link" : undefined}
+        onCta={persona.slug ? ()=>navigator.clipboard?.writeText(`https://strmlive.com/s/${persona.slug}`) : undefined}
+      />
+    );
+  }
 
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto" }}>
@@ -9425,6 +9309,19 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
   const [aiExpanded, setAiExpanded] = useState(null);
   const [dateRange, setDateRange]   = useState("30d");
 
+  // ── EMPTY STATE ────────────────────────────────────────────────────────────
+  if (buyers.length === 0 && SHOWS.length === 0) {
+    return (
+      <EmptyState
+        icon="◇"
+        title="No analytics data yet"
+        description="Run your first show to see performance insights, buyer trends, and AI-powered recommendations."
+        ctaLabel="Plan a Show"
+        onCta={()=>navigate("show-planner")}
+      />
+    );
+  }
+
   // ── FILTERING BY DATE RANGE ──────────────────────────────────────────────────
   // Reference: most recent show is Feb 22 2025 = "today" in the demo dataset
   const REF_DATE = new Date("Feb 22, 2025");
@@ -9589,7 +9486,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                     <div style={{ width:8, height:8, borderRadius:2, background:PC[k], flexShrink:0 }} />
                     <span style={{ fontSize:11, color:C.muted, flex:1 }}>{PN[k]}</span>
                     <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:700, color:C.text }}>${v.toLocaleString()}</span>
-                    <span style={{ fontSize:10, color:C.subtle }}>{Math.round(v/totalGMV*100)}%</span>
+                    <span style={{ fontSize:10, color:C.subtle }}>{totalGMV ? Math.round(v/totalGMV*100) : 0}%</span>
                   </div>
                 ))}
               </div>
@@ -9774,7 +9671,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   <div>
                     <div style={{ fontSize:9, color:C.muted }}>Top 20% of buyers</div>
                     <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:800, color:C.green }}>
-                      {Math.round(vipGMV/totalGMV*100)}% of GMV
+                      {totalGMV ? Math.round(vipGMV/totalGMV*100) : 0}% of GMV
                     </div>
                   </div>
                   <div style={{ textAlign:"right" }}>
@@ -9875,7 +9772,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                         <div style={{ fontSize:10, color:C.muted }}>{shows.length} show{shows.length!==1?"s":""} · {avgRR}% repeat rate</div>
                       </div>
                       <div style={{ textAlign:"right" }}>
-                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:PC[k] }}>{Math.round(v/totalGMV*100)}%</div>
+                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:PC[k] }}>{totalGMV ? Math.round(v/totalGMV*100) : 0}%</div>
                         <div style={{ fontSize:9, color:C.muted }}>of GMV</div>
                       </div>
                     </div>
@@ -9922,7 +9819,7 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   icon:"💰",
                   color:C.green,
                   title:"Your VIP segment is underserved",
-                  insight:`${vipBuyers.length} VIP buyers generate ${Math.round(vipGMV/totalGMV*100)}% of total GMV but haven't had a dedicated VIP-only show in 30+ days. Based on their average spend of $${Math.round(vipGMV/vipBuyers.length).toLocaleString()}/buyer, a private VIP show could generate an estimated $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length/2).toLocaleString()} to $${(Math.round(vipGMV/vipBuyers.length)*vipBuyers.length).toLocaleString()} in a single session.`,
+                  insight:`${vipBuyers.length} VIP buyers generate ${totalGMV ? Math.round(vipGMV/totalGMV*100) : 0}% of total GMV but haven't had a dedicated VIP-only show in 30+ days. Based on their average spend of $${vipBuyers.length ? Math.round(vipGMV/vipBuyers.length).toLocaleString() : 0}/buyer, a private VIP show could generate an estimated $${vipBuyers.length ? (Math.round(vipGMV/vipBuyers.length)*vipBuyers.length/2).toLocaleString() : 0} to $${vipBuyers.length ? (Math.round(vipGMV/vipBuyers.length)*vipBuyers.length).toLocaleString() : 0} in a single session.`,
                   action:"Schedule VIP Show",
                   impact:"$2,400 to $4,820 est. GMV",
                   confidence:91,
@@ -9946,9 +9843,9 @@ function ScreenAnalytics({ buyers, persona, navigate }) {
                   icon:"🏆",
                   color:"#a78bfa",
                   title:"3 high-AI-score products underperformed last show",
-                  insight:`Silk Wrap Midi Dress (AI: 9.6), Leather Crossbody Bag (AI: 9.1), and Merino Wool Blazer (AI: 9.4) all have AI scores above 9.0 but weren't featured in your last 2 shows. Historically, featuring 2+ top-AI-score products per show increases average GMV by $${Math.round(totalGMV/SHOWS.length*0.18).toLocaleString()}. Consider opening your next show with these items.`,
+                  insight:`Silk Wrap Midi Dress (AI: 9.6), Leather Crossbody Bag (AI: 9.1), and Merino Wool Blazer (AI: 9.4) all have AI scores above 9.0 but weren't featured in your last 2 shows. Historically, featuring 2+ top-AI-score products per show increases average GMV by $${SHOWS.length ? Math.round(totalGMV/SHOWS.length*0.18).toLocaleString() : 0}. Consider opening your next show with these items.`,
                   action:"Add to Show Planner",
-                  impact:`+$${Math.round(totalGMV/SHOWS.length*0.18).toLocaleString()} est. GMV per show`,
+                  impact:`+$${SHOWS.length ? Math.round(totalGMV/SHOWS.length*0.18).toLocaleString() : 0} est. GMV per show`,
                   confidence:88,
                 },
                 {
@@ -10782,6 +10679,19 @@ function ScreenLoyalty({ buyers, navigate, persona }) {
   const [awardAmount, setAwardAmount] = useState("100");
   const [awardReason, setAwardReason] = useState("manual");
   const [awardDone, setAwardDone]   = useState(false);
+
+  // Empty state
+  if (buyers.length === 0) {
+    return (
+      <EmptyState
+        icon="♛"
+        title="No loyalty data yet"
+        description="Your loyalty program will come to life once you have buyers. Connect a platform and run your first show to get started."
+        ctaLabel="Go to Settings"
+        onCta={()=>navigate("settings")}
+      />
+    );
+  }
 
   // Enrich buyers with loyalty data
   const enriched = buyers.map(b => ({
@@ -12925,26 +12835,56 @@ function ScreenAcceptInvite({ token }) {
 }
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
-export default function StreamlivePrototype() {
+export default function StreamlivePrototype({ session }) {
   // All hooks must come before any conditional returns (Rules of Hooks)
+  const userId = session?.user?.id;
   const onboardParam = new URLSearchParams(window.location.search).get("onboard");
   const shopifyParam = new URLSearchParams(window.location.search).get("shopify");
   const shopifyShopParam = new URLSearchParams(window.location.search).get("shop");
-  const [personaId, setPersonaId]   = useState("sarah");
   const [view, setView]             = useState(
     shopifyParam === "connected" ? "catalog"
     : onboardParam === "settings" ? "settings"
     : "dashboard"
   );
   const [params, setParams]         = useState({});
-  const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [notifications, setNotifications] = useState(3);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
-  const [completedShows, setCompletedShows] = useState(SHOWS);
+  const [completedShows, setCompletedShows] = useState([]);
   // Persist the active live session so navigating away and back restores it
   const [liveSession, setLiveSession] = useState(null); // null = no show running
   // Auto-sync flag: true when returning from Shopify OAuth redirect
   const [shopifyAutoSync, setShopifyAutoSync] = useState(shopifyParam === "connected");
+
+  // ── Real data hooks ────────────────────────────────────────────────────────
+  const { profile, loading: profileLoading, updateProfile } = useProfile(userId);
+  const { buyers, loading: buyersLoading, createBuyer, updateBuyer, deleteBuyer } = useBuyers(userId);
+  const { products, loading: productsLoading, createProduct, updateProduct, deleteProduct } = useProducts(userId);
+
+  // Build persona adapter from Supabase profile
+  const displayName = profile?.name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || session?.user?.user_metadata?.full_name || session?.user?.email?.split("@")[0] || "User";
+  const persona = profile ? {
+    id: profile.id,
+    name: displayName,
+    shop: profile.shop_name || "",
+    email: session?.user?.email || "",
+    avatar: deriveAvatar(displayName),
+    avatarUrl: profile.avatar_url || session?.user?.user_metadata?.avatar_url || null,
+    plan: profile.plan || "starter",
+    planColor: ({ starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b", enterprise:"#a78bfa" })[profile.plan || "starter"],
+    category: profile.category || "",
+    platforms: profile.platforms || [],
+    buyerCount: buyers.length,
+    showCount: completedShows.length,
+    subscriberCount: 0,
+    slug: profile.slug || "",
+    bio: profile.bio || "",
+    _profile: profile,
+  } : null;
+
+  // Boot Intercom with current profile identity whenever profile changes
+  useEffect(() => {
+    if (persona) bootIntercom(persona)
+  }, [profile?.id, profile?.plan]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clean ?shopify=connected&shop=... from the URL so it doesn't re-trigger on refresh
   useEffect(() => {
@@ -12981,14 +12921,6 @@ export default function StreamlivePrototype() {
     }
   }
 
-  const persona  = PERSONAS.find(p=>p.id===personaId);
-  const buyers   = BUYERS_BY_PERSONA[personaId] || [];
-
-  // Boot Intercom with current persona identity whenever persona switches
-  useEffect(() => {
-    if (persona) bootIntercom(persona)
-  }, [personaId]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const navigate = (screen, newParams={}) => {
     // Starting a live show: persist the session
     if (screen === "live") {
@@ -13011,12 +12943,10 @@ export default function StreamlivePrototype() {
     if (screen === "shows" && liveSession) {
       setView("live");
       setParams(liveSession);
-      setShowPersonaMenu(false);
       return;
     }
     setView(screen);
     setParams(newParams);
-    setShowPersonaMenu(false);
   };
 
   // Allows ScreenLive to push runOrder/timing changes back up so Live Shop stays in sync
@@ -13048,46 +12978,6 @@ export default function StreamlivePrototype() {
 
       {checkoutPlan && <CheckoutModal plan={checkoutPlan} onClose={()=>setCheckoutPlan(null)} />}
       <div style={{ display:"flex", flexDirection:"column", height:"100vh", maxHeight:"100vh", minHeight:0, overflow:"hidden", background:C.bg, color:C.text, fontFamily:"'DM Sans',sans-serif" }}>
-
-        {/* ── DEMO BANNER ── */}
-        <div style={{ background:"linear-gradient(90deg,#1a0f2e,#2d1f5e,#1a0f2e)", borderBottom:"1px solid #7c3aed33", padding:"4px 16px", display:"flex", alignItems:"center", gap:12, flexShrink:0, flexWrap:"wrap", minHeight:36 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-            <div style={{ width:5, height:5, borderRadius:"50%", background:"#a78bfa", animation:"pulse 2s infinite" }} />
-            <span style={{ fontSize:9, fontWeight:700, color:"#6b5fa0", letterSpacing:"0.08em", textTransform:"uppercase" }}>Demo</span>
-            <span style={{ fontSize:9, color:"#2d2a4a" }}>Switch plan to explore gating →</span>
-          </div>
-          {/* Quick-switch persona pills */}
-          <div style={{ display:"flex", gap:5, flexWrap:"wrap", flex:1 }}>
-            {PERSONAS.map(p=>{
-              const isCurrent = p.id === personaId;
-              const locked = Object.keys(UPGRADE_WALLS).filter(f => !PLAN_FEATURES[p.plan].includes(f));
-              return (
-                <button key={p.id}
-                  onClick={()=>{ setPersonaId(p.id); setView(p.plan==="enterprise"?"network":"dashboard"); setParams({}); setShowPersonaMenu(false); }}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"3px 10px 3px 6px", borderRadius:99,
-                    background: isCurrent ? `${p.planColor}22` : "transparent",
-                    border: `1px solid ${isCurrent ? p.planColor+"55" : "#2a2a4a"}`,
-                    cursor:"pointer", transition:"all .12s" }}>
-                  <div style={{ width:16, height:16, borderRadius:5, background:`${p.planColor}22`, border:`1px solid ${p.planColor}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:7, fontWeight:800, color:p.planColor, flexShrink:0 }}>{p.avatar}</div>
-                  <span style={{ fontSize:10, fontWeight:isCurrent?700:500, color:isCurrent?p.planColor:"#4b5563" }}>{p.name.split(" ")[0]}</span>
-                  <span style={{ fontSize:8, fontWeight:700, color:p.planColor, background:`${p.planColor}18`, padding:"1px 5px", borderRadius:3, textTransform:"uppercase" }}>{p.plan}</span>
-                  {locked.length > 0 && <span style={{ fontSize:8, color:"#374151" }}>{"🔒"}</span>}
-                </button>
-              );
-            })}
-          </div>
-          {/* Plan feature key */}
-          <div style={{ display:"flex", gap:10, flexShrink:0 }}>
-            {[{f:"Analytics",plan:"Growth+"},{f:"Loyalty",plan:"Growth+"},{f:"Production",plan:"Pro+"}].map(({f,plan})=>(
-              <div key={f} style={{ display:"flex", alignItems:"center", gap:4 }}>
-                <span style={{ fontSize:8, color: PLAN_LEVEL[persona.plan] >= PLAN_LEVEL[plan.toLowerCase().replace("+","")] ? "#10b981" : "#374151" }}>
-                  {PLAN_LEVEL[persona.plan] >= (plan.includes("Pro") ? 2 : 1) ? "✓" : "🔒"}
-                </span>
-                <span style={{ fontSize:9, color:"#374151" }}>{f}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* ── TOP BAR ── */}
         <div style={{ height:50, background:"#050508", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", padding:"0 20px", gap:12, flexShrink:0 }}>
@@ -13131,33 +13021,15 @@ export default function StreamlivePrototype() {
             {notifications > 0 && <div style={{ position:"absolute", top:0, right:0, width:16, height:16, borderRadius:"50%", background:"#ef4444", fontSize:9, fontWeight:700, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>{notifications}</div>}
           </button>
 
-          {/* PERSONA SWITCHER */}
-          <div style={{ position:"relative" }}>
-            <button onClick={()=>setShowPersonaMenu(m=>!m)} style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"5px 10px 5px 6px", cursor:"pointer" }}>
+          {/* USER IDENTITY */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"5px 10px 5px 6px" }}>
+            {persona.avatarUrl ? (
+              <img src={persona.avatarUrl} alt="" style={{ width:24, height:24, borderRadius:"50%", objectFit:"cover" }} referrerPolicy="no-referrer" />
+            ) : (
               <Avatar initials={persona.avatar} color={persona.planColor} size={24} />
-              <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{persona.name}</span>
-              <span style={{ fontSize:9, color:persona.planColor, background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}33`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase", fontWeight:700 }}>{persona.plan}</span>
-              <span style={{ fontSize:10, color:C.subtle }}>▼</span>
-            </button>
-
-            {showPersonaMenu && (
-              <div className="pop-in" style={{ position:"absolute", right:0, top:"calc(100% + 6px)", background:"#0a0a15", border:`1px solid ${C.border2}`, borderRadius:12, padding:"8px", zIndex:100, minWidth:260, boxShadow:"0 8px 32px rgba(0,0,0,.5)" }}>
-                <div style={{ fontSize:9, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.1em", fontWeight:700, padding:"4px 8px 8px" }}>Switch Test Persona</div>
-                {PERSONAS.map(p=>(
-                  <button key={p.id} onClick={()=>{ setPersonaId(p.id); setView(p.plan==="enterprise"?"network":"dashboard"); setParams({}); setShowPersonaMenu(false); }} style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:8, border:"none", background:personaId===p.id?`${p.planColor}12`:"transparent", cursor:"pointer", textAlign:"left" }}>
-                    <Avatar initials={p.avatar} color={p.planColor} size={30} />
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:C.text }}>{p.name}</div>
-                      <div style={{ fontSize:10, color:C.muted }}>{p.shop} · {p.buyerCount} buyers</div>
-                    </div>
-                    <span style={{ fontSize:9, fontWeight:700, color:p.planColor, background:`${p.planColor}18`, border:`1px solid ${p.planColor}33`, padding:"2px 7px", borderRadius:5, textTransform:"uppercase" }}>{p.plan}</span>
-                  </button>
-                ))}
-                <div style={{ borderTop:`1px solid ${C.border}`, marginTop:8, paddingTop:8, padding:"8px 10px 4px" }}>
-                  <div style={{ fontSize:10, color:C.subtle }}>Switching persona resets the session to that seller's data.</div>
-                </div>
-              </div>
             )}
+            <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{persona.name}</span>
+            <span style={{ fontSize:9, color:persona.planColor, background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}33`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase", fontWeight:700 }}>{persona.plan}</span>
           </div>
         </div>
 
@@ -13262,7 +13134,11 @@ export default function StreamlivePrototype() {
 
             {/* USER: always visible at bottom */}
             <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 10px 4px", borderTop:`1px solid ${C.border}`, marginTop:4 }}>
-              <Avatar initials={persona.avatar} color={persona.planColor} size={28} />
+              {persona.avatarUrl ? (
+                <img src={persona.avatarUrl} alt="" style={{ width:28, height:28, borderRadius:"50%", objectFit:"cover", flexShrink:0 }} referrerPolicy="no-referrer" />
+              ) : (
+                <Avatar initials={persona.avatar} color={persona.planColor} size={28} />
+              )}
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:11, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.name}</div>
                 <div style={{ fontSize:9, color:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.shop}</div>
