@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import StreamlivePrototype from './StreamlivePrototype.jsx'
 import { supabase } from './lib/supabase.js'
+import changelogEntries from './changelog-entries.json'
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 function useRoute() {
@@ -29,6 +30,7 @@ const PAGE_META = {
   '/privacy':           { title: 'Privacy Policy — Streamlive',                                                                     desc: 'How Streamlive collects, uses, and protects your data.' },
   '/terms':             { title: 'Terms of Service — Streamlive',                                                                   desc: 'Terms and conditions for using the Streamlive platform.' },
   '/contact':           { title: 'Contact — Streamlive',                                                                            desc: 'Get in touch with the Streamlive team. We read every message.' },
+  '/login':             { title: 'Sign In — Streamlive',                                                                             desc: 'Sign in to your Streamlive live selling command center.' },
   '/platform/whatnot':         { title: 'Whatnot Live Selling Tools — Streamlive',         desc: 'Connect Streamlive to Whatnot. Unified buyer CRM, live attribution, loyalty, and multistream — built for Whatnot sellers.' },
   '/platform/tiktok-shop':     { title: 'TikTok Shop Live Selling Tools — Streamlive',     desc: 'Connect Streamlive to TikTok Shop. Real-time buyer feed, 99% attribution, ManyChat automations — built for TikTok live sellers.' },
   '/platform/instagram-live':  { title: 'Instagram Live Selling Tools — Streamlive',       desc: 'Connect Streamlive to Instagram Live. Unified buyer CRM, DM automations, and multistream — built for Instagram live sellers.' },
@@ -156,6 +158,182 @@ const GLOBAL_CSS = `
   .stat-num        { font-variant-numeric: tabular-nums; }
   .glow-line       { background: linear-gradient(90deg,transparent,#7c3aed44,#a78bfa44,transparent); height:1px; }
 `
+
+// ─── LOGIN PAGE ──────────────────────────────────────────────────────────────
+function LoginPage() {
+  const [tab, setTab] = useState('business')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const subtitle = tab === 'business'
+    ? 'Manage your live selling command center'
+    : 'Access your partner dashboard'
+
+  const handleEmailLogin = async (e) => {
+    e.preventDefault()
+    if (!supabase) { setError('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env'); return }
+    setError('')
+    setLoading(true)
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+      if (authError) throw authError
+      navigate('/app')
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    if (!supabase) { setError('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env'); return }
+    setError('')
+    setLoading(true)
+    try {
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/app' },
+      })
+      if (authError) throw authError
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.')
+      setLoading(false)
+    }
+  }
+
+  const inputStyle = {
+    width: '100%',
+    background: '#07070f',
+    border: '1px solid #1e1e3a',
+    borderRadius: 10,
+    padding: '12px 16px',
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: "'DM Sans',sans-serif",
+    outline: 'none',
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#06060e', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div className="fade-a0" style={{ width: '100%', maxWidth: 420 }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 32 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 900, color: '#fff', boxShadow: '0 2px 16px rgba(124,58,237,.4)' }}>S</div>
+          <span style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>Streamlive</span>
+        </div>
+
+        {/* Card */}
+        <div style={{ background: '#0a0a1a', border: '1px solid #1e1e3a', borderRadius: 16, padding: '32px 28px' }}>
+          <h1 className="fade-a1" style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: '#fff', textAlign: 'center', marginBottom: 6, letterSpacing: '-0.3px' }}>Sign in to Streamlive</h1>
+
+          {/* Tabs */}
+          <div className="fade-a1" style={{ display: 'flex', gap: 0, marginBottom: 20, marginTop: 16, borderBottom: '1px solid #1e1e3a' }}>
+            {['business', 'partner'].map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                flex: 1,
+                background: 'none',
+                border: 'none',
+                borderBottom: tab === t ? '2px solid #7c3aed' : '2px solid transparent',
+                color: tab === t ? '#fff' : '#6b7280',
+                fontSize: 13,
+                fontWeight: 600,
+                padding: '10px 0',
+                cursor: 'pointer',
+                fontFamily: "'DM Sans',sans-serif",
+                transition: 'all .15s ease',
+                textTransform: 'capitalize',
+              }}>{t}</button>
+            ))}
+          </div>
+
+          <p className="fade-a2" style={{ fontSize: 13, color: '#6b7280', textAlign: 'center', marginBottom: 20 }}>{subtitle}</p>
+
+          {/* Error */}
+          {error && (
+            <div style={{ background: '#1a0a0a', border: '1px solid #ef444466', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#f87171' }}>{error}</div>
+          )}
+
+          {/* Google */}
+          <button className="fade-a2" onClick={handleGoogleLogin} disabled={loading} style={{
+            width: '100%',
+            background: 'none',
+            border: '1px solid #2a2a4a',
+            borderRadius: 10,
+            padding: '11px 16px',
+            color: '#e2e8f0',
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            fontFamily: "'DM Sans',sans-serif",
+            opacity: loading ? 0.6 : 1,
+            marginBottom: 20,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ flex: 1, height: 1, background: '#1e1e3a' }} />
+            <span style={{ fontSize: 11, color: '#4b5563', fontWeight: 500 }}>or</span>
+            <div style={{ flex: 1, height: 1, background: '#1e1e3a' }} />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleEmailLogin}>
+            <div className="fade-a3" style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500, marginBottom: 6, display: 'block' }}>Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required style={inputStyle}
+                onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                onBlur={e => e.target.style.borderColor = '#1e1e3a'} />
+            </div>
+            <div className="fade-a3" style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500, marginBottom: 6, display: 'block' }}>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required style={inputStyle}
+                onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                onBlur={e => e.target.style.borderColor = '#1e1e3a'} />
+            </div>
+            <button className="fade-a4 cta-btn" type="submit" disabled={loading} style={{
+              width: '100%',
+              background: 'linear-gradient(135deg,#7c3aed,#4f46e5)',
+              border: 'none',
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 700,
+              padding: '12px',
+              borderRadius: 10,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: "'DM Sans',sans-serif",
+              opacity: loading ? 0.7 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}>
+              {loading && <span style={{ width: 16, height: 16, border: '2px solid #fff4', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .6s linear infinite', display: 'inline-block' }} />}
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <p className="fade-a5" style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#6b7280' }}>
+          Don't have an account?{' '}
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#a78bfa', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", padding: 0 }}>
+            Get Early Access
+          </button>
+        </p>
+      </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  )
+}
 
 // ─── SHARED NAV ───────────────────────────────────────────────────────────────
 function Nav({ currentPlan }) {
@@ -530,7 +708,7 @@ function Landing() {
           <div className="nav-links" style={{ alignItems:'center', gap:20 }}>
             <a href="#features" style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
             <a href="#pricing"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-            <button onClick={()=>navigate('/app')} style={{ background:'none', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:12, fontWeight:600, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Sign In</button>
+            <button onClick={()=>navigate('/login')} style={{ background:'none', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:12, fontWeight:600, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Sign In</button>
             <button onClick={()=>openDemo()} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Open App →</button>
           </div>
           <button className="nav-hamburger" onClick={()=>setMenuOpen(m=>!m)} style={{ background:'none', border:'1px solid #1e1e3a', borderRadius:8, color:'#9ca3af', padding:'6px 10px', cursor:'pointer', fontSize:16, display:'none', alignItems:'center', justifyContent:'center' }}>
@@ -541,7 +719,7 @@ function Landing() {
         <div className={`mobile-menu${menuOpen?' open':''}`} style={{ background:'#07070f', borderBottom:'1px solid #14142a', padding:'16px 24px', gap:0, position:'sticky', top:58, zIndex:49 }}>
           <a href="#features" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
           <a href="#pricing"  style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
-          <button onClick={()=>{setMenuOpen(false);navigate('/app')}} style={{ background:'none', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Sign In</button>
+          <button onClick={()=>{setMenuOpen(false);navigate('/login')}} style={{ background:'none', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Sign In</button>
           <button onClick={()=>{setMenuOpen(false);openDemo()}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:4 }}>Open App →</button>
         </div>
 
@@ -574,7 +752,7 @@ function Landing() {
                   style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px 28px', borderRadius:11, cursor:'pointer', whiteSpace:'nowrap' }}>
                   Get Early Access →
                 </button>
-                <button onClick={()=>navigate('/app')}
+                <button onClick={()=>navigate('/login')}
                   style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:11, cursor:'pointer', whiteSpace:'nowrap' }}>
                   Sign In
                 </button>
@@ -977,7 +1155,7 @@ function Landing() {
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:20 }}>Try the interactive demo. No signup required.</div>
             <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
               <button onClick={()=>openDemo()} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px 28px', borderRadius:10, cursor:'pointer' }}>Open Demo →</button>
-              <button onClick={()=>navigate('/app')} style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:10, cursor:'pointer' }}>Sign In</button>
+              <button onClick={()=>navigate('/login')} style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:10, cursor:'pointer' }}>Sign In</button>
               <button onClick={openSales} style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:10, cursor:'pointer' }}>Talk to Sales</button>
             </div>
           </div>
@@ -1348,52 +1526,7 @@ function Body({ children }) { return <p style={{ fontSize:14, color:'#6b7280', l
 
 // ─── CHANGELOG PAGE ───────────────────────────────────────────────────────────
 function ChangelogPage() {
-  const entries = [
-    {
-      version:'v0.9.2', date:'February 2026', tag:'New', tagColor:'#10b981',
-      items:[
-        {type:'✦', text:'Live Shop page: shareable buyer-facing URL per show with full product lineup and Shopify deeplinks'},
-        {type:'✦', text:'Quick Message tab: SMS, Instagram DM, and TikTok DM templates with one-tap live shop link sharing'},
-        {type:'◈', text:'Live Companion two-row header: Total Viewers, condensed per-platform badges, copy-link widget'},
-        {type:'◈', text:'Show name flows from Show Planner → Live Companion → Order Review → Show History automatically'},
-        {type:'✓', text:'Fixed: live shop URL now includes show slug so every show gets a unique, bookmarkable link'},
-      ]
-    },
-    {
-      version:'v0.9.1', date:'January 2026', tag:'Improved', tagColor:'#7c3aed',
-      items:[
-        {type:'◈', text:'Perks tab in Live Companion: assign live-only discounts and bundles to individual buyers mid-show'},
-        {type:'◈', text:'Loyalty Hub: 4-tier program (Bronze → Silver → Gold → VIP) with points, rewards, birthday discounts'},
-        {type:'◉', text:'Buyer Profile: full purchase history, churn risk score, LTV, and cross-platform handle registry'},
-        {type:'◉', text:'Order Review: post-show summary with per-buyer breakdown, total GMV, and CSV export'},
-        {type:'✓', text:'Fixed: platform viewer counts now update in real-time during show without page refresh'},
-        {type:'✓', text:'Fixed: Show Planner run order correctly persists into Live Companion on session start'},
-      ]
-    },
-    {
-      version:'v0.9.0', date:'December 2025', tag:'Launch', tagColor:'#f59e0b',
-      items:[
-        {type:'✦', text:'Beta launch: full product available to founding members across all 5 platforms'},
-        {type:'✦', text:'Buyer CRM: unified buyer database across Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live'},
-        {type:'✦', text:'Live Companion: real-time buyer feed, GMV counter, per-order tracking, and VIP alerts'},
-        {type:'✦', text:'Analytics dashboard: revenue trends, audience health, platform comparison, LTV distribution'},
-        {type:'✦', text:'AI Insights: 6 weekly recommendations with confidence scores after every show'},
-        {type:'✦', text:'Production Suite: Sony FX3/FX6 camera control, Elgato/Aputure lighting, OBS scene switching'},
-        {type:'✦', text:'Opt-in pages at strmlive.com/s/yourshop with TCPA-compliant email, SMS, and DM capture'},
-        {type:'✦', text:'Show Planner: platform selection, AI-ranked run order, perk assignment, show history'},
-        {type:'✦', text:'YouTube Live Pixel: first-party attribution from stream → site → purchase, 99% accuracy'},
-      ]
-    },
-    {
-      version:'v0.8', date:'October 2025', tag:'Beta', tagColor:'#6b7280',
-      items:[
-        {type:'◈', text:'Private beta with 12 founding seller partners on Whatnot and TikTok'},
-        {type:'◈', text:'Core buyer CRM and live show tracking established'},
-        {type:'◈', text:'ManyChat integration for keyword automations and DM opt-ins'},
-        {type:'✓', text:'80+ issues resolved from founding partner feedback sessions'},
-      ]
-    },
-  ]
+  const entries = changelogEntries
 
   return (
     <PageShell>
@@ -3228,6 +3361,7 @@ export default function App() {
       `}</style>
       <LiveCursor />
       {route === '/app'         ? <StreamlivePrototype session={session} onSignOut={handleSignOut} /> :
+       route === '/login'       ? <LoginPage /> :
        route === '/checkout'    ? <Checkout /> :
        route === '/welcome'     ? <Welcome /> :
        route.startsWith('/s/')  ? <OptInPage slug={route.split('/s/')[1]?.split('/')[0]} connectedPlatforms={PERSONA_PLATFORMS[route.split('/s/')[1]?.split('/')[0]]} /> :
