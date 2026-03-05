@@ -6,6 +6,21 @@ function deriveAvatar(name) {
   return (name || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
+function EmptyState({ icon, title, description, ctaLabel, onCta }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"80px 24px", textAlign:"center" }}>
+      <div style={{ fontSize:40, marginBottom:16 }}>{icon}</div>
+      <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:700, color:"#e5e7eb", marginBottom:8 }}>{title}</div>
+      <div style={{ fontSize:13, color:"#6b7280", maxWidth:360, lineHeight:1.6, marginBottom:ctaLabel ? 20 : 0 }}>{description}</div>
+      {ctaLabel && onCta && (
+        <button onClick={onCta} style={{ background:"#7c3aed", color:"#fff", border:"none", padding:"10px 24px", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer" }}>
+          {ctaLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ─── FONTS ────────────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
