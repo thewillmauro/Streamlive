@@ -7290,9 +7290,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
         const submitSales = async () => {
           if (!canSubmit) return;
           const payload = { ...sForm, platforms: sForm.platforms.join(", "), source:"contact_sales_billing", timestamp: new Date().toISOString() };
-          try { await fetch("/api/contact", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) }); } catch(e) {
-            try { await fetch("https://script.google.com/macros/s/AKfycbwgOLHc642bZ-iHn5djlMWE4zqUHd06apowDVVj8Nk_96w-xal6QjSMyc6W_aYRm-ePrw/exec", { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) }); } catch(e2) {}
-          }
+          try { await fetch("/api/contact", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) }); } catch(e) {}
           setSSent(true);
         };
 

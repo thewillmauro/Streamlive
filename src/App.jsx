@@ -119,8 +119,6 @@ function Landing() {
     return () => clearTimeout(t)
   }, [])
 
-  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwgOLHc642bZ-iHn5djlMWE4zqUHd06apowDVVj8Nk_96w-xal6QjSMyc6W_aYRm-ePrw/exec'
-
   const openDemo = () => {
     setDemoEmailSent(false)
     setDemoEmail('')
@@ -129,7 +127,7 @@ function Landing() {
 
   const submitDemoEmail = async () => {
     if (!demoEmail.includes('@')) return
-    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate', timestamp: new Date().toISOString() }) }) } catch(e) {}
+    try { await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate', timestamp: new Date().toISOString() }) }) } catch(e) {}
     setDemoEmailSent(true)
     setTimeout(() => {
       setDemoModal(false)
@@ -152,23 +150,19 @@ function Landing() {
       timestamp: new Date().toISOString(),
       page: window.location.href,
     }
-    // Primary: Vercel API proxy (avoids no-cors limitations)
     try {
       await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-    } catch(e) {
-      // Fallback: direct Google Sheets webhook
-      try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }) } catch(e2) {}
-    }
+    } catch(e) {}
     setSalesSent(true)
   }
 
   const handleSubmit = async () => {
     if (!email.includes('@')) return
-    try { await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, source: 'waitlist', timestamp: new Date().toISOString() }) }) } catch(e) {}
+    try { await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, source: 'waitlist', timestamp: new Date().toISOString() }) }) } catch(e) {}
     setSubmitted(true)
   }
 
@@ -1600,11 +1594,10 @@ function ContactPage() {
   useIntercom()
   const [form, setForm] = useState({name:'',email:'',subject:'',message:''})
   const [sent, setSent] = useState(false)
-  const SHEET_URL_C = 'https://script.google.com/macros/s/AKfycbwgOLHc642bZ-iHn5djlMWE4zqUHd06apowDVVj8Nk_96w-xal6QjSMyc6W_aYRm-ePrw/exec'
   const ready = form.name && form.email.includes('@') && form.message
   const handleSend = async () => {
     if (!ready) return
-    try { await fetch(SHEET_URL_C, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({...form,source:'contact_page'})}) } catch(e) {}
+    try { await fetch('/api/contact', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...form,source:'contact_page'})}) } catch(e) {}
     setSent(true)
   }
   const channels = [

@@ -1,3 +1,18 @@
+import crypto from "crypto";
+
+// ── Token decryption (mirrors callback.js) ──────────────────────────────────
+const ALGO = "aes-256-gcm";
+
+function decryptToken(ciphertext, secret) {
+  const key = crypto.createHash("sha256").update(secret).digest();
+  const [ivHex, tagHex, encrypted] = ciphertext.split(":");
+  const decipher = crypto.createDecipheriv(ALGO, key, Buffer.from(ivHex, "hex"));
+  decipher.setAuthTag(Buffer.from(tagHex, "hex"));
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -10,13 +25,31 @@ export default async function handler(req, res) {
     if (key) cookies[key] = rest.join("=");
   });
 
-  const accessToken = cookies.shopify_token;
+  const encryptedToken = cookies.shopify_token;
   const shop = cookies.shopify_shop;
 
-  if (!accessToken || !shop) {
+  if (!encryptedToken || !shop) {
     return res
       .status(401)
       .json({ error: "Shopify not connected. Please authorize first." });
+  }
+
+  // ── Validate shop domain ──────────────────────────────────────────────────
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/.test(shop)) {
+    return res.status(400).json({ error: "Invalid shop domain" });
+  }
+
+  // ── Decrypt access token ──────────────────────────────────────────────────
+  const { COOKIE_ENCRYPTION_KEY, SHOPIFY_API_SECRET } = process.env;
+  const encryptionKey = COOKIE_ENCRYPTION_KEY || SHOPIFY_API_SECRET;
+
+  let accessToken;
+  try {
+    accessToken = decryptToken(encryptedToken, encryptionKey);
+  } catch {
+    return res
+      .status(401)
+      .json({ error: "Invalid session. Please reconnect Shopify." });
   }
 
   // ── Paginate Shopify REST Admin API ────────────────────────────────────────
@@ -29,8 +62,7 @@ export default async function handler(req, res) {
     });
 
     if (!shopRes.ok) {
-      const errBody = await shopRes.text();
-      console.error("Shopify products fetch failed:", errBody);
+      console.error("Shopify products fetch failed");
       return res
         .status(502)
         .json({ error: "Failed to fetch products from Shopify" });

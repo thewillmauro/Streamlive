@@ -20,6 +20,12 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server misconfigured: missing Shopify or APP_URL env vars" });
   }
 
+  // ── Validate and normalize shop domain ────────────────────────────────────
+  const shopDomain = shop.includes(".") ? shop : `${shop}.myshopify.com`;
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/.test(shopDomain)) {
+    return res.status(400).json({ error: "Invalid shop domain" });
+  }
+
   // Verify JWT via Supabase to extract userId (optional — falls back to "anonymous")
   let userId = "anonymous";
   if (token && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
@@ -44,9 +50,6 @@ export default async function handler(req, res) {
     "Set-Cookie",
     `shopify_oauth_nonce=${nonce}; HttpOnly; SameSite=Lax; Path=/; Max-Age=600; Secure`
   );
-
-  // Normalize shop domain
-  const shopDomain = shop.includes(".") ? shop : `${shop}.myshopify.com`;
 
   // 302 redirect to Shopify OAuth authorize
   const redirectUri = `${APP_URL}/api/shopify/callback`;
