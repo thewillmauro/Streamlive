@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
+import { trackPageView } from './analytics.js'
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 export function navigate(path) {
   window.scrollTo(0, 0)
   window.history.pushState({}, '', path)
   window.dispatchEvent(new PopStateEvent('popstate'))
+  trackPageView(path)
 }
 
 // ─── INTERCOM ─────────────────────────────────────────────────────────────────

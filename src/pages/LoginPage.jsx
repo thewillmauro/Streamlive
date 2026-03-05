@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { navigate } from '../lib/shared.jsx'
+import { track } from '../lib/analytics.js'
 
 export default function LoginPage() {
   const [tab, setTab] = useState('business')
@@ -21,9 +22,11 @@ export default function LoginPage() {
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
       if (authError) throw authError
+      track('Login Completed', { method: 'email' })
       navigate('/app')
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.')
+      track('Login Failed', { method: 'email', error: err.message })
     } finally {
       setLoading(false)
     }
@@ -39,8 +42,10 @@ export default function LoginPage() {
         options: { redirectTo: window.location.origin + '/app' },
       })
       if (authError) throw authError
+      track('Login Started', { method: 'google' })
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.')
+      track('Login Failed', { method: 'google', error: err.message })
       setLoading(false)
     }
   }

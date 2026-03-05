@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { navigate, useIntercom, FONT, GLOBAL_CSS, PLANS, Nav } from '../lib/shared.jsx'
+import { track } from '../lib/analytics.js'
 
 export default function Checkout() {
   const params = new URLSearchParams(window.location.search)
@@ -56,8 +57,10 @@ export default function Checkout() {
     if (!canPay || stage !== 'idle') return
     setStage('processing')
     setErrMsg('')
+    track('Checkout Started', { plan: selectedPlan, price: p.price })
     // Simulate payment processing (1.8s) then go to /welcome
     await new Promise(r => setTimeout(r, 1800))
+    track('Checkout Completed', { plan: selectedPlan, price: p.price })
     navigate(`/welcome?plan=${selectedPlan}`)
   }
 

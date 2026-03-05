@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { supabase } from './lib/supabase.js'
 import changelogEntries from './changelog-entries.json'
 import { navigate, useIntercom, FONT, GLOBAL_CSS, PLANS, PERSONA_PLATFORMS } from './lib/shared.jsx'
+import { trackPageView, identifyUser, resetUser, track } from './lib/analytics.js'
 
 const StreamlivePrototype = lazy(() => import('./StreamlivePrototype.jsx'))
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'))
@@ -123,12 +124,14 @@ function Landing() {
     setDemoEmailSent(false)
     setDemoEmail('')
     setDemoModal(true)
+    track('Demo Modal Opened')
   }
 
   const submitDemoEmail = async () => {
     if (!demoEmail.includes('@')) return
     try { await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate', timestamp: new Date().toISOString() }) }) } catch(e) {}
     setDemoEmailSent(true)
+    track('Demo Email Submitted', { email: demoEmail })
     setTimeout(() => {
       setDemoModal(false)
       navigate('/app')
@@ -139,6 +142,7 @@ function Landing() {
     setSalesForm({ firstName:'', lastName:'', email:'', phone:'', store:'', platforms:[], message:'' })
     setSalesSent(false)
     setSalesModal(true)
+    track('Sales Modal Opened')
   }
 
   const submitSales = async () => {
@@ -158,12 +162,14 @@ function Landing() {
       })
     } catch(e) {}
     setSalesSent(true)
+    track('Sales Form Submitted', { email: salesForm.email, store: salesForm.store })
   }
 
   const handleSubmit = async () => {
     if (!email.includes('@')) return
     try { await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, source: 'waitlist', timestamp: new Date().toISOString() }) }) } catch(e) {}
     setSubmitted(true)
+    track('Waitlist Signup', { email })
   }
 
   const FEATURES = [
@@ -1928,7 +1934,7 @@ function LiveCursor() {
 
 export default function App() {
   const route = useRoute()
-  useEffect(() => { updatePageMeta(route) }, [route])
+  useEffect(() => { updatePageMeta(route); trackPageView(route) }, [route])
 
   // ── Auth state ──────────────────────────────────────────────────────────────
   const [session, setSession] = useState(null)
@@ -1939,10 +1945,16 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s)
       setAuthLoading(false)
+      if (s?.user) {
+        identifyUser(s.user.id, { email: s.user.email, provider: s.user.app_metadata?.provider })
+      }
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
       setAuthLoading(false)
+      if (s?.user) {
+        identifyUser(s.user.id, { email: s.user.email, provider: s.user.app_metadata?.provider })
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -1958,6 +1970,7 @@ export default function App() {
   const handleSignOut = useCallback(async () => {
     if (!supabase) return
     await supabase.auth.signOut()
+    resetUser()
     navigate('/')
   }, [])
 

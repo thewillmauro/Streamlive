@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase.js";
 import { useProfile, useBuyers, useProducts } from "./hooks/useSupabase.js";
+import { track } from "./lib/analytics.js";
 
 function deriveAvatar(name) {
   return (name || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -7768,6 +7769,7 @@ function ScreenCatalog({ persona, navigate, autoSync, autoSyncShop, onAutoSyncCo
       setShopifyConnected(true);
       localStorage.setItem("strmlive__shopify_connected", "true");
       localStorage.setItem("strmlive__shopify_store", storeUrl);
+      track('Shopify Connected', { products_synced: data.synced });
 
       console.log(`Shopify sync complete: ${data.synced} products`);
     } catch (err) {
@@ -12993,6 +12995,7 @@ export default function StreamlivePrototype({ session }) {
             localStorage.setItem("STRMLIVE_SHOW_TIMINGS", JSON.stringify(session.productTimings || {}));
             localStorage.setItem("STRMLIVE_SHOW_ORDER", JSON.stringify((session.runOrder || []).map(p=>p.id))); } catch(e) {}
       setLiveSession(session);
+      track('Show Started', { show_name: newParams.showName, platforms: newParams.selectedPlatforms, products: (newParams.runOrder || []).length });
     }
     // Ending a show: clear the session
     if (screen === "order-review") {
@@ -13000,6 +13003,7 @@ export default function StreamlivePrototype({ session }) {
             localStorage.removeItem("STRMLIVE_SHOW_TIMINGS");
             localStorage.removeItem("STRMLIVE_SHOW_ORDER"); } catch(e) {}
       setLiveSession(null);
+      track('Show Ended', { gmv: newParams.gmv, buyers: (newParams.liveBuyers || []).length, elapsed: newParams.elapsed });
     }
     // Clicking Shows nav while a show is live: jump back into it
     if (screen === "shows" && liveSession) {
@@ -13009,6 +13013,7 @@ export default function StreamlivePrototype({ session }) {
     }
     setView(screen);
     setParams(newParams);
+    track('App Screen Viewed', { screen });
   };
 
   // Allows ScreenLive to push runOrder/timing changes back up so Live Shop stays in sync

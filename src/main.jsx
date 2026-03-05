@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
+import { initAnalytics } from './lib/analytics.js'
 import App from './App.jsx'
 
 Sentry.init({
@@ -13,6 +14,8 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
 })
+
+initAnalytics()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
