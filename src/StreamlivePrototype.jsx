@@ -12919,12 +12919,24 @@ export default function StreamlivePrototype({ session }) {
         runOrder: ro,
         productTimings: payload.t || {},
         showName: payload.n || "Live Show",
-        persona: PERSONAS.find(p => p.slug === payload.p) || PERSONAS[0],
+        persona: persona || { name:"User", shop:"Shop", slug:"shop", plan:"starter", planColor:"#10b981", avatar:"U", platforms:[] },
       };
       return <ScreenLiveShop navigate={() => {}} params={liveParams} persona={liveParams.persona} />;
     } catch(e) {
       // Bad param: fall through to normal app
     }
+  }
+
+  // Loading state
+  if (profileLoading || !persona) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", color:"#a78bfa", fontFamily:"'DM Sans',sans-serif" }}>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ width:32, height:32, border:"3px solid #a78bfa33", borderTop:"3px solid #a78bfa", borderRadius:"50%", animation:"spin .8s linear infinite", margin:"0 auto 16px" }} />
+          <div style={{ fontSize:13, color:"#6b7280" }}>Loading your dashboard…</div>
+        </div>
+      </div>
+    );
   }
 
   const navigate = (screen, newParams={}) => {
