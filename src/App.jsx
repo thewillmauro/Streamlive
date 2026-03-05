@@ -3313,6 +3313,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
+    if (!supabase) { setAuthLoading(false); return }
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s)
       setAuthLoading(false)
@@ -3325,6 +3326,7 @@ export default function App() {
   }, [])
 
   const handleSignIn = useCallback(async () => {
+    if (!supabase) return
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin + '/app' }
@@ -3332,6 +3334,7 @@ export default function App() {
   }, [])
 
   const handleSignOut = useCallback(async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
     navigate('/')
   }, [])
