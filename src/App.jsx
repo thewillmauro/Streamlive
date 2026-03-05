@@ -3174,8 +3174,6 @@ export default function App() {
           100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
         }
       `}</style>
-      {/* Sentry test button — remove after verifying */}
-      <button onClick={() => { throw new Error('Sentry test error!') }} style={{ position:'fixed', bottom:16, right:16, zIndex:99999, padding:'8px 16px', background:'#ef4444', color:'#fff', border:'none', borderRadius:8, cursor:'pointer', fontSize:13, fontWeight:700 }}>Test Sentry</button>
       <LiveCursor />
       {route === '/app'         ? <StreamlivePrototype /> :
        route === '/checkout'    ? <Checkout /> :
