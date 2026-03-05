@@ -255,19 +255,28 @@ const STRIPE_LINKS = {
 // Intercom is booted via index.html. Just call update() with user identity.
 function bootIntercom(persona) {
   if (typeof window.Intercom !== 'function') return
+  const profile = persona._profile || {}
   window.Intercom('update', {
     name: persona.name,
     email: persona.email,
     user_id: persona.id,
-    company: {
-      company_id: persona.slug,
+    avatar: persona.avatarUrl ? { type: 'avatar', image_url: persona.avatarUrl } : undefined,
+    created_at: profile.created_at ? Math.floor(new Date(profile.created_at).getTime() / 1000) : undefined,
+    company: persona.shop ? {
+      company_id: persona.slug || persona.id,
       name: persona.shop,
-    },
+      plan: persona.plan,
+    } : undefined,
     plan: persona.plan,
-    shop: persona.shop,
+    account_type: profile.account_type || 'business',
+    shop_name: persona.shop,
+    category: persona.category,
+    bio: persona.bio,
     platforms: (persona.platforms || []).join(', '),
     buyer_count: persona.buyerCount,
     show_count: persona.showCount,
+    subscriber_count: persona.subscriberCount,
+    slug: persona.slug,
   })
 }
 
@@ -12927,7 +12936,7 @@ export default function StreamlivePrototype({ session }) {
   // Boot Intercom with current profile identity whenever profile changes
   useEffect(() => {
     if (persona) bootIntercom(persona)
-  }, [profile?.id, profile?.plan]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profile?.id, profile?.plan, profile?.shop_name, profile?.category, buyers.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clean ?shopify=connected&shop=... from the URL so it doesn't re-trigger on refresh
   useEffect(() => {
