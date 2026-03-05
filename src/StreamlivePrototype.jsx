@@ -12862,21 +12862,43 @@ export default function StreamlivePrototype({ session }) {
   const [shopifyAutoSync, setShopifyAutoSync] = useState(shopifyParam === "connected");
 
   // ── Real data hooks ────────────────────────────────────────────────────────
-  const { profile, loading: profileLoading, updateProfile } = useProfile(userId);
+  const { profile, loading: profileLoading, updateProfile, refetch: refetchProfile } = useProfile(userId);
   const { buyers, loading: buyersLoading, createBuyer, updateBuyer, deleteBuyer } = useBuyers(userId);
   const { products, loading: productsLoading, createProduct, updateProduct, deleteProduct } = useProducts(userId);
 
-  // Build persona adapter from Supabase profile
-  const displayName = profile?.name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || session?.user?.user_metadata?.full_name || session?.user?.email?.split("@")[0] || "User";
+  // Auto-create profile if it doesn't exist (e.g. user signed up before trigger was added)
+  const [creatingProfile, setCreatingProfile] = useState(false);
+  useEffect(() => {
+    if (!profileLoading && !profile && userId && !creatingProfile) {
+      setCreatingProfile(true);
+      const meta = session?.user?.user_metadata || {};
+      supabase.from("profiles").upsert({
+        id: userId,
+        email: session?.user?.email || "",
+        first_name: meta.first_name || (meta.full_name || meta.name || "").split(" ")[0] || "",
+        name: meta.full_name || meta.name || "",
+        avatar_url: meta.avatar_url || "",
+        account_type: "business",
+      }, { onConflict: "id" }).then(() => {
+        refetchProfile();
+        setCreatingProfile(false);
+      });
+    }
+  }, [profileLoading, profile, userId, creatingProfile, session, refetchProfile]);
+
+  // Build persona adapter from Supabase profile (fallback to session metadata while loading)
+  const meta = session?.user?.user_metadata || {};
+  const displayName = profile?.name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || meta.full_name || meta.name || session?.user?.email?.split("@")[0] || "User";
+  const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b", enterprise:"#a78bfa" };
   const persona = profile ? {
     id: profile.id,
     name: displayName,
     shop: profile.shop_name || "",
     email: session?.user?.email || "",
     avatar: deriveAvatar(displayName),
-    avatarUrl: profile.avatar_url || session?.user?.user_metadata?.avatar_url || null,
+    avatarUrl: profile.avatar_url || meta.avatar_url || null,
     plan: profile.plan || "starter",
-    planColor: ({ starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b", enterprise:"#a78bfa" })[profile.plan || "starter"],
+    planColor: planColors[profile.plan || "starter"],
     category: profile.category || "",
     platforms: profile.platforms || [],
     buyerCount: buyers.length,
@@ -12885,7 +12907,7 @@ export default function StreamlivePrototype({ session }) {
     slug: profile.slug || "",
     bio: profile.bio || "",
     _profile: profile,
-  } : null;
+  } : (userId && !profileLoading ? null : null);
 
   // Boot Intercom with current profile identity whenever profile changes
   useEffect(() => {
@@ -12928,7 +12950,7 @@ export default function StreamlivePrototype({ session }) {
   }
 
   // Loading state
-  if (profileLoading || !persona) {
+  if (profileLoading || creatingProfile || !persona) {
     return (
       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", color:"#a78bfa", fontFamily:"'DM Sans',sans-serif" }}>
         <div style={{ textAlign:"center" }}>

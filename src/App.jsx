@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import StreamlivePrototype from './StreamlivePrototype.jsx'
+import { supabase } from './lib/supabase.js'
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 function useRoute() {
@@ -3173,6 +3174,49 @@ function LiveCursor() {
 export default function App() {
   const route = useRoute()
   useEffect(() => { updatePageMeta(route) }, [route])
+
+  // ── Auth state ──────────────────────────────────────────────────────────────
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s)
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s)
+      setAuthLoading(false)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleSignIn = useCallback(async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/app' }
+    })
+  }, [])
+
+  const handleSignOut = useCallback(async () => {
+    await supabase.auth.signOut()
+    navigate('/')
+  }, [])
+
+  // Auth gate for /app route
+  if (route === '/app') {
+    if (authLoading) return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", color:"#a78bfa", fontFamily:"'DM Sans',sans-serif" }}>
+        <div style={{ width:32, height:32, border:"3px solid #a78bfa33", borderTop:"3px solid #a78bfa", borderRadius:"50%", animation:"spin .8s linear infinite" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+    )
+    if (!session) {
+      handleSignIn()
+      return null
+    }
+  }
+
   return (
     <>
       <style>{`
@@ -3183,7 +3227,7 @@ export default function App() {
         }
       `}</style>
       <LiveCursor />
-      {route === '/app'         ? <StreamlivePrototype /> :
+      {route === '/app'         ? <StreamlivePrototype session={session} onSignOut={handleSignOut} /> :
        route === '/checkout'    ? <Checkout /> :
        route === '/welcome'     ? <Welcome /> :
        route.startsWith('/s/')  ? <OptInPage slug={route.split('/s/')[1]?.split('/')[0]} connectedPlatforms={PERSONA_PLATFORMS[route.split('/s/')[1]?.split('/')[0]]} /> :
