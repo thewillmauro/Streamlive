@@ -3150,7 +3150,7 @@ const MOCK_LIVE_BUYERS = [
 ];
 
 function ScreenLive({ buyers: buyersProp, navigate, params, persona: personaProp, updateLiveSession }) {
-  const buyers = buyersProp.length > 0 ? buyersProp : MOCK_LIVE_BUYERS;
+  const buyers = buyersProp && buyersProp.length > 0 ? buyersProp : MOCK_LIVE_BUYERS;
   const selectedPlatforms = params?.selectedPlatforms || ["WN"];
   // Per-platform viewer counts (seeded differently per platform)
   const [platformViewers, setPlatformViewers] = useState(() => {
