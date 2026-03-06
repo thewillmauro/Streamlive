@@ -282,8 +282,8 @@ function bootIntercom(persona) {
 }
 
 const PLAN_META = {
-  starter:    { price:"$79",  color:"#10b981", features:["Up to 2 live shows/month","Buyers CRM","Catalog management","Campaign tools","Subscriber list"] },
-  growth:     { price:"$199", color:"#7c3aed", features:["Everything in Starter","Analytics & AI insights","Loyalty program","Live Companion","SMS campaigns"] },
+  starter:    { price:"$79",  color:"#10b981", features:["Up to 2 platforms","Up to 2 live shows/month","Buyers CRM","Catalog management","Campaign tools","Subscriber list"] },
+  growth:     { price:"$199", color:"#7c3aed", features:["Everything in Starter","All 5 platforms","Unlimited live shows","Live Companion","Analytics & AI insights","Loyalty program","SMS campaigns"] },
   pro:        { price:"$399", color:"#f59e0b", features:["Everything in Growth","Production Suite","Camera & gimbal control","White-label reports","Priority support"] },
   enterprise: { price:"$999", color:"#a78bfa", features:["Everything in Pro","Up to 12 seller accounts","Team management & roles","White-label branding","Dedicated account manager"] },
 };
@@ -521,6 +521,14 @@ const PRODUCER_NAV_ACCESS = ["dashboard","shows","production","catalog","setting
 
 // Plan hierarchy: 0=starter, 1=growth, 2=pro, 3=enterprise
 const PLAN_LEVEL = { starter:0, growth:1, pro:2, enterprise:3 };
+
+// Per-plan limits
+const PLAN_LIMITS = {
+  starter:    { maxPlatforms: 2, maxShowsPerMonth: 2, liveCompanion: false, analytics: false, loyalty: false, production: false },
+  growth:     { maxPlatforms: 5, maxShowsPerMonth: Infinity, liveCompanion: true, analytics: true, loyalty: true, production: false },
+  pro:        { maxPlatforms: 5, maxShowsPerMonth: Infinity, liveCompanion: true, analytics: true, loyalty: true, production: true },
+  enterprise: { maxPlatforms: 5, maxShowsPerMonth: Infinity, liveCompanion: true, analytics: true, loyalty: true, production: true },
+};
 
 // Which nav items each plan can access
 const PLAN_FEATURES = {
@@ -1167,12 +1175,9 @@ function ScreenShows({ navigate, persona, shows }) {
         <div style={{ flex:1 }}>
           <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>Live Companion</div>
           <div style={{ fontSize:12, color:"#9ca3af" }}>Real-time buyer intelligence during your shows: instant lookups, VIP alerts, notes on the fly.</div>
+          {persona.plan === "starter" && <div style={{ fontSize:11, color:C.accent, marginTop:4 }}>✦ Live Companion available on Growth+</div>}
         </div>
-        {persona.plan === "starter" ? (
-          <div style={{ fontSize:11, color:C.accent, background:`${C.accent}18`, border:`1px solid ${C.accent}33`, padding:"6px 14px", borderRadius:8, whiteSpace:"nowrap" }}>Growth+ feature</div>
-        ) : (
-          <button onClick={()=>navigate("show-planner")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer", whiteSpace:"nowrap" }}>Start Live Show</button>
-        )}
+        <button onClick={()=>navigate("show-planner")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer", whiteSpace:"nowrap" }}>Start Live Show</button>
       </div>
 
       {/* SHOW CARDS */}
@@ -8167,9 +8172,12 @@ function ScreenShowPlanner({ navigate, persona }) {
     rules: [],
   });
 
-  const togglePlatform = (pid) => setSelectedPlatforms(prev =>
-    prev.includes(pid) ? prev.filter(p=>p!==pid) : [...prev, pid]
-  );
+  const limits = PLAN_LIMITS[persona.plan] || PLAN_LIMITS.starter;
+  const togglePlatform = (pid) => setSelectedPlatforms(prev => {
+    if (prev.includes(pid)) return prev.filter(p=>p!==pid);
+    if (prev.length >= limits.maxPlatforms) return prev;
+    return [...prev, pid];
+  });
 
   const [productTimings, setProductTimings] = useState({});
   const [globalTiming, setGlobalTiming] = useState(90);
@@ -8254,8 +8262,9 @@ function ScreenShowPlanner({ navigate, persona }) {
                 { id:"YT", name:"YouTube Live",  color:"#ff0000", desc:"Long-form · Shopify attribution", icon:"▶" },
               ].map(pl => {
                 const active = selectedPlatforms.includes(pl.id);
+                const atLimit = !active && selectedPlatforms.length >= limits.maxPlatforms;
                 return (
-                  <div key={pl.id} onClick={()=>togglePlatform(pl.id)} style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 18px", background:active?`${pl.color}12`:C.surface, border:`2px solid ${active?pl.color+"66":C.border}`, borderRadius:14, cursor:"pointer", transition:"all .15s" }}>
+                  <div key={pl.id} onClick={()=>togglePlatform(pl.id)} style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 18px", background:active?`${pl.color}12`:C.surface, border:`2px solid ${active?pl.color+"66":C.border}`, borderRadius:14, cursor:atLimit?"not-allowed":"pointer", opacity:atLimit?0.4:1, transition:"all .15s" }}>
                     <div style={{ width:44, height:44, borderRadius:12, background:`${pl.color}22`, border:`1px solid ${pl.color}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, color:pl.color, flexShrink:0 }}>{pl.icon}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:2 }}>{pl.name}</div>
@@ -8271,6 +8280,12 @@ function ScreenShowPlanner({ navigate, persona }) {
                 <span style={{ color:C.green, fontSize:13 }}>✦</span>
                 <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>Multi-stream enabled</span>
                 <span style={{ fontSize:12, color:C.muted }}>: streaming to {selectedPlatforms.length} platforms simultaneously</span>
+              </div>
+            )}
+            {selectedPlatforms.length >= limits.maxPlatforms && limits.maxPlatforms < 5 && (
+              <div style={{ marginTop:12, display:"flex", alignItems:"center", gap:10, background:"#2d1f5e22", border:`1px dashed ${C.accent}44`, borderRadius:10, padding:"10px 16px" }}>
+                <span style={{ color:C.accent, fontSize:13 }}>✦</span>
+                <span style={{ fontSize:12, color:"#a78bfa" }}>You've reached your {limits.maxPlatforms}-platform limit. <span style={{ color:C.accent, fontWeight:600, cursor:"pointer" }} onClick={()=>navigate("upgrade-shows")}>Upgrade to Growth</span> for all 5 platforms.</span>
               </div>
             )}
 
