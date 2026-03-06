@@ -108,9 +108,15 @@ function tagForGroup(items) {
   return { tag: 'Improved', tagColor: '#7c3aed' }
 }
 
-function monthLabel(dateStr) {
+function weekLabel(dateStr) {
   const d = new Date(dateStr)
-  return d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+  const day = d.getDay()
+  const monday = new Date(d)
+  monday.setDate(d.getDate() - ((day + 6) % 7))
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  const fmt = (dt) => dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return `${fmt(monday)} – ${fmt(sunday)}, ${monday.getFullYear()}`
 }
 
 function cleanMessage(msg) {
@@ -140,11 +146,11 @@ for (const line of lines) {
   if (seen.has(key)) continue
   seen.add(key)
 
-  const month = monthLabel(date)
-  if (!grouped.has(month)) grouped.set(month, [])
+  const week = weekLabel(date)
+  if (!grouped.has(week)) grouped.set(week, [])
 
   const { type, kind } = classifyCommit(msg)
-  grouped.get(month).push({ type, text: cleanMessage(msg), _kind: kind })
+  grouped.get(week).push({ type, text: cleanMessage(msg), date: date.split(' ')[0], _kind: kind })
 }
 
 // ── Build output ───────────────────────────────────────────────────────────
@@ -163,7 +169,7 @@ for (const [month, items] of grouped) {
     date: month,
     tag,
     tagColor,
-    items: items.map(({ type, text }) => ({ type, text })),
+    items: items.map(({ type, text, date }) => ({ type, text, date })),
   })
   vMinor--
 }

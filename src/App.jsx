@@ -1216,7 +1216,7 @@ function Body({ children }) { return <p style={{ fontSize:14, color:'#6b7280', l
 
 // ─── CHANGELOG PAGE ───────────────────────────────────────────────────────────
 function ChangelogPage() {
-  const entries = changelogEntries
+  const weeks = changelogEntries
 
   return (
     <PageShell>
@@ -1227,17 +1227,16 @@ function ChangelogPage() {
 
         <div style={{ position:'relative', paddingLeft:28 }}>
           <div style={{ position:'absolute', left:6, top:6, bottom:6, width:1, background:'linear-gradient(180deg,#7c3aed88,#7c3aed11)' }}/>
-          {entries.map((e, ei) => (
-            <div key={ei} style={{ marginBottom:52, position:'relative' }}>
+          {weeks.map((w, wi) => (
+            <div key={wi} style={{ marginBottom:52, position:'relative' }}>
               <div style={{ position:'absolute', left:-28, top:4, width:14, height:14, borderRadius:'50%', background:'#7c3aed', border:'2px solid #06060e', boxShadow:'0 0 0 3px #7c3aed33' }}/>
               <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
-                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:'#fff' }}>{e.version}</span>
-                <span style={{ fontSize:9, fontWeight:800, color:e.tagColor, background:`${e.tagColor}18`, border:`1px solid ${e.tagColor}44`, padding:'2px 9px', borderRadius:99, textTransform:'uppercase', letterSpacing:'.08em' }}>{e.tag}</span>
-                <span style={{ fontSize:11, color:'#374151' }}>{e.date}</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:'#fff' }}>{w.date}</span>
+                <span style={{ fontSize:9, fontWeight:800, color:w.tagColor, background:`${w.tagColor}18`, border:`1px solid ${w.tagColor}44`, padding:'2px 9px', borderRadius:99, textTransform:'uppercase', letterSpacing:'.08em' }}>{w.items.length} update{w.items.length !== 1 ? 's' : ''}</span>
               </div>
               <div style={{ background:'#0a0a14', border:'1px solid #14142a', borderRadius:14, overflow:'hidden' }}>
-                {e.items.map((item, ii) => (
-                  <div key={ii} style={{ display:'flex', gap:12, padding:'12px 18px', borderBottom:ii<e.items.length-1?'1px solid #0d0d1a':'none', alignItems:'flex-start' }}>
+                {w.items.map((item, ii) => (
+                  <div key={ii} style={{ display:'flex', gap:12, padding:'12px 18px', borderBottom:ii<w.items.length-1?'1px solid #0d0d1a':'none', alignItems:'flex-start' }}>
                     <span style={{ fontSize:11, color:item.type==='✦'?'#7c3aed':item.type==='◈'?'#10b981':item.type==='◉'?'#f59e0b':'#374151', marginTop:2, flexShrink:0 }}>{item.type}</span>
                     <span style={{ fontSize:13, color:item.type==='✓'?'#4b5563':'#9ca3af', lineHeight:1.6 }}>{item.text}</span>
                   </div>

@@ -1,0 +1,443 @@
+[
+  {
+    "version": "v0.2",
+    "date": "Mar 2 – Mar 8, 2026",
+    "tag": "New",
+    "tagColor": "#10b981",
+    "items": [
+      {
+        "type": "✦",
+        "text": "Add debug mode to Shopify auth endpoint",
+        "date": "2026-03-06"
+      },
+      {
+        "type": "✦",
+        "text": "Add Mixpanel analytics: track page views, conversions, and app usage",
+        "date": "2026-03-05"
+      },
+      {
+        "type": "◈",
+        "text": "Harden security: CSP headers, CORS lockdown, rate limiting, token encryption",
+        "date": "2026-03-05"
+      },
+      {
+        "type": "◈",
+        "text": "Code-split route-level components with React.lazy for 41% smaller landing page",
+        "date": "2026-03-05"
+      },
+      {
+        "type": "◈",
+        "text": "Auto-generate changelog from git history on every Vercel deploy",
+        "date": "2026-03-05"
+      },
+      {
+        "type": "◈",
+        "text": "Enrich Intercom with full user identity and profile data",
+        "date": "2026-03-05"
+      },
+      {
+        "type": "✦",
+        "text": "Add Sign In buttons to landing page nav, hero, and CTA sections",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "✦",
+        "text": "Add Sentry error monitoring with session replay",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "✦",
+        "text": "Add real Shopify OAuth integration and product sync",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "◈",
+        "text": "Phase 2: Replace mock data with real Supabase data layer for profile, buyers, and products",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "✦",
+        "text": "Add Supabase backend Phase 1: auth, schema, and sign-in",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "◈",
+        "text": "Update opt-in page wording: perks for live streams instead of VIP List",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "✦",
+        "text": "Add account creation flow to opt-in page",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "◈",
+        "text": "SEO overhaul: structured data, dynamic meta, semantic links, sitemap & robots.txt",
+        "date": "2026-03-04"
+      },
+      {
+        "type": "◈",
+        "text": "Custom talking points for Host Briefing",
+        "date": "2026-03-02"
+      },
+      {
+        "type": "◈",
+        "text": "Intercom integration",
+        "date": "2026-03-02"
+      },
+      {
+        "type": "◈",
+        "text": "Shopify strip + pricing headline",
+        "date": "2026-03-02"
+      },
+      {
+        "type": "◈",
+        "text": "FAQ + pricing headline update",
+        "date": "2026-03-02"
+      },
+      {
+        "type": "◈",
+        "text": "Reorder spotlights + After The Show analytics",
+        "date": "2026-03-02"
+      }
+    ]
+  },
+  {
+    "version": "v0.1",
+    "date": "Feb 23 – Mar 1, 2026",
+    "tag": "New",
+    "tagColor": "#10b981",
+    "items": [
+      {
+        "type": "◈",
+        "text": "Host Briefing spotlight + feature grid",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Landing: minimal copy, conversion optimized",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Landing: live viewer counter + remove YouTube section",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Settings: platforms start disconnected",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Production tab: active/inactive vs connect/disconnect",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Unified device + platform connections across screens",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Enterprise billing: custom pricing + contact sales modal",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Enterprise: always contact sales",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Billing: full plan picker",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Cross-browser live shop sync via encoded URL",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Show Summary full screen",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Catalog: lock presented products",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Scene layout: bigger, device sync",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Perks if/then + Live Perks tab",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "Analytics date range filtering",
+        "date": "2026-03-01"
+      },
+      {
+        "type": "◈",
+        "text": "OG image + meta tags (Live Selling Command Center) + contact API + enhanced sales form",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Sync all 3 pages via localStorage",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Sync Live Shop with Catalog",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Clock-synced Live Shop",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "End-to-end product timings",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Orders fix + drag-and-drop scene + briefing tab",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Live show persistence",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Scene tab + UX improvements",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Lighting color + patterns + sound effects",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "3-tab Live Companion",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Camera feed previews in Production tab",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Production tab in Live Companion",
+        "date": "2026-02-28"
+      },
+      {
+        "type": "◈",
+        "text": "Enterprise: custom pricing, no number shown",
+        "date": "2026-02-27"
+      },
+      {
+        "type": "◈",
+        "text": "Email gate + Enterprise pricing",
+        "date": "2026-02-27"
+      },
+      {
+        "type": "◈",
+        "text": "Live shop public route",
+        "date": "2026-02-27"
+      },
+      {
+        "type": "◈",
+        "text": "Quick Message + Live Shop Page",
+        "date": "2026-02-27"
+      },
+      {
+        "type": "◈",
+        "text": "Landing page overhaul v2",
+        "date": "2026-02-27"
+      },
+      {
+        "type": "◈",
+        "text": "Landing page update: all new features, full tagline",
+        "date": "2026-02-26"
+      },
+      {
+        "type": "✦",
+        "text": "platform pills on show cards",
+        "date": "2026-02-26"
+      },
+      {
+        "type": "✦",
+        "text": "show name field in planner",
+        "date": "2026-02-26"
+      },
+      {
+        "type": "✦",
+        "text": "YouTube Live + Live Pixel attribution",
+        "date": "2026-02-26"
+      },
+      {
+        "type": "✦",
+        "text": "live-dot cursor on landing page",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "✦",
+        "text": "live-dot cursor",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Personas: Banana Republic (Pro), Kylie Cosmetics (Growth), Tropicfeel (Starter), Walmart (Enterprise)",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Show Report: full analytics + live AI debrief",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Dashboard show completion flow + Shopify connect + Profit Guard",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Shopify connection flow",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Subscribers: ManyChat DM opt-ins",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Enterprise team: wire Edit/Remove buttons",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Stripe links + checkout modal",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Producer role Pro+ gating + upsell",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Plan gating: 4 personas × 4 tiers, locked nav, upgrade walls, Enterprise dashboard",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Landing page: full mobile responsive layout",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Analytics tab: Overview, Revenue, Audience, Shows, AI Insights",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Production: full equipment control, OBS scenes, automation, SDK status",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Order Review: full-screen completion overlay",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Production tab + platform picker in Show Planner + per-platform LIVE badges",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Campaigns: keyword automations tab with ManyChat builder",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Opt-in: remove Amazon handles, add ManyChat DM activation",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Opt-in page + clickable copy link in Subscribers",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Full build: catalog, loyalty, live companion, all features",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Welcome CTA: route to Settings > Messaging tab after payment",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Checkout: fully in-app card form, no Stripe redirect",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Loyalty Hub: build missing ScreenLoyalty screen",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Team invites: real token system, API email generation, account creation flow",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Team: working invite modal with roles, persistence, and remove",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Rich API setup guides with deep links in every connection modal",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Settings: persistent API connections with per-integration auth flows",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "✦",
+        "text": "Add multi-channel DM messaging: ManyChat, IG, TikTok, Whatnot, Amazon",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "◈",
+        "text": "Live Companion: buyer-contextual right panel",
+        "date": "2026-02-25"
+      },
+      {
+        "type": "✦",
+        "text": "Add post-payment welcome page",
+        "date": "2026-02-24"
+      }
+    ]
+  }
+]
