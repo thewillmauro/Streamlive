@@ -8523,12 +8523,17 @@ function ScreenShowPlanner({ navigate, persona }) {
                 </div>
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
                   <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:10 }}>Projected Performance</div>
-                  {[
-                    { label:"Est. GMV",      value:`$${UPCOMING_SHOW.estimatedGMV.toLocaleString()}`, color:C.green },
-                    { label:"Est. Buyers",   value:UPCOMING_SHOW.estimatedBuyers,                     color:C.text },
+                  {(() => {
+                    const durationMins = totalShowSecs / 60;
+                    const baseGmvPerMin = runOrder.length > 0 ? runOrder.reduce((a,p)=>a+p.price,0) / runOrder.length * 1.8 : 0;
+                    const dynGmv = Math.round(baseGmvPerMin * durationMins);
+                    const dynBuyers = Math.max(1, Math.round(durationMins * 1.2 + runOrder.length * 3));
+                    return [
+                    { label:"Est. GMV",      value:`$${dynGmv.toLocaleString()}`, color:C.green },
+                    { label:"Est. Buyers",   value:dynBuyers,                     color:C.text },
                     { label:"Products",      value:runOrder.length,                                   color:"#a78bfa" },
                     { label:"Est. Duration", value:`${Math.floor(totalShowSecs/60)}m ${totalShowSecs%60}s`,  color:C.muted },
-                  ].map(m=>(
+                  ];})().map(m=>(
                     <div key={m.label} style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                       <span style={{ fontSize:12, color:C.muted }}>{m.label}</span>
                       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13, fontWeight:700, color:m.color }}>{m.value}</span>
@@ -8755,7 +8760,9 @@ function ScreenShowPlanner({ navigate, persona }) {
           const totalSecs   = runOrder.reduce((a,p)=>a+(productTimings[p.id]||90),0);
           const totalMins   = Math.floor(totalSecs/60);
           const totalRemSec = totalSecs%60;
-          const estGMV      = runOrder.reduce((a,p)=>a+p.price,0);
+          const durationMins = totalSecs / 60;
+          const baseGmvPerMin = runOrder.length > 0 ? runOrder.reduce((a,p)=>a+p.price,0) / runOrder.length * 1.8 : 0;
+          const estGMV      = Math.round(baseGmvPerMin * durationMins);
           const PLATFORM_INFO = { WN:{label:"Whatnot",color:"#7c3aed",icon:"🏷"}, TT:{label:"TikTok",color:"#f43f5e",icon:"🎵"}, IG:{label:"Instagram",color:"#ec4899",icon:"📸"}, YT:{label:"YouTube",color:"#ef4444",icon:"▶"}, AM:{label:"Amazon Live",color:"#f59e0b",icon:"📦"} };
 
           const activeAlwaysOn = [
