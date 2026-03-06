@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
 export default async function handler(req, res) {
-  const { shop, token } = req.query;
+  const { shop, token, debug } = req.query;
 
   if (!shop) {
     return res.status(400).json({ error: "Missing shop parameter" });
@@ -60,6 +60,17 @@ export default async function handler(req, res) {
     `&scope=${scopes}` +
     `&redirect_uri=${encodeURIComponent(redirectUri)}` +
     `&state=${encodeURIComponent(state)}`;
+
+  // Debug mode: show config instead of redirecting
+  if (debug === "1") {
+    return res.status(200).json({
+      shopDomain,
+      clientId: SHOPIFY_API_KEY,
+      redirectUri,
+      authUrl,
+      appUrl: APP_URL,
+    });
+  }
 
   res.redirect(302, authUrl);
 }
