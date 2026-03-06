@@ -3138,7 +3138,19 @@ function BriefingTab({ runOrder, showName, productTimings, showStartTime, showTa
 }
 
 
-function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLiveSession }) {
+const MOCK_LIVE_BUYERS = [
+  { id:"lb1", name:"Sarah M.", handle:"@sarahm", avatar:"SM", platform:"WN", status:"vip",  spend:2840, orders:18, lastOrder:"2 days ago" },
+  { id:"lb2", name:"Jess T.",  handle:"@jesst",  avatar:"JT", platform:"TT", status:"new",  spend:89,   orders:1,  lastOrder:"just now" },
+  { id:"lb3", name:"Mike R.",  handle:"@miker",  avatar:"MR", platform:"IG", status:"active",spend:1250, orders:9,  lastOrder:"5 days ago" },
+  { id:"lb4", name:"Dana L.",  handle:"@danal",  avatar:"DL", platform:"WN", status:"vip",  spend:3100, orders:22, lastOrder:"1 day ago" },
+  { id:"lb5", name:"Alex K.",  handle:"@alexk",  avatar:"AK", platform:"TT", status:"new",  spend:45,   orders:1,  lastOrder:"just now" },
+  { id:"lb6", name:"Kim P.",   handle:"@kimp",   avatar:"KP", platform:"AM", status:"active",spend:780,  orders:6,  lastOrder:"3 days ago" },
+  { id:"lb7", name:"Chris W.", handle:"@chrisw", avatar:"CW", platform:"WN", status:"active",spend:960,  orders:7,  lastOrder:"4 days ago" },
+  { id:"lb8", name:"Tina B.",  handle:"@tinab",  avatar:"TB", platform:"IG", status:"risk",  spend:420,  orders:3,  lastOrder:"29 days ago" },
+];
+
+function ScreenLive({ buyers: buyersProp, navigate, params, persona: personaProp, updateLiveSession }) {
+  const buyers = buyersProp.length > 0 ? buyersProp : MOCK_LIVE_BUYERS;
   const selectedPlatforms = params?.selectedPlatforms || ["WN"];
   // Per-platform viewer counts (seeded differently per platform)
   const [platformViewers, setPlatformViewers] = useState(() => {
