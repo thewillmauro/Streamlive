@@ -62,10 +62,6 @@ function Landing() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [liveGmv, setLiveGmv] = useState(0)
   const [liveViewers, setLiveViewers] = useState({ WN: 234, TT: 891, IG: 312, AM: 156, YT: 420 })
-  // Demo gate modal
-  const [demoModal, setDemoModal] = useState(false)
-  const [demoEmail, setDemoEmail] = useState('')
-  const [demoEmailSent, setDemoEmailSent] = useState(false)
   // Contact Sales modal
   const [salesModal, setSalesModal] = useState(false)
   const [salesForm, setSalesForm] = useState({ firstName:'', lastName:'', email:'', phone:'', store:'', platforms:[], message:'' })
@@ -119,24 +115,6 @@ function Landing() {
     const t = setTimeout(tick, 800)
     return () => clearTimeout(t)
   }, [])
-
-  const openDemo = () => {
-    setDemoEmailSent(false)
-    setDemoEmail('')
-    setDemoModal(true)
-    track('Demo Modal Opened')
-  }
-
-  const submitDemoEmail = async () => {
-    if (!demoEmail.includes('@')) return
-    try { await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: demoEmail, source: 'demo_gate', timestamp: new Date().toISOString() }) }) } catch(e) {}
-    setDemoEmailSent(true)
-    track('Demo Email Submitted', { email: demoEmail })
-    setTimeout(() => {
-      setDemoModal(false)
-      navigate('/app')
-    }, 1400)
-  }
 
   const openSales = () => {
     setSalesForm({ firstName:'', lastName:'', email:'', phone:'', store:'', platforms:[], message:'' })
@@ -399,7 +377,7 @@ function Landing() {
             <a href="#features" style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
             <a href="#pricing"  style={{ fontSize:13, color:'#6b7280', textDecoration:'none', fontWeight:500 }} onClick={e=>{e.preventDefault();document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
             <button onClick={()=>navigate('/login')} style={{ background:'none', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:12, fontWeight:600, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Sign In</button>
-            <button onClick={()=>openDemo()} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Open App →</button>
+            <button onClick={()=>navigate('/login')} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:12, fontWeight:700, padding:'7px 18px', borderRadius:8, cursor:'pointer' }}>Create Account →</button>
           </div>
           <button className="nav-hamburger" onClick={()=>setMenuOpen(m=>!m)} style={{ background:'none', border:'1px solid #1e1e3a', borderRadius:8, color:'#9ca3af', padding:'6px 10px', cursor:'pointer', fontSize:16, display:'none', alignItems:'center', justifyContent:'center' }}>
             {menuOpen ? '✕' : '☰'}
@@ -410,7 +388,7 @@ function Landing() {
           <a href="#features" style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('features')?.scrollIntoView({behavior:'smooth'})}}>Features</a>
           <a href="#pricing"  style={{ fontSize:14, color:'#9ca3af', textDecoration:'none', fontWeight:500, padding:'12px 0', borderBottom:'1px solid #14142a' }} onClick={e=>{e.preventDefault();setMenuOpen(false);document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}}>Pricing</a>
           <button onClick={()=>{setMenuOpen(false);navigate('/login')}} style={{ background:'none', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:12 }}>Sign In</button>
-          <button onClick={()=>{setMenuOpen(false);openDemo()}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:4 }}>Open App →</button>
+          <button onClick={()=>{setMenuOpen(false);navigate('/login')}} className="cta-btn" style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px', borderRadius:10, cursor:'pointer', marginTop:4 }}>Create Account →</button>
         </div>
 
         {/* ── HERO ─────────────────────────────────────────────────────────── */}
@@ -841,10 +819,10 @@ function Landing() {
         <div className="features-section" style={{ maxWidth:900, margin:'0 auto' }}>
           <div style={{ background:'linear-gradient(135deg,#0d0d1e,#12103a)', border:'1px solid #7c3aed33', borderRadius:18, padding:'32px', textAlign:'center', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', top:-40, right:-40, width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.06, filter:'blur(60px)' }} />
-            <div style={{ fontSize:11, fontWeight:800, color:'#a78bfa', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>Every screen is live right now</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:20 }}>Try the interactive demo. No signup required.</div>
+            <div style={{ fontSize:11, fontWeight:800, color:'#a78bfa', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>Ready to go live?</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:20 }}>Create your account and start selling live today.</div>
             <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
-              <button onClick={()=>openDemo()} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px 28px', borderRadius:10, cursor:'pointer' }}>Open Demo →</button>
+              <button onClick={()=>navigate('/login')} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px 28px', borderRadius:10, cursor:'pointer' }}>Create Account →</button>
               <button onClick={()=>navigate('/login')} style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:10, cursor:'pointer' }}>Sign In</button>
               <button onClick={openSales} style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:10, cursor:'pointer' }}>Talk to Sales</button>
             </div>
@@ -1013,55 +991,6 @@ function Landing() {
         </footer>
 
       </div>
-      {/* ── DEMO EMAIL GATE MODAL ── */}
-      {demoModal && (
-        <div onClick={e=>{ if(e.target===e.currentTarget) setDemoModal(false) }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.88)', backdropFilter:'blur(14px)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-          <div style={{ background:'linear-gradient(160deg,#0d0d1e,#0a0a16)', border:'1px solid #2a2a4a', borderRadius:22, padding:'40px 36px', maxWidth:420, width:'100%', position:'relative', boxShadow:'0 40px 100px rgba(0,0,0,.9)' }}>
-            <button onClick={()=>setDemoModal(false)} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'#4b5563', fontSize:20, cursor:'pointer', lineHeight:1, padding:'4px 8px' }}>✕</button>
-            <div style={{ position:'absolute', top:-60, left:'50%', transform:'translateX(-50%)', width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.07, filter:'blur(60px)', pointerEvents:'none' }}/>
-            {demoEmailSent ? (
-              <div style={{ textAlign:'center', padding:'20px 0' }}>
-                <div style={{ fontSize:52, marginBottom:16 }}>🚀</div>
-                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:'#fff', marginBottom:8 }}>You're in!</div>
-                <div style={{ fontSize:14, color:'#6b7280' }}>Opening the demo now…</div>
-              </div>
-            ) : (
-              <div>
-                <div style={{ textAlign:'center', marginBottom:28 }}>
-                  <div style={{ width:56, height:56, borderRadius:16, background:'linear-gradient(135deg,#7c3aed22,#4f46e522)', border:'1px solid #7c3aed44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, margin:'0 auto 16px' }}>🚀</div>
-                  <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#fff', letterSpacing:'-0.4px', marginBottom:8 }}>Try the interactive demo</div>
-                  <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.65 }}>Enter your email to get full access. No credit card needed.</div>
-                </div>
-                <div style={{ background:'#07070f', border:'1px solid #14142a', borderRadius:12, padding:'12px 16px', marginBottom:20 }}>
-                  {[['◉','Buyer CRM across all platforms'],['◈','Live Companion & real-time show data'],['◑','Analytics & AI Insights'],['◆','Show Planner + Production Suite']].map(([icon,label]) => (
-                    <div key={label} style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 0', borderBottom:'1px solid #0d0d1a' }}>
-                      <span style={{ fontSize:13, color:'#7c3aed', flexShrink:0 }}>{icon}</span>
-                      <span style={{ fontSize:13, color:'#9ca3af' }}>{label}</span>
-                    </div>
-                  ))}
-                </div>
-                <input
-                  type="email"
-                  value={demoEmail}
-                  onChange={e=>setDemoEmail(e.target.value)}
-                  onKeyDown={e=>{ if(e.key==='Enter') submitDemoEmail() }}
-                  placeholder="your@email.com"
-                  autoFocus
-                  style={{ width:'100%', background:'#0a0a18', border:'1px solid #2a2a4a', borderRadius:10, padding:'13px 14px', color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:"'DM Sans',sans-serif", marginBottom:12 }}
-                />
-                <button
-                  onClick={submitDemoEmail}
-                  style={{ width:'100%', background: demoEmail.includes('@') ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : '#141428', border:'none', color: demoEmail.includes('@') ? '#fff' : '#374151', fontSize:14, fontWeight:700, padding:'14px', borderRadius:10, cursor: demoEmail.includes('@') ? 'pointer' : 'default', transition:'all .15s' }}
-                >
-                  Open the Demo →
-                </button>
-                <div style={{ fontSize:11, color:'#374151', textAlign:'center', marginTop:10 }}>No spam. Occasional product updates only.</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* ── CONTACT SALES MODAL ── */}
       {salesModal && (
         <div onClick={e=>{ if(e.target===e.currentTarget) setSalesModal(false) }} style={{ position:'fixed', inset:0, background:'rgba(4,4,18,.88)', backdropFilter:'blur(14px)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>

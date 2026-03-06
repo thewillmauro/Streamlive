@@ -7,6 +7,16 @@
     "items": [
       {
         "type": "◈",
+        "text": "Guard against undefined buyersProp in live show simulation",
+        "date": "2026-03-06"
+      },
+      {
+        "type": "◈",
+        "text": "Dynamic Est. GMV and Buyers in Show Planner based on show duration",
+        "date": "2026-03-06"
+      },
+      {
+        "type": "◈",
         "text": "Allow Starter plan to start live shows with 2-platform limit",
         "date": "2026-03-06"
       },
