@@ -3323,7 +3323,7 @@ function ScreenLive({ buyers, navigate, params, persona: personaProp, updateLive
       });
       setViewerCount(v=>Math.max(180, v + Math.floor((Math.random()-0.4)*8)));
       // New order comes in ~30% of ticks
-      if (Math.random() > 0.7) {
+      if (Math.random() > 0.7 && buyers.length > 0) {
         setLiveBuyers(prev => {
           const remaining = buyers.filter(b=>!prev.find(p=>p.id===b.id));
           const pool = remaining.length > 0 ? remaining : buyers;

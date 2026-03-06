@@ -6,6 +6,16 @@
     "tagColor": "#10b981",
     "items": [
       {
+        "type": "◈",
+        "text": "Allow Starter plan to start live shows with 2-platform limit",
+        "date": "2026-03-06"
+      },
+      {
+        "type": "◈",
+        "text": "Change changelog from monthly to weekly grouping",
+        "date": "2026-03-06"
+      },
+      {
         "type": "✦",
         "text": "Add debug mode to Shopify auth endpoint",
         "date": "2026-03-06"
