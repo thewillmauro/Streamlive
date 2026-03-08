@@ -975,6 +975,8 @@ function ScreenBuyers({ buyers, navigate }) {
   };
 
   const [activeFilterId, setActiveFilterId] = useState(null);
+  const segScrollRef = useRef(null);
+  const segDrag = useRef({ active:false, startX:0, scrollLeft:0 });
 
   const segs = [
     { id:"all",     label:`All (${buyers.length})` },
@@ -997,7 +999,12 @@ function ScreenBuyers({ buyers, navigate }) {
       {/* TOOLBAR */}
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ position:"relative", marginBottom:12 }}>
-          <div style={{ display:"flex", gap:0, overflowX:"auto", scrollBehavior:"smooth", msOverflowStyle:"none", scrollbarWidth:"none" }} className="buyer-seg-scroll">
+          <div ref={segScrollRef}
+            onMouseDown={e=>{segDrag.current={active:true,startX:e.pageX-segScrollRef.current.offsetLeft,scrollLeft:segScrollRef.current.scrollLeft};segScrollRef.current.style.cursor="grabbing";}}
+            onMouseLeave={()=>{segDrag.current.active=false;if(segScrollRef.current)segScrollRef.current.style.cursor="grab";}}
+            onMouseUp={()=>{segDrag.current.active=false;if(segScrollRef.current)segScrollRef.current.style.cursor="grab";}}
+            onMouseMove={e=>{if(!segDrag.current.active)return;e.preventDefault();const x=e.pageX-segScrollRef.current.offsetLeft;segScrollRef.current.scrollLeft=segDrag.current.scrollLeft-(x-segDrag.current.startX);}}
+            style={{ display:"flex", gap:0, overflowX:"auto", scrollBehavior:"smooth", msOverflowStyle:"none", scrollbarWidth:"none", cursor:"grab" }} className="buyer-seg-scroll">
             {segs.map(s=>(
               <button key={s.id} onClick={()=>{setSeg(s.id);setRules([]);setActiveFilterId(null);}} style={{ background:"none", border:"none", borderBottom:`2px solid ${seg===s.id&&!activeFilterId?C.accent:"transparent"}`, color:seg===s.id&&!activeFilterId?"#a78bfa":C.muted, fontSize:12, fontWeight:seg===s.id&&!activeFilterId?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s", whiteSpace:"nowrap", flexShrink:0 }}>
                 {s.label}
