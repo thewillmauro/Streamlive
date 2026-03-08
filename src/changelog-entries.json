@@ -6,6 +6,36 @@
     "tagColor": "#10b981",
     "items": [
       {
+        "type": "✦",
+        "text": "Add partner-specific messaging to login page left panel",
+        "date": "2026-03-08"
+      },
+      {
+        "type": "◈",
+        "text": "Differentiate Sign In vs Create Account messaging on login page",
+        "date": "2026-03-08"
+      },
+      {
+        "type": "◈",
+        "text": "Redesign login page with persuasive split layout and account creation",
+        "date": "2026-03-08"
+      },
+      {
+        "type": "✦",
+        "text": "Add sign out experience to the platform",
+        "date": "2026-03-08"
+      },
+      {
+        "type": "◈",
+        "text": "Ensure Google profile photo passes through to platform avatar",
+        "date": "2026-03-08"
+      },
+      {
+        "type": "◈",
+        "text": "Show Google profile photo next to user name and in Settings profile tab",
+        "date": "2026-03-08"
+      },
+      {
         "type": "◈",
         "text": "Guard against undefined buyersProp in live show simulation",
         "date": "2026-03-06"
