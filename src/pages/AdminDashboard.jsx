@@ -224,7 +224,12 @@ function AdminLoginScreen({ onLogin }) {
 // MAIN DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
 function AdminDashboardInner({ session, onSignOut }) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash.replace("#", "");
+    const validTabs = ["overview", "users", "subscriptions", "analytics", "shows", "content", "system"];
+    return validTabs.includes(hash) ? hash : "overview";
+  });
+  useEffect(() => { window.location.hash = activeTab; }, [activeTab]);
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
