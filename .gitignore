@@ -6,3 +6,4 @@ dist/
 .env.*
 !.env.example
 src/changelog-entries.json
+Streamlive
