@@ -13238,12 +13238,13 @@ export default function StreamlivePrototype({ session, onSignOut }) {
   const shopifyShopParam = new URLSearchParams(window.location.search).get("shop");
   const igParam = new URLSearchParams(window.location.search).get("ig");
   const igHandleParam = new URLSearchParams(window.location.search).get("handle");
-  const [view, setView]             = useState(
-    shopifyParam === "connected" ? "catalog"
-    : igParam === "connected" ? "settings"
-    : onboardParam === "settings" ? "settings"
-    : "dashboard"
-  );
+  const [view, setView]             = useState(() => {
+    if (shopifyParam === "connected") return "catalog";
+    if (igParam === "connected") return "settings";
+    if (onboardParam === "settings") return "settings";
+    try { const saved = sessionStorage.getItem("STRMLIVE_VIEW"); if (saved) return saved; } catch(e) {}
+    return "dashboard";
+  });
   const [params, setParams]         = useState({});
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
@@ -13412,6 +13413,7 @@ export default function StreamlivePrototype({ session, onSignOut }) {
     }
     setView(screen);
     setParams(newParams);
+    try { sessionStorage.setItem("STRMLIVE_VIEW", screen); } catch(e) {}
     track('App Screen Viewed', { screen });
   };
 
