@@ -8671,10 +8671,10 @@ function ScreenShowPlanner({ navigate, persona }) {
               <div key={rule.id} style={{ background:rule.enabled?`${C.accent}08`:C.surface, border:`1px solid ${rule.enabled?C.accent+"44":C.border}`, borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
                 <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
                   <div style={{ flex:1 }}>
-                    <div style={{ display:"grid", gridTemplateColumns:"56px 1fr 56px 1fr", gap:8, alignItems:"center", marginBottom:6 }}>
-                      <span style={{ fontSize:10, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"3px 7px", borderRadius:4, textTransform:"uppercase", textAlign:"center" }}>IF</span>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"3px 7px", borderRadius:4, textTransform:"uppercase", flexShrink:0 }}>IF</span>
                       <select value={rule.trigger} onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,trigger:e.target.value}:r)}))}
-                        style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
+                        style={{ flex:1, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
                         <option value="order_placed">Buyer places an order</option>
                         <option value="first_order">Buyer makes first-ever purchase</option>
                         <option value="order_count">Buyer hits order count</option>
@@ -8694,10 +8694,11 @@ function ScreenShowPlanner({ navigate, persona }) {
                           onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,triggerVal:e.target.value}:r)}))}
                           style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, width:"80px", outline:"none" }} />
                       )}
-                      {!["order_count","spend_threshold"].includes(rule.trigger) && <div />}
-                      <span style={{ fontSize:10, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"3px 7px", borderRadius:4, textTransform:"uppercase", textAlign:"center" }}>THEN</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"3px 7px", borderRadius:4, textTransform:"uppercase", flexShrink:0 }}>THEN</span>
                       <select value={rule.action} onChange={e=>setPerks(p=>({...p,rules:p.rules.map((r,i)=>i===ri?{...r,action:e.target.value}:r)}))}
-                        style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
+                        style={{ flex:1, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
                         <option value="send_dm">Send buyer a DM</option>
                         <option value="apply_discount">Apply a discount</option>
                         <option value="add_bonus_points">Add bonus loyalty points</option>
