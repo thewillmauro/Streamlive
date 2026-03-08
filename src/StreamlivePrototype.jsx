@@ -7229,23 +7229,6 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       {/* ── MESSAGING TAB ── */}
       {tab==="messaging" && (
         <div className="fade-up" style={{ maxWidth:680 }}>
-          {/* CONNECTION STATUS OVERVIEW */}
-          <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
-            {Object.keys(INTEGRATIONS).map(type=>{
-              const intg = INTEGRATIONS[type];
-              const PILL_REQUIRES = { ig:"IG", tt:"TT", wn:"WN", am:"AM" };
-              const reqPlat = PILL_REQUIRES[type];
-              const platOk = reqPlat ? platforms.find(pl=>pl.id===reqPlat)?.connected : true;
-              const connected = isConnected(type) && platOk;
-              return (
-                <div key={type} style={{ display:"flex", alignItems:"center", gap:6, background:connected?intg.bg:C.surface2, border:`1px solid ${connected?intg.color+"44":C.border}`, borderRadius:8, padding:"5px 10px" }}>
-                  <span style={{ fontSize:12 }}>{intg.icon}</span>
-                  <span style={{ fontSize:10, fontWeight:700, color:connected?intg.color:C.subtle }}>{intg.label}</span>
-                  <div style={{ width:6, height:6, borderRadius:"50%", background:connected?C.green:C.border2 }} />
-                </div>
-              );
-            })}
-          </div>
 
           {/* EACH INTEGRATION */}
           {[
