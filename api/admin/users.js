@@ -207,7 +207,7 @@ export default async function handler(req, res) {
     if (!userId || !updates) return res.status(400).json({ error: "Missing userId or updates" });
 
     // Only allow safe fields
-    const allowed = ["plan", "shop_name", "category", "bio", "is_admin", "account_type", "discount"];
+    const allowed = ["plan", "shop_name", "category", "bio", "is_admin", "account_type", "discount", "custom_price"];
     const safe = {};
     for (const [k, v] of Object.entries(updates)) {
       if (allowed.includes(k)) safe[k] = v;
@@ -220,7 +220,7 @@ export default async function handler(req, res) {
 
   // ── Create user and send invite email ────────────────────────────────────
   if (req.method === "POST" && action === "create-user") {
-    const { email, name, first_name, shop_name, category, plan, account_type, discount } = req.body || {};
+    const { email, name, first_name, shop_name, category, plan, account_type, discount, custom_price } = req.body || {};
     if (!email) return res.status(400).json({ error: "Email is required" });
 
     // Check if email already exists
@@ -237,20 +237,20 @@ export default async function handler(req, res) {
 
     const userId = authData.user.id;
     const discountPct = Math.max(0, Math.min(100, parseInt(discount) || 0));
+    const customPriceVal = plan === "enterprise" && custom_price ? parseInt(custom_price) : null;
 
     // Create profile
-    const { error: profileErr } = await supabase.from("profiles").upsert({
+    const profileData = {
       id: userId,
       email,
-      name: name || "",
       first_name: first_name || (name || "").split(" ")[0] || "",
       shop_name: shop_name || "",
-      category: category || "",
       plan: plan || "starter",
-      platforms: [],
       account_type: account_type || "business",
       discount: discountPct || null,
-    }, { onConflict: "id" });
+      custom_price: customPriceVal,
+    };
+    const { error: profileErr } = await supabase.from("profiles").upsert(profileData, { onConflict: "id" });
 
     if (profileErr) return res.status(500).json({ error: "Profile creation failed: " + profileErr.message });
 

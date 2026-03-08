@@ -12,7 +12,7 @@ const C = {
 
 const PLAN_COLORS = { starter: "#10b981", growth: "#7c3aed", pro: "#f59e0b", enterprise: "#a78bfa" };
 const PLAN_PRICES = { starter: 79, growth: 199, pro: 399, enterprise: 999 };
-const VALID_PLANS = ["starter", "growth", "pro"];
+const VALID_PLANS = ["starter", "growth", "pro", "enterprise"];
 const PLATFORM_LABELS = { WN: "Whatnot", TT: "TikTok", IG: "Instagram", AM: "Amazon", YT: "YouTube", instagram: "Instagram", tiktok: "TikTok", whatnot: "Whatnot", amazon: "Amazon", youtube: "YouTube", shopify: "Shopify" };
 const PLATFORM_COLORS = { WN: "#7c3aed", TT: "#f43f5e", IG: "#ec4899", AM: "#f59e0b", YT: "#ef4444", instagram: "#ec4899", tiktok: "#f43f5e", whatnot: "#7c3aed", amazon: "#f59e0b", youtube: "#ef4444", shopify: "#96bf48" };
 
@@ -944,7 +944,7 @@ function AdminDashboardInner({ session, onSignOut }) {
   // ADD USER MODAL
   // ════════════════════════════════════════════════════════════════════════════
   function AddUserModal() {
-    const [form, setForm] = useState({ email: "", name: "", shop_name: "", category: "", plan: "starter", account_type: "business", discount: "" });
+    const [form, setForm] = useState({ email: "", name: "", shop_name: "", category: "", plan: "starter", account_type: "business", discount: "", custom_price: "" });
     const [formError, setFormError] = useState(null);
     const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -952,9 +952,6 @@ function AdminDashboardInner({ session, onSignOut }) {
     const ACCOUNT_TYPES = [
       { id: "business", label: "Business", icon: "🏪" },
       { id: "partner", label: "Partner", icon: "🤝" },
-      { id: "agency", label: "Agency", icon: "🏢" },
-      { id: "creator", label: "Creator", icon: "🎨" },
-      { id: "internal", label: "Internal", icon: "⚙️" },
     ];
 
     const handleSubmit = async () => {
@@ -1019,12 +1016,31 @@ function AdminDashboardInner({ session, onSignOut }) {
                     borderRadius: 8, cursor: "pointer", textAlign: "center", transition: "all .15s",
                   }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: sel ? col : C.muted, textTransform: "capitalize" }}>{p}</div>
-                    <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>${PLAN_PRICES[p]}/mo</div>
+                    <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{p === "enterprise" ? "Custom" : `$${PLAN_PRICES[p]}/mo`}</div>
                   </button>
                 );
               })}
             </div>
           </div>
+
+          {/* Enterprise Custom Pricing */}
+          {form.plan === "enterprise" && (
+            <div style={{ marginBottom: 14, padding: 16, background: `${PLAN_COLORS.enterprise}08`, border: `1px solid ${PLAN_COLORS.enterprise}22`, borderRadius: 10 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: PLAN_COLORS.enterprise, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 10 }}>Enterprise Pricing</span>
+              <label style={{ display: "block", marginBottom: 10 }}>
+                <span style={{ fontSize: 11, color: C.muted, display: "block", marginBottom: 4 }}>Base Price ($/mo)</span>
+                <input value={form.custom_price} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ""); set("custom_price", v); }} placeholder="999"
+                  style={{ width: "100%", background: C.surface, border: `1px solid ${PLAN_COLORS.enterprise}33`, borderRadius: 8, padding: "10px 14px", fontSize: 14, fontWeight: 700, color: C.text, outline: "none" }} />
+              </label>
+              <div style={{ display: "flex", gap: 8, fontSize: 10, color: C.muted }}>
+                <span onClick={() => set("custom_price", "999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$999</span>
+                <span onClick={() => set("custom_price", "1499")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$1,499</span>
+                <span onClick={() => set("custom_price", "1999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$1,999</span>
+                <span onClick={() => set("custom_price", "2999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$2,999</span>
+                <span onClick={() => set("custom_price", "4999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$4,999</span>
+              </div>
+            </div>
+          )}
 
           {/* Account Type */}
           <div style={{ marginBottom: 14 }}>
@@ -1051,13 +1067,29 @@ function AdminDashboardInner({ session, onSignOut }) {
             <div style={{ position: "relative" }}>
               <input value={form.discount} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ""); if (v === "" || (Number(v) >= 0 && Number(v) <= 100)) set("discount", v); }} placeholder="0"
                 style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }} />
-              {form.discount && Number(form.discount) > 0 && (
-                <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: C.green }}>
-                  ${Math.round(PLAN_PRICES[form.plan] * (1 - Number(form.discount) / 100))}/mo
-                </div>
-              )}
+              {(() => {
+                const basePrice = form.plan === "enterprise" ? (Number(form.custom_price) || 999) : PLAN_PRICES[form.plan];
+                const disc = Number(form.discount) || 0;
+                const final_ = Math.round(basePrice * (1 - disc / 100));
+                if (disc > 0) return <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: C.green }}>${final_}/mo</div>;
+                return null;
+              })()}
             </div>
           </label>
+
+          {/* Pricing Summary */}
+          {form.plan === "enterprise" && (
+            <div style={{ marginBottom: 14, padding: "10px 14px", background: `${PLAN_COLORS.enterprise}0a`, border: `1px solid ${PLAN_COLORS.enterprise}18`, borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: C.muted }}>Final monthly price</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: PLAN_COLORS.enterprise }}>
+                ${(() => {
+                  const base = Number(form.custom_price) || 999;
+                  const disc = Number(form.discount) || 0;
+                  return Math.round(base * (1 - disc / 100)).toLocaleString();
+                })()}/mo
+              </span>
+            </div>
+          )}
 
           {/* Error */}
           {formError && (
