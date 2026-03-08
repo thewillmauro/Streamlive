@@ -69,7 +69,216 @@ function PlanBadge({ plan }) {
   );
 }
 
-export default function AdminDashboard({ session, onSignOut }) {
+// ── HACKER-STYLE LOGIN LANDING ───────────────────────────────────────────────
+function AdminLoginScreen({ onLogin }) {
+  const [lines, setLines] = useState([]);
+  const [inputVal, setInputVal] = useState("");
+  const [phase, setPhase] = useState("boot"); // boot → prompt → auth
+  const [cursorVisible, setCursorVisible] = useState(true);
+
+  const bootSequence = [
+    { text: "STRMLIVE MISSION CONTROL v2.1.0", delay: 0 },
+    { text: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", delay: 100 },
+    { text: "", delay: 200 },
+    { text: "[SYS] Initializing secure terminal...", delay: 300 },
+    { text: "[SYS] Establishing encrypted tunnel... ██████████ OK", delay: 700 },
+    { text: "[SYS] Loading kernel modules............. OK", delay: 1100 },
+    { text: "[SYS] TLS 1.3 handshake verified......... OK", delay: 1400 },
+    { text: "[SYS] Firewall rules loaded.............. OK", delay: 1650 },
+    { text: "[NET] Connecting to Streamlive Core...... OK", delay: 1900 },
+    { text: "[AUTH] Multi-factor gateway active....... READY", delay: 2200 },
+    { text: "", delay: 2400 },
+    { text: "┌─────────────────────────────────────────┐", delay: 2500 },
+    { text: "│  CLASSIFICATION: TOP SECRET // STRMLIVE │", delay: 2600 },
+    { text: "│  AUTHORIZED PERSONNEL ONLY             │", delay: 2700 },
+    { text: "└─────────────────────────────────────────┘", delay: 2800 },
+    { text: "", delay: 2900 },
+  ];
+
+  // Cursor blink
+  useEffect(() => {
+    const t = setInterval(() => setCursorVisible(v => !v), 530);
+    return () => clearInterval(t);
+  }, []);
+
+  // Boot sequence
+  useEffect(() => {
+    const timers = bootSequence.map((line, i) =>
+      setTimeout(() => {
+        setLines(prev => [...prev, line.text]);
+        if (i === bootSequence.length - 1) {
+          setTimeout(() => setPhase("prompt"), 400);
+        }
+      }, line.delay)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && phase === "prompt") {
+      const cmd = inputVal.trim().toLowerCase();
+      if (cmd === "access" || cmd === "login" || cmd === "connect") {
+        setLines(prev => [...prev, `> ${inputVal}`, "", "[AUTH] Redirecting to secure authentication portal...", "[AUTH] Google OAuth 2.0 handshake initiated..."]);
+        setPhase("auth");
+        setInputVal("");
+        setTimeout(() => onLogin(), 1500);
+      } else if (cmd === "help") {
+        setLines(prev => [...prev, `> ${inputVal}`, "", "Available commands:", "  access  — Authenticate via secure portal", "  login   — Authenticate via secure portal", "  status  — System status check", "  help    — Display this message", ""]);
+        setInputVal("");
+      } else if (cmd === "status") {
+        setLines(prev => [...prev, `> ${inputVal}`, "", `[STATUS] Uptime: ${Math.floor(Math.random() * 99 + 1)} days`, `[STATUS] Active sessions: ${Math.floor(Math.random() * 3)}`, `[STATUS] Threat level: NOMINAL`, `[STATUS] Last breach attempt: ${Math.floor(Math.random() * 48 + 1)}h ago — BLOCKED`, ""]);
+        setInputVal("");
+      } else if (cmd) {
+        setLines(prev => [...prev, `> ${inputVal}`, `bash: ${cmd}: command not found. Type 'help' for available commands.`, ""]);
+        setInputVal("");
+      }
+    }
+  };
+
+  return (
+    <div style={{ background: "#000", height: "100vh", overflow: "hidden", fontFamily: "'JetBrains Mono', 'Courier New', monospace", position: "relative" }}
+      onClick={() => document.getElementById("mc-terminal-input")?.focus()}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+        @keyframes scanline {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100vh); }
+        }
+        @keyframes flicker {
+          0%, 100% { opacity: 1; }
+          92% { opacity: 1; }
+          93% { opacity: 0.8; }
+          94% { opacity: 1; }
+          96% { opacity: 0.9; }
+          97% { opacity: 1; }
+        }
+        @keyframes glowPulse {
+          0%, 100% { text-shadow: 0 0 5px #00ff4188, 0 0 10px #00ff4144; }
+          50% { text-shadow: 0 0 10px #00ff4188, 0 0 20px #00ff4166, 0 0 30px #00ff4122; }
+        }
+        @keyframes matrixRain {
+          0% { transform: translateY(-100%); opacity: 1; }
+          100% { transform: translateY(100vh); opacity: 0; }
+        }
+      `}</style>
+
+      {/* Scanline effect */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10,
+        background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px)",
+      }} />
+      <div style={{
+        position: "absolute", left: 0, right: 0, height: 2, background: "rgba(0,255,65,0.06)",
+        zIndex: 11, pointerEvents: "none", animation: "scanline 8s linear infinite",
+      }} />
+
+      {/* Matrix rain columns (subtle background) */}
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", opacity: 0.04 }}>
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div key={i} style={{
+            position: "absolute", left: `${i * 5 + Math.random() * 2}%`, top: 0,
+            fontSize: 11, color: "#00ff41", writingMode: "vertical-rl", lineHeight: 1.2,
+            animation: `matrixRain ${6 + Math.random() * 8}s linear infinite`,
+            animationDelay: `${Math.random() * 5}s`,
+          }}>
+            {Array.from({ length: 30 }).map(() => String.fromCharCode(0x30A0 + Math.random() * 96)).join("")}
+          </div>
+        ))}
+      </div>
+
+      {/* CRT vignette */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 12,
+        background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%)",
+      }} />
+
+      {/* Terminal content */}
+      <div style={{
+        position: "relative", zIndex: 5, height: "100%", padding: "40px 60px",
+        overflow: "auto", animation: "flicker 10s infinite",
+      }}>
+        {/* Logo */}
+        <div style={{ marginBottom: 8 }}>
+          <pre style={{ color: "#00ff41", fontSize: 10, lineHeight: 1.2, animation: "glowPulse 3s ease-in-out infinite", margin: 0 }}>{`
+ ███╗   ███╗ ██╗ ███████╗ ███████╗ ██╗  ██████╗  ███╗   ██╗
+ ████╗ ████║ ██║ ██╔════╝ ██╔════╝ ██║ ██╔═══██╗ ████╗  ██║
+ ██╔████╔██║ ██║ ███████╗ ███████╗ ██║ ██║   ██║ ██╔██╗ ██║
+ ██║╚██╔╝██║ ██║ ╚════██║ ╚════██║ ██║ ██║   ██║ ██║╚██╗██║
+ ██║ ╚═╝ ██║ ██║ ███████║ ███████║ ██║ ╚██████╔╝ ██║ ╚████║
+ ╚═╝     ╚═╝ ╚═╝ ╚══════╝ ╚══════╝ ╚═╝  ╚═════╝  ╚═╝  ╚═══╝
+  ██████╗  ██████╗  ███╗   ██╗ ████████╗ ██████╗   ██████╗  ██╗
+ ██╔════╝ ██╔═══██╗ ████╗  ██║ ╚══██╔══╝ ██╔══██╗ ██╔═══██╗ ██║
+ ██║      ██║   ██║ ██╔██╗ ██║    ██║    ██████╔╝ ██║   ██║ ██║
+ ██║      ██║   ██║ ██║╚██╗██║    ██║    ██╔══██╗ ██║   ██║ ██║
+ ╚██████╗ ╚██████╔╝ ██║ ╚████║    ██║    ██║  ██║ ╚██████╔╝ ███████╗
+  ╚═════╝  ╚═════╝  ╚═╝  ╚═══╝    ╚═╝    ╚═╝  ╚═╝  ╚═════╝  ╚══════╝`}
+          </pre>
+        </div>
+
+        {/* Terminal output lines */}
+        {lines.map((line, i) => (
+          <div key={i} style={{
+            color: line.startsWith("[AUTH]") ? "#ff6b35" : line.startsWith("[SYS]") ? "#00ff41" : line.startsWith("[NET]") ? "#00d4ff" : line.startsWith("[STATUS]") ? "#ffdd00" : line.startsWith("┌") || line.startsWith("│") || line.startsWith("└") || line.startsWith("━") ? "#ff003c" : line.startsWith("  ") ? "#888" : "#00ff41",
+            fontSize: 13, lineHeight: 1.7, whiteSpace: "pre",
+            textShadow: line.startsWith("[") ? "0 0 8px currentColor" : "none",
+          }}>
+            {line}
+          </div>
+        ))}
+
+        {/* Input prompt */}
+        {phase === "prompt" && (
+          <div style={{ display: "flex", alignItems: "center", marginTop: 4 }}>
+            <span style={{ color: "#00ff41", fontSize: 13 }}>root@mission-control:~$ </span>
+            <input
+              id="mc-terminal-input"
+              autoFocus
+              value={inputVal}
+              onChange={e => setInputVal(e.target.value)}
+              onKeyDown={handleKeyDown}
+              style={{
+                background: "transparent", border: "none", outline: "none",
+                color: "#00ff41", fontSize: 13, fontFamily: "'JetBrains Mono', monospace",
+                flex: 1, caretColor: "transparent",
+              }}
+            />
+            <span style={{ color: "#00ff41", opacity: cursorVisible ? 1 : 0, fontSize: 13, fontWeight: 700 }}>█</span>
+          </div>
+        )}
+
+        {phase === "prompt" && (
+          <div style={{ marginTop: 20, color: "#444", fontSize: 11 }}>
+            Type <span style={{ color: "#00ff41" }}>access</span> to authenticate · <span style={{ color: "#555" }}>or type <span style={{ color: "#666" }}>help</span> for commands</span>
+          </div>
+        )}
+
+        {phase === "auth" && (
+          <div style={{ marginTop: 12, color: "#ff6b35", fontSize: 13, animation: "glowPulse 1s ease-in-out infinite" }}>
+            ████████████████ CONNECTING TO AUTH GATEWAY...
+          </div>
+        )}
+
+        {/* Quick access button (for convenience) */}
+        {phase === "prompt" && (
+          <div style={{ position: "fixed", bottom: 32, right: 40, zIndex: 20 }}>
+            <button onClick={onLogin} style={{
+              background: "rgba(0,255,65,0.08)", border: "1px solid #00ff4133",
+              borderRadius: 8, color: "#00ff41", fontSize: 11, fontWeight: 600,
+              padding: "10px 20px", cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+              transition: "all .2s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,255,65,0.15)"; e.currentTarget.style.borderColor = "#00ff4166"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,255,65,0.08)"; e.currentTarget.style.borderColor = "#00ff4133"; }}>
+              [ QUICK ACCESS → ]
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboardInner({ session, onSignOut }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
@@ -663,4 +872,24 @@ export default function AdminDashboard({ session, onSignOut }) {
       </div>
     </>
   );
+}
+
+// ── WRAPPER: show login screen or dashboard ─────────────────────────────────
+export default function AdminDashboard({ session, onSignOut }) {
+  const handleLogin = useCallback(async () => {
+    if (!supabase) return;
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/admin",
+        queryParams: { access_type: "offline", prompt: "consent" },
+      },
+    });
+  }, []);
+
+  if (!session) {
+    return <AdminLoginScreen onLogin={handleLogin} />;
+  }
+
+  return <AdminDashboardInner session={session} onSignOut={onSignOut} />;
 }

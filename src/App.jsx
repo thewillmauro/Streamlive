@@ -1907,19 +1907,18 @@ export default function App() {
     navigate('/')
   }, [])
 
-  // Auth gate for /admin route
-  if (route === '/admin') {
-    if (authLoading) return (
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", color:"#a78bfa", fontFamily:"'DM Sans',sans-serif" }}>
-        <div style={{ width:32, height:32, border:"3px solid #a78bfa33", borderTop:"3px solid #a78bfa", borderRadius:"50%", animation:"spin .8s linear infinite" }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      </div>
-    )
-    if (!session) {
-      handleSignIn('/admin')
-      return null
-    }
+  // Auth gate for /admin route — show hacker-style landing if not signed in
+  if (route === '/admin' && !session && !authLoading) {
+    // Render AdminDashboard with no session — it will show its own login screen
   }
+  if (route === '/admin' && authLoading) return (
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#000", color:"#00ff41", fontFamily:"'JetBrains Mono',monospace" }}>
+      <div style={{ textAlign:"center" }}>
+        <div style={{ fontSize:13, animation:"blink 1s step-end infinite" }}>ESTABLISHING SECURE CONNECTION...</div>
+        <style>{`@keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }`}</style>
+      </div>
+    </div>
+  )
 
   // Auth gate for /app route
   if (route === '/app') {
