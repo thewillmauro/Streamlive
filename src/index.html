@@ -180,10 +180,6 @@
             background_color: '#7c3aed',
             action_color: '#7c3aed',
           });
-          // Auto-greeting every time chat opens
-          w.Intercom('onShow', function() {
-            w.Intercom('showNewMessage', 'Hey! Thanks for checking out Streamlive. How can we help you today?');
-          });
         };
         var x = document.getElementsByTagName('script')[0];
         x.parentNode.insertBefore(s, x);
