@@ -65,13 +65,19 @@ export default async function handler(req, res) {
 
   // ── Platform-wide stats ───────────────────────────────────────────────────
   if (req.method === "GET" && action === "stats") {
-    const [profilesRes, buyersRes, showsRes, ordersRes, campaignsRes, connectionsRes] = await Promise.all([
+    const [profilesRes, buyersRes, showsRes, ordersRes, campaignsRes, connectionsRes, automationsRes, loyaltyRes, optInsRes, devicesRes, teamRes, showProductsRes] = await Promise.all([
       supabase.from("profiles").select("id,plan,created_at,platforms,category"),
       supabase.from("buyers").select("id,profile_id,spend,status,created_at"),
       supabase.from("shows").select("id,profile_id,gmv,buyers_count,status,platforms,duration_min,date,created_at"),
       supabase.from("orders").select("id,profile_id,total,status,platform,created_at"),
       supabase.from("campaigns").select("id,profile_id,status,recipients,opens,clicks,conversions,gmv,channel"),
       supabase.from("connections").select("id,profile_id,platform,connected_at"),
+      supabase.from("automations").select("id,profile_id,status,platforms,triggers,conversions,goal"),
+      supabase.from("loyalty_transactions").select("id,profile_id,buyer_id,points,reason,created_at"),
+      supabase.from("opt_in_records").select("id,profile_id,opt_ins,source,created_at"),
+      supabase.from("devices").select("id,profile_id,category,connected,battery"),
+      supabase.from("team_members").select("id,profile_id,role"),
+      supabase.from("show_products").select("id,show_id"),
     ]);
 
     const users = profilesRes.data || [];
@@ -80,6 +86,12 @@ export default async function handler(req, res) {
     const orders = ordersRes.data || [];
     const campaigns = campaignsRes.data || [];
     const connections = connectionsRes.data || [];
+    const automationsData = automationsRes.data || [];
+    const loyaltyData = loyaltyRes.data || [];
+    const optIns = optInsRes.data || [];
+    const devicesData = devicesRes.data || [];
+    const teamData = teamRes.data || [];
+    const showProductsData = showProductsRes.data || [];
 
     const now = Date.now();
     const sevenDays = 7 * 86400000;
@@ -151,6 +163,53 @@ export default async function handler(req, res) {
     // User activity (users with shows in last 30 days)
     const activeUserIds = new Set(recentShows.map(s => s.profile_id));
 
+    // Automation stats
+    const activeAutomations = automationsData.filter(a => a.status === "active");
+    const totalAutoTriggers = automationsData.reduce((sum, a) => sum + (a.triggers || 0), 0);
+    const totalAutoConversions = automationsData.reduce((sum, a) => sum + (a.conversions || 0), 0);
+    const autoByGoal = {};
+    for (const a of automationsData) {
+      if (a.goal) autoByGoal[a.goal] = (autoByGoal[a.goal] || 0) + 1;
+    }
+
+    // Loyalty / Perks stats
+    const totalLoyaltyPoints = loyaltyData.reduce((sum, t) => sum + (t.points || 0), 0);
+    const loyaltyByReason = {};
+    for (const t of loyaltyData) {
+      if (t.reason) loyaltyByReason[t.reason] = (loyaltyByReason[t.reason] || 0) + 1;
+    }
+    const uniqueLoyaltyBuyers = new Set(loyaltyData.map(t => t.buyer_id)).size;
+
+    // Opt-in stats
+    const optInsBySource = {};
+    for (const o of optIns) {
+      if (o.source) optInsBySource[o.source] = (optInsBySource[o.source] || 0) + 1;
+    }
+
+    // Production / Device stats
+    const connectedDevices = devicesData.filter(d => d.connected);
+    const devicesByCategory = {};
+    for (const d of devicesData) {
+      if (d.category) devicesByCategory[d.category] = (devicesByCategory[d.category] || 0) + 1;
+    }
+    const avgBattery = (() => {
+      const withBattery = devicesData.filter(d => d.battery != null);
+      return withBattery.length ? Math.round(withBattery.reduce((s, d) => s + d.battery, 0) / withBattery.length) : null;
+    })();
+
+    // Team stats
+    const teamByRole = {};
+    for (const t of teamData) {
+      teamByRole[t.role] = (teamByRole[t.role] || 0) + 1;
+    }
+    const teamsWithMembers = new Set(teamData.map(t => t.profile_id)).size;
+
+    // Show products stats
+    const avgProductsPerShow = (() => {
+      const showIds = new Set(showProductsData.map(sp => sp.show_id));
+      return showIds.size ? Math.round(showProductsData.length / showIds.size * 10) / 10 : 0;
+    })();
+
     return res.json({
       total: users.length,
       planCounts,
@@ -163,6 +222,12 @@ export default async function handler(req, res) {
       orders: { total: totalOrders, totalRevenue: totalOrderRevenue, byPlatform: ordersByPlatform },
       campaigns: { total: campaigns.length, sent: sentCampaigns.length, totalRecipients, totalOpens, totalClicks, totalConversions, gmv: campaignGMV, byChannel: channelBreakdown },
       connections: { total: connections.length, byPlatform: connectionsByPlatform },
+      automations: { total: automationsData.length, active: activeAutomations.length, totalTriggers: totalAutoTriggers, totalConversions: totalAutoConversions, byGoal: autoByGoal },
+      loyalty: { totalTransactions: loyaltyData.length, totalPoints: totalLoyaltyPoints, uniqueBuyers: uniqueLoyaltyBuyers, byReason: loyaltyByReason },
+      optIns: { total: optIns.length, bySource: optInsBySource },
+      production: { totalDevices: devicesData.length, connected: connectedDevices.length, byCategory: devicesByCategory, avgBattery },
+      team: { totalMembers: teamData.length, teamsWithMembers, byRole: teamByRole },
+      showProducts: { total: showProductsData.length, avgPerShow: avgProductsPerShow },
     });
   }
 

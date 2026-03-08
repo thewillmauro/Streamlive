@@ -686,6 +686,12 @@ function AdminDashboardInner({ session, onSignOut }) {
     const buyerStats = s.buyers || {};
     const campaignStats = s.campaigns || {};
     const orderStats = s.orders || {};
+    const autoStats = s.automations || {};
+    const loyaltyStats = s.loyalty || {};
+    const optInStats = s.optIns || {};
+    const prodStats = s.production || {};
+    const teamStats = s.team || {};
+    const showProdStats = s.showProducts || {};
 
     return (
       <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
@@ -800,6 +806,135 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </Card>
         </div>
+
+        {/* ── Perks & Loyalty ── */}
+        <div style={{ marginTop: 28 }}>
+          <SectionHeader title="Perks & Loyalty" sub="Loyalty program engagement across the platform" />
+        </div>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
+          <StatCard label="Loyalty Transactions" value={fmt(loyaltyStats.totalTransactions || 0)} icon="★" color={C.amber} />
+          <StatCard label="Points Issued" value={fmt(loyaltyStats.totalPoints || 0)} icon="◆" color={C.green} sub="all time" />
+          <StatCard label="Loyalty Members" value={fmt(loyaltyStats.uniqueBuyers || 0)} icon="◉" color={C.accent} />
+          <StatCard label="Opt-Ins Collected" value={fmt(optInStats.total || 0)} icon="✦" color={C.cyan} />
+        </div>
+
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+          <Card style={{ flex: 1, minWidth: 260 }}>
+            <CardHeader title="Points by Reason" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(loyaltyStats.byReason || {}).sort((a, b) => b[1] - a[1]).map(([reason, count]) => {
+                const reasonLabels = { show_purchase: "Show Purchase", referral_bonus: "Referral", vip_bonus: "VIP Bonus", repeat_purchase: "Repeat Purchase", review_reward: "Review", birthday_bonus: "Birthday", streak_bonus: "Streak", social_share: "Social Share" };
+                const maxCount = Math.max(...Object.values(loyaltyStats.byReason || {}), 1);
+                return (
+                  <div key={reason} style={{ marginBottom: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                      <span style={{ fontSize: 12, color: C.text }}>{reasonLabels[reason] || reason}</span>
+                      <span style={{ fontSize: 11, color: C.muted }}>{count}</span>
+                    </div>
+                    <MiniBar value={count} max={maxCount} color={C.amber} />
+                  </div>
+                );
+              })}
+              {!loyaltyStats.byReason || Object.keys(loyaltyStats.byReason).length === 0 ? <EmptyRow text="No loyalty data" /> : null}
+            </div>
+          </Card>
+
+          <Card style={{ flex: 1, minWidth: 260 }}>
+            <CardHeader title="Opt-In Sources" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(optInStats.bySource || {}).sort((a, b) => b[1] - a[1]).map(([src, count]) => {
+                const srcLabels = { show_popup: "Show Popup", checkout_flow: "Checkout", landing_page: "Landing Page", social_link: "Social Link", qr_code: "QR Code", referral: "Referral" };
+                const maxCount = Math.max(...Object.values(optInStats.bySource || {}), 1);
+                return (
+                  <div key={src} style={{ marginBottom: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                      <span style={{ fontSize: 12, color: C.text }}>{srcLabels[src] || src}</span>
+                      <span style={{ fontSize: 11, color: C.muted }}>{count}</span>
+                    </div>
+                    <MiniBar value={count} max={maxCount} color={C.cyan} />
+                  </div>
+                );
+              })}
+              {!optInStats.bySource || Object.keys(optInStats.bySource).length === 0 ? <EmptyRow text="No opt-in data" /> : null}
+            </div>
+          </Card>
+        </div>
+
+        {/* ── Production & Automation ── */}
+        <div style={{ marginTop: 28 }}>
+          <SectionHeader title="Production & Automation" sub="Devices, automations, and team across the platform" />
+        </div>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
+          <StatCard label="Total Devices" value={fmt(prodStats.totalDevices || 0)} icon="◧" color={C.pink} sub={`${fmt(prodStats.connected || 0)} connected`} />
+          <StatCard label="Automations" value={fmt(autoStats.total || 0)} icon="⚡" color={C.accent} sub={`${fmt(autoStats.active || 0)} active`} />
+          <StatCard label="Auto Triggers" value={fmt(autoStats.totalTriggers || 0)} icon="◈" color={C.amber} sub={`${fmt(autoStats.totalConversions || 0)} conversions`} />
+          <StatCard label="Team Members" value={fmt(teamStats.totalMembers || 0)} icon="◉" color={C.blue} sub={`${fmt(teamStats.teamsWithMembers || 0)} teams`} />
+          <StatCard label="Show Products" value={fmt(showProdStats.total || 0)} icon="◆" color={C.green} sub={`~${showProdStats.avgPerShow || 0} per show`} />
+        </div>
+
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+          <Card style={{ flex: 1, minWidth: 260 }}>
+            <CardHeader title="Device Categories" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(prodStats.byCategory || {}).sort((a, b) => b[1] - a[1]).map(([cat, count]) => {
+                const catLabels = { camera: "Cameras", computer: "Computers", microphone: "Microphones", lighting: "Lighting", capture_card: "Capture Cards", controller: "Controllers", audio_mixer: "Audio Mixers", switcher: "Switchers", teleprompter: "Teleprompters" };
+                return (
+                  <div key={cat} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.border}` }}>
+                    <span style={{ fontSize: 12, color: C.text }}>{catLabels[cat] || cat}</span>
+                    <span style={{ fontSize: 12, color: C.muted }}>{count}</span>
+                  </div>
+                );
+              })}
+              {!prodStats.byCategory || Object.keys(prodStats.byCategory).length === 0 ? <EmptyRow text="No device data" /> : null}
+            </div>
+          </Card>
+
+          <Card style={{ flex: 1, minWidth: 260 }}>
+            <CardHeader title="Automation Goals" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(autoStats.byGoal || {}).sort((a, b) => b[1] - a[1]).map(([goal, count]) => {
+                const goalCols = { sales: C.green, engagement: C.accent, support: C.blue, trust: C.amber, loyalty: C.pink, leads: C.cyan, onboarding: C.green };
+                return (
+                  <div key={goal} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.border}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: goalCols[goal] || C.muted }} />
+                      <span style={{ fontSize: 12, color: C.text, textTransform: "capitalize" }}>{goal}</span>
+                    </div>
+                    <span style={{ fontSize: 12, color: C.muted }}>{count}</span>
+                  </div>
+                );
+              })}
+              {!autoStats.byGoal || Object.keys(autoStats.byGoal).length === 0 ? <EmptyRow text="No automation data" /> : null}
+            </div>
+          </Card>
+
+          <Card style={{ flex: 1, minWidth: 260 }}>
+            <CardHeader title="Team Roles" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(teamStats.byRole || {}).sort((a, b) => b[1] - a[1]).map(([role, count]) => {
+                const roleCols = { owner: C.amber, manager: C.accent, producer: C.green, analyst: C.cyan, support: C.blue, viewer: C.muted };
+                return (
+                  <div key={role} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.border}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: roleCols[role] || C.muted }} />
+                      <span style={{ fontSize: 12, color: C.text, textTransform: "capitalize" }}>{role}</span>
+                    </div>
+                    <span style={{ fontSize: 12, color: C.muted }}>{count}</span>
+                  </div>
+                );
+              })}
+              {!teamStats.byRole || Object.keys(teamStats.byRole).length === 0 ? <EmptyRow text="No team data" /> : null}
+            </div>
+          </Card>
+        </div>
+
+        {prodStats.avgBattery != null && (
+          <div style={{ padding: "12px 18px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 11, color: C.muted }}>Avg Device Battery</span>
+            <div style={{ flex: 1, maxWidth: 200 }}><MiniBar value={prodStats.avgBattery} max={100} color={prodStats.avgBattery > 50 ? C.green : prodStats.avgBattery > 20 ? C.amber : C.red} /></div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: prodStats.avgBattery > 50 ? C.green : C.amber }}>{prodStats.avgBattery}%</span>
+          </div>
+        )}
       </div>
     );
   }
