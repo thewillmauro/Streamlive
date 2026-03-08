@@ -12911,7 +12911,7 @@ function ScreenAcceptInvite({ token }) {
 }
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
-export default function StreamlivePrototype({ session }) {
+export default function StreamlivePrototype({ session, onSignOut }) {
   // All hooks must come before any conditional returns (Rules of Hooks)
   const userId = session?.user?.id;
   const onboardParam = new URLSearchParams(window.location.search).get("onboard");
@@ -12924,6 +12924,7 @@ export default function StreamlivePrototype({ session }) {
   );
   const [params, setParams]         = useState({});
   const [notifications, setNotifications] = useState(3);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
   const [completedShows, setCompletedShows] = useState([]);
   // Persist the active live session so navigating away and back restores it
@@ -13143,14 +13144,36 @@ export default function StreamlivePrototype({ session }) {
           </button>
 
           {/* USER IDENTITY */}
-          <div style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"5px 10px 5px 6px" }}>
-            {persona.avatarUrl ? (
-              <img src={persona.avatarUrl} alt="" style={{ width:24, height:24, borderRadius:"50%", objectFit:"cover" }} referrerPolicy="no-referrer" />
-            ) : (
-              <Avatar initials={persona.avatar} color={persona.planColor} size={24} />
+          <div style={{ position:"relative" }}>
+            <button onClick={()=>setUserMenuOpen(m=>!m)} style={{ display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"5px 10px 5px 6px", cursor:"pointer" }}>
+              {persona.avatarUrl ? (
+                <img src={persona.avatarUrl} alt="" style={{ width:24, height:24, borderRadius:"50%", objectFit:"cover" }} referrerPolicy="no-referrer" />
+              ) : (
+                <Avatar initials={persona.avatar} color={persona.planColor} size={24} />
+              )}
+              <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{persona.name}</span>
+              <span style={{ fontSize:9, color:persona.planColor, background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}33`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase", fontWeight:700 }}>{persona.plan}</span>
+              <span style={{ fontSize:10, color:C.muted, marginLeft:2 }}>▾</span>
+            </button>
+            {userMenuOpen && (
+              <>
+                <div onClick={()=>setUserMenuOpen(false)} style={{ position:"fixed", inset:0, zIndex:998 }} />
+                <div style={{ position:"absolute", top:"calc(100% + 6px)", right:0, background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:4, minWidth:180, zIndex:999, boxShadow:"0 8px 30px rgba(0,0,0,.5)" }}>
+                  <div style={{ padding:"10px 12px", borderBottom:`1px solid ${C.border}` }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{persona.name}</div>
+                    <div style={{ fontSize:11, color:C.muted }}>{persona.email}</div>
+                  </div>
+                  <button onClick={()=>{ setUserMenuOpen(false); navigate("settings"); }} style={{ display:"flex", alignItems:"center", gap:8, width:"100%", background:"none", border:"none", color:C.text, fontSize:12, fontWeight:500, padding:"9px 12px", cursor:"pointer", borderRadius:6, textAlign:"left" }}
+                    onMouseEnter={e=>e.currentTarget.style.background=C.surface2} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                    ◎ Settings
+                  </button>
+                  <button onClick={()=>{ setUserMenuOpen(false); if(onSignOut) onSignOut(); }} style={{ display:"flex", alignItems:"center", gap:8, width:"100%", background:"none", border:"none", color:"#ef4444", fontSize:12, fontWeight:500, padding:"9px 12px", cursor:"pointer", borderRadius:6, textAlign:"left" }}
+                    onMouseEnter={e=>e.currentTarget.style.background=C.surface2} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                    ↩ Sign Out
+                  </button>
+                </div>
+              </>
             )}
-            <span style={{ fontSize:12, fontWeight:600, color:C.text }}>{persona.name}</span>
-            <span style={{ fontSize:9, color:persona.planColor, background:`${persona.planColor}18`, border:`1px solid ${persona.planColor}33`, padding:"1px 6px", borderRadius:4, textTransform:"uppercase", fontWeight:700 }}>{persona.plan}</span>
           </div>
         </div>
 
@@ -13254,15 +13277,21 @@ export default function StreamlivePrototype({ session }) {
             )}
 
             {/* USER: always visible at bottom */}
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 10px 4px", borderTop:`1px solid ${C.border}`, marginTop:4 }}>
-              {persona.avatarUrl ? (
-                <img src={persona.avatarUrl} alt="" style={{ width:28, height:28, borderRadius:"50%", objectFit:"cover", flexShrink:0 }} referrerPolicy="no-referrer" />
-              ) : (
-                <Avatar initials={persona.avatar} color={persona.planColor} size={28} />
-              )}
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:11, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.name}</div>
-                <div style={{ fontSize:9, color:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.shop}</div>
+            <div style={{ borderTop:`1px solid ${C.border}`, marginTop:4, padding:"10px 10px 4px" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                {persona.avatarUrl ? (
+                  <img src={persona.avatarUrl} alt="" style={{ width:28, height:28, borderRadius:"50%", objectFit:"cover", flexShrink:0 }} referrerPolicy="no-referrer" />
+                ) : (
+                  <Avatar initials={persona.avatar} color={persona.planColor} size={28} />
+                )}
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.name}</div>
+                  <div style={{ fontSize:9, color:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{persona.shop}</div>
+                </div>
+                <button onClick={()=>{ if(onSignOut) onSignOut(); }} title="Sign Out" style={{ background:"none", border:"none", color:C.muted, fontSize:12, cursor:"pointer", padding:"4px 6px", borderRadius:6, flexShrink:0 }}
+                  onMouseEnter={e=>e.currentTarget.style.color="#ef4444"} onMouseLeave={e=>e.currentTarget.style.color=C.muted}>
+                  ↩
+                </button>
               </div>
             </div>
           </div>
