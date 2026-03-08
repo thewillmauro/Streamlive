@@ -6672,7 +6672,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       connectWith: () => connect("wn", { account: persona.shop, followers: "1,240", scopes: ["Inventory Sync", "Show Notifications", "Order Webhooks"] }),
     },
     am: {
-      label: "Amazon SP-API",
+      label: "Amazon",
       icon: "📦",
       color: "#f97316",
       bg: "#2e1608",
