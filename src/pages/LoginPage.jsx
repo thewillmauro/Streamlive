@@ -74,19 +74,47 @@ export default function LoginPage() {
     boxSizing: 'border-box',
   }
 
-  const STATS = [
-    { value: '5', label: 'Platforms', sub: 'Whatnot, TikTok Shop, IG Live, Amazon, YouTube' },
-    { value: '99%', label: 'Attribution', sub: 'Know exactly which show drove every sale' },
-    { value: '1', label: 'Dashboard', sub: 'Every buyer, order, and metric in one place' },
-  ]
+  // ── Mode-specific left panel content ──
+  const CONTENT = {
+    signin: {
+      headline: 'Welcome back. Your live selling data is waiting.',
+      sub: 'Pick up right where you left off — your buyers, analytics, and upcoming shows are ready to go.',
+      stats: [
+        { value: '24/7', label: 'Always On', sub: 'Your CRM and analytics update even when you\'re offline' },
+        { value: '< 1s', label: 'Real-Time', sub: 'Live order feed, viewer counts, and GMV — instant' },
+        { value: '100%', label: 'Your Data', sub: 'Every show, buyer, and dollar synced across devices' },
+      ],
+      props: [
+        { icon: '◉', text: 'Your buyer CRM is up to date across every platform' },
+        { icon: '◈', text: 'Show history and analytics are ready to review' },
+        { icon: '◑', text: 'AI insights have been crunching your latest data' },
+        { icon: '◆', text: 'Scheduled campaigns are running on autopilot' },
+        { icon: '●', text: 'Live Pixel is still tracking — nothing missed' },
+      ],
+      quote: 'I check Streamlive first thing every morning. My show reports, buyer activity, campaign performance — it\'s all right there. No more bouncing between five dashboards.',
+      quoteAuthor: '— Returning seller, 3 platforms, $42K/mo GMV',
+    },
+    create: {
+      headline: 'The command center for live sellers who are done guessing.',
+      sub: 'Stream to five platforms at once. See every buyer, every order, every dollar — in real time. Built for independent Shopify sellers who sell live.',
+      stats: [
+        { value: '5', label: 'Platforms', sub: 'Whatnot, TikTok Shop, IG Live, Amazon, YouTube' },
+        { value: '99%', label: 'Attribution', sub: 'Know exactly which show drove every sale' },
+        { value: '1', label: 'Dashboard', sub: 'Every buyer, order, and metric in one place' },
+      ],
+      props: [
+        { icon: '◉', text: 'Unified buyer CRM across every platform' },
+        { icon: '◈', text: 'Live Companion with real-time order feed' },
+        { icon: '◑', text: 'AI-powered analytics and show insights' },
+        { icon: '◆', text: 'Automated campaigns and loyalty programs' },
+        { icon: '●', text: 'Live Pixel for 99% sales attribution' },
+      ],
+      quote: 'We went from spreadsheets and guesswork to knowing exactly who bought what, on which platform, during which show. Streamlive changed our entire operation.',
+      quoteAuthor: '— Live seller, 4 platforms, $28K/mo GMV',
+    },
+  }
 
-  const VALUE_PROPS = [
-    { icon: '◉', text: 'Unified buyer CRM across every platform' },
-    { icon: '◈', text: 'Live Companion with real-time order feed' },
-    { icon: '◑', text: 'AI-powered analytics and show insights' },
-    { icon: '◆', text: 'Automated campaigns and loyalty programs' },
-    { icon: '●', text: 'Live Pixel for 99% sales attribution' },
-  ]
+  const c = CONTENT[mode]
 
   return (
     <div style={{ minHeight: '100vh', background: '#06060e', display: 'flex', fontFamily: "'DM Sans',sans-serif" }}>
@@ -115,15 +143,15 @@ export default function LoginPage() {
 
         {/* Headline */}
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(24px,2.5vw,32px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', lineHeight:1.25, marginBottom:16 }}>
-          The command center for live sellers who are done guessing.
+          {c.headline}
         </div>
         <div style={{ fontSize:15, color:'#9ca3af', lineHeight:1.7, marginBottom:36, maxWidth:440 }}>
-          Stream to five platforms at once. See every buyer, every order, every dollar — in real time. Built for independent Shopify sellers who sell live.
+          {c.sub}
         </div>
 
         {/* Stats row */}
         <div style={{ display:'flex', gap:20, marginBottom:40 }}>
-          {STATS.map(s => (
+          {c.stats.map(s => (
             <div key={s.label} style={{ flex:1 }}>
               <div style={{ fontFamily:"'Syne',sans-serif", fontSize:28, fontWeight:800, color:'#7c3aed', letterSpacing:'-1px' }}>{s.value}</div>
               <div style={{ fontSize:12, fontWeight:700, color:'#e2e8f0', marginBottom:2 }}>{s.label}</div>
@@ -134,8 +162,8 @@ export default function LoginPage() {
 
         {/* Value props */}
         <div style={{ background:'#07070f', border:'1px solid #14142a', borderRadius:14, padding:'16px 20px', marginBottom:36 }}>
-          {VALUE_PROPS.map((v, i) => (
-            <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 0', borderBottom: i < VALUE_PROPS.length - 1 ? '1px solid #0d0d1a' : 'none' }}>
+          {c.props.map((v, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 0', borderBottom: i < c.props.length - 1 ? '1px solid #0d0d1a' : 'none' }}>
               <span style={{ fontSize:14, color:'#7c3aed', flexShrink:0, width:20, textAlign:'center' }}>{v.icon}</span>
               <span style={{ fontSize:13, color:'#d1d5db' }}>{v.text}</span>
             </div>
@@ -145,9 +173,9 @@ export default function LoginPage() {
         {/* Social proof */}
         <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.7 }}>
           <span style={{ color:'#a78bfa', fontWeight:700 }}>"</span>
-          We went from spreadsheets and guesswork to knowing exactly who bought what, on which platform, during which show. Streamlive changed our entire operation.
+          {c.quote}
           <span style={{ color:'#a78bfa', fontWeight:700 }}>"</span>
-          <div style={{ fontSize:12, color:'#4b5563', marginTop:8 }}>— Live seller, 4 platforms, $28K/mo GMV</div>
+          <div style={{ fontSize:12, color:'#4b5563', marginTop:8 }}>{c.quoteAuthor}</div>
         </div>
       </div>
 
