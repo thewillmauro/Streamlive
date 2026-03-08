@@ -1891,7 +1891,10 @@ export default function App() {
     if (!supabase) return
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/app' }
+      options: {
+        redirectTo: window.location.origin + '/app',
+        queryParams: { access_type: 'offline', prompt: 'consent' },
+      }
     })
   }, [])
 

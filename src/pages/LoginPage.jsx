@@ -39,7 +39,10 @@ export default function LoginPage() {
     try {
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + '/app' },
+        options: {
+          redirectTo: window.location.origin + '/app',
+          queryParams: { access_type: 'offline', prompt: 'consent' },
+        },
       })
       if (authError) throw authError
       track('Login Started', { method: 'google' })

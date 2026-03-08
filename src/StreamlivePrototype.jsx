@@ -12956,15 +12956,16 @@ export default function StreamlivePrototype({ session }) {
     }
   }, [profileLoading, profile, userId, creatingProfile, session, refetchProfile]);
 
-  // Sync avatar_url from Google if profile exists but avatar is missing
-  useEffect(() => {
-    if (profile && !profile.avatar_url && meta.avatar_url) {
-      supabase.from("profiles").update({ avatar_url: meta.avatar_url }).eq("id", userId).then(() => refetchProfile());
-    }
-  }, [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Build persona adapter from Supabase profile (fallback to session metadata while loading)
   const meta = session?.user?.user_metadata || {};
+
+  // Sync avatar_url from Google OAuth to profile on every login
+  useEffect(() => {
+    const googleAvatar = session?.user?.user_metadata?.avatar_url;
+    if (profile && googleAvatar && profile.avatar_url !== googleAvatar) {
+      supabase.from("profiles").update({ avatar_url: googleAvatar }).eq("id", userId).then(() => refetchProfile());
+    }
+  }, [profile?.id, session?.user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const displayName = profile?.name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || meta.full_name || meta.name || session?.user?.email?.split("@")[0] || "User";
   const planColors = { starter:"#10b981", growth:"#7c3aed", pro:"#f59e0b", enterprise:"#a78bfa" };
   const persona = profile ? {
