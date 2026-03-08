@@ -66,7 +66,7 @@ export default async function handler(req, res) {
   // ── Platform-wide stats ───────────────────────────────────────────────────
   if (req.method === "GET" && action === "stats") {
     const [profilesRes, buyersRes, showsRes, ordersRes, campaignsRes, connectionsRes, automationsRes, loyaltyRes, optInsRes, devicesRes, teamRes, showProductsRes] = await Promise.all([
-      supabase.from("profiles").select("id,plan,created_at,platforms,category"),
+      supabase.from("profiles").select("id,plan,created_at,platforms,category,custom_price,discount"),
       supabase.from("buyers").select("id,profile_id,spend,status,created_at"),
       supabase.from("shows").select("id,profile_id,gmv,buyers_count,status,platforms,duration_min,date,created_at"),
       supabase.from("orders").select("id,profile_id,total,status,platform,created_at"),
@@ -105,7 +105,9 @@ export default async function handler(req, res) {
     for (const u of users) {
       const plan = u.plan || "starter";
       planCounts[plan] = (planCounts[plan] || 0) + 1;
-      mrr += PLAN_PRICES[plan] || 0;
+      const basePrice = plan === "enterprise" && u.custom_price ? u.custom_price : (PLAN_PRICES[plan] || 0);
+      const disc = u.discount ? Math.max(0, Math.min(100, u.discount)) : 0;
+      mrr += Math.round(basePrice * (1 - disc / 100));
       if (u.created_at && now - new Date(u.created_at).getTime() < sevenDays) recentSignups++;
       if (u.category) categories[u.category] = (categories[u.category] || 0) + 1;
     }

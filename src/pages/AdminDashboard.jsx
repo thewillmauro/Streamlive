@@ -629,7 +629,7 @@ function AdminDashboardInner({ session, onSignOut }) {
 
         {/* Revenue cards */}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
-          {["starter", "growth", "pro"].map(plan => {
+          {VALID_PLANS.map(plan => {
             const count = stats?.planCounts?.[plan] || 0;
             const col = PLAN_COLORS[plan];
             const revenue = count * PLAN_PRICES[plan];
