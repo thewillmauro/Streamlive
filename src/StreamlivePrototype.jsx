@@ -8666,60 +8666,7 @@ function ScreenShowPlanner({ navigate, persona }) {
               </button>
             </div>
 
-            {/* Default rules always shown */}
-            {[
-              { id:"r_default_1", enabled: perks.mysteryBonus,
-                triggerLabel:"Buyer purchases", triggerVal:`${perks.mysteryThreshold || 3}+ items`,
-                actionLabel:"Add mystery bonus to their order",
-                onToggle:()=>setPerks(p=>({...p,mysteryBonus:!p.mysteryBonus})),
-                isDefault:true,
-                extra: (
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
-                    <span style={{ fontSize:11, color:C.muted }}>Threshold:</span>
-                    {[2,3,4,5].map(n=>(
-                      <button key={n} onClick={e=>{e.stopPropagation();setPerks(p=>({...p,mysteryThreshold:n}))}}
-                        style={{ padding:"3px 10px", borderRadius:6, fontSize:11, fontWeight:700, cursor:"pointer",
-                          background:perks.mysteryThreshold===n?"#f43f5e":"transparent",
-                          border:`1px solid ${perks.mysteryThreshold===n?"#f43f5e":C.border}`,
-                          color:perks.mysteryThreshold===n?"#fff":C.muted }}>{n}+ items</button>
-                    ))}
-                  </div>
-                )
-              },
-              { id:"r_default_2", enabled: perks.winbackAfterShow,
-                triggerLabel:"Buyer views but does NOT purchase",
-                actionLabel:"Send win-back DM 2 hours after show ends",
-                onToggle:()=>setPerks(p=>({...p,winbackAfterShow:!p.winbackAfterShow})),
-                isDefault:true, extra:null
-              },
-              { id:"r_default_3", enabled: perks.tierUpAlert,
-                triggerLabel:"Buyer reaches loyalty tier milestone during show",
-                actionLabel:"Send tier-up congratulations DM instantly",
-                onToggle:()=>setPerks(p=>({...p,tierUpAlert:!p.tierUpAlert})),
-                isDefault:true, extra:null
-              },
-            ].map(rule=>(
-              <div key={rule.id} style={{ background:rule.enabled?`#10b98108`:C.surface, border:`1px solid ${rule.enabled?"#10b98144":C.border}`, borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
-                <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
-                  <div style={{ flex:1 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4, flexWrap:"wrap" }}>
-                      <span style={{ fontSize:10, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>IF</span>
-                      <span style={{ fontSize:12, color:C.text, fontWeight:600 }}>{rule.triggerLabel}</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-                      <span style={{ fontSize:10, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>THEN</span>
-                      <span style={{ fontSize:12, color:C.muted }}>{rule.actionLabel}</span>
-                    </div>
-                    {rule.extra && <div onClick={e=>e.stopPropagation()}>{rule.extra}</div>}
-                  </div>
-                  <div onClick={rule.onToggle} style={{ width:44, height:24, borderRadius:12, background:rule.enabled?"#10b981":C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0, marginTop:2 }}>
-                    <div style={{ position:"absolute", top:3, left:rule.enabled?20:3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 4px rgba(0,0,0,.4)" }} />
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Custom rules added by user */}
+            {/* Custom rules added by user — shown first for easy editing */}
             {(perks.rules||[]).map((rule,ri)=>(
               <div key={rule.id} style={{ background:rule.enabled?`${C.accent}08`:C.surface, border:`1px solid ${rule.enabled?C.accent+"44":C.border}`, borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
                 <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
@@ -8796,6 +8743,59 @@ function ScreenShowPlanner({ navigate, persona }) {
                     </div>
                     <button onClick={()=>setPerks(p=>({...p,rules:p.rules.filter((_,i)=>i!==ri)}))}
                       style={{ background:"transparent", border:"none", color:C.muted, fontSize:14, cursor:"pointer", lineHeight:1, padding:"2px 4px" }}>✕</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Default rules */}
+            {(perks.rules||[]).length > 0 && <div style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", marginTop:4, marginBottom:8 }}>Default Rules</div>}
+            {[
+              { id:"r_default_1", enabled: perks.mysteryBonus,
+                triggerLabel:"Buyer purchases", triggerVal:`${perks.mysteryThreshold || 3}+ items`,
+                actionLabel:"Add mystery bonus to their order",
+                onToggle:()=>setPerks(p=>({...p,mysteryBonus:!p.mysteryBonus})),
+                extra: (
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
+                    <span style={{ fontSize:11, color:C.muted }}>Threshold:</span>
+                    {[2,3,4,5].map(n=>(
+                      <button key={n} onClick={e=>{e.stopPropagation();setPerks(p=>({...p,mysteryThreshold:n}))}}
+                        style={{ padding:"3px 10px", borderRadius:6, fontSize:11, fontWeight:700, cursor:"pointer",
+                          background:perks.mysteryThreshold===n?"#f43f5e":"transparent",
+                          border:`1px solid ${perks.mysteryThreshold===n?"#f43f5e":C.border}`,
+                          color:perks.mysteryThreshold===n?"#fff":C.muted }}>{n}+ items</button>
+                    ))}
+                  </div>
+                )
+              },
+              { id:"r_default_2", enabled: perks.winbackAfterShow,
+                triggerLabel:"Buyer views but does NOT purchase",
+                actionLabel:"Send win-back DM 2 hours after show ends",
+                onToggle:()=>setPerks(p=>({...p,winbackAfterShow:!p.winbackAfterShow})),
+                extra:null
+              },
+              { id:"r_default_3", enabled: perks.tierUpAlert,
+                triggerLabel:"Buyer reaches loyalty tier milestone during show",
+                actionLabel:"Send tier-up congratulations DM instantly",
+                onToggle:()=>setPerks(p=>({...p,tierUpAlert:!p.tierUpAlert})),
+                extra:null
+              },
+            ].map(rule=>(
+              <div key={rule.id} style={{ background:rule.enabled?`#10b98108`:C.surface, border:`1px solid ${rule.enabled?"#10b98144":C.border}`, borderRadius:12, padding:"12px 14px", marginBottom:8 }}>
+                <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>IF</span>
+                      <span style={{ fontSize:12, color:C.text, fontWeight:600 }}>{rule.triggerLabel}</span>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:10, fontWeight:800, color:"#a78bfa", background:"#2d1f5e22", border:"1px solid #7c3aed33", padding:"2px 7px", borderRadius:4, textTransform:"uppercase", letterSpacing:"0.06em" }}>THEN</span>
+                      <span style={{ fontSize:12, color:C.muted }}>{rule.actionLabel}</span>
+                    </div>
+                    {rule.extra && <div onClick={e=>e.stopPropagation()}>{rule.extra}</div>}
+                  </div>
+                  <div onClick={rule.onToggle} style={{ width:44, height:24, borderRadius:12, background:rule.enabled?"#10b981":C.border2, cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0, marginTop:2 }}>
+                    <div style={{ position:"absolute", top:3, left:rule.enabled?20:3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:"left .2s", boxShadow:"0 1px 4px rgba(0,0,0,.4)" }} />
                   </div>
                 </div>
               </div>
