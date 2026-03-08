@@ -899,6 +899,28 @@ function ScreenBuyers({ buyers, navigate }) {
   const [rules, setRules]   = useState([]);
   const [showRuleBuilder, setShowRuleBuilder] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [savedFilters, setSavedFilters] = useState(() => {
+    try { const raw = localStorage.getItem("STRMLIVE_SAVED_FILTERS"); return raw ? JSON.parse(raw) : []; } catch(e) { return []; }
+  });
+  const [filterName, setFilterName] = useState("");
+  const [showSaveInput, setShowSaveInput] = useState(false);
+
+  const persistFilters = (filters) => {
+    setSavedFilters(filters);
+    try { localStorage.setItem("STRMLIVE_SAVED_FILTERS", JSON.stringify(filters)); } catch(e) {}
+  };
+  const saveFilter = () => {
+    if (!filterName.trim() || rules.length === 0) return;
+    const newFilter = { id: Date.now(), name: filterName.trim(), rules: rules.map(({id,...r})=>r), seg, savedAt: new Date().toISOString() };
+    persistFilters([newFilter, ...savedFilters]);
+    setFilterName(""); setShowSaveInput(false);
+  };
+  const loadFilter = (f) => {
+    setRules(f.rules.map(r => ({ ...r, id: Date.now() + Math.random() })));
+    if (f.seg) setSeg(f.seg);
+    setShowRuleBuilder(true);
+  };
+  const deleteFilter = (id) => persistFilters(savedFilters.filter(f => f.id !== id));
 
   // Apply segment filter
   const segFiltered = buyers.filter(b => {
@@ -1034,8 +1056,35 @@ function ScreenBuyers({ buyers, navigate }) {
             ))}
             {rules.length === 0 && <div style={{ fontSize:11, color:C.subtle, marginTop:6 }}>Add rules to filter buyers by spend, orders, platform, or status.</div>}
             {rules.length > 0 && (
-              <div style={{ display:"flex", gap:8, marginTop:8 }}>
+              <div style={{ display:"flex", gap:8, marginTop:8, alignItems:"center" }}>
                 <button onClick={()=>{setRules([]);setShowRuleBuilder(false);}} style={{ fontSize:10, color:"#f87171", background:"none", border:"none", cursor:"pointer", padding:0 }}>Clear all rules</button>
+                <div style={{ flex:1 }} />
+                {showSaveInput ? (
+                  <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                    <input value={filterName} onChange={e=>setFilterName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveFilter()} placeholder="Filter name…"
+                      autoFocus style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:6, padding:"4px 8px", color:C.text, fontSize:11, outline:"none", width:140 }} />
+                    <button onClick={saveFilter} disabled={!filterName.trim()} style={{ fontSize:10, fontWeight:700, color:filterName.trim()?"#10b981":C.subtle, background:filterName.trim()?"#10b98112":"transparent", border:`1px solid ${filterName.trim()?"#10b98133":C.border}`, padding:"4px 10px", borderRadius:6, cursor:filterName.trim()?"pointer":"not-allowed" }}>Save</button>
+                    <button onClick={()=>setShowSaveInput(false)} style={{ fontSize:10, color:C.muted, background:"none", border:"none", cursor:"pointer" }}>Cancel</button>
+                  </div>
+                ) : (
+                  <button onClick={()=>setShowSaveInput(true)} style={{ fontSize:10, fontWeight:700, color:C.accent, background:"none", border:"none", cursor:"pointer", padding:0 }}>Save filter</button>
+                )}
+              </div>
+            )}
+
+            {/* Saved filters */}
+            {savedFilters.length > 0 && (
+              <div style={{ marginTop:10, borderTop:`1px solid ${C.border}`, paddingTop:10 }}>
+                <div style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>Saved Filters</div>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                  {savedFilters.map(f => (
+                    <div key={f.id} style={{ display:"flex", alignItems:"center", gap:6, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"4px 6px 4px 10px" }}>
+                      <button onClick={()=>loadFilter(f)} style={{ fontSize:10, fontWeight:600, color:C.text, background:"none", border:"none", cursor:"pointer", padding:0 }}>{f.name}</button>
+                      <span style={{ fontSize:9, color:C.subtle }}>{f.rules.length}r</span>
+                      <button onClick={()=>deleteFilter(f.id)} style={{ background:"none", border:"none", color:C.muted, fontSize:11, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>✕</button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
