@@ -10,6 +10,7 @@ const Checkout = lazy(() => import('./pages/Checkout.jsx'))
 const Welcome = lazy(() => import('./pages/Welcome.jsx'))
 const LiveShopPage = lazy(() => import('./pages/LiveShopPage.jsx'))
 const OptInPage = lazy(() => import('./pages/OptInPage.jsx'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'))
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 function useRoute() {
@@ -32,6 +33,7 @@ const PAGE_META = {
   '/privacy':           { title: 'Privacy Policy — Streamlive',                                                                     desc: 'How Streamlive collects, uses, and protects your data.' },
   '/terms':             { title: 'Terms of Service — Streamlive',                                                                   desc: 'Terms and conditions for using the Streamlive platform.' },
   '/contact':           { title: 'Contact — Streamlive',                                                                            desc: 'Get in touch with the Streamlive team. We read every message.' },
+  '/admin':             { title: 'Mission Control — Streamlive',                                                                     desc: 'Admin dashboard for Streamlive platform management.' },
   '/login':             { title: 'Sign In — Streamlive',                                                                             desc: 'Sign in to your Streamlive live selling command center.' },
   '/platform/whatnot':         { title: 'Whatnot Live Selling Tools — Streamlive',         desc: 'Connect Streamlive to Whatnot. Unified buyer CRM, live attribution, loyalty, and multistream — built for Whatnot sellers.' },
   '/platform/tiktok-shop':     { title: 'TikTok Shop Live Selling Tools — Streamlive',     desc: 'Connect Streamlive to TikTok Shop. Real-time buyer feed, 99% attribution, ManyChat automations — built for TikTok live sellers.' },
@@ -1905,6 +1907,26 @@ export default function App() {
     navigate('/')
   }, [])
 
+  // Auth gate for /admin route
+  if (route === '/admin') {
+    if (authLoading) return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", color:"#a78bfa", fontFamily:"'DM Sans',sans-serif" }}>
+        <div style={{ width:32, height:32, border:"3px solid #a78bfa33", borderTop:"3px solid #a78bfa", borderRadius:"50%", animation:"spin .8s linear infinite" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+    )
+    if (!session) {
+      handleSignIn()
+      return null
+    }
+    // Client-side admin gate (API also enforces server-side)
+    const adminEmails = ['will@strmlive.com']
+    if (!adminEmails.includes(session.user.email)) {
+      navigate('/')
+      return null
+    }
+  }
+
   // Auth gate for /app route
   if (route === '/app') {
     if (authLoading) return (
@@ -1930,7 +1952,8 @@ export default function App() {
       `}</style>
       <LiveCursor />
       <Suspense fallback={<div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#06060e' }}><div style={{ width:32, height:32, border:'3px solid #1e1e3a', borderTop:'3px solid #7c3aed', borderRadius:'50%', animation:'spin .8s linear infinite' }} /><style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style></div>}>
-      {route === '/app'         ? <StreamlivePrototype session={session} onSignOut={handleSignOut} /> :
+      {route === '/admin'       ? <AdminDashboard session={session} onSignOut={handleSignOut} /> :
+       route === '/app'         ? <StreamlivePrototype session={session} onSignOut={handleSignOut} /> :
        route === '/login'       ? <LoginPage /> :
        route === '/checkout'    ? <Checkout /> :
        route === '/welcome'     ? <Welcome /> :
