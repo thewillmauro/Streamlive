@@ -204,13 +204,15 @@ const GOAL_META = {
 // Maps Settings connection keys → Campaign channel keys.
 // Call this with the connections object from storage("strmlive:connections").
 function getConnectedChannels(connections = {}) {
+  // Messaging channels require BOTH the platform AND the messaging integration to be connected
+  // ig_dm/tt_dm require ManyChat + platform; wn_dm/am_msg require platform + messaging setup
   return {
     email:  !!connections.email,
     sms:    !!connections.sms,
-    ig_dm:  !!connections.ig,       // Instagram connected in Settings
-    tt_dm:  !!connections.tt,       // TikTok connected in Settings
-    wn_dm:  !!connections.wn,       // Whatnot connected in Settings
-    am_msg: !!connections.am,       // Amazon connected in Settings
+    ig_dm:  !!connections.ig  && !!connections.manychat,
+    tt_dm:  !!connections.tt  && !!connections.manychat,
+    wn_dm:  !!connections.wn  && !!connections.wn_messaging,
+    am_msg: !!connections.am  && !!connections.am_messaging,
   };
 }
 
@@ -6604,6 +6606,9 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       ...connections,
       [type]: { ...data, connectedAt: now, status: "active" }
     };
+    // Also set messaging-specific keys so campaign channels recognize the connection
+    if (type === "wn") updated.wn_messaging = { connectedAt: now, status: "active" };
+    if (type === "am") updated.am_messaging = { connectedAt: now, status: "active" };
     await saveConnections(updated);
     setConnecting(false);
     setModal(null);
@@ -6613,6 +6618,8 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
   const disconnect = async (type) => {
     const updated = { ...connections };
     delete updated[type];
+    if (type === "wn") delete updated.wn_messaging;
+    if (type === "am") delete updated.am_messaging;
     await saveConnections(updated);
   };
 
