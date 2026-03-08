@@ -207,7 +207,7 @@ export default async function handler(req, res) {
     if (!userId || !updates) return res.status(400).json({ error: "Missing userId or updates" });
 
     // Only allow safe fields
-    const allowed = ["plan", "shop_name", "category", "bio", "is_admin", "account_type"];
+    const allowed = ["plan", "shop_name", "category", "bio", "is_admin", "account_type", "discount"];
     const safe = {};
     for (const [k, v] of Object.entries(updates)) {
       if (allowed.includes(k)) safe[k] = v;
@@ -218,27 +218,25 @@ export default async function handler(req, res) {
     return res.json({ success: true });
   }
 
-  // ── Create user (admin-created profile, no auth account) ────────────────
+  // ── Create user and send invite email ────────────────────────────────────
   if (req.method === "POST" && action === "create-user") {
-    const { email, name, first_name, shop_name, category, plan, platforms } = req.body || {};
+    const { email, name, first_name, shop_name, category, plan, account_type, discount } = req.body || {};
     if (!email) return res.status(400).json({ error: "Email is required" });
 
     // Check if email already exists
     const { data: existing } = await supabase.from("profiles").select("id").eq("email", email).maybeSingle();
     if (existing) return res.status(409).json({ error: "A user with this email already exists" });
 
-    // Create a Supabase auth user with a random password (they'll use Google OAuth to sign in)
-    const tempPassword = require("crypto").randomBytes(32).toString("hex");
-    const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { full_name: name || first_name || "", admin_created: true },
+    // Invite user by email — sends a magic-link welcome email automatically
+    const { data: authData, error: authErr } = await supabase.auth.admin.inviteUserByEmail(email, {
+      data: { full_name: name || first_name || "", admin_created: true },
+      redirectTo: "https://www.strmlive.com/app",
     });
 
-    if (authErr) return res.status(500).json({ error: "Failed to create auth user: " + authErr.message });
+    if (authErr) return res.status(500).json({ error: "Failed to invite user: " + authErr.message });
 
     const userId = authData.user.id;
+    const discountPct = Math.max(0, Math.min(100, parseInt(discount) || 0));
 
     // Create profile
     const { error: profileErr } = await supabase.from("profiles").upsert({
@@ -249,15 +247,16 @@ export default async function handler(req, res) {
       shop_name: shop_name || "",
       category: category || "",
       plan: plan || "starter",
-      platforms: platforms || [],
-      account_type: "business",
+      platforms: [],
+      account_type: account_type || "business",
+      discount: discountPct || null,
     }, { onConflict: "id" });
 
     if (profileErr) return res.status(500).json({ error: "Profile creation failed: " + profileErr.message });
 
     // Fetch the created profile to return
     const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    return res.status(201).json({ success: true, user: profile });
+    return res.status(201).json({ success: true, user: profile, invited: true });
   }
 
   return res.status(400).json({ error: "Unknown action" });

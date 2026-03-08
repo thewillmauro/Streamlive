@@ -944,18 +944,17 @@ function AdminDashboardInner({ session, onSignOut }) {
   // ADD USER MODAL
   // ════════════════════════════════════════════════════════════════════════════
   function AddUserModal() {
-    const [form, setForm] = useState({ email: "", name: "", shop_name: "", category: "", plan: "starter", platforms: [] });
+    const [form, setForm] = useState({ email: "", name: "", shop_name: "", category: "", plan: "starter", account_type: "business", discount: "" });
     const [formError, setFormError] = useState(null);
     const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
-    const togglePlatform = (p) => setForm(prev => ({ ...prev, platforms: prev.platforms.includes(p) ? prev.platforms.filter(x => x !== p) : [...prev.platforms, p] }));
 
     const CATEGORIES = ["Apparel & Fashion", "Beauty & Cosmetics", "Electronics", "Home & Garden", "Sports & Outdoors", "Toys & Collectibles", "Food & Beverage", "Jewelry & Accessories", "Health & Wellness", "Other"];
-    const PLAT_OPTIONS = [
-      { id: "WN", label: "Whatnot", color: "#7c3aed" },
-      { id: "TT", label: "TikTok", color: "#f43f5e" },
-      { id: "IG", label: "Instagram", color: "#ec4899" },
-      { id: "AM", label: "Amazon", color: "#f59e0b" },
-      { id: "YT", label: "YouTube", color: "#ef4444" },
+    const ACCOUNT_TYPES = [
+      { id: "business", label: "Business", icon: "🏪" },
+      { id: "partner", label: "Partner", icon: "🤝" },
+      { id: "agency", label: "Agency", icon: "🏢" },
+      { id: "creator", label: "Creator", icon: "🎨" },
+      { id: "internal", label: "Internal", icon: "⚙️" },
     ];
 
     const handleSubmit = async () => {
@@ -968,7 +967,7 @@ function AdminDashboardInner({ session, onSignOut }) {
     if (!showAddUser) return null;
     return (
       <div onClick={() => setShowAddUser(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "#09090f", border: `1px solid ${C.accent}44`, borderRadius: 18, padding: 28, width: 480, maxWidth: "94vw", maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "#09090f", border: `1px solid ${C.accent}44`, borderRadius: 18, padding: 28, width: 480, maxWidth: "94vw", position: "relative" }}>
           <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, borderRadius: "50%", background: C.accent, opacity: 0.05, filter: "blur(50px)", pointerEvents: "none" }} />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22, position: "relative", zIndex: 1 }}>
@@ -1027,6 +1026,39 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </div>
 
+          {/* Account Type */}
+          <div style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>User Type</span>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {ACCOUNT_TYPES.map(t => {
+                const sel = form.account_type === t.id;
+                return (
+                  <button key={t.id} onClick={() => set("account_type", t.id)} style={{
+                    flex: "1 1 auto", minWidth: 80, padding: "10px 8px", background: sel ? `${C.accent}14` : C.surface, border: `1px solid ${sel ? `${C.accent}55` : C.border}`,
+                    borderRadius: 8, cursor: "pointer", textAlign: "center", transition: "all .15s",
+                  }}>
+                    <div style={{ fontSize: 14, marginBottom: 2 }}>{t.icon}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: sel ? C.accent : C.muted }}>{t.label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Discount */}
+          <label style={{ display: "block", marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Discount %</span>
+            <div style={{ position: "relative" }}>
+              <input value={form.discount} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ""); if (v === "" || (Number(v) >= 0 && Number(v) <= 100)) set("discount", v); }} placeholder="0"
+                style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }} />
+              {form.discount && Number(form.discount) > 0 && (
+                <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: C.green }}>
+                  ${Math.round(PLAN_PRICES[form.plan] * (1 - Number(form.discount) / 100))}/mo
+                </div>
+              )}
+            </div>
+          </label>
+
           {/* Error */}
           {formError && (
             <div style={{ marginBottom: 14, padding: "10px 14px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 8, fontSize: 12, color: C.red }}>{formError}</div>
@@ -1037,7 +1069,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             <button onClick={() => setShowAddUser(false)} style={{ flex: 1, background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 9, color: C.muted, fontSize: 12, fontWeight: 600, padding: "11px", cursor: "pointer" }}>Cancel</button>
             <button onClick={handleSubmit} disabled={addingUser}
               style={{ flex: 1, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 9, color: "#fff", fontSize: 12, fontWeight: 700, padding: "11px", cursor: "pointer", opacity: addingUser ? 0.6 : 1 }}>
-              {addingUser ? "Creating..." : "Create User"}
+              {addingUser ? "Creating & Inviting..." : "Create & Send Invite"}
             </button>
           </div>
         </div>
