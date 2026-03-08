@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   const origin = req.headers.origin || "";
   const allowed = ["https://www.strmlive.com", "https://strmlive.com", "http://localhost:5173", "http://localhost:4173"];
   if (allowed.includes(origin)) res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Access-Control-Allow-Methods", "GET,PATCH,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
 
@@ -216,6 +216,48 @@ export default async function handler(req, res) {
     const { error } = await supabase.from("profiles").update(safe).eq("id", userId);
     if (error) return res.status(500).json({ error: error.message });
     return res.json({ success: true });
+  }
+
+  // ── Create user (admin-created profile, no auth account) ────────────────
+  if (req.method === "POST" && action === "create-user") {
+    const { email, name, first_name, shop_name, category, plan, platforms } = req.body || {};
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    // Check if email already exists
+    const { data: existing } = await supabase.from("profiles").select("id").eq("email", email).maybeSingle();
+    if (existing) return res.status(409).json({ error: "A user with this email already exists" });
+
+    // Create a Supabase auth user with a random password (they'll use Google OAuth to sign in)
+    const tempPassword = require("crypto").randomBytes(32).toString("hex");
+    const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { full_name: name || first_name || "", admin_created: true },
+    });
+
+    if (authErr) return res.status(500).json({ error: "Failed to create auth user: " + authErr.message });
+
+    const userId = authData.user.id;
+
+    // Create profile
+    const { error: profileErr } = await supabase.from("profiles").upsert({
+      id: userId,
+      email,
+      name: name || "",
+      first_name: first_name || (name || "").split(" ")[0] || "",
+      shop_name: shop_name || "",
+      category: category || "",
+      plan: plan || "starter",
+      platforms: platforms || [],
+      account_type: "business",
+    }, { onConflict: "id" });
+
+    if (profileErr) return res.status(500).json({ error: "Profile creation failed: " + profileErr.message });
+
+    // Fetch the created profile to return
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single();
+    return res.status(201).json({ success: true, user: profile });
   }
 
   return res.status(400).json({ error: "Unknown action" });

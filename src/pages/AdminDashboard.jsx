@@ -239,6 +239,8 @@ function AdminDashboardInner({ session, onSignOut }) {
   const [userDetailLoading, setUserDetailLoading] = useState(false);
   const [planFilter, setPlanFilter] = useState("all");
   const [userSort, setUserSort] = useState("newest");
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [addingUser, setAddingUser] = useState(false);
 
   const getToken = useCallback(async () => {
     const { data: { session: s } } = await supabase.auth.getSession();
@@ -296,6 +298,31 @@ function AdminDashboardInner({ session, onSignOut }) {
       if (statsRes.ok) setStats(await statsRes.json());
     } catch (e) { alert("Failed: " + e.message); }
     setSaving(false);
+  };
+
+  const createUser = async (userData) => {
+    setAddingUser(true);
+    try {
+      const token = await getToken();
+      const res = await fetch("/api/admin/users?action=create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(userData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create user");
+      // Add new user to list
+      if (data.user) setUsers(prev => [data.user, ...prev]);
+      setShowAddUser(false);
+      // Refresh stats
+      const statsRes = await fetch("/api/admin/users?action=stats", { headers: { Authorization: `Bearer ${token}` } });
+      if (statsRes.ok) setStats(await statsRes.json());
+      return { success: true };
+    } catch (e) {
+      return { error: e.message };
+    } finally {
+      setAddingUser(false);
+    }
   };
 
   const filteredUsers = users.filter(u => {
@@ -439,6 +466,7 @@ function AdminDashboardInner({ session, onSignOut }) {
                 <option value="name">Name A–Z</option>
               </select>
               <span style={{ fontSize: 10, color: C.muted, marginLeft: "auto" }}>{filteredUsers.length} results</span>
+              <button onClick={() => setShowAddUser(true)} style={{ background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "7px 16px", cursor: "pointer" }}>+ Add User</button>
             </div>
 
             <Card>
@@ -913,6 +941,131 @@ function AdminDashboardInner({ session, onSignOut }) {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
+  // ADD USER MODAL
+  // ════════════════════════════════════════════════════════════════════════════
+  function AddUserModal() {
+    const [form, setForm] = useState({ email: "", name: "", shop_name: "", category: "", plan: "starter", platforms: [] });
+    const [formError, setFormError] = useState(null);
+    const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+    const togglePlatform = (p) => setForm(prev => ({ ...prev, platforms: prev.platforms.includes(p) ? prev.platforms.filter(x => x !== p) : [...prev.platforms, p] }));
+
+    const CATEGORIES = ["Apparel & Fashion", "Beauty & Cosmetics", "Electronics", "Home & Garden", "Sports & Outdoors", "Toys & Collectibles", "Food & Beverage", "Jewelry & Accessories", "Health & Wellness", "Other"];
+    const PLAT_OPTIONS = [
+      { id: "WN", label: "Whatnot", color: "#7c3aed" },
+      { id: "TT", label: "TikTok", color: "#f43f5e" },
+      { id: "IG", label: "Instagram", color: "#ec4899" },
+      { id: "AM", label: "Amazon", color: "#f59e0b" },
+      { id: "YT", label: "YouTube", color: "#ef4444" },
+    ];
+
+    const handleSubmit = async () => {
+      setFormError(null);
+      if (!form.email || !form.email.includes("@")) { setFormError("Valid email is required"); return; }
+      const result = await createUser(form);
+      if (result.error) setFormError(result.error);
+    };
+
+    if (!showAddUser) return null;
+    return (
+      <div onClick={() => setShowAddUser(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "#09090f", border: `1px solid ${C.accent}44`, borderRadius: 18, padding: 28, width: 480, maxWidth: "94vw", maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
+          <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, borderRadius: "50%", background: C.accent, opacity: 0.05, filter: "blur(50px)" }} />
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, color: C.text }}>Add New User</div>
+            <button onClick={() => setShowAddUser(false)} style={{ background: "none", border: "none", color: C.muted, fontSize: 16, cursor: "pointer" }}>✕</button>
+          </div>
+
+          {/* Email */}
+          <label style={{ display: "block", marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Email *</span>
+            <input value={form.email} onChange={e => set("email", e.target.value)} placeholder="user@example.com"
+              style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }} />
+          </label>
+
+          {/* Name */}
+          <label style={{ display: "block", marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Full Name</span>
+            <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Jane Smith"
+              style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }} />
+          </label>
+
+          {/* Shop Name */}
+          <label style={{ display: "block", marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Shop Name</span>
+            <input value={form.shop_name} onChange={e => set("shop_name", e.target.value)} placeholder="My Awesome Store"
+              style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }} />
+          </label>
+
+          {/* Category */}
+          <label style={{ display: "block", marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Category</span>
+            <select value={form.category} onChange={e => set("category", e.target.value)}
+              style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }}>
+              <option value="">Select category...</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </label>
+
+          {/* Plan */}
+          <div style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Plan</span>
+            <div style={{ display: "flex", gap: 6 }}>
+              {VALID_PLANS.map(p => {
+                const col = PLAN_COLORS[p];
+                const sel = form.plan === p;
+                return (
+                  <button key={p} onClick={() => set("plan", p)} style={{
+                    flex: 1, padding: "10px 8px", background: sel ? `${col}14` : C.surface, border: `1px solid ${sel ? `${col}55` : C.border}`,
+                    borderRadius: 8, cursor: "pointer", textAlign: "center", transition: "all .15s",
+                  }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: sel ? col : C.muted, textTransform: "capitalize" }}>{p}</div>
+                    <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>${PLAN_PRICES[p]}/mo</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Platforms */}
+          <div style={{ marginBottom: 20 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Platforms</span>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {PLAT_OPTIONS.map(p => {
+                const sel = form.platforms.includes(p.id);
+                return (
+                  <button key={p.id} onClick={() => togglePlatform(p.id)} style={{
+                    display: "flex", alignItems: "center", gap: 6, padding: "7px 12px",
+                    background: sel ? `${p.color}14` : C.surface, border: `1px solid ${sel ? `${p.color}55` : C.border}`,
+                    borderRadius: 7, cursor: "pointer", transition: "all .15s",
+                  }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: sel ? p.color : C.muted }} />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: sel ? p.color : C.muted }}>{p.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Error */}
+          {formError && (
+            <div style={{ marginBottom: 14, padding: "10px 14px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 8, fontSize: 12, color: C.red }}>{formError}</div>
+          )}
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => setShowAddUser(false)} style={{ flex: 1, background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 9, color: C.muted, fontSize: 12, fontWeight: 600, padding: "11px", cursor: "pointer" }}>Cancel</button>
+            <button onClick={handleSubmit} disabled={addingUser}
+              style={{ flex: 1, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 9, color: "#fff", fontSize: 12, fontWeight: 700, padding: "11px", cursor: "pointer", opacity: addingUser ? 0.6 : 1 }}>
+              {addingUser ? "Creating..." : "Create User"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
   // EDIT PLAN MODAL
   // ════════════════════════════════════════════════════════════════════════════
   function EditPlanModal() {
@@ -1018,6 +1171,7 @@ function AdminDashboardInner({ session, onSignOut }) {
         @keyframes mcGlow { 0%,100% { box-shadow:0 0 20px ${C.accent}22 } 50% { box-shadow:0 0 40px ${C.accent}44 } }
       `}</style>
 
+      <AddUserModal />
       <EditPlanModal />
       <ConfirmModal />
 
