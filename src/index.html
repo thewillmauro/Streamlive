@@ -180,13 +180,9 @@
             background_color: '#7c3aed',
             action_color: '#7c3aed',
           });
-          // Auto-greeting on first open
-          var greeted = false;
+          // Auto-greeting every time chat opens
           w.Intercom('onShow', function() {
-            if (!greeted) {
-              greeted = true;
-              w.Intercom('showNewMessage', 'Hey! Thanks for checking out Streamlive. How can we help you today?');
-            }
+            w.Intercom('showNewMessage', 'Hey! Thanks for checking out Streamlive. How can we help you today?');
           });
         };
         var x = document.getElementsByTagName('script')[0];
