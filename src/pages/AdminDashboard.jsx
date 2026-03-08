@@ -1027,18 +1027,11 @@ function AdminDashboardInner({ session, onSignOut }) {
           {form.plan === "enterprise" && (
             <div style={{ marginBottom: 14, padding: 16, background: `${PLAN_COLORS.enterprise}08`, border: `1px solid ${PLAN_COLORS.enterprise}22`, borderRadius: 10 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: PLAN_COLORS.enterprise, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 10 }}>Enterprise Pricing</span>
-              <label style={{ display: "block", marginBottom: 10 }}>
+              <label style={{ display: "block" }}>
                 <span style={{ fontSize: 11, color: C.muted, display: "block", marginBottom: 4 }}>Base Price ($/mo)</span>
                 <input value={form.custom_price} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ""); set("custom_price", v); }} placeholder="999"
                   style={{ width: "100%", background: C.surface, border: `1px solid ${PLAN_COLORS.enterprise}33`, borderRadius: 8, padding: "10px 14px", fontSize: 14, fontWeight: 700, color: C.text, outline: "none" }} />
               </label>
-              <div style={{ display: "flex", gap: 8, fontSize: 10, color: C.muted }}>
-                <span onClick={() => set("custom_price", "999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$999</span>
-                <span onClick={() => set("custom_price", "1499")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$1,499</span>
-                <span onClick={() => set("custom_price", "1999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$1,999</span>
-                <span onClick={() => set("custom_price", "2999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$2,999</span>
-                <span onClick={() => set("custom_price", "4999")} style={{ padding: "4px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer" }}>$4,999</span>
-              </div>
             </div>
           )}
 
@@ -1064,30 +1057,66 @@ function AdminDashboardInner({ session, onSignOut }) {
           {/* Discount */}
           <label style={{ display: "block", marginBottom: 14 }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 }}>Discount %</span>
-            <div style={{ position: "relative" }}>
-              <input value={form.discount} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ""); if (v === "" || (Number(v) >= 0 && Number(v) <= 100)) set("discount", v); }} placeholder="0"
-                style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }} />
-              {(() => {
-                const basePrice = form.plan === "enterprise" ? (Number(form.custom_price) || 999) : PLAN_PRICES[form.plan];
-                const disc = Number(form.discount) || 0;
-                const final_ = Math.round(basePrice * (1 - disc / 100));
-                if (disc > 0) return <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: C.green }}>${final_}/mo</div>;
-                return null;
-              })()}
-            </div>
+            <input value={form.discount} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ""); if (v === "" || (Number(v) >= 0 && Number(v) <= 100)) set("discount", v); }} placeholder="0"
+              style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }} />
           </label>
 
-          {/* Pricing Summary */}
-          {form.plan === "enterprise" && (
-            <div style={{ marginBottom: 14, padding: "10px 14px", background: `${PLAN_COLORS.enterprise}0a`, border: `1px solid ${PLAN_COLORS.enterprise}18`, borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 11, color: C.muted }}>Final monthly price</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: PLAN_COLORS.enterprise }}>
-                ${(() => {
-                  const base = Number(form.custom_price) || 999;
-                  const disc = Number(form.discount) || 0;
-                  return Math.round(base * (1 - disc / 100)).toLocaleString();
-                })()}/mo
-              </span>
+          {/* ── Summary ── */}
+          {form.email && (
+            <div style={{ marginBottom: 14, padding: 16, background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 10 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Summary</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px", fontSize: 12 }}>
+                <div style={{ color: C.muted }}>Email</div>
+                <div style={{ color: C.text, fontWeight: 600, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis" }}>{form.email}</div>
+
+                {form.name && <>
+                  <div style={{ color: C.muted }}>Name</div>
+                  <div style={{ color: C.text, fontWeight: 600, textAlign: "right" }}>{form.name}</div>
+                </>}
+
+                {form.shop_name && <>
+                  <div style={{ color: C.muted }}>Shop</div>
+                  <div style={{ color: C.text, fontWeight: 600, textAlign: "right" }}>{form.shop_name}</div>
+                </>}
+
+                {form.category && <>
+                  <div style={{ color: C.muted }}>Category</div>
+                  <div style={{ color: C.text, fontWeight: 600, textAlign: "right" }}>{form.category}</div>
+                </>}
+
+                <div style={{ color: C.muted }}>Plan</div>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ color: PLAN_COLORS[form.plan], fontWeight: 700, textTransform: "capitalize" }}>{form.plan}</span>
+                </div>
+
+                <div style={{ color: C.muted }}>User Type</div>
+                <div style={{ color: C.text, fontWeight: 600, textAlign: "right", textTransform: "capitalize" }}>{form.account_type}</div>
+
+                {Number(form.discount) > 0 && <>
+                  <div style={{ color: C.muted }}>Discount</div>
+                  <div style={{ color: C.green, fontWeight: 700, textAlign: "right" }}>{form.discount}% off</div>
+                </>}
+
+                <div style={{ gridColumn: "1 / -1", borderTop: `1px solid ${C.border}`, marginTop: 4, paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: C.muted, fontWeight: 600 }}>Monthly Price</span>
+                  {(() => {
+                    const base = form.plan === "enterprise" ? (Number(form.custom_price) || 999) : PLAN_PRICES[form.plan];
+                    const disc = Number(form.discount) || 0;
+                    const final_ = Math.round(base * (1 - disc / 100));
+                    const hasDiscount = disc > 0;
+                    return (
+                      <div style={{ textAlign: "right" }}>
+                        {hasDiscount && <span style={{ fontSize: 11, color: C.muted, textDecoration: "line-through", marginRight: 6 }}>${base.toLocaleString()}</span>}
+                        <span style={{ fontSize: 16, fontWeight: 800, color: PLAN_COLORS[form.plan] }}>${final_.toLocaleString()}/mo</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              <div style={{ marginTop: 10, padding: "8px 10px", background: `${C.accent}08`, borderRadius: 6, fontSize: 11, color: C.muted, lineHeight: 1.5 }}>
+                An invite email will be sent to <strong style={{ color: C.text }}>{form.email}</strong> with a magic link to sign in.
+              </div>
             </div>
           )}
 
