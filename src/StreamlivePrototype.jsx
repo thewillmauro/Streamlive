@@ -1164,6 +1164,30 @@ function ScreenBuyerProfile({ buyer, persona, navigate }) {
 // ─── SCREEN: SHOWS ────────────────────────────────────────────────────────────
 function ScreenShows({ navigate, persona, shows }) {
   const allShows = shows || SHOWS;
+  const [drafts, setDrafts] = useState([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("STRMLIVE_SHOW_DRAFTS");
+      if (raw) { setDrafts(JSON.parse(raw)); return; }
+      // Migrate single draft to array format
+      const single = localStorage.getItem("STRMLIVE_SHOW_DRAFT");
+      if (single) {
+        const d = JSON.parse(single);
+        const arr = [{ ...d, id: d.savedAt || Date.now().toString() }];
+        setDrafts(arr);
+        localStorage.setItem("STRMLIVE_SHOW_DRAFTS", JSON.stringify(arr));
+        localStorage.removeItem("STRMLIVE_SHOW_DRAFT");
+      }
+    } catch(e) {}
+  }, []);
+
+  const deleteDraft = (id) => {
+    const updated = drafts.filter(d => d.id !== id);
+    setDrafts(updated);
+    try { localStorage.setItem("STRMLIVE_SHOW_DRAFTS", JSON.stringify(updated)); } catch(e) {}
+  };
+
   return (
     <div style={{ padding:"28px 32px", overflowY:"auto", flex:1, minHeight:0 }}>
       <div style={{ marginBottom:24 }}>
@@ -1181,6 +1205,44 @@ function ScreenShows({ navigate, persona, shows }) {
         </div>
         <button onClick={()=>navigate("show-planner")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 18px", borderRadius:9, cursor:"pointer", whiteSpace:"nowrap" }}>Start Live Show</button>
       </div>
+
+      {/* DRAFTS */}
+      {drafts.length > 0 && (
+        <div style={{ marginBottom:24 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Saved Drafts</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {drafts.map(draft => {
+              const saved = draft.savedAt ? new Date(draft.savedAt) : null;
+              const timeAgo = saved ? (() => {
+                const mins = Math.floor((Date.now() - saved.getTime()) / 60000);
+                if (mins < 1) return "Just now";
+                if (mins < 60) return `${mins}m ago`;
+                const hrs = Math.floor(mins / 60);
+                if (hrs < 24) return `${hrs}h ago`;
+                return `${Math.floor(hrs/24)}d ago`;
+              })() : "";
+              const productCount = (draft.runOrder || draft.selectedProducts || []).length;
+              const platformCount = (draft.selectedPlatforms || []).length;
+              return (
+                <div key={draft.id} style={{ background:C.surface, border:`1px solid ${C.accent}33`, borderLeft:`3px solid ${C.accent}`, borderRadius:10, padding:"12px 16px", display:"flex", alignItems:"center", gap:14 }}>
+                  <div style={{ width:36, height:36, borderRadius:9, background:`${C.accent}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>📝</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{draft.showName || "Untitled Show"}</div>
+                    <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>
+                      Step {draft.step || 1} · {productCount} product{productCount!==1?"s":""} · {platformCount} platform{platformCount!==1?"s":""}
+                      {timeAgo && <span> · saved {timeAgo}</span>}
+                    </div>
+                  </div>
+                  <button onClick={()=>navigate("show-planner", { draft })} style={{ fontSize:11, fontWeight:700, color:C.accent, background:`${C.accent}12`, border:`1px solid ${C.accent}33`, padding:"7px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>
+                    Resume
+                  </button>
+                  <button onClick={()=>deleteDraft(draft.id)} style={{ background:"none", border:"none", color:C.muted, fontSize:14, cursor:"pointer", padding:"4px 6px" }}>✕</button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* SHOW CARDS */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
@@ -8208,13 +8270,18 @@ function ScreenCatalog({ persona, navigate, autoSync, autoSyncShop, onAutoSyncCo
 }
 
 // ─── SCREEN: SHOW PLANNER ──────────────────────────────────────────────────────
-function ScreenShowPlanner({ navigate, persona }) {
-  const [step, setStep] = useState(1);
-  const [showName, setShowName] = useState("");
-  const [selectedPlatforms, setSelectedPlatforms] = useState(["WN"]);
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const [runOrder, setRunOrder] = useState([]);
-  const [perks, setPerks] = useState({
+function ScreenShowPlanner({ navigate, persona, params }) {
+  const draft = params?.draft;
+  const showReadyProducts = PRODUCTS.filter(p=>p.showReady);
+  const restoredProducts = draft?.selectedProducts ? showReadyProducts.filter(p=>draft.selectedProducts.includes(p.id)) : [];
+  const restoredRunOrder = draft?.runOrder ? draft.runOrder.map(id=>showReadyProducts.find(p=>p.id===id)).filter(Boolean) : [];
+
+  const [step, setStep] = useState(draft?.step || 1);
+  const [showName, setShowName] = useState(draft?.showName || "");
+  const [selectedPlatforms, setSelectedPlatforms] = useState(draft?.selectedPlatforms || ["WN"]);
+  const [selectedProducts, setSelectedProducts] = useState(restoredProducts);
+  const [runOrder, setRunOrder] = useState(restoredRunOrder);
+  const [perks, setPerks] = useState(draft?.perks || {
     earlyAccess: false, earlyMinutes: 15,
     newBuyerDiscount: false, newBuyerPct: 10,
     vipFirstPick: false, doublePoints: false,
@@ -8224,15 +8291,24 @@ function ScreenShowPlanner({ navigate, persona }) {
   });
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [pendingNav, setPendingNav] = useState(null);
+  const [draftId] = useState(draft?.id || null); // track which draft we're editing
 
   const hasDraft = showName.trim() || selectedProducts.length > 0 || runOrder.length > 0 || step > 1;
 
   const saveDraft = () => {
     try {
-      localStorage.setItem("STRMLIVE_SHOW_DRAFT", JSON.stringify({
+      const newDraft = {
+        id: draftId || new Date().toISOString(),
         showName, selectedPlatforms, selectedProducts: selectedProducts.map(p=>p.id),
         runOrder: runOrder.map(p=>p.id), perks, step, savedAt: new Date().toISOString(),
-      }));
+      };
+      const raw = localStorage.getItem("STRMLIVE_SHOW_DRAFTS");
+      const existing = raw ? JSON.parse(raw) : [];
+      // Replace if editing existing draft, otherwise append
+      const idx = existing.findIndex(d => d.id === newDraft.id);
+      if (idx >= 0) existing[idx] = newDraft;
+      else existing.unshift(newDraft);
+      localStorage.setItem("STRMLIVE_SHOW_DRAFTS", JSON.stringify(existing));
     } catch(e) {}
   };
 
@@ -8271,7 +8347,6 @@ function ScreenShowPlanner({ navigate, persona }) {
   const moveUp   = (i) => { if(i===0) return; const a=[...runOrder]; [a[i-1],a[i]]=[a[i],a[i-1]]; setRunOrder(a); };
   const moveDown = (i) => { if(i===runOrder.length-1) return; const a=[...runOrder]; [a[i],a[i+1]]=[a[i+1],a[i]]; setRunOrder(a); };
   const remove   = (i) => { const p=runOrder[i]; setRunOrder(r=>r.filter((_,idx)=>idx!==i)); };
-  const showReadyProducts = PRODUCTS.filter(p=>p.showReady);
   const PLANNER_PRESETS = [{label:"30s",secs:30},{label:"1m",secs:60},{label:"90s",secs:90},{label:"2m",secs:120},{label:"3m",secs:180},{label:"5m",secs:300}];
   const totalShowSecs = runOrder.reduce((a,p)=>a+(productTimings[p.id]||90),0);
   const steps = ["Choose Platforms","Select Products","Set Run Order","Show Perks","Go Live"];
@@ -9055,7 +9130,11 @@ function ScreenShowPlanner({ navigate, persona }) {
       {step===5 && (
         <div style={{ padding:"14px 28px", borderTop:`1px solid ${C.border}`, background:C.surface, flexShrink:0, display:"flex", gap:10 }}>
           <button onClick={()=>setStep(4)} style={{ background:"transparent", border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"12px 20px", borderRadius:10, cursor:"pointer" }}>← Edit</button>
-          <button onClick={()=>navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now(),showTalkingPoints})}
+          <button onClick={()=>{
+              // Remove draft if we're going live
+              if (draftId) { try { const raw=localStorage.getItem("STRMLIVE_SHOW_DRAFTS"); if(raw){const arr=JSON.parse(raw).filter(d=>d.id!==draftId); localStorage.setItem("STRMLIVE_SHOW_DRAFTS",JSON.stringify(arr));} } catch(e){} }
+              navigate("live",{selectedPlatforms,runOrder,showName,persona,productTimings,perks,showStartTime:Date.now(),showTalkingPoints});
+            }}
             style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:15, fontWeight:800, padding:"14px", borderRadius:10, cursor:"pointer", letterSpacing:".02em", boxShadow:"0 4px 20px #10b98144" }}>
             🔴 Go Live Now
           </button>
@@ -13419,7 +13498,7 @@ export default function StreamlivePrototype({ session, onSignOut }) {
                 {view==="settings"     && <ScreenSettings      persona={persona} initialTab={onboardParam==="settings"?"platforms":undefined} openCheckout={setCheckoutPlan} />}
                 {view==="order-review" && <ScreenOrderReview   params={params} navigate={navigate} onShowComplete={(show)=>setCompletedShows(prev=>[show,...prev])} />}
                 {view==="catalog"      && <ScreenCatalog       persona={persona} navigate={navigate} autoSync={shopifyAutoSync} autoSyncShop={shopifyShopParam} onAutoSyncConsumed={() => setShopifyAutoSync(false)} />}
-                {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} persona={persona} />}
+                {view==="show-planner" && <ScreenShowPlanner   navigate={navigate} persona={persona} params={params} />}
                 {view==="loyalty"      && <ScreenLoyalty       buyers={buyers} navigate={navigate} persona={persona} />}
                 {view==="production"   && <ScreenProduction    persona={persona} navigate={navigate} />}
                 {view==="analytics"    && <ScreenAnalytics     buyers={buyers} persona={persona} navigate={navigate} />}
