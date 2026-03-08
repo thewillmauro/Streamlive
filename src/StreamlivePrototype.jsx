@@ -5769,8 +5769,8 @@ function ScreenComposer({ navigate, persona }) {
               </div>
             )}
 
-            <button onClick={()=>setStep(2)} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"12px", borderRadius:10, cursor:"pointer" }}>
-              Continue to Message →
+            <button onClick={()=>connectedChannels[type]&&setStep(2)} disabled={!connectedChannels[type]} style={{ background:connectedChannels[type]?`linear-gradient(135deg,${C.accent},${C.accent2})`:C.surface2, border:connectedChannels[type]?"none":`1px solid ${C.border}`, color:connectedChannels[type]?"#fff":C.subtle, fontSize:13, fontWeight:700, padding:"12px", borderRadius:10, cursor:connectedChannels[type]?"pointer":"not-allowed", opacity:connectedChannels[type]?1:0.5 }}>
+              {connectedChannels[type] ? "Continue to Message →" : "Connect a platform first"}
             </button>
           </div>
         </div>
@@ -5856,8 +5856,8 @@ function ScreenComposer({ navigate, persona }) {
 
           <div style={{ display:"flex", gap:10 }}>
             <button onClick={()=>setStep(2)} style={{ background:C.surface, border:`1px solid ${C.border}`, color:C.muted, fontSize:12, fontWeight:600, padding:"10px 20px", borderRadius:9, cursor:"pointer" }}>← Edit</button>
-            <button onClick={()=>navigate("campaigns")} style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
-              {type==="ig_dm"||type==="tt_dm"?"Send via ManyChat 🚀":type==="wn_dm"?"Send Whatnot Notification 🔔":type==="am_msg"?"Send Amazon Message 📦":"Send Campaign 🚀"}
+            <button onClick={()=>connectedChannels[type]&&navigate("campaigns")} disabled={!connectedChannels[type]} style={{ flex:1, background:connectedChannels[type]?"linear-gradient(135deg,#10b981,#059669)":C.surface2, border:connectedChannels[type]?"none":`1px solid ${C.border}`, color:connectedChannels[type]?"#fff":C.subtle, fontSize:13, fontWeight:700, padding:"10px", borderRadius:9, cursor:connectedChannels[type]?"pointer":"not-allowed", opacity:connectedChannels[type]?1:0.5 }}>
+              {connectedChannels[type] ? (type==="ig_dm"||type==="tt_dm"?"Send via ManyChat 🚀":type==="wn_dm"?"Send Whatnot Notification 🔔":type==="am_msg"?"Send Amazon Message 📦":"Send Campaign 🚀") : "Connect platform to send"}
             </button>
           </div>
         </div>
