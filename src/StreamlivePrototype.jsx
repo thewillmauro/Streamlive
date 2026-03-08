@@ -7146,7 +7146,19 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 </div>
                 {isConn
                   ? <button onClick={()=>{ const next=platforms.map(pl=>pl.id===pid?{...pl,connected:false}:pl); setPlatforms(next); syncPlatformsToConnections(next); }} style={{ fontSize:11, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Disconnect</button>
-                  : <button onClick={()=>{ const base=platforms.find(pl=>pl.id===pid)?platforms.map(pl=>pl.id===pid?{...pl,connected:true}:pl):[...platforms,{id:pid,connected:true}]; setPlatforms(base); syncPlatformsToConnections(base); }} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Connect</button>
+                  : <button onClick={()=>{
+                      if (pid === "IG") {
+                        // Real Instagram OAuth flow
+                        const token = supabase?.auth?.getSession?.()?.then(s => s?.data?.session?.access_token);
+                        token?.then(t => {
+                          window.location.href = `/api/instagram/auth${t ? `?token=${t}` : ""}`;
+                        }).catch(() => {
+                          window.location.href = "/api/instagram/auth";
+                        });
+                        return;
+                      }
+                      const base=platforms.find(pl=>pl.id===pid)?platforms.map(pl=>pl.id===pid?{...pl,connected:true}:pl):[...platforms,{id:pid,connected:true}]; setPlatforms(base); syncPlatformsToConnections(base);
+                    }} style={{ fontSize:11, color:"#fff", background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Connect</button>
                 }
               </div>
             );
@@ -12917,8 +12929,11 @@ export default function StreamlivePrototype({ session, onSignOut }) {
   const onboardParam = new URLSearchParams(window.location.search).get("onboard");
   const shopifyParam = new URLSearchParams(window.location.search).get("shopify");
   const shopifyShopParam = new URLSearchParams(window.location.search).get("shop");
+  const igParam = new URLSearchParams(window.location.search).get("ig");
+  const igHandleParam = new URLSearchParams(window.location.search).get("handle");
   const [view, setView]             = useState(
     shopifyParam === "connected" ? "catalog"
+    : igParam === "connected" ? "settings"
     : onboardParam === "settings" ? "settings"
     : "dashboard"
   );
@@ -12999,6 +13014,29 @@ export default function StreamlivePrototype({ session, onSignOut }) {
       const url = new URL(window.location);
       url.searchParams.delete("shopify");
       url.searchParams.delete("shop");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle ?ig=connected return from Instagram OAuth
+  useEffect(() => {
+    if (igParam === "connected" && igHandleParam) {
+      // Persist IG connection in localStorage so Settings picks it up
+      (async () => {
+        try {
+          const result = await storage.get("strmlive:connections");
+          const existing = result?.value ? JSON.parse(result.value) : {};
+          existing.ig = { connectedAt: new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}), status:"active", handle: igHandleParam };
+          await storage.set("strmlive:connections", JSON.stringify(existing));
+        } catch(e) {}
+      })();
+      track('Instagram Connected', { handle: igHandleParam });
+    }
+    if (igParam) {
+      const url = new URL(window.location);
+      url.searchParams.delete("ig");
+      url.searchParams.delete("handle");
+      url.searchParams.delete("reason");
       window.history.replaceState({}, "", url.pathname + url.search);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
