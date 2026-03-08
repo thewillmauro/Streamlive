@@ -8222,6 +8222,28 @@ function ScreenShowPlanner({ navigate, persona }) {
     winbackAfterShow: false, tierUpAlert: false,
     rules: [],
   });
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [pendingNav, setPendingNav] = useState(null);
+
+  const hasDraft = showName.trim() || selectedProducts.length > 0 || runOrder.length > 0 || step > 1;
+
+  const saveDraft = () => {
+    try {
+      localStorage.setItem("STRMLIVE_SHOW_DRAFT", JSON.stringify({
+        showName, selectedPlatforms, selectedProducts: selectedProducts.map(p=>p.id),
+        runOrder: runOrder.map(p=>p.id), perks, step, savedAt: new Date().toISOString(),
+      }));
+    } catch(e) {}
+  };
+
+  const tryNavigate = (dest, params) => {
+    if (hasDraft) {
+      setPendingNav({ dest, params });
+      setShowLeaveModal(true);
+    } else {
+      navigate(dest, params);
+    }
+  };
 
   const limits = PLAN_LIMITS[persona.plan] || PLAN_LIMITS.starter;
   const togglePlatform = (pid) => setSelectedPlatforms(prev => {
@@ -8258,7 +8280,7 @@ function ScreenShowPlanner({ navigate, persona }) {
     <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-          <button onClick={()=>navigate("shows")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
+          <button onClick={()=>tryNavigate("shows")} style={{ fontSize:11, color:C.muted, background:"none", border:"none", cursor:"pointer", padding:0 }}>← Back</button>
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:18, fontWeight:800, color:C.text }}>Show Planner</div>
           <div style={{ marginLeft:"auto" }}><PlatformPill code={UPCOMING_SHOW.platform} /></div>
         </div>
@@ -9037,6 +9059,29 @@ function ScreenShowPlanner({ navigate, persona }) {
             style={{ flex:1, background:"linear-gradient(135deg,#10b981,#059669)", border:"none", color:"#fff", fontSize:15, fontWeight:800, padding:"14px", borderRadius:10, cursor:"pointer", letterSpacing:".02em", boxShadow:"0 4px 20px #10b98144" }}>
             🔴 Go Live Now
           </button>
+        </div>
+      )}
+
+      {/* ── SAVE DRAFT MODAL ── */}
+      {showLeaveModal && (
+        <div style={{ position:"fixed", inset:0, background:"#000000cc", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={()=>setShowLeaveModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{ background:"#0e0e1a", border:`1px solid ${C.border}`, borderRadius:18, padding:"28px 32px", width:420, maxWidth:"90vw" }}>
+            <div style={{ fontSize:16, fontWeight:800, color:C.text, marginBottom:8 }}>Save your progress?</div>
+            <div style={{ fontSize:12, color:C.muted, lineHeight:1.6, marginBottom:24 }}>You have unsaved changes in your show planner. Would you like to save a draft before leaving?</div>
+            <div style={{ display:"flex", gap:10 }}>
+              <button onClick={()=>{ setShowLeaveModal(false); if(pendingNav) navigate(pendingNav.dest, pendingNav.params||{}); }}
+                style={{ flex:1, background:C.surface2, border:`1px solid ${C.border}`, color:"#f87171", fontSize:12, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
+                Discard
+              </button>
+              <button onClick={()=>{ saveDraft(); setShowLeaveModal(false); if(pendingNav) navigate(pendingNav.dest, pendingNav.params||{}); }}
+                style={{ flex:1, background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"10px", borderRadius:9, cursor:"pointer" }}>
+                Save Draft & Leave
+              </button>
+            </div>
+            <button onClick={()=>setShowLeaveModal(false)} style={{ width:"100%", marginTop:8, background:"none", border:"none", color:C.muted, fontSize:11, cursor:"pointer", padding:"8px 0" }}>
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>
