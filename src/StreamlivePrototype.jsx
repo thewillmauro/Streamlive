@@ -4705,6 +4705,8 @@ function ScreenLive({ buyers: buyersProp, navigate, params, persona: personaProp
 // ─── SCREEN: CAMPAIGNS ────────────────────────────────────────────────────────
 function ScreenCampaigns({ navigate, persona }) {
   const [mainTab, setMainTab] = useState("broadcasts");
+  const connectedChannels = useChannelConnections();
+  const anyConnected = Object.values(connectedChannels).some(Boolean);
 
   return (
     <div style={{ display:"flex", flex:1, minHeight:0, flexDirection:"column", overflow:"hidden" }}>
@@ -4715,7 +4717,7 @@ function ScreenCampaigns({ navigate, persona }) {
             <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>Broadcast messages and keyword-triggered DM automations</div>
           </div>
           {mainTab === "broadcasts"
-            ? <button onClick={()=>navigate("composer")} style={{ background:`linear-gradient(135deg,${C.accent},${C.accent2})`, border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>+ New Broadcast</button>
+            ? <button onClick={()=>anyConnected?navigate("composer"):navigate("settings")} style={{ background:anyConnected?`linear-gradient(135deg,${C.accent},${C.accent2})`:C.surface2, border:anyConnected?"none":`1px solid ${C.border}`, color:anyConnected?"#fff":C.muted, fontSize:12, fontWeight:700, padding:"9px 20px", borderRadius:9, cursor:"pointer" }}>{anyConnected?"+ New Broadcast":"Connect a platform →"}</button>
             : null
           }
         </div>
@@ -4738,14 +4740,15 @@ function BroadcastsTab({ navigate, persona }) {
   const [filterType, setFilterType] = useState("all");
 
   // Empty state
+  const anyChannelConnected = Object.values(connectedChannels).some(Boolean);
   if (CAMPAIGNS.length === 0) {
     return (
       <EmptyState
         icon="◈"
-        title="No campaigns yet"
-        description="Create your first broadcast to reach your buyers across email, SMS, and DM channels."
-        ctaLabel="+ New Broadcast"
-        onCta={()=>navigate("composer")}
+        title={anyChannelConnected ? "No campaigns yet" : "No platforms connected"}
+        description={anyChannelConnected ? "Create your first broadcast to reach your buyers across email, SMS, and DM channels." : "Connect a platform in Settings to start sending broadcasts."}
+        ctaLabel={anyChannelConnected ? "+ New Broadcast" : "Connect a platform →"}
+        onCta={()=>anyChannelConnected ? navigate("composer") : navigate("settings")}
       />
     );
   }
