@@ -7271,7 +7271,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                 const requiredPlatform = MESSAGING_REQUIRES_PLATFORM[type];
                 const platformConnected = requiredPlatform ? platforms.find(pl=>pl.id===requiredPlatform)?.connected : true;
                 return (
-                  <div key={type} style={{ paddingBottom:i<group.items.length-1?14:0, marginBottom:i<group.items.length-1?14:0, borderBottom:i<group.items.length-1?`1px solid ${C.border}`:"none", opacity:requiredPlatform && !platformConnected ? 0.45 : 1 }}>
+                  <div key={type} style={{ paddingBottom:i<group.items.length-1?14:0, marginBottom:i<group.items.length-1?14:0, borderBottom:i<group.items.length-1?`1px solid ${C.border}`:"none", opacity:requiredPlatform && !platformConnected ? 0.7 : 1 }}>
                     {connected && platformConnected ? (
                       <ConnectedCard type={type} />
                     ) : (
@@ -7289,7 +7289,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                             Connect →
                           </button>
                         ) : (
-                          <button onClick={()=>{ setTab("platforms"); }} style={{ fontSize:11, fontWeight:700, color:C.muted, background:C.surface2, border:`1px solid ${C.border}`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                          <button onClick={()=>{ setTab("platforms"); }} style={{ fontSize:11, fontWeight:700, color:intg.color, background:`${intg.color}12`, border:`1px solid ${intg.color}33`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
                             Setup →
                           </button>
                         )}
