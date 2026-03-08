@@ -969,11 +969,11 @@ function AdminDashboardInner({ session, onSignOut }) {
     return (
       <div onClick={() => setShowAddUser(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
         <div onClick={e => e.stopPropagation()} style={{ background: "#09090f", border: `1px solid ${C.accent}44`, borderRadius: 18, padding: 28, width: 480, maxWidth: "94vw", maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
-          <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, borderRadius: "50%", background: C.accent, opacity: 0.05, filter: "blur(50px)" }} />
+          <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, borderRadius: "50%", background: C.accent, opacity: 0.05, filter: "blur(50px)", pointerEvents: "none" }} />
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22, position: "relative", zIndex: 1 }}>
             <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, color: C.text }}>Add New User</div>
-            <button onClick={() => setShowAddUser(false)} style={{ background: "none", border: "none", color: C.muted, fontSize: 16, cursor: "pointer" }}>✕</button>
+            <button onClick={(e) => { e.stopPropagation(); setShowAddUser(false); }} style={{ background: "none", border: "none", color: C.muted, fontSize: 18, cursor: "pointer", padding: "4px 8px", lineHeight: 1 }}>✕</button>
           </div>
 
           {/* Email */}
