@@ -974,6 +974,8 @@ function ScreenBuyers({ buyers, navigate }) {
     setTimeout(() => setExporting(false), 1500);
   };
 
+  const [activeFilterId, setActiveFilterId] = useState(null);
+
   const segs = [
     { id:"all",     label:`All (${buyers.length})` },
     { id:"vip",     label:`VIP (${buyers.filter(b=>b.status==="vip").length})` },
@@ -994,10 +996,15 @@ function ScreenBuyers({ buyers, navigate }) {
     <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, overflow:"hidden" }}>
       {/* TOOLBAR */}
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
-        <div style={{ display:"flex", gap:0, marginBottom:12 }}>
+        <div style={{ display:"flex", gap:0, marginBottom:12, flexWrap:"wrap" }}>
           {segs.map(s=>(
-            <button key={s.id} onClick={()=>setSeg(s.id)} style={{ background:"none", border:"none", borderBottom:`2px solid ${seg===s.id?C.accent:"transparent"}`, color:seg===s.id?"#a78bfa":C.muted, fontSize:12, fontWeight:seg===s.id?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s" }}>
+            <button key={s.id} onClick={()=>{setSeg(s.id);setRules([]);setActiveFilterId(null);}} style={{ background:"none", border:"none", borderBottom:`2px solid ${seg===s.id&&!activeFilterId?C.accent:"transparent"}`, color:seg===s.id&&!activeFilterId?"#a78bfa":C.muted, fontSize:12, fontWeight:seg===s.id&&!activeFilterId?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s" }}>
               {s.label}
+            </button>
+          ))}
+          {savedFilters.map(f=>(
+            <button key={f.id} onClick={()=>{loadFilter(f);setActiveFilterId(f.id);}} style={{ background:"none", border:"none", borderBottom:`2px solid ${activeFilterId===f.id?"#10b981":"transparent"}`, color:activeFilterId===f.id?"#10b981":C.muted, fontSize:12, fontWeight:activeFilterId===f.id?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s", display:"flex", alignItems:"center", gap:5 }}>
+              <span style={{ fontSize:9, opacity:0.6 }}>⚙</span> {f.name}
             </button>
           ))}
         </div>
@@ -1057,7 +1064,8 @@ function ScreenBuyers({ buyers, navigate }) {
             {rules.length === 0 && <div style={{ fontSize:11, color:C.subtle, marginTop:6 }}>Add rules to filter buyers by spend, orders, platform, or status.</div>}
             {rules.length > 0 && (
               <div style={{ display:"flex", gap:8, marginTop:8, alignItems:"center" }}>
-                <button onClick={()=>{setRules([]);setShowRuleBuilder(false);}} style={{ fontSize:10, color:"#f87171", background:"none", border:"none", cursor:"pointer", padding:0 }}>Clear all rules</button>
+                <button onClick={()=>{setRules([]);setShowRuleBuilder(false);setActiveFilterId(null);}} style={{ fontSize:10, color:"#f87171", background:"none", border:"none", cursor:"pointer", padding:0 }}>Clear all rules</button>
+                {activeFilterId && <button onClick={()=>{deleteFilter(activeFilterId);setRules([]);setActiveFilterId(null);setShowRuleBuilder(false);}} style={{ fontSize:10, color:"#f87171", background:"none", border:"none", cursor:"pointer", padding:0 }}>Delete saved filter</button>}
                 <div style={{ flex:1 }} />
                 {showSaveInput ? (
                   <div style={{ display:"flex", gap:6, alignItems:"center" }}>
@@ -1072,21 +1080,6 @@ function ScreenBuyers({ buyers, navigate }) {
               </div>
             )}
 
-            {/* Saved filters */}
-            {savedFilters.length > 0 && (
-              <div style={{ marginTop:10, borderTop:`1px solid ${C.border}`, paddingTop:10 }}>
-                <div style={{ fontSize:9, fontWeight:700, color:C.subtle, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>Saved Filters</div>
-                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                  {savedFilters.map(f => (
-                    <div key={f.id} style={{ display:"flex", alignItems:"center", gap:6, background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"4px 6px 4px 10px" }}>
-                      <button onClick={()=>loadFilter(f)} style={{ fontSize:10, fontWeight:600, color:C.text, background:"none", border:"none", cursor:"pointer", padding:0 }}>{f.name}</button>
-                      <span style={{ fontSize:9, color:C.subtle }}>{f.rules.length}r</span>
-                      <button onClick={()=>deleteFilter(f.id)} style={{ background:"none", border:"none", color:C.muted, fontSize:11, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>✕</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
