@@ -686,7 +686,24 @@ function AdminDashboardInner({ session, onSignOut }) {
   // TAB: ANALYTICS
   // ════════════════════════════════════════════════════════════════════════════
   function TabAnalytics() {
-    const s = stats || {};
+    const [analyticsUser, setAnalyticsUser] = useState("all");
+    const [userStats, setUserStats] = useState(null);
+    const [userStatsLoading, setUserStatsLoading] = useState(false);
+
+    useEffect(() => {
+      if (analyticsUser === "all") { setUserStats(null); return; }
+      (async () => {
+        setUserStatsLoading(true);
+        try {
+          const token = await getToken();
+          const res = await fetch(`/api/admin/users?action=user-stats&userId=${analyticsUser}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) setUserStats(await res.json());
+        } catch (e) {}
+        setUserStatsLoading(false);
+      })();
+    }, [analyticsUser, getToken]);
+
+    const s = analyticsUser === "all" ? (stats || {}) : (userStats || {});
     const showStats = s.shows || {};
     const buyerStats = s.buyers || {};
     const campaignStats = s.campaigns || {};
@@ -698,9 +715,23 @@ function AdminDashboardInner({ session, onSignOut }) {
     const teamStats = s.team || {};
     const showProdStats = s.showProducts || {};
 
+    const selectedUserName = analyticsUser === "all" ? null : (users.find(u => u.id === analyticsUser) || {});
+
     return (
       <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
-        <SectionHeader title="Platform Analytics" sub="Aggregate performance across all users" />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+          <SectionHeader title={analyticsUser === "all" ? "Platform Analytics" : `${selectedUserName?.first_name || selectedUserName?.email || "User"} Analytics`} sub={analyticsUser === "all" ? "Aggregate performance across all users" : (selectedUserName?.shop_name || selectedUserName?.email || "")} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {userStatsLoading && <span style={{ fontSize: 11, color: C.muted }}>Loading...</span>}
+            <select value={analyticsUser} onChange={e => setAnalyticsUser(e.target.value)}
+              style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", fontSize: 12, color: C.text, outline: "none", minWidth: 180, cursor: "pointer" }}>
+              <option value="all">All Accounts</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.first_name || u.email} — {(u.plan || "starter").charAt(0).toUpperCase() + (u.plan || "starter").slice(1)}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* GMV & Revenue */}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>

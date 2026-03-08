@@ -230,6 +230,115 @@ export default async function handler(req, res) {
     });
   }
 
+  // ── Per-user stats (same shape as platform stats) ────────────────────────
+  if (req.method === "GET" && action === "user-stats") {
+    const uid = req.query.userId;
+    if (!uid) return res.status(400).json({ error: "Missing userId" });
+
+    const [profileRes, buyersRes, showsRes, ordersRes, campaignsRes, connectionsRes, automationsRes, loyaltyRes, optInsRes, devicesRes, teamRes, showProductsRes] = await Promise.all([
+      supabase.from("profiles").select("id,plan,created_at,custom_price,discount").eq("id", uid).single(),
+      supabase.from("buyers").select("id,spend,status,created_at").eq("profile_id", uid),
+      supabase.from("shows").select("id,gmv,buyers_count,status,platforms,duration_min,date,created_at").eq("profile_id", uid),
+      supabase.from("orders").select("id,total,status,platform,created_at").eq("profile_id", uid),
+      supabase.from("campaigns").select("id,status,recipients,opens,clicks,conversions,gmv,channel").eq("profile_id", uid),
+      supabase.from("connections").select("id,platform,connected_at").eq("profile_id", uid),
+      supabase.from("automations").select("id,status,triggers,conversions,goal").eq("profile_id", uid),
+      supabase.from("loyalty_transactions").select("id,buyer_id,points,reason,created_at").eq("profile_id", uid),
+      supabase.from("opt_in_records").select("id,source,created_at").eq("profile_id", uid),
+      supabase.from("devices").select("id,category,connected,battery").eq("profile_id", uid),
+      supabase.from("team_members").select("id,role").eq("profile_id", uid),
+      supabase.from("show_products").select("id,show_id").in("show_id",
+        ((await supabase.from("shows").select("id").eq("profile_id", uid)).data || []).map(s => s.id)
+      ),
+    ]);
+
+    const buyers = buyersRes.data || [];
+    const shows = showsRes.data || [];
+    const orders = ordersRes.data || [];
+    const campaigns = campaignsRes.data || [];
+    const connections = connectionsRes.data || [];
+    const autos = automationsRes.data || [];
+    const loyalty = loyaltyRes.data || [];
+    const optIns = optInsRes.data || [];
+    const devices = devicesRes.data || [];
+    const team = teamRes.data || [];
+    const showProds = showProductsRes.data || [];
+
+    const now = Date.now();
+    const thirtyDays = 30 * 86400000;
+
+    // Buyer stats
+    const buyersByStatus = {};
+    let totalBuyerSpend = 0;
+    for (const b of buyers) { buyersByStatus[b.status || "new"] = (buyersByStatus[b.status || "new"] || 0) + 1; totalBuyerSpend += Number(b.spend) || 0; }
+
+    // Show stats
+    const completedShows = shows.filter(s => s.status === "completed");
+    const totalGMV = completedShows.reduce((sum, s) => sum + (Number(s.gmv) || 0), 0);
+    const avgShowGMV = completedShows.length ? totalGMV / completedShows.length : 0;
+    const totalShowMinutes = completedShows.reduce((sum, s) => sum + (s.duration_min || 0), 0);
+    const recentShows = shows.filter(s => s.created_at && now - new Date(s.created_at).getTime() < thirtyDays);
+    const platformUsage = {};
+    for (const s of shows) { for (const p of (s.platforms || [])) { platformUsage[p] = (platformUsage[p] || 0) + 1; } }
+
+    // Order stats
+    const totalOrderRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+    const ordersByPlatform = {};
+    for (const o of orders) { if (o.platform) ordersByPlatform[o.platform] = (ordersByPlatform[o.platform] || 0) + 1; }
+
+    // Campaign stats
+    const sentCampaigns = campaigns.filter(c => c.status === "sent");
+    const channelBreakdown = {};
+    for (const c of campaigns) { if (c.channel) channelBreakdown[c.channel] = (channelBreakdown[c.channel] || 0) + 1; }
+
+    // Connection stats
+    const connectionsByPlatform = {};
+    for (const c of connections) { connectionsByPlatform[c.platform] = (connectionsByPlatform[c.platform] || 0) + 1; }
+
+    // Automation stats
+    const activeAutos = autos.filter(a => a.status === "active");
+    const autoByGoal = {};
+    for (const a of autos) { if (a.goal) autoByGoal[a.goal] = (autoByGoal[a.goal] || 0) + 1; }
+
+    // Loyalty stats
+    const loyaltyByReason = {};
+    for (const t of loyalty) { if (t.reason) loyaltyByReason[t.reason] = (loyaltyByReason[t.reason] || 0) + 1; }
+
+    // Opt-in stats
+    const optInsBySource = {};
+    for (const o of optIns) { if (o.source) optInsBySource[o.source] = (optInsBySource[o.source] || 0) + 1; }
+
+    // Device stats
+    const connectedDevices = devices.filter(d => d.connected);
+    const devicesByCategory = {};
+    for (const d of devices) { if (d.category) devicesByCategory[d.category] = (devicesByCategory[d.category] || 0) + 1; }
+    const withBattery = devices.filter(d => d.battery != null);
+    const avgBattery = withBattery.length ? Math.round(withBattery.reduce((s, d) => s + d.battery, 0) / withBattery.length) : null;
+
+    // Team stats
+    const teamByRole = {};
+    for (const t of team) { teamByRole[t.role] = (teamByRole[t.role] || 0) + 1; }
+
+    // Show products
+    const showIds = new Set(showProds.map(sp => sp.show_id));
+    const avgPerShow = showIds.size ? Math.round(showProds.length / showIds.size * 10) / 10 : 0;
+
+    return res.json({
+      profile: profileRes.data,
+      buyers: { total: buyers.length, byStatus: buyersByStatus, totalSpend: totalBuyerSpend },
+      shows: { total: shows.length, completed: completedShows.length, totalGMV, avgShowGMV, totalMinutes: totalShowMinutes, recent: recentShows.length, platformUsage },
+      orders: { total: orders.length, totalRevenue: totalOrderRevenue, byPlatform: ordersByPlatform },
+      campaigns: { total: campaigns.length, sent: sentCampaigns.length, totalRecipients: sentCampaigns.reduce((s, c) => s + (c.recipients || 0), 0), totalOpens: sentCampaigns.reduce((s, c) => s + (c.opens || 0), 0), totalClicks: sentCampaigns.reduce((s, c) => s + (c.clicks || 0), 0), totalConversions: sentCampaigns.reduce((s, c) => s + (c.conversions || 0), 0), gmv: sentCampaigns.reduce((s, c) => s + (Number(c.gmv) || 0), 0), byChannel: channelBreakdown },
+      connections: { total: connections.length, byPlatform: connectionsByPlatform },
+      automations: { total: autos.length, active: activeAutos.length, totalTriggers: autos.reduce((s, a) => s + (a.triggers || 0), 0), totalConversions: autos.reduce((s, a) => s + (a.conversions || 0), 0), byGoal: autoByGoal },
+      loyalty: { totalTransactions: loyalty.length, totalPoints: loyalty.reduce((s, t) => s + (t.points || 0), 0), uniqueBuyers: new Set(loyalty.map(t => t.buyer_id)).size, byReason: loyaltyByReason },
+      optIns: { total: optIns.length, bySource: optInsBySource },
+      production: { totalDevices: devices.length, connected: connectedDevices.length, byCategory: devicesByCategory, avgBattery },
+      team: { totalMembers: team.length, teamsWithMembers: 1, byRole: teamByRole },
+      showProducts: { total: showProds.length, avgPerShow },
+    });
+  }
+
   // ── User detail ───────────────────────────────────────────────────────────
   if (req.method === "GET" && action === "user-detail") {
     const uid = req.query.userId;
