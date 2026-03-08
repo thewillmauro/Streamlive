@@ -1027,26 +1027,6 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </div>
 
-          {/* Platforms */}
-          <div style={{ marginBottom: 20 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Platforms</span>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {PLAT_OPTIONS.map(p => {
-                const sel = form.platforms.includes(p.id);
-                return (
-                  <button key={p.id} onClick={() => togglePlatform(p.id)} style={{
-                    display: "flex", alignItems: "center", gap: 6, padding: "7px 12px",
-                    background: sel ? `${p.color}14` : C.surface, border: `1px solid ${sel ? `${p.color}55` : C.border}`,
-                    borderRadius: 7, cursor: "pointer", transition: "all .15s",
-                  }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: sel ? p.color : C.muted }} />
-                    <span style={{ fontSize: 11, fontWeight: 600, color: sel ? p.color : C.muted }}>{p.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Error */}
           {formError && (
             <div style={{ marginBottom: 14, padding: "10px 14px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 8, fontSize: 12, color: C.red }}>{formError}</div>
