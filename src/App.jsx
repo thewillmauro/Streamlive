@@ -1889,12 +1889,12 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const handleSignIn = useCallback(async () => {
+  const handleSignIn = useCallback(async (returnTo) => {
     if (!supabase) return
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/app',
+        redirectTo: window.location.origin + (returnTo || '/app'),
         queryParams: { access_type: 'offline', prompt: 'consent' },
       }
     })
@@ -1916,13 +1916,7 @@ export default function App() {
       </div>
     )
     if (!session) {
-      handleSignIn()
-      return null
-    }
-    // Client-side admin gate (API also enforces server-side)
-    const adminEmails = ['will@strmlive.com']
-    if (!adminEmails.includes(session.user.email)) {
-      navigate('/')
+      handleSignIn('/admin')
       return null
     }
   }
