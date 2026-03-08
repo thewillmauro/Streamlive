@@ -7273,6 +7273,18 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
       {/* ── PROFILE TAB ── */}
       {tab==="profile" && (
         <div className="fade-up" style={{ maxWidth:500 }}>
+          {/* Profile photo */}
+          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:24 }}>
+            {persona.avatarUrl ? (
+              <img src={persona.avatarUrl} alt="" style={{ width:56, height:56, borderRadius:"50%", objectFit:"cover", border:`2px solid ${persona.planColor}44` }} referrerPolicy="no-referrer" />
+            ) : (
+              <Avatar initials={persona.avatar} color={persona.planColor} size={56} />
+            )}
+            <div>
+              <div style={{ fontSize:15, fontWeight:700, color:C.text }}>{persona.name}</div>
+              <div style={{ fontSize:12, color:C.muted }}>{persona.email}</div>
+            </div>
+          </div>
           {[
             { label:"Full Name",   value:persona.name,     type:"text"     },
             { label:"Shop Name",   value:persona.shop,     type:"text"     },
@@ -12943,6 +12955,13 @@ export default function StreamlivePrototype({ session }) {
       });
     }
   }, [profileLoading, profile, userId, creatingProfile, session, refetchProfile]);
+
+  // Sync avatar_url from Google if profile exists but avatar is missing
+  useEffect(() => {
+    if (profile && !profile.avatar_url && meta.avatar_url) {
+      supabase.from("profiles").update({ avatar_url: meta.avatar_url }).eq("id", userId).then(() => refetchProfile());
+    }
+  }, [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Build persona adapter from Supabase profile (fallback to session metadata while loading)
   const meta = session?.user?.user_metadata || {};
