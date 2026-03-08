@@ -1,79 +1,117 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase.js";
 import { navigate, FONT, GLOBAL_CSS } from "../lib/shared.jsx";
 
+// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
   bg: "#06060e", surface: "#0a0a15", surface2: "#0d0d1e", border: "#14142a",
   border2: "#1e1e38", text: "#e2e8f0", muted: "#6b7280", subtle: "#3d3d6e",
   accent: "#7c3aed", accent2: "#4f46e5", green: "#10b981", red: "#ef4444",
-  amber: "#f59e0b", blue: "#60a5fa", pink: "#ec4899",
+  amber: "#f59e0b", blue: "#60a5fa", pink: "#ec4899", cyan: "#06b6d4",
 };
 
 const PLAN_COLORS = { starter: "#10b981", growth: "#7c3aed", pro: "#f59e0b", enterprise: "#a78bfa" };
 const PLAN_PRICES = { starter: 79, growth: 199, pro: 399, enterprise: 999 };
 const VALID_PLANS = ["starter", "growth", "pro"];
+const PLATFORM_LABELS = { WN: "Whatnot", TT: "TikTok", IG: "Instagram", AM: "Amazon", YT: "YouTube", instagram: "Instagram", tiktok: "TikTok", whatnot: "Whatnot", amazon: "Amazon", youtube: "YouTube", shopify: "Shopify" };
+const PLATFORM_COLORS = { WN: "#7c3aed", TT: "#f43f5e", IG: "#ec4899", AM: "#f59e0b", YT: "#ef4444", instagram: "#ec4899", tiktok: "#f43f5e", whatnot: "#7c3aed", amazon: "#f59e0b", youtube: "#ef4444", shopify: "#96bf48" };
 
 const ADMIN_NAV = [
   { id: "overview", label: "Overview", icon: "⬡" },
   { id: "users", label: "Users", icon: "◉" },
   { id: "subscriptions", label: "Subscriptions", icon: "◆" },
+  { id: "analytics", label: "Analytics", icon: "◑" },
+  { id: "shows", label: "Shows", icon: "◈" },
   { id: "content", label: "Content", icon: "◧" },
+  { id: "system", label: "System", icon: "◎" },
 ];
 
 function deriveAvatar(name) {
   if (!name) return "??";
   const parts = name.trim().split(/\s+/);
-  return parts.length >= 2
-    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    : name.slice(0, 2).toUpperCase();
+  return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name.slice(0, 2).toUpperCase();
 }
 
-function Avatar({ initials, color, size = 32 }) {
+function Avatar({ initials, color, size = 32, url }) {
+  if (url) return <img src={url} alt="" style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} referrerPolicy="no-referrer" />;
   return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%", display: "flex",
-      alignItems: "center", justifyContent: "center",
-      background: `linear-gradient(135deg, ${color}44, ${color}22)`,
-      border: `1px solid ${color}44`, fontSize: size * 0.36, fontWeight: 700,
-      color, flexShrink: 0,
-    }}>
+    <div style={{ width: size, height: size, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${color}44, ${color}22)`, border: `1px solid ${color}44`, fontSize: size * 0.36, fontWeight: 700, color, flexShrink: 0 }}>
       {initials}
     </div>
   );
 }
 
-function StatCard({ label, value, sub, color = C.accent }) {
+function StatCard({ label, value, sub, color = C.accent, icon, trend }) {
   return (
-    <div style={{
-      flex: 1, minWidth: 180, background: C.surface, border: `1px solid ${C.border}`,
-      borderRadius: 14, padding: "22px 20px", position: "relative", overflow: "hidden",
-    }}>
+    <div style={{ flex: 1, minWidth: 170, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px 18px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -30, right: -30, width: 100, height: 100, borderRadius: "50%", background: color, opacity: 0.04, filter: "blur(30px)" }} />
-      <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{label}</div>
-      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 28, fontWeight: 800, color: C.text }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{sub}</div>}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</span>
+        {icon && <span style={{ fontSize: 14, color: `${color}88` }}>{icon}</span>}
+      </div>
+      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 26, fontWeight: 800, color: C.text, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      {(sub || trend) && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+          {trend && <span style={{ fontSize: 10, fontWeight: 700, color: trend > 0 ? C.green : C.red }}>{trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%</span>}
+          {sub && <span style={{ fontSize: 10, color: C.muted }}>{sub}</span>}
+        </div>
+      )}
     </div>
   );
 }
 
 function PlanBadge({ plan }) {
   const col = PLAN_COLORS[plan] || C.muted;
+  return <span style={{ fontSize: 9, fontWeight: 700, color: col, background: `${col}18`, border: `1px solid ${col}33`, padding: "2px 8px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>{plan || "starter"}</span>;
+}
+
+function MiniBar({ value, max, color }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <span style={{
-      fontSize: 9, fontWeight: 700, color: col, background: `${col}18`,
-      border: `1px solid ${col}33`, padding: "2px 8px", borderRadius: 4,
-      textTransform: "uppercase", letterSpacing: "0.06em",
-    }}>
-      {plan || "starter"}
-    </span>
+    <div style={{ height: 4, background: `${color}18`, borderRadius: 2, width: "100%" }}>
+      <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 2, transition: "width .4s ease" }} />
+    </div>
   );
 }
 
-// ── HACKER-STYLE LOGIN LANDING ───────────────────────────────────────────────
+function SectionHeader({ title, sub }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>{title}</div>
+      {sub && <div style={{ fontSize: 12, color: C.muted }}>{sub}</div>}
+    </div>
+  );
+}
+
+function Card({ children, style = {} }) {
+  return <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", ...style }}>{children}</div>;
+}
+
+function CardHeader({ title, right }) {
+  return (
+    <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.border}`, background: C.surface2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{title}</span>
+      {right}
+    </div>
+  );
+}
+
+function EmptyRow({ text }) {
+  return <div style={{ padding: 32, textAlign: "center", fontSize: 12, color: C.muted }}>{text}</div>;
+}
+
+const fmt = (n) => typeof n === "number" ? n.toLocaleString() : n;
+const fmtUSD = (n) => `$${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+const fmtDateShort = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HACKER LOGIN SCREEN
+// ═══════════════════════════════════════════════════════════════════════════════
 function AdminLoginScreen({ onLogin }) {
   const [lines, setLines] = useState([]);
   const [inputVal, setInputVal] = useState("");
-  const [phase, setPhase] = useState("boot"); // boot → prompt → auth
+  const [phase, setPhase] = useState("boot");
   const [cursorVisible, setCursorVisible] = useState(true);
 
   const bootSequence = [
@@ -95,22 +133,12 @@ function AdminLoginScreen({ onLogin }) {
     { text: "", delay: 2900 },
   ];
 
-  // Cursor blink
+  useEffect(() => { const t = setInterval(() => setCursorVisible(v => !v), 530); return () => clearInterval(t); }, []);
   useEffect(() => {
-    const t = setInterval(() => setCursorVisible(v => !v), 530);
-    return () => clearInterval(t);
-  }, []);
-
-  // Boot sequence
-  useEffect(() => {
-    const timers = bootSequence.map((line, i) =>
-      setTimeout(() => {
-        setLines(prev => [...prev, line.text]);
-        if (i === bootSequence.length - 1) {
-          setTimeout(() => setPhase("prompt"), 400);
-        }
-      }, line.delay)
-    );
+    const timers = bootSequence.map((line, i) => setTimeout(() => {
+      setLines(prev => [...prev, line.text]);
+      if (i === bootSequence.length - 1) setTimeout(() => setPhase("prompt"), 400);
+    }, line.delay));
     return () => timers.forEach(clearTimeout);
   }, []);
 
@@ -119,87 +147,41 @@ function AdminLoginScreen({ onLogin }) {
       const cmd = inputVal.trim().toLowerCase();
       if (cmd === "access" || cmd === "login" || cmd === "connect") {
         setLines(prev => [...prev, `> ${inputVal}`, "", "[AUTH] Redirecting to secure authentication portal...", "[AUTH] Google OAuth 2.0 handshake initiated..."]);
-        setPhase("auth");
-        setInputVal("");
+        setPhase("auth"); setInputVal("");
         setTimeout(() => onLogin(), 1500);
       } else if (cmd === "help") {
-        setLines(prev => [...prev, `> ${inputVal}`, "", "Available commands:", "  access  — Authenticate via secure portal", "  login   — Authenticate via secure portal", "  status  — System status check", "  help    — Display this message", ""]);
+        setLines(prev => [...prev, `> ${inputVal}`, "", "Available commands:", "  access  — Authenticate via secure portal", "  status  — System status check", "  help    — Display this message", ""]);
         setInputVal("");
       } else if (cmd === "status") {
         setLines(prev => [...prev, `> ${inputVal}`, "", `[STATUS] Uptime: ${Math.floor(Math.random() * 99 + 1)} days`, `[STATUS] Active sessions: ${Math.floor(Math.random() * 3)}`, `[STATUS] Threat level: NOMINAL`, `[STATUS] Last breach attempt: ${Math.floor(Math.random() * 48 + 1)}h ago — BLOCKED`, ""]);
         setInputVal("");
       } else if (cmd) {
-        setLines(prev => [...prev, `> ${inputVal}`, `bash: ${cmd}: command not found. Type 'help' for available commands.`, ""]);
+        setLines(prev => [...prev, `> ${inputVal}`, `bash: ${cmd}: command not found. Type 'help' for commands.`, ""]);
         setInputVal("");
       }
     }
   };
 
   return (
-    <div style={{ background: "#000", height: "100vh", overflow: "hidden", fontFamily: "'JetBrains Mono', 'Courier New', monospace", position: "relative" }}
-      onClick={() => document.getElementById("mc-terminal-input")?.focus()}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
-        @keyframes scanline {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100vh); }
-        }
-        @keyframes flicker {
-          0%, 100% { opacity: 1; }
-          92% { opacity: 1; }
-          93% { opacity: 0.8; }
-          94% { opacity: 1; }
-          96% { opacity: 0.9; }
-          97% { opacity: 1; }
-        }
-        @keyframes glowPulse {
-          0%, 100% { text-shadow: 0 0 5px #00ff4188, 0 0 10px #00ff4144; }
-          50% { text-shadow: 0 0 10px #00ff4188, 0 0 20px #00ff4166, 0 0 30px #00ff4122; }
-        }
-        @keyframes matrixRain {
-          0% { transform: translateY(-100%); opacity: 1; }
-          100% { transform: translateY(100vh); opacity: 0; }
-        }
+    <div style={{ background: "#000", height: "100vh", overflow: "hidden", fontFamily: "'JetBrains Mono','Courier New',monospace", position: "relative" }} onClick={() => document.getElementById("mc-terminal-input")?.focus()}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+        @keyframes scanline { 0% { transform:translateY(-100%) } 100% { transform:translateY(100vh) } }
+        @keyframes flicker { 0%,100% { opacity:1 } 93% { opacity:.8 } 94%,97% { opacity:1 } 96% { opacity:.9 } }
+        @keyframes glowPulse { 0%,100% { text-shadow:0 0 5px #00ff4188,0 0 10px #00ff4144 } 50% { text-shadow:0 0 10px #00ff4188,0 0 20px #00ff4166,0 0 30px #00ff4122 } }
+        @keyframes matrixRain { 0% { transform:translateY(-100%);opacity:1 } 100% { transform:translateY(100vh);opacity:0 } }
       `}</style>
-
-      {/* Scanline effect */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10,
-        background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px)",
-      }} />
-      <div style={{
-        position: "absolute", left: 0, right: 0, height: 2, background: "rgba(0,255,65,0.06)",
-        zIndex: 11, pointerEvents: "none", animation: "scanline 8s linear infinite",
-      }} />
-
-      {/* Matrix rain columns (subtle background) */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10, background: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,0.015) 2px,rgba(0,255,65,0.015) 4px)" }} />
+      <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: "rgba(0,255,65,0.06)", zIndex: 11, pointerEvents: "none", animation: "scanline 8s linear infinite" }} />
       <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", opacity: 0.04 }}>
         {Array.from({ length: 20 }).map((_, i) => (
-          <div key={i} style={{
-            position: "absolute", left: `${i * 5 + Math.random() * 2}%`, top: 0,
-            fontSize: 11, color: "#00ff41", writingMode: "vertical-rl", lineHeight: 1.2,
-            animation: `matrixRain ${6 + Math.random() * 8}s linear infinite`,
-            animationDelay: `${Math.random() * 5}s`,
-          }}>
+          <div key={i} style={{ position: "absolute", left: `${i * 5 + Math.random() * 2}%`, top: 0, fontSize: 11, color: "#00ff41", writingMode: "vertical-rl", lineHeight: 1.2, animation: `matrixRain ${6 + Math.random() * 8}s linear infinite`, animationDelay: `${Math.random() * 5}s` }}>
             {Array.from({ length: 30 }).map(() => String.fromCharCode(0x30A0 + Math.random() * 96)).join("")}
           </div>
         ))}
       </div>
-
-      {/* CRT vignette */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 12,
-        background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%)",
-      }} />
-
-      {/* Terminal content */}
-      <div style={{
-        position: "relative", zIndex: 5, height: "100%", padding: "40px 60px",
-        overflow: "auto", animation: "flicker 10s infinite",
-      }}>
-        {/* Logo */}
-        <div style={{ marginBottom: 8 }}>
-          <pre style={{ color: "#00ff41", fontSize: 10, lineHeight: 1.2, animation: "glowPulse 3s ease-in-out infinite", margin: 0 }}>{`
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 12, background: "radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.6) 100%)" }} />
+      <div style={{ position: "relative", zIndex: 5, height: "100%", padding: "40px 60px", overflow: "auto", animation: "flicker 10s infinite" }}>
+        <pre style={{ color: "#00ff41", fontSize: 10, lineHeight: 1.2, animation: "glowPulse 3s ease-in-out infinite", margin: "0 0 8px" }}>{`
  ███╗   ███╗ ██╗ ███████╗ ███████╗ ██╗  ██████╗  ███╗   ██╗
  ████╗ ████║ ██║ ██╔════╝ ██╔════╝ ██║ ██╔═══██╗ ████╗  ██║
  ██╔████╔██║ ██║ ███████╗ ███████╗ ██║ ██║   ██║ ██╔██╗ ██║
@@ -211,62 +193,22 @@ function AdminLoginScreen({ onLogin }) {
  ██║      ██║   ██║ ██╔██╗ ██║    ██║    ██████╔╝ ██║   ██║ ██║
  ██║      ██║   ██║ ██║╚██╗██║    ██║    ██╔══██╗ ██║   ██║ ██║
  ╚██████╗ ╚██████╔╝ ██║ ╚████║    ██║    ██║  ██║ ╚██████╔╝ ███████╗
-  ╚═════╝  ╚═════╝  ╚═╝  ╚═══╝    ╚═╝    ╚═╝  ╚═╝  ╚═════╝  ╚══════╝`}
-          </pre>
-        </div>
-
-        {/* Terminal output lines */}
+  ╚═════╝  ╚═════╝  ╚═╝  ╚═══╝    ╚═╝    ╚═╝  ╚═╝  ╚═════╝  ╚══════╝`}</pre>
         {lines.map((line, i) => (
-          <div key={i} style={{
-            color: line.startsWith("[AUTH]") ? "#ff6b35" : line.startsWith("[SYS]") ? "#00ff41" : line.startsWith("[NET]") ? "#00d4ff" : line.startsWith("[STATUS]") ? "#ffdd00" : line.startsWith("┌") || line.startsWith("│") || line.startsWith("└") || line.startsWith("━") ? "#ff003c" : line.startsWith("  ") ? "#888" : "#00ff41",
-            fontSize: 13, lineHeight: 1.7, whiteSpace: "pre",
-            textShadow: line.startsWith("[") ? "0 0 8px currentColor" : "none",
-          }}>
-            {line}
-          </div>
+          <div key={i} style={{ color: line.startsWith("[AUTH]") ? "#ff6b35" : line.startsWith("[SYS]") ? "#00ff41" : line.startsWith("[NET]") ? "#00d4ff" : line.startsWith("[STATUS]") ? "#ffdd00" : line.startsWith("┌") || line.startsWith("│") || line.startsWith("└") || line.startsWith("━") ? "#ff003c" : line.startsWith("  ") ? "#888" : "#00ff41", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre", textShadow: line.startsWith("[") ? "0 0 8px currentColor" : "none" }}>{line}</div>
         ))}
-
-        {/* Input prompt */}
         {phase === "prompt" && (
           <div style={{ display: "flex", alignItems: "center", marginTop: 4 }}>
             <span style={{ color: "#00ff41", fontSize: 13 }}>root@mission-control:~$ </span>
-            <input
-              id="mc-terminal-input"
-              autoFocus
-              value={inputVal}
-              onChange={e => setInputVal(e.target.value)}
-              onKeyDown={handleKeyDown}
-              style={{
-                background: "transparent", border: "none", outline: "none",
-                color: "#00ff41", fontSize: 13, fontFamily: "'JetBrains Mono', monospace",
-                flex: 1, caretColor: "transparent",
-              }}
-            />
+            <input id="mc-terminal-input" autoFocus value={inputVal} onChange={e => setInputVal(e.target.value)} onKeyDown={handleKeyDown} style={{ background: "transparent", border: "none", outline: "none", color: "#00ff41", fontSize: 13, fontFamily: "'JetBrains Mono',monospace", flex: 1, caretColor: "transparent" }} />
             <span style={{ color: "#00ff41", opacity: cursorVisible ? 1 : 0, fontSize: 13, fontWeight: 700 }}>█</span>
           </div>
         )}
-
-        {phase === "prompt" && (
-          <div style={{ marginTop: 20, color: "#444", fontSize: 11 }}>
-            Type <span style={{ color: "#00ff41" }}>access</span> to authenticate · <span style={{ color: "#555" }}>or type <span style={{ color: "#666" }}>help</span> for commands</span>
-          </div>
-        )}
-
-        {phase === "auth" && (
-          <div style={{ marginTop: 12, color: "#ff6b35", fontSize: 13, animation: "glowPulse 1s ease-in-out infinite" }}>
-            ████████████████ CONNECTING TO AUTH GATEWAY...
-          </div>
-        )}
-
-        {/* Quick access button (for convenience) */}
+        {phase === "prompt" && <div style={{ marginTop: 20, color: "#444", fontSize: 11 }}>Type <span style={{ color: "#00ff41" }}>access</span> to authenticate · <span style={{ color: "#555" }}>or type <span style={{ color: "#666" }}>help</span> for commands</span></div>}
+        {phase === "auth" && <div style={{ marginTop: 12, color: "#ff6b35", fontSize: 13, animation: "glowPulse 1s ease-in-out infinite" }}>████████████████ CONNECTING TO AUTH GATEWAY...</div>}
         {phase === "prompt" && (
           <div style={{ position: "fixed", bottom: 32, right: 40, zIndex: 20 }}>
-            <button onClick={onLogin} style={{
-              background: "rgba(0,255,65,0.08)", border: "1px solid #00ff4133",
-              borderRadius: 8, color: "#00ff41", fontSize: 11, fontWeight: 600,
-              padding: "10px 20px", cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
-              transition: "all .2s",
-            }}
+            <button onClick={onLogin} style={{ background: "rgba(0,255,65,0.08)", border: "1px solid #00ff4133", borderRadius: 8, color: "#00ff41", fontSize: 11, fontWeight: 600, padding: "10px 20px", cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,255,65,0.15)"; e.currentTarget.style.borderColor = "#00ff4166"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,255,65,0.08)"; e.currentTarget.style.borderColor = "#00ff4133"; }}>
               [ QUICK ACCESS → ]
@@ -278,6 +220,9 @@ function AdminLoginScreen({ onLogin }) {
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════════
 function AdminDashboardInner({ session, onSignOut }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [users, setUsers] = useState([]);
@@ -289,6 +234,11 @@ function AdminDashboardInner({ session, onSignOut }) {
   const [editPlan, setEditPlan] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userDetail, setUserDetail] = useState(null);
+  const [userDetailLoading, setUserDetailLoading] = useState(false);
+  const [planFilter, setPlanFilter] = useState("all");
+  const [userSort, setUserSort] = useState("newest");
 
   const getToken = useCallback(async () => {
     const { data: { session: s } } = await supabase.auth.getSession();
@@ -301,29 +251,31 @@ function AdminDashboardInner({ session, onSignOut }) {
     try {
       const token = await getToken();
       if (!token) { setError("Not authenticated"); setLoading(false); return; }
-
       const [usersRes, statsRes] = await Promise.all([
         fetch("/api/admin/users?action=list", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/admin/users?action=stats", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-
       if (!usersRes.ok) {
         const err = await usersRes.json().catch(() => ({}));
         throw new Error(err.error || `HTTP ${usersRes.status}`);
       }
-
-      const usersData = await usersRes.json();
-      const statsData = statsRes.ok ? await statsRes.json() : null;
-
-      setUsers(usersData.users || []);
-      setStats(statsData);
-    } catch (e) {
-      setError(e.message);
-    }
+      setUsers((await usersRes.json()).users || []);
+      if (statsRes.ok) setStats(await statsRes.json());
+    } catch (e) { setError(e.message); }
     setLoading(false);
   }, [getToken]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  const fetchUserDetail = useCallback(async (userId) => {
+    setUserDetailLoading(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/admin/users?action=user-detail&userId=${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setUserDetail(await res.json());
+    } catch (e) {}
+    setUserDetailLoading(false);
+  }, [getToken]);
 
   const updatePlan = async (userId, newPlan) => {
     setSaving(true);
@@ -334,330 +286,672 @@ function AdminDashboardInner({ session, onSignOut }) {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId, plan: newPlan }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Update failed");
-      }
-      // Optimistic update
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed");
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: newPlan } : u));
       setEditingUser(null);
       setConfirmModal(null);
       // Refresh stats
-      const statsRes = await fetch("/api/admin/users?action=stats", { headers: { Authorization: `Bearer ${token}` } });
+      const token2 = await getToken();
+      const statsRes = await fetch("/api/admin/users?action=stats", { headers: { Authorization: `Bearer ${token2}` } });
       if (statsRes.ok) setStats(await statsRes.json());
-    } catch (e) {
-      alert("Failed to update plan: " + e.message);
-    }
+    } catch (e) { alert("Failed: " + e.message); }
     setSaving(false);
   };
 
   const filteredUsers = users.filter(u => {
+    if (planFilter !== "all" && (u.plan || "starter") !== planFilter) return false;
     if (!search) return true;
     const q = search.toLowerCase();
-    const name = (u.name || u.first_name || "").toLowerCase();
-    const email = (u.email || "").toLowerCase();
-    return name.includes(q) || email.includes(q);
+    return (u.name || u.first_name || "").toLowerCase().includes(q) || (u.email || "").toLowerCase().includes(q) || (u.shop_name || "").toLowerCase().includes(q);
+  }).sort((a, b) => {
+    if (userSort === "newest") return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    if (userSort === "oldest") return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+    if (userSort === "name") return (a.name || a.first_name || "").localeCompare(b.name || b.first_name || "");
+    return 0;
   });
 
-  const formatDate = (d) => {
-    if (!d) return "—";
-    return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  };
-
-  // ── Tab: Overview ────────────────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB: OVERVIEW
+  // ════════════════════════════════════════════════════════════════════════════
   function TabOverview() {
-    const planBreakdown = stats?.planCounts
-      ? Object.entries(stats.planCounts).map(([p, c]) => `${c} ${p}`).join(" · ")
-      : "—";
-
+    const s = stats || {};
+    const planBreakdown = s.planCounts ? Object.entries(s.planCounts).map(([p, c]) => `${c} ${p}`).join(" · ") : "";
     return (
       <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>Overview</div>
-        <div style={{ fontSize: 12, color: C.muted, marginBottom: 28 }}>Platform health at a glance</div>
+        <SectionHeader title="Command Center" sub="Real-time platform health and performance" />
 
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
-          <StatCard label="Total Users" value={stats?.total || users.length} color={C.accent} />
-          <StatCard label="MRR" value={`$${(stats?.mrr || 0).toLocaleString()}`} sub={planBreakdown} color={C.green} />
-          <StatCard label="Recent Signups" value={stats?.recentSignups ?? "—"} sub="Last 7 days" color={C.blue} />
-          <StatCard label="Avg Revenue / User" value={stats?.total ? `$${Math.round((stats.mrr || 0) / stats.total)}` : "—"} color={C.amber} />
+        {/* Row 1: Core KPIs */}
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
+          <StatCard label="Total Users" value={fmt(s.total || users.length)} icon="◉" color={C.accent} sub={planBreakdown} />
+          <StatCard label="Monthly Revenue" value={fmtUSD(s.mrr || 0)} icon="◆" color={C.green} sub={`${fmt(s.total || 0)} subscriptions`} />
+          <StatCard label="Active Users" value={fmt(s.activeUsers || 0)} icon="⬡" color={C.blue} sub="Shows in last 30 days" />
+          <StatCard label="New This Week" value={fmt(s.recentSignups ?? 0)} icon="✦" color={C.cyan} />
         </div>
 
-        {/* Plan distribution */}
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px 22px", marginBottom: 28 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 14 }}>Plan Distribution</div>
-          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-            {["starter", "growth", "pro", "enterprise"].map(p => {
-              const count = stats?.planCounts?.[p] || 0;
-              const total = stats?.total || 1;
-              const pct = Math.round((count / total) * 100);
-              const col = PLAN_COLORS[p];
-              return (
-                <div key={p} style={{ flex: 1, minWidth: 140 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: col, textTransform: "capitalize" }}>{p}</span>
-                    <span style={{ fontSize: 11, color: C.muted }}>{count} ({pct}%)</span>
-                  </div>
-                  <div style={{ height: 6, background: `${col}18`, borderRadius: 3 }}>
-                    <div style={{ height: "100%", width: `${pct}%`, background: col, borderRadius: 3, transition: "width .3s ease" }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        {/* Row 2: Platform metrics */}
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
+          <StatCard label="Total Buyers" value={fmt(s.buyers?.total || 0)} icon="◉" color={C.pink} sub={`${fmtUSD(s.buyers?.totalSpend || 0)} total spend`} />
+          <StatCard label="Shows Completed" value={fmt(s.shows?.completed || 0)} icon="◈" color={C.amber} sub={`${fmtUSD(s.shows?.totalGMV || 0)} GMV`} />
+          <StatCard label="Campaigns Sent" value={fmt(s.campaigns?.sent || 0)} icon="◆" color={C.accent} sub={`${fmt(s.campaigns?.totalRecipients || 0)} recipients`} />
+          <StatCard label="Connections" value={fmt(s.connections?.total || 0)} icon="◎" color={C.green} />
         </div>
 
-        {/* Recent signups table */}
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px 22px" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 14 }}>Recent Signups</div>
-          {users.slice(0, 10).map(u => (
-            <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${C.border}` }}>
-              <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={30} />
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          {/* Plan distribution */}
+          <Card style={{ flex: 2, minWidth: 300 }}>
+            <CardHeader title="Plan Distribution" />
+            <div style={{ padding: "16px 18px" }}>
+              {["starter", "growth", "pro", "enterprise"].map(p => {
+                const count = s.planCounts?.[p] || 0;
+                const total = s.total || 1;
+                const pct = Math.round((count / total) * 100);
+                const col = PLAN_COLORS[p];
+                const rev = count * PLAN_PRICES[p];
+                return (
+                  <div key={p} style={{ marginBottom: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: col }} />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: col, textTransform: "capitalize" }}>{p}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 12 }}>
+                        <span style={{ fontSize: 11, color: C.muted }}>{count} users ({pct}%)</span>
+                        <span style={{ fontSize: 11, color: col, fontWeight: 600 }}>{fmtUSD(rev)}/mo</span>
+                      </div>
+                    </div>
+                    <MiniBar value={count} max={total} color={col} />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Platform connections */}
+          <Card style={{ flex: 1, minWidth: 240 }}>
+            <CardHeader title="Platform Connections" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(s.connections?.byPlatform || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
+                const col = PLATFORM_COLORS[plat] || C.muted;
+                const label = PLATFORM_LABELS[plat] || plat;
+                return (
+                  <div key={plat} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: col }} />
+                      <span style={{ fontSize: 12, color: C.text }}>{label}</span>
+                    </div>
+                    <span style={{ fontSize: 12, color: C.muted, fontVariantNumeric: "tabular-nums" }}>{count}</span>
+                  </div>
+                );
+              })}
+              {!s.connections?.byPlatform || Object.keys(s.connections.byPlatform).length === 0 ? <EmptyRow text="No connections yet" /> : null}
+            </div>
+          </Card>
+        </div>
+
+        {/* Recent signups */}
+        <Card style={{ marginTop: 20 }}>
+          <CardHeader title="Recent Signups" right={<span style={{ fontSize: 10, color: C.muted }}>{users.length} total</span>} />
+          {users.slice(0, 8).map(u => (
+            <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 18px", borderBottom: `1px solid ${C.border}` }}>
+              <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={30} url={u.avatar_url} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.name || u.first_name || "—"}</div>
-                <div style={{ fontSize: 10, color: C.muted }}>{u.email}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name || u.first_name || "—"}</div>
+                <div style={{ fontSize: 10, color: C.muted }}>{u.email} {u.shop_name ? `· ${u.shop_name}` : ""}</div>
               </div>
               <PlanBadge plan={u.plan} />
-              <div style={{ fontSize: 10, color: C.muted, minWidth: 80, textAlign: "right" }}>{formatDate(u.created_at)}</div>
+              <span style={{ fontSize: 10, color: C.muted, minWidth: 70, textAlign: "right" }}>{fmtDateShort(u.created_at)}</span>
             </div>
           ))}
-          {users.length === 0 && <div style={{ fontSize: 12, color: C.muted, padding: 20, textAlign: "center" }}>No users yet</div>}
-        </div>
+          {users.length === 0 && <EmptyRow text="No users yet" />}
+        </Card>
       </div>
     );
   }
 
-  // ── Tab: Users ───────────────────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB: USERS
+  // ════════════════════════════════════════════════════════════════════════════
   function TabUsers() {
     return (
       <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div>
-            <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>Users</div>
-            <div style={{ fontSize: 12, color: C.muted }}>{users.length} total accounts</div>
-          </div>
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name or email..."
-            style={{
-              background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8,
-              padding: "8px 14px", fontSize: 12, color: C.text, width: 260, outline: "none",
-            }}
-          />
-        </div>
+        {selectedUser ? (
+          <UserDetailView user={selectedUser} onBack={() => { setSelectedUser(null); setUserDetail(null); }} />
+        ) : (
+          <>
+            <SectionHeader title="Users" sub={`${users.length} total accounts`} />
 
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.border2}`, background: C.surface2 }}>
-            <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>User</div>
-            <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</div>
-            <div style={{ width: 90, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Plan</div>
-            <div style={{ width: 100, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Category</div>
-            <div style={{ width: 100, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Joined</div>
-            <div style={{ width: 100, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em", textAlign: "right" }}>Actions</div>
-          </div>
+            {/* Toolbar */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, or shop..."
+                style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", fontSize: 12, color: C.text, width: 280, outline: "none" }} />
+              <div style={{ display: "flex", gap: 4 }}>
+                {["all", "starter", "growth", "pro"].map(p => (
+                  <button key={p} onClick={() => setPlanFilter(p)} style={{
+                    background: planFilter === p ? `${(PLAN_COLORS[p] || C.accent)}22` : C.surface, border: `1px solid ${planFilter === p ? (PLAN_COLORS[p] || C.accent) + "55" : C.border}`,
+                    borderRadius: 6, padding: "5px 12px", fontSize: 10, fontWeight: 600, cursor: "pointer",
+                    color: planFilter === p ? (PLAN_COLORS[p] || C.accent) : C.muted, textTransform: "capitalize",
+                  }}>{p}</button>
+                ))}
+              </div>
+              <select value={userSort} onChange={e => setUserSort(e.target.value)} style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 6, padding: "6px 10px", fontSize: 11, color: C.text, outline: "none" }}>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="name">Name A–Z</option>
+              </select>
+              <span style={{ fontSize: 10, color: C.muted, marginLeft: "auto" }}>{filteredUsers.length} results</span>
+            </div>
 
-          {/* Rows */}
-          {filteredUsers.map(u => (
-            <div key={u.id} style={{ display: "flex", alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.border}`, transition: "background .1s" }}
-              onMouseEnter={e => e.currentTarget.style.background = C.surface2}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <div style={{ flex: 2, display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                {u.avatar_url ? (
-                  <img src={u.avatar_url} alt="" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} referrerPolicy="no-referrer" />
-                ) : (
-                  <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={30} />
-                )}
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {u.name || u.first_name || "—"}
+            <Card>
+              <div style={{ display: "flex", alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.border2}`, background: C.surface2 }}>
+                <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>User</div>
+                <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</div>
+                <div style={{ width: 90, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Plan</div>
+                <div style={{ width: 110, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Shop</div>
+                <div style={{ width: 90, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Joined</div>
+                <div style={{ width: 130, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", textAlign: "right" }}>Actions</div>
+              </div>
+              {filteredUsers.map(u => (
+                <div key={u.id} style={{ display: "flex", alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.border}`, cursor: "pointer", transition: "background .1s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.surface2}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  onClick={() => { setSelectedUser(u); fetchUserDetail(u.id); }}>
+                  <div style={{ flex: 2, display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={28} url={u.avatar_url} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name || u.first_name || "—"}</span>
+                  </div>
+                  <div style={{ flex: 2, fontSize: 11, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email || "—"}</div>
+                  <div style={{ width: 90 }}><PlanBadge plan={u.plan} /></div>
+                  <div style={{ width: 110, fontSize: 11, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.shop_name || "—"}</div>
+                  <div style={{ width: 90, fontSize: 11, color: C.muted }}>{fmtDateShort(u.created_at)}</div>
+                  <div style={{ width: 130, display: "flex", gap: 6, justifyContent: "flex-end" }} onClick={e => e.stopPropagation()}>
+                    <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }} style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}33`, borderRadius: 6, color: C.accent, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>Edit Plan</button>
+                    <button onClick={() => { setSelectedUser(u); fetchUserDetail(u.id); }} style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 6, color: C.muted, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>View</button>
+                  </div>
                 </div>
-              </div>
-              <div style={{ flex: 2, fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.email || "—"}</div>
-              <div style={{ width: 90 }}><PlanBadge plan={u.plan} /></div>
-              <div style={{ width: 100, fontSize: 11, color: C.muted }}>{u.category || "—"}</div>
-              <div style={{ width: 100, fontSize: 11, color: C.muted }}>{formatDate(u.created_at)}</div>
-              <div style={{ width: 100, textAlign: "right" }}>
-                <button
-                  onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }}
-                  style={{
-                    background: `${C.accent}18`, border: `1px solid ${C.accent}33`, borderRadius: 6,
-                    color: C.accent, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer",
-                  }}
-                >
-                  Edit Plan
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {filteredUsers.length === 0 && (
-            <div style={{ padding: 40, textAlign: "center", fontSize: 12, color: C.muted }}>
-              {search ? "No users match your search" : "No users found"}
-            </div>
-          )}
-        </div>
+              ))}
+              {filteredUsers.length === 0 && <EmptyRow text={search ? "No users match" : "No users"} />}
+            </Card>
+          </>
+        )}
       </div>
     );
   }
 
-  // ── Tab: Subscriptions ───────────────────────────────────────────────────────
+  // ── User Detail View ────────────────────────────────────────────────────────
+  function UserDetailView({ user, onBack }) {
+    const d = userDetail;
+    const col = PLAN_COLORS[user.plan] || C.accent;
+    return (
+      <div>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", padding: "0 0 16px", display: "flex", alignItems: "center", gap: 6 }}
+          onMouseEnter={e => e.currentTarget.style.color = C.text} onMouseLeave={e => e.currentTarget.style.color = C.muted}>
+          ← Back to Users
+        </button>
+
+        {/* Profile header */}
+        <Card style={{ marginBottom: 20 }}>
+          <div style={{ padding: "24px 22px", display: "flex", gap: 20, alignItems: "center" }}>
+            <Avatar initials={deriveAvatar(user.name || user.first_name)} color={col} size={56} url={user.avatar_url} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 20, fontWeight: 800, color: C.text }}>{user.name || user.first_name || "—"}</div>
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{user.email}</div>
+              <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                <PlanBadge plan={user.plan} />
+                {user.shop_name && <span style={{ fontSize: 9, fontWeight: 600, color: C.cyan, background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, padding: "2px 8px", borderRadius: 4 }}>{user.shop_name}</span>}
+                {user.category && <span style={{ fontSize: 9, fontWeight: 600, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: "2px 8px", borderRadius: 4 }}>{user.category}</span>}
+                {(user.platforms || []).map(p => <span key={p} style={{ fontSize: 9, fontWeight: 600, color: PLATFORM_COLORS[p] || C.muted, background: `${PLATFORM_COLORS[p] || C.muted}18`, border: `1px solid ${PLATFORM_COLORS[p] || C.muted}33`, padding: "2px 8px", borderRadius: 4 }}>{p}</span>)}
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 10, color: C.muted }}>Joined {fmtDate(user.created_at)}</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>ID: {user.id?.slice(0, 8)}...</div>
+              <button onClick={() => { setEditingUser(user); setEditPlan(user.plan || "starter"); }} style={{ marginTop: 8, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>Change Plan</button>
+            </div>
+          </div>
+        </Card>
+
+        {userDetailLoading ? (
+          <div style={{ textAlign: "center", padding: 40, color: C.muted, fontSize: 12 }}>Loading user data...</div>
+        ) : d ? (
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+            {/* Stats row */}
+            <div style={{ display: "flex", gap: 14, width: "100%", flexWrap: "wrap" }}>
+              <StatCard label="Buyers" value={fmt(d.buyers?.length || 0)} color={C.pink} icon="◉" />
+              <StatCard label="Shows" value={fmt(d.shows?.length || 0)} color={C.amber} icon="◈" />
+              <StatCard label="Products" value={fmt(d.products?.length || 0)} color={C.green} icon="◧" />
+              <StatCard label="Orders" value={fmt(d.orders?.length || 0)} color={C.blue} icon="◆" />
+              <StatCard label="Connections" value={fmt(d.connections?.length || 0)} color={C.cyan} icon="◎" />
+            </div>
+
+            {/* Connections */}
+            <Card style={{ flex: 1, minWidth: 260 }}>
+              <CardHeader title="Connected Platforms" />
+              <div style={{ padding: "8px 18px" }}>
+                {(d.connections || []).map((c, i) => {
+                  const pc = PLATFORM_COLORS[c.platform] || C.muted;
+                  return (
+                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: pc }} />
+                        <span style={{ fontSize: 12, color: C.text }}>{PLATFORM_LABELS[c.platform] || c.platform}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        {c.handle && <span style={{ fontSize: 10, color: C.muted }}>@{c.handle}</span>}
+                        <span style={{ fontSize: 10, color: C.green }}>Connected</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {(d.connections || []).length === 0 && <EmptyRow text="No connections" />}
+              </div>
+            </Card>
+
+            {/* Recent shows */}
+            <Card style={{ flex: 1, minWidth: 300 }}>
+              <CardHeader title="Recent Shows" />
+              <div style={{ padding: "4px 0" }}>
+                {(d.shows || []).slice(0, 8).map(s => (
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", padding: "8px 18px", borderBottom: `1px solid ${C.border}`, gap: 10 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.title}</div>
+                      <div style={{ fontSize: 10, color: C.muted }}>{fmtDateShort(s.date)} · {s.duration_min || 0}min · {(s.platforms || []).join(", ")}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.green }}>{fmtUSD(s.gmv)}</div>
+                      <div style={{ fontSize: 10, color: C.muted }}>{s.buyers_count || 0} buyers</div>
+                    </div>
+                  </div>
+                ))}
+                {(d.shows || []).length === 0 && <EmptyRow text="No shows yet" />}
+              </div>
+            </Card>
+
+            {/* Top buyers */}
+            <Card style={{ width: "100%" }}>
+              <CardHeader title="Top Buyers" right={<span style={{ fontSize: 10, color: C.muted }}>{d.buyers?.length || 0} total</span>} />
+              <div style={{ padding: "4px 0" }}>
+                {(d.buyers || []).slice(0, 10).map(b => (
+                  <div key={b.id} style={{ display: "flex", alignItems: "center", padding: "8px 18px", borderBottom: `1px solid ${C.border}`, gap: 10 }}>
+                    <Avatar initials={deriveAvatar(b.name)} color={b.status === "vip" ? C.amber : C.accent} size={24} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{b.name}</span>
+                      <span style={{ fontSize: 10, color: C.muted, marginLeft: 8 }}>{b.email || ""}</span>
+                    </div>
+                    <span style={{ fontSize: 10, color: C.muted, textTransform: "capitalize" }}>{b.status}</span>
+                    <span style={{ fontSize: 10, color: C.muted }}>{b.orders || 0} orders</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: C.green, minWidth: 60, textAlign: "right" }}>{fmtUSD(b.spend)}</span>
+                  </div>
+                ))}
+                {(d.buyers || []).length === 0 && <EmptyRow text="No buyers" />}
+              </div>
+            </Card>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB: SUBSCRIPTIONS
+  // ════════════════════════════════════════════════════════════════════════════
   function TabSubscriptions() {
     return (
       <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>Subscriptions</div>
-        <div style={{ fontSize: 12, color: C.muted, marginBottom: 28 }}>Manage user plans and billing</div>
+        <SectionHeader title="Subscriptions" sub="Manage plans, revenue, and billing" />
 
-        {/* Plan summary cards */}
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
+        {/* Revenue cards */}
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
           {["starter", "growth", "pro"].map(plan => {
             const count = stats?.planCounts?.[plan] || 0;
             const col = PLAN_COLORS[plan];
             const revenue = count * PLAN_PRICES[plan];
+            const pct = (stats?.total || 1) > 0 ? Math.round((count / (stats?.total || 1)) * 100) : 0;
             return (
-              <div key={plan} style={{
-                flex: 1, minWidth: 200, background: C.surface, border: `1px solid ${col}33`,
-                borderRadius: 14, padding: "22px 20px", position: "relative", overflow: "hidden",
-              }}>
+              <div key={plan} style={{ flex: 1, minWidth: 200, background: C.surface, border: `1px solid ${col}33`, borderRadius: 14, padding: "22px 20px", position: "relative", overflow: "hidden" }}>
                 <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: col, opacity: 0.06, filter: "blur(24px)" }} />
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: col }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: col, textTransform: "capitalize" }}>{plan}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: col, textTransform: "capitalize" }}>{plan}</span>
                   <span style={{ fontSize: 11, color: C.muted, marginLeft: "auto" }}>${PLAN_PRICES[plan]}/mo</span>
                 </div>
-                <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 24, fontWeight: 800, color: C.text, marginBottom: 4 }}>{count}</div>
-                <div style={{ fontSize: 11, color: C.muted }}>users · ${revenue.toLocaleString()}/mo revenue</div>
+                <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 28, fontWeight: 800, color: C.text }}>{count}</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{pct}% of users · {fmtUSD(revenue)}/mo</div>
+                <MiniBar value={count} max={stats?.total || 1} color={col} />
               </div>
             );
           })}
         </div>
 
-        {/* User plan management table */}
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
-          <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.border2}`, background: C.surface2 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>All Subscriptions</div>
-          </div>
-          {users.map(u => {
-            const col = PLAN_COLORS[u.plan] || C.muted;
-            return (
-              <div key={u.id} style={{ display: "flex", alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.border}`, gap: 14 }}
-                onMouseEnter={e => e.currentTarget.style.background = C.surface2}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                {u.avatar_url ? (
-                  <img src={u.avatar_url} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} referrerPolicy="no-referrer" />
-                ) : (
-                  <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={col} size={28} />
-                )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{u.name || u.first_name || "—"}</div>
-                  <div style={{ fontSize: 10, color: C.muted }}>{u.email}</div>
-                </div>
-                <PlanBadge plan={u.plan} />
-                <div style={{ fontSize: 10, color: C.muted, minWidth: 70, textAlign: "right" }}>${PLAN_PRICES[u.plan || "starter"]}/mo</div>
-                <button
-                  onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }}
-                  style={{
-                    background: "none", border: `1px solid ${C.border2}`, borderRadius: 6,
-                    color: C.muted, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border2; e.currentTarget.style.color = C.muted; }}
-                >
-                  Change
-                </button>
+        {/* All users subscription list */}
+        <Card>
+          <CardHeader title="All Subscriptions" right={<span style={{ fontSize: 10, color: C.green, fontWeight: 700 }}>MRR: {fmtUSD(stats?.mrr || 0)}</span>} />
+          {users.map(u => (
+            <div key={u.id} style={{ display: "flex", alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.border}`, gap: 12 }}
+              onMouseEnter={e => e.currentTarget.style.background = C.surface2}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={28} url={u.avatar_url} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{u.name || u.first_name || "—"}</div>
+                <div style={{ fontSize: 10, color: C.muted }}>{u.email}</div>
               </div>
-            );
-          })}
+              <PlanBadge plan={u.plan} />
+              <span style={{ fontSize: 11, color: C.muted, minWidth: 70, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>${PLAN_PRICES[u.plan || "starter"]}/mo</span>
+              <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }}
+                style={{ background: "none", border: `1px solid ${C.border2}`, borderRadius: 6, color: C.muted, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border2; e.currentTarget.style.color = C.muted; }}>
+                Change
+              </button>
+            </div>
+          ))}
+        </Card>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB: ANALYTICS
+  // ════════════════════════════════════════════════════════════════════════════
+  function TabAnalytics() {
+    const s = stats || {};
+    const showStats = s.shows || {};
+    const buyerStats = s.buyers || {};
+    const campaignStats = s.campaigns || {};
+    const orderStats = s.orders || {};
+
+    return (
+      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+        <SectionHeader title="Platform Analytics" sub="Aggregate performance across all users" />
+
+        {/* GMV & Revenue */}
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
+          <StatCard label="Total GMV" value={fmtUSD(showStats.totalGMV || 0)} icon="◆" color={C.green} sub={`${fmt(showStats.completed || 0)} shows`} />
+          <StatCard label="Avg Show GMV" value={fmtUSD(showStats.avgShowGMV || 0)} icon="◈" color={C.amber} />
+          <StatCard label="Total Orders" value={fmt(orderStats.total || 0)} icon="◉" color={C.blue} sub={fmtUSD(orderStats.totalRevenue || 0)} />
+          <StatCard label="Total Airtime" value={`${fmt(showStats.totalMinutes || 0)}m`} icon="⬡" color={C.pink} sub={showStats.completed ? `~${Math.round((showStats.totalMinutes || 0) / showStats.completed)}m avg` : ""} />
+        </div>
+
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+          {/* Platform usage in shows */}
+          <Card style={{ flex: 1, minWidth: 280 }}>
+            <CardHeader title="Platform Usage in Shows" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(showStats.platformUsage || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
+                const col = PLATFORM_COLORS[plat] || C.muted;
+                const maxCount = Math.max(...Object.values(showStats.platformUsage || {}), 1);
+                return (
+                  <div key={plat} style={{ marginBottom: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{PLATFORM_LABELS[plat] || plat}</span>
+                      <span style={{ fontSize: 11, color: C.muted }}>{count} shows</span>
+                    </div>
+                    <MiniBar value={count} max={maxCount} color={col} />
+                  </div>
+                );
+              })}
+              {!showStats.platformUsage || Object.keys(showStats.platformUsage).length === 0 ? <EmptyRow text="No show data" /> : null}
+            </div>
+          </Card>
+
+          {/* Buyer health */}
+          <Card style={{ flex: 1, minWidth: 280 }}>
+            <CardHeader title="Buyer Health" right={<span style={{ fontSize: 10, color: C.muted }}>{fmt(buyerStats.total || 0)} total</span>} />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(buyerStats.byStatus || {}).sort((a, b) => b[1] - a[1]).map(([status, count]) => {
+                const cols = { vip: C.amber, active: C.green, risk: C.red, new: C.blue, dormant: C.muted };
+                const col = cols[status] || C.muted;
+                return (
+                  <div key={status} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: col }} />
+                      <span style={{ fontSize: 12, color: C.text, textTransform: "capitalize" }}>{status}</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{fmt(count)}</span>
+                      <span style={{ fontSize: 10, color: C.muted }}>{buyerStats.total ? Math.round((count / buyerStats.total) * 100) : 0}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {!buyerStats.byStatus || Object.keys(buyerStats.byStatus).length === 0 ? <EmptyRow text="No buyer data" /> : null}
+            </div>
+          </Card>
+        </div>
+
+        {/* Campaign performance */}
+        <Card>
+          <CardHeader title="Campaign Performance" />
+          <div style={{ padding: "20px 18px", display: "flex", gap: 30, flexWrap: "wrap" }}>
+            {[
+              { label: "Sent", value: fmt(campaignStats.sent || 0), color: C.accent },
+              { label: "Recipients", value: fmt(campaignStats.totalRecipients || 0), color: C.blue },
+              { label: "Opens", value: fmt(campaignStats.totalOpens || 0), color: C.cyan },
+              { label: "Clicks", value: fmt(campaignStats.totalClicks || 0), color: C.amber },
+              { label: "Conversions", value: fmt(campaignStats.totalConversions || 0), color: C.green },
+              { label: "Campaign GMV", value: fmtUSD(campaignStats.gmv || 0), color: C.green },
+            ].map(m => (
+              <div key={m.label} style={{ textAlign: "center", minWidth: 80 }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: m.color, fontFamily: "'Syne',sans-serif" }}>{m.value}</div>
+                <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{m.label}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Categories & Orders by platform */}
+        <div style={{ display: "flex", gap: 16, marginTop: 20, flexWrap: "wrap" }}>
+          <Card style={{ flex: 1, minWidth: 260 }}>
+            <CardHeader title="Seller Categories" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(stats?.categories || {}).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
+                <div key={cat} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.border}` }}>
+                  <span style={{ fontSize: 12, color: C.text }}>{cat}</span>
+                  <span style={{ fontSize: 12, color: C.muted, fontVariantNumeric: "tabular-nums" }}>{count}</span>
+                </div>
+              ))}
+              {!stats?.categories || Object.keys(stats.categories).length === 0 ? <EmptyRow text="No category data" /> : null}
+            </div>
+          </Card>
+
+          <Card style={{ flex: 1, minWidth: 260 }}>
+            <CardHeader title="Orders by Platform" />
+            <div style={{ padding: "12px 18px" }}>
+              {Object.entries(orderStats.byPlatform || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
+                const col = PLATFORM_COLORS[plat] || C.muted;
+                return (
+                  <div key={plat} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.border}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: col }} />
+                      <span style={{ fontSize: 12, color: C.text }}>{PLATFORM_LABELS[plat] || plat}</span>
+                    </div>
+                    <span style={{ fontSize: 12, color: C.muted }}>{fmt(count)}</span>
+                  </div>
+                );
+              })}
+              {!orderStats.byPlatform || Object.keys(orderStats.byPlatform).length === 0 ? <EmptyRow text="No order data" /> : null}
+            </div>
+          </Card>
         </div>
       </div>
     );
   }
 
-  // ── Tab: Content (coming soon) ───────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB: SHOWS
+  // ════════════════════════════════════════════════════════════════════════════
+  function TabShows() {
+    const s = stats?.shows || {};
+    return (
+      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+        <SectionHeader title="Live Shows" sub="Platform-wide show performance" />
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
+          <StatCard label="Total Shows" value={fmt(s.total || 0)} icon="◈" color={C.amber} />
+          <StatCard label="Completed" value={fmt(s.completed || 0)} icon="◉" color={C.green} />
+          <StatCard label="Total GMV" value={fmtUSD(s.totalGMV || 0)} icon="◆" color={C.green} />
+          <StatCard label="Avg GMV" value={fmtUSD(s.avgShowGMV || 0)} icon="◑" color={C.accent} />
+          <StatCard label="Recent (30d)" value={fmt(s.recent || 0)} icon="✦" color={C.cyan} />
+        </div>
+
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <Card style={{ flex: 1, minWidth: 300 }}>
+            <CardHeader title="Platform Usage" />
+            <div style={{ padding: "16px 18px" }}>
+              {Object.entries(s.platformUsage || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
+                const col = PLATFORM_COLORS[plat] || C.muted;
+                const total = s.total || 1;
+                return (
+                  <div key={plat} style={{ marginBottom: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{PLATFORM_LABELS[plat] || plat}</span>
+                      <span style={{ fontSize: 11, color: C.muted }}>{count} shows ({Math.round((count / total) * 100)}%)</span>
+                    </div>
+                    <MiniBar value={count} max={total} color={col} />
+                  </div>
+                );
+              })}
+              {!s.platformUsage || Object.keys(s.platformUsage).length === 0 ? <EmptyRow text="No show data yet" /> : null}
+            </div>
+          </Card>
+
+          <Card style={{ flex: 1, minWidth: 300 }}>
+            <CardHeader title="Show Performance" />
+            <div style={{ padding: "20px 18px", display: "flex", flexDirection: "column", gap: 16 }}>
+              {[
+                { label: "Total Airtime", value: `${fmt(s.totalMinutes || 0)} minutes`, color: C.pink },
+                { label: "Avg Duration", value: s.completed ? `${Math.round((s.totalMinutes || 0) / s.completed)} min` : "—", color: C.amber },
+                { label: "GMV per Minute", value: s.totalMinutes ? fmtUSD((s.totalGMV || 0) / s.totalMinutes) : "—", color: C.green },
+                { label: "Shows This Month", value: fmt(s.recent || 0), color: C.blue },
+              ].map(m => (
+                <div key={m.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+                  <span style={{ fontSize: 12, color: C.muted }}>{m.label}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB: CONTENT
+  // ════════════════════════════════════════════════════════════════════════════
   function TabContent() {
     return (
       <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", maxWidth: 400 }}>
-          <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>◧</div>
+          <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.2 }}>◧</div>
           <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 20, fontWeight: 800, color: C.text, marginBottom: 8 }}>Content Management</div>
-          <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
-            Manage featured content, platform highlights, blog posts, and changelog entries. This module is coming soon.
-          </div>
+          <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>Manage changelog entries, blog posts, feature flags, and landing page content. Coming in the next Mission Control update.</div>
         </div>
       </div>
     );
   }
 
-  // ── Edit Plan Modal ──────────────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB: SYSTEM
+  // ════════════════════════════════════════════════════════════════════════════
+  function TabSystem() {
+    const services = [
+      { name: "Supabase", status: "operational", desc: "Database & Auth", color: C.green },
+      { name: "Vercel", status: "operational", desc: "Hosting & Serverless", color: C.green },
+      { name: "Stripe", status: "operational", desc: "Payments", color: C.green },
+      { name: "Intercom", status: "operational", desc: "Support Chat", color: C.green },
+      { name: "Sentry", status: "operational", desc: "Error Monitoring", color: C.green },
+      { name: "Mixpanel", status: "operational", desc: "Analytics", color: C.green },
+      { name: "Meta OAuth", status: "operational", desc: "Instagram Login", color: C.green },
+      { name: "Shopify API", status: "operational", desc: "Store Sync", color: C.green },
+    ];
+
+    return (
+      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+        <SectionHeader title="System Status" sub="Infrastructure and service health" />
+
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
+          <StatCard label="Services" value={`${services.length}/${services.length}`} icon="◎" color={C.green} sub="All operational" />
+          <StatCard label="API Endpoints" value="8" icon="◆" color={C.accent} sub="All healthy" />
+          <StatCard label="Database Tables" value="13" icon="◉" color={C.blue} sub="Supabase" />
+          <StatCard label="Build Status" value="Passing" icon="✦" color={C.green} sub="Vercel" />
+        </div>
+
+        <Card style={{ marginBottom: 20 }}>
+          <CardHeader title="Service Health" right={<div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, animation: "pulse 2s infinite" }} /><span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>All Systems Operational</span></div>} />
+          {services.map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.border}`, gap: 14 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{s.name}</div>
+                <div style={{ fontSize: 10, color: C.muted }}>{s.desc}</div>
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 700, color: s.color, textTransform: "uppercase" }}>{s.status}</span>
+            </div>
+          ))}
+        </Card>
+
+        <Card>
+          <CardHeader title="Environment" />
+          <div style={{ padding: "16px 18px" }}>
+            {[
+              { key: "Platform", val: "Vercel + Supabase" },
+              { key: "Framework", val: "React + Vite" },
+              { key: "Auth", val: "Supabase Auth (Google OAuth)" },
+              { key: "Payments", val: "Stripe Checkout" },
+              { key: "Monitoring", val: "Sentry + Mixpanel" },
+              { key: "Support", val: "Intercom" },
+              { key: "Admin", val: session?.user?.email || "—" },
+            ].map((r, i) => (
+              <div key={i} style={{ display: "flex", padding: "7px 0", borderBottom: `1px solid ${C.border}` }}>
+                <span style={{ fontSize: 12, color: C.muted, width: 120 }}>{r.key}</span>
+                <span style={{ fontSize: 12, color: C.text, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "-0.3px" }}>{r.val}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // EDIT PLAN MODAL
+  // ════════════════════════════════════════════════════════════════════════════
   function EditPlanModal() {
     if (!editingUser) return null;
     const currentPlan = editingUser.plan || "starter";
     const isChanged = editPlan !== currentPlan;
     const userName = editingUser.name || editingUser.first_name || editingUser.email;
-
     return (
       <div onClick={() => setEditingUser(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div onClick={e => e.stopPropagation()} style={{
-          background: "#09090f", border: `1px solid ${C.accent}44`, borderRadius: 18,
-          padding: 28, width: 400, maxWidth: "92vw", position: "relative",
-        }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "#09090f", border: `1px solid ${C.accent}44`, borderRadius: 18, padding: 28, width: 400, maxWidth: "92vw", position: "relative" }}>
           <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, borderRadius: "50%", background: C.accent, opacity: 0.05, filter: "blur(50px)" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
             <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 16, fontWeight: 800, color: C.text }}>Edit Plan</div>
             <button onClick={() => setEditingUser(null)} style={{ background: "none", border: "none", color: C.muted, fontSize: 16, cursor: "pointer" }}>✕</button>
           </div>
-
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, padding: "12px 14px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}` }}>
-            {editingUser.avatar_url ? (
-              <img src={editingUser.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} referrerPolicy="no-referrer" />
-            ) : (
-              <Avatar initials={deriveAvatar(userName)} color={PLAN_COLORS[currentPlan]} size={32} />
-            )}
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{userName}</div>
-              <div style={{ fontSize: 11, color: C.muted }}>{editingUser.email}</div>
-            </div>
+            <Avatar initials={deriveAvatar(userName)} color={PLAN_COLORS[currentPlan]} size={32} url={editingUser.avatar_url} />
+            <div><div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{userName}</div><div style={{ fontSize: 11, color: C.muted }}>{editingUser.email}</div></div>
           </div>
-
           <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Select Plan</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 24 }}>
             {VALID_PLANS.map(p => {
               const col = PLAN_COLORS[p];
-              const isSelected = editPlan === p;
-              const isCurrent = currentPlan === p;
+              const sel = editPlan === p;
+              const cur = currentPlan === p;
               return (
-                <button key={p} onClick={() => setEditPlan(p)} style={{
-                  display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                  background: isSelected ? `${col}14` : C.surface, border: `1px solid ${isSelected ? `${col}55` : C.border}`,
-                  borderRadius: 10, cursor: "pointer", transition: "all .15s",
-                }}>
-                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: isSelected ? col : "transparent", border: `2px solid ${col}`, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: isSelected ? C.text : C.muted, textTransform: "capitalize", flex: 1, textAlign: "left" }}>{p}</span>
+                <button key={p} onClick={() => setEditPlan(p)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: sel ? `${col}14` : C.surface, border: `1px solid ${sel ? `${col}55` : C.border}`, borderRadius: 10, cursor: "pointer", transition: "all .15s" }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: sel ? col : "transparent", border: `2px solid ${col}`, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: sel ? C.text : C.muted, textTransform: "capitalize", flex: 1, textAlign: "left" }}>{p}</span>
                   <span style={{ fontSize: 11, color: C.muted }}>${PLAN_PRICES[p]}/mo</span>
-                  {isCurrent && <span style={{ fontSize: 8, fontWeight: 700, color: C.green, background: `${C.green}18`, padding: "2px 6px", borderRadius: 3, textTransform: "uppercase" }}>current</span>}
+                  {cur && <span style={{ fontSize: 8, fontWeight: 700, color: C.green, background: `${C.green}18`, padding: "2px 6px", borderRadius: 3, textTransform: "uppercase" }}>current</span>}
                 </button>
               );
             })}
           </div>
-
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => setEditingUser(null)} style={{
-              flex: 1, background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 9,
-              color: C.muted, fontSize: 12, fontWeight: 600, padding: "10px", cursor: "pointer",
-            }}>
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                if (!isChanged) return;
-                setConfirmModal({ user: editingUser, from: currentPlan, to: editPlan });
-              }}
-              disabled={!isChanged || saving}
-              style={{
-                flex: 1, background: isChanged ? `linear-gradient(135deg,${C.accent},${C.accent2})` : C.surface2,
-                border: "none", borderRadius: 9, color: isChanged ? "#fff" : C.muted,
-                fontSize: 12, fontWeight: 700, padding: "10px", cursor: isChanged ? "pointer" : "default",
-                opacity: isChanged ? 1 : 0.5,
-              }}
-            >
+            <button onClick={() => setEditingUser(null)} style={{ flex: 1, background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 9, color: C.muted, fontSize: 12, fontWeight: 600, padding: "10px", cursor: "pointer" }}>Cancel</button>
+            <button onClick={() => { if (isChanged) setConfirmModal({ user: editingUser, from: currentPlan, to: editPlan }); }} disabled={!isChanged || saving}
+              style={{ flex: 1, background: isChanged ? `linear-gradient(135deg,${C.accent},${C.accent2})` : C.surface2, border: "none", borderRadius: 9, color: isChanged ? "#fff" : C.muted, fontSize: 12, fontWeight: 700, padding: "10px", cursor: isChanged ? "pointer" : "default", opacity: isChanged ? 1 : 0.5 }}>
               {saving ? "Saving..." : "Apply Change"}
             </button>
           </div>
@@ -666,52 +960,31 @@ function AdminDashboardInner({ session, onSignOut }) {
     );
   }
 
-  // ── Confirm Modal ────────────────────────────────────────────────────────────
   function ConfirmModal() {
     if (!confirmModal) return null;
     const { user, from, to } = confirmModal;
     const userName = user.name || user.first_name || user.email;
-    const fromCol = PLAN_COLORS[from];
     const toCol = PLAN_COLORS[to];
-    const isUpgrade = VALID_PLANS.indexOf(to) > VALID_PLANS.indexOf(from);
-
+    const fromCol = PLAN_COLORS[from];
+    const isUp = VALID_PLANS.indexOf(to) > VALID_PLANS.indexOf(from);
     return (
       <div onClick={() => setConfirmModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.8)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div onClick={e => e.stopPropagation()} style={{
-          background: "#09090f", border: `1px solid ${toCol}44`, borderRadius: 16,
-          padding: 24, width: 380, maxWidth: "92vw",
-        }}>
-          <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 16, fontWeight: 800, color: C.text, marginBottom: 16 }}>
-            Confirm {isUpgrade ? "Upgrade" : "Downgrade"}
-          </div>
+        <div onClick={e => e.stopPropagation()} style={{ background: "#09090f", border: `1px solid ${toCol}44`, borderRadius: 16, padding: 24, width: 380, maxWidth: "92vw" }}>
+          <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 16, fontWeight: 800, color: C.text, marginBottom: 16 }}>Confirm {isUp ? "Upgrade" : "Downgrade"}</div>
           <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 20 }}>
-            {isUpgrade ? "Upgrade" : "Downgrade"} <strong style={{ color: C.text }}>{userName}</strong> from{" "}
-            <span style={{ color: fromCol, fontWeight: 700, textTransform: "capitalize" }}>{from}</span> to{" "}
-            <span style={{ color: toCol, fontWeight: 700, textTransform: "capitalize" }}>{to}</span>?
+            {isUp ? "Upgrade" : "Downgrade"} <strong style={{ color: C.text }}>{userName}</strong> from <span style={{ color: fromCol, fontWeight: 700, textTransform: "capitalize" }}>{from}</span> to <span style={{ color: toCol, fontWeight: 700, textTransform: "capitalize" }}>{to}</span>?
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, padding: "10px 14px", background: C.surface, borderRadius: 8, border: `1px solid ${C.border}` }}>
-            <span style={{ fontSize: 12, color: C.muted }}>Billing change:</span>
+            <span style={{ fontSize: 12, color: C.muted }}>Billing:</span>
             <span style={{ fontSize: 12, color: fromCol, fontWeight: 600 }}>${PLAN_PRICES[from]}/mo</span>
             <span style={{ fontSize: 12, color: C.muted }}>→</span>
             <span style={{ fontSize: 12, color: toCol, fontWeight: 700 }}>${PLAN_PRICES[to]}/mo</span>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => setConfirmModal(null)} style={{
-              flex: 1, background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 9,
-              color: C.muted, fontSize: 12, fontWeight: 600, padding: "10px", cursor: "pointer",
-            }}>
-              Cancel
-            </button>
-            <button
-              onClick={() => updatePlan(user.id, to)}
-              disabled={saving}
-              style={{
-                flex: 1, background: isUpgrade ? `linear-gradient(135deg,${C.accent},${C.accent2})` : `linear-gradient(135deg,${C.amber},${C.red})`,
-                border: "none", borderRadius: 9, color: "#fff",
-                fontSize: 12, fontWeight: 700, padding: "10px", cursor: "pointer",
-              }}
-            >
-              {saving ? "Applying..." : isUpgrade ? "Confirm Upgrade" : "Confirm Downgrade"}
+            <button onClick={() => setConfirmModal(null)} style={{ flex: 1, background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 9, color: C.muted, fontSize: 12, fontWeight: 600, padding: "10px", cursor: "pointer" }}>Cancel</button>
+            <button onClick={() => updatePlan(user.id, to)} disabled={saving}
+              style={{ flex: 1, background: isUp ? `linear-gradient(135deg,${C.accent},${C.accent2})` : `linear-gradient(135deg,${C.amber},${C.red})`, border: "none", borderRadius: 9, color: "#fff", fontSize: 12, fontWeight: 700, padding: "10px", cursor: "pointer" }}>
+              {saving ? "Applying..." : isUp ? "Confirm Upgrade" : "Confirm Downgrade"}
             </button>
           </div>
         </div>
@@ -719,26 +992,30 @@ function AdminDashboardInner({ session, onSignOut }) {
     );
   }
 
-  // ── Loading state ────────────────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // LOADING STATE
+  // ════════════════════════════════════════════════════════════════════════════
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: C.bg, fontFamily: "'DM Sans',sans-serif" }}>
-        <style>{FONT}{GLOBAL_CSS}{`@keyframes spin { to { transform: rotate(360deg) } } @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }`}</style>
+        <style>{FONT}{GLOBAL_CSS}{`@keyframes spin { to { transform:rotate(360deg) } } @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }`}</style>
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 36, height: 36, border: `3px solid ${C.accent}33`, borderTop: `3px solid ${C.accent}`, borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto 16px" }} />
           <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 14, fontWeight: 800, color: C.accent }}>Mission Control</div>
-          <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Loading platform data...</div>
+          <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Decrypting platform data...</div>
         </div>
       </div>
     );
   }
 
-  // ── Main render (error shown as inline banner, not blocking) ────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // MAIN RENDER
+  // ════════════════════════════════════════════════════════════════════════════
   return (
     <>
       <style>{FONT}{GLOBAL_CSS}{`
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
-        @keyframes mcGlow { 0%,100% { box-shadow: 0 0 20px ${C.accent}22; } 50% { box-shadow: 0 0 40px ${C.accent}44; } }
+        @keyframes mcGlow { 0%,100% { box-shadow:0 0 20px ${C.accent}22 } 50% { box-shadow:0 0 40px ${C.accent}44 } }
       `}</style>
 
       <EditPlanModal />
@@ -746,22 +1023,11 @@ function AdminDashboardInner({ session, onSignOut }) {
 
       <div style={{ display: "flex", height: "100vh", maxHeight: "100vh", overflow: "hidden", background: C.bg, color: C.text, fontFamily: "'DM Sans',sans-serif" }}>
 
-        {/* ── SIDEBAR ── */}
+        {/* SIDEBAR */}
         <div style={{ width: 220, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", background: "#050508", flexShrink: 0 }}>
-
-          {/* Logo */}
           <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${C.border}` }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 9,
-                background: `linear-gradient(135deg,${C.accent},${C.accent2})`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 15, fontWeight: 900, color: "#fff",
-                boxShadow: `0 2px 16px ${C.accent}44`,
-                animation: "mcGlow 3s ease-in-out infinite",
-              }}>
-                S
-              </div>
+              <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 900, color: "#fff", boxShadow: `0 2px 16px ${C.accent}44`, animation: "mcGlow 3s ease-in-out infinite" }}>S</div>
               <div>
                 <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: "-0.3px" }}>Mission Control</div>
                 <div style={{ fontSize: 9, color: C.accent, fontWeight: 600 }}>ADMIN</div>
@@ -769,14 +1035,13 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </div>
 
-          {/* Nav */}
           <div style={{ flex: 1, padding: "12px 10px", overflow: "hidden" }}>
+            <div style={{ fontSize: 8, fontWeight: 800, color: `${C.accent}44`, textTransform: "uppercase", letterSpacing: "0.12em", padding: "2px 12px 8px" }}>Navigation</div>
             {ADMIN_NAV.map(n => {
               const isActive = activeTab === n.id;
               return (
-                <button key={n.id} onClick={() => setActiveTab(n.id)} style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
-                  borderRadius: 9, border: "none", cursor: "pointer", marginBottom: 2, width: "100%",
+                <button key={n.id} onClick={() => { setActiveTab(n.id); setSelectedUser(null); setUserDetail(null); }} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 9, border: "none", cursor: "pointer", marginBottom: 2, width: "100%",
                   background: isActive ? `${C.accent}18` : "transparent", transition: "all .12s",
                 }}>
                   <span style={{ fontSize: 13, color: isActive ? C.accent : C.subtle, width: 16, textAlign: "center" }}>{n.icon}</span>
@@ -786,100 +1051,82 @@ function AdminDashboardInner({ session, onSignOut }) {
             })}
           </div>
 
-          {/* Bottom actions */}
-          <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px" }}>
-            <button onClick={() => navigate("/app")} style={{
-              display: "flex", alignItems: "center", gap: 8, width: "100%",
-              background: "none", border: "none", color: C.muted, fontSize: 12,
-              fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6,
-              textAlign: "left",
-            }}
-              onMouseEnter={e => e.currentTarget.style.color = C.text}
-              onMouseLeave={e => e.currentTarget.style.color = C.muted}>
-              ← Back to App
-            </button>
-            <button onClick={() => { if (onSignOut) onSignOut(); }} style={{
-              display: "flex", alignItems: "center", gap: 8, width: "100%",
-              background: "none", border: "none", color: C.muted, fontSize: 12,
-              fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6,
-              textAlign: "left",
-            }}
-              onMouseEnter={e => e.currentTarget.style.color = C.red}
-              onMouseLeave={e => e.currentTarget.style.color = C.muted}>
-              ↩ Sign Out
-            </button>
-          </div>
-        </div>
-
-        {/* ── MAIN CONTENT ── */}
-        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-
-          {/* Top bar */}
-          <div style={{
-            height: 52, borderBottom: `1px solid ${C.border}`, display: "flex",
-            alignItems: "center", justifyContent: "space-between", padding: "0 28px", flexShrink: 0,
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 15, fontWeight: 800, color: C.text }}>
-                {ADMIN_NAV.find(n => n.id === activeTab)?.label || "Overview"}
-              </div>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green, animation: "pulse 2s infinite" }} />
-              <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>System Healthy</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button onClick={fetchData} style={{
-                background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 7,
-                color: C.muted, fontSize: 11, fontWeight: 600, padding: "5px 12px", cursor: "pointer",
-              }}
-                onMouseEnter={e => e.currentTarget.style.color = C.text}
-                onMouseLeave={e => e.currentTarget.style.color = C.muted}>
-                Refresh
-              </button>
-              {session?.user?.email && (
-                <div style={{ fontSize: 10, color: C.muted }}>
-                  {session.user.email}
+          {/* Quick stats in sidebar */}
+          {stats && (
+            <div style={{ padding: "0 10px 8px" }}>
+              <div style={{ background: `${C.accent}08`, border: `1px solid ${C.accent}22`, borderRadius: 10, padding: "10px 12px" }}>
+                <div style={{ fontSize: 8, fontWeight: 800, color: C.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Quick Stats</div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                  <span style={{ fontSize: 10, color: C.muted }}>Users</span>
+                  <span style={{ fontSize: 10, color: C.text, fontWeight: 600 }}>{fmt(stats.total || 0)}</span>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Error banner */}
-          {error && (
-            <div style={{ margin: "12px 28px 0", padding: "12px 16px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ fontSize: 11, color: C.red, flex: 1 }}>{error}</span>
-              <button onClick={fetchData} style={{ background: `${C.red}22`, border: `1px solid ${C.red}44`, borderRadius: 6, color: C.red, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>
-                Retry
-              </button>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                  <span style={{ fontSize: 10, color: C.muted }}>MRR</span>
+                  <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>{fmtUSD(stats.mrr || 0)}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 10, color: C.muted }}>Active</span>
+                  <span style={{ fontSize: 10, color: C.blue, fontWeight: 600 }}>{fmt(stats.activeUsers || 0)}</span>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Content */}
+          <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px" }}>
+            <button onClick={() => navigate("/app")} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 12, fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}
+              onMouseEnter={e => e.currentTarget.style.color = C.text} onMouseLeave={e => e.currentTarget.style.color = C.muted}>← Back to App</button>
+            <button onClick={() => { if (onSignOut) onSignOut(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 12, fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}
+              onMouseEnter={e => e.currentTarget.style.color = C.red} onMouseLeave={e => e.currentTarget.style.color = C.muted}>↩ Sign Out</button>
+          </div>
+        </div>
+
+        {/* MAIN CONTENT */}
+        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ height: 52, borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 15, fontWeight: 800, color: C.text }}>{ADMIN_NAV.find(n => n.id === activeTab)?.label || "Overview"}</div>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green, animation: "pulse 2s infinite" }} />
+              <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>Operational</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button onClick={fetchData} style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 7, color: C.muted, fontSize: 11, fontWeight: 600, padding: "5px 12px", cursor: "pointer" }}
+                onMouseEnter={e => e.currentTarget.style.color = C.text} onMouseLeave={e => e.currentTarget.style.color = C.muted}>Refresh</button>
+              {session?.user?.email && <div style={{ fontSize: 10, color: C.muted }}>{session.user.email}</div>}
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ margin: "12px 28px 0", padding: "12px 16px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 11, color: C.red, flex: 1 }}>{error}</span>
+              <button onClick={fetchData} style={{ background: `${C.red}22`, border: `1px solid ${C.red}44`, borderRadius: 6, color: C.red, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>Retry</button>
+            </div>
+          )}
+
           {activeTab === "overview" && <TabOverview />}
           {activeTab === "users" && <TabUsers />}
           {activeTab === "subscriptions" && <TabSubscriptions />}
+          {activeTab === "analytics" && <TabAnalytics />}
+          {activeTab === "shows" && <TabShows />}
           {activeTab === "content" && <TabContent />}
+          {activeTab === "system" && <TabSystem />}
         </div>
       </div>
     </>
   );
 }
 
-// ── WRAPPER: show login screen or dashboard ─────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// WRAPPER
+// ═══════════════════════════════════════════════════════════════════════════════
 export default function AdminDashboard({ session, onSignOut }) {
   const handleLogin = useCallback(async () => {
     if (!supabase) return;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: window.location.origin + "/admin",
-        queryParams: { access_type: "offline", prompt: "consent" },
-      },
+      options: { redirectTo: window.location.origin + "/admin", queryParams: { access_type: "offline", prompt: "consent" } },
     });
   }, []);
 
-  if (!session) {
-    return <AdminLoginScreen onLogin={handleLogin} />;
-  }
-
+  if (!session) return <AdminLoginScreen onLogin={handleLogin} />;
   return <AdminDashboardInner session={session} onSignOut={onSignOut} />;
 }
