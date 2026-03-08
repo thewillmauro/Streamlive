@@ -74,9 +74,9 @@ export default function LoginPage() {
     boxSizing: 'border-box',
   }
 
-  // ── Mode-specific left panel content ──
+  // ── Left panel content by mode + tab ──
   const CONTENT = {
-    signin: {
+    'signin-business': {
       headline: 'Welcome back. Your live selling data is waiting.',
       sub: 'Pick up right where you left off — your buyers, analytics, and upcoming shows are ready to go.',
       stats: [
@@ -94,7 +94,7 @@ export default function LoginPage() {
       quote: 'I check Streamlive first thing every morning. My show reports, buyer activity, campaign performance — it\'s all right there. No more bouncing between five dashboards.',
       quoteAuthor: '— Returning seller, 3 platforms, $42K/mo GMV',
     },
-    create: {
+    'create-business': {
       headline: 'The command center for live sellers who are done guessing.',
       sub: 'Stream to five platforms at once. See every buyer, every order, every dollar — in real time. Built for independent Shopify sellers who sell live.',
       stats: [
@@ -112,9 +112,45 @@ export default function LoginPage() {
       quote: 'We went from spreadsheets and guesswork to knowing exactly who bought what, on which platform, during which show. Streamlive changed our entire operation.',
       quoteAuthor: '— Live seller, 4 platforms, $28K/mo GMV',
     },
+    'signin-partner': {
+      headline: 'Welcome back. Your sellers are growing.',
+      sub: 'Your network dashboard is live — check in on seller performance, team activity, and revenue across every account.',
+      stats: [
+        { value: '12+', label: 'Seller Accounts', sub: 'Manage your full roster from one dashboard' },
+        { value: '360\u00B0', label: 'Visibility', sub: 'GMV, show cadence, and churn risk per seller' },
+        { value: '1', label: 'Login', sub: 'One dashboard for your entire partner network' },
+      ],
+      props: [
+        { icon: '◉', text: 'Network-wide GMV, revenue, and growth metrics' },
+        { icon: '◈', text: 'Per-seller show activity and performance trends' },
+        { icon: '◑', text: 'Churn risk alerts and re-engagement signals' },
+        { icon: '◆', text: 'Team management with role-based permissions' },
+        { icon: '●', text: 'White-label reports ready to share with stakeholders' },
+      ],
+      quote: 'Managing 15 live sellers used to mean 15 separate logins and a spreadsheet. Now I see every account, every show, every dollar from one screen.',
+      quoteAuthor: '— Partner manager, enterprise network',
+    },
+    'create-partner': {
+      headline: 'Scale your live selling network without the chaos.',
+      sub: 'Streamlive gives agencies, marketplaces, and enterprise teams a single dashboard to manage, monitor, and grow every seller in their network.',
+      stats: [
+        { value: '1', label: 'Dashboard', sub: 'Every seller, every platform, every metric' },
+        { value: '∞', label: 'Sellers', sub: 'Add unlimited seller accounts to your network' },
+        { value: '5', label: 'Platforms', sub: 'Whatnot, TikTok Shop, IG Live, Amazon, YouTube' },
+      ],
+      props: [
+        { icon: '◉', text: 'Onboard sellers in minutes with guided setup' },
+        { icon: '◈', text: 'Monitor live shows across your entire roster' },
+        { icon: '◑', text: 'AI-powered insights for each seller and the network' },
+        { icon: '◆', text: 'Role-based team access — managers, analysts, support' },
+        { icon: '●', text: 'Custom pricing and dedicated account management' },
+      ],
+      quote: 'We evaluated every live commerce tool on the market. Streamlive was the only one built for multi-seller operations. The network dashboard alone saved us two headcount.',
+      quoteAuthor: '— Agency director, 22 seller accounts',
+    },
   }
 
-  const c = CONTENT[mode]
+  const c = CONTENT[`${mode}-${tab}`]
 
   return (
     <div style={{ minHeight: '100vh', background: '#06060e', display: 'flex', fontFamily: "'DM Sans',sans-serif" }}>
