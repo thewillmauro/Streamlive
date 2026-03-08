@@ -624,6 +624,87 @@ function StatCard({ label, value, sub, color="#7c3aed", mono=true }) {
   );
 }
 
+// ─── DASHBOARD LOADER (Sony-inspired) ─────────────────────────────────────────
+function DashboardLoader() {
+  const [progress, setProgress] = useState(0);
+  const [stageIdx, setStageIdx] = useState(0);
+  const stages = [
+    { label: "Initializing workspace", icon: "S" },
+    { label: "Loading your profile", icon: "◆" },
+    { label: "Syncing buyer data", icon: "◈" },
+    { label: "Preparing analytics", icon: "▣" },
+    { label: "Almost there", icon: "✦" },
+  ];
+
+  useEffect(() => {
+    let frame;
+    let start = Date.now();
+    const duration = 2400;
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const p = Math.min(elapsed / duration, 1);
+      // Ease-out cubic for smooth deceleration
+      const eased = 1 - Math.pow(1 - p, 3);
+      setProgress(eased * 100);
+      setStageIdx(Math.min(Math.floor(eased * stages.length), stages.length - 1));
+      if (p < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const stage = stages[stageIdx];
+
+  return (
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
+      <style>{`
+        @keyframes loaderPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+        @keyframes loaderSlide { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+        @keyframes loaderFadeUp { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
+        @keyframes loaderGlow { 0%,100%{box-shadow:0 0 20px #7c3aed22} 50%{box-shadow:0 0 40px #7c3aed44} }
+      `}</style>
+      <div style={{ width:340, textAlign:"center" }}>
+        {/* Logo mark */}
+        <div style={{ animation:"loaderGlow 2s ease infinite", width:56, height:56, borderRadius:16, background:"linear-gradient(135deg,#7c3aed,#4f46e5)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 28px", border:"1px solid #7c3aed44" }}>
+          <span style={{ fontSize:22, fontWeight:900, color:"#fff", letterSpacing:"-1px", fontFamily:"'Syne',sans-serif" }}>S</span>
+        </div>
+
+        {/* Stage label */}
+        <div key={stageIdx} style={{ animation:"loaderFadeUp .3s ease", fontSize:13, fontWeight:600, color:"#e5e7eb", marginBottom:6, letterSpacing:".02em" }}>
+          {stage.label}
+        </div>
+
+        {/* Percentage */}
+        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:"#6b7280", marginBottom:18, letterSpacing:".05em" }}>
+          {Math.round(progress)}%
+        </div>
+
+        {/* Progress bar track */}
+        <div style={{ position:"relative", height:3, background:"#1a1a2e", borderRadius:2, overflow:"hidden", marginBottom:20 }}>
+          {/* Fill */}
+          <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${progress}%`, background:"linear-gradient(90deg,#7c3aed,#a78bfa)", borderRadius:2, transition:"width .1s linear" }} />
+          {/* Shimmer overlay */}
+          <div style={{ position:"absolute", inset:0, overflow:"hidden" }}>
+            <div style={{ position:"absolute", top:0, bottom:0, width:"30%", background:"linear-gradient(90deg, transparent, rgba(167,139,250,.3), transparent)", animation:"loaderSlide 1.2s ease infinite" }} />
+          </div>
+        </div>
+
+        {/* Stage dots */}
+        <div style={{ display:"flex", justifyContent:"center", gap:8 }}>
+          {stages.map((s, i) => (
+            <div key={i} style={{
+              width: i === stageIdx ? 16 : 6, height:6, borderRadius:3,
+              background: i < stageIdx ? "#7c3aed" : i === stageIdx ? "#a78bfa" : "#1a1a2e",
+              border: i <= stageIdx ? "none" : "1px solid #1f1f35",
+              transition:"all .3s ease",
+            }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── SCREEN: DASHBOARD ────────────────────────────────────────────────────────
 function ScreenDashboard({ persona, buyers, navigate, shows }) {
   const recentShows = shows || SHOWS;
@@ -13375,14 +13456,7 @@ export default function StreamlivePrototype({ session, onSignOut }) {
 
   // Loading state
   if (profileLoading || creatingProfile || !persona) {
-    return (
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#04040e", color:"#a78bfa", fontFamily:"'DM Sans',sans-serif" }}>
-        <div style={{ textAlign:"center" }}>
-          <div style={{ width:32, height:32, border:"3px solid #a78bfa33", borderTop:"3px solid #a78bfa", borderRadius:"50%", animation:"spin .8s linear infinite", margin:"0 auto 16px" }} />
-          <div style={{ fontSize:13, color:"#6b7280" }}>Loading your dashboard…</div>
-        </div>
-      </div>
-    );
+    return <DashboardLoader />;
   }
 
   const navigate = (screen, newParams={}) => {
