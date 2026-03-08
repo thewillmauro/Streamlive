@@ -6744,7 +6744,7 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
           </div>
           <div style={{ fontSize:9, color:C.subtle, marginTop:5 }}>Connected {c.connectedAt} · status: active</div>
         </div>
-        <button onClick={()=>disconnect(type)} style={{ fontSize:10, fontWeight:700, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"6px 13px", borderRadius:7, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+        <button onClick={()=>disconnect(type)} style={{ fontSize:11, fontWeight:700, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"7px 14px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap", minWidth:90, textAlign:"center" }}>
           Disconnect
         </button>
       </div>
@@ -7285,11 +7285,11 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                           )}
                         </div>
                         {!requiredPlatform || platformConnected ? (
-                          <button onClick={()=>openModal(type)} style={{ fontSize:11, fontWeight:700, color:intg.color, background:intg.bg, border:`1px solid ${intg.color}44`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                          <button onClick={()=>openModal(type)} style={{ fontSize:11, fontWeight:700, color:intg.color, background:intg.bg, border:`1px solid ${intg.color}44`, padding:"7px 14px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap", minWidth:90, textAlign:"center" }}>
                             Connect →
                           </button>
                         ) : (
-                          <button onClick={()=>{ setTab("platforms"); }} style={{ fontSize:11, fontWeight:700, color:intg.color, background:`${intg.color}12`, border:`1px solid ${intg.color}33`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                          <button onClick={()=>{ setTab("platforms"); }} style={{ fontSize:11, fontWeight:700, color:intg.color, background:`${intg.color}12`, border:`1px solid ${intg.color}33`, padding:"7px 14px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap", minWidth:90, textAlign:"center" }}>
                             Setup →
                           </button>
                         )}
