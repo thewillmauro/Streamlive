@@ -733,27 +733,7 @@ function AdminDashboardInner({ session, onSignOut }) {
     );
   }
 
-  // ── Error state ──────────────────────────────────────────────────────────────
-  if (error) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: C.bg, fontFamily: "'DM Sans',sans-serif" }}>
-        <style>{FONT}{GLOBAL_CSS}</style>
-        <div style={{ textAlign: "center", maxWidth: 400 }}>
-          <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.3 }}>⚠</div>
-          <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, color: C.text, marginBottom: 8 }}>Access Denied</div>
-          <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 20 }}>{error}</div>
-          <button onClick={() => navigate("/app")} style={{
-            background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none",
-            color: "#fff", fontSize: 12, fontWeight: 700, padding: "10px 24px", borderRadius: 9, cursor: "pointer",
-          }}>
-            Back to App
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Main render ──────────────────────────────────────────────────────────────
+  // ── Main render (error shown as inline banner, not blocking) ────────────────
   return (
     <>
       <style>{FONT}{GLOBAL_CSS}{`
@@ -862,6 +842,16 @@ function AdminDashboardInner({ session, onSignOut }) {
               )}
             </div>
           </div>
+
+          {/* Error banner */}
+          {error && (
+            <div style={{ margin: "12px 28px 0", padding: "12px 16px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 11, color: C.red, flex: 1 }}>{error}</span>
+              <button onClick={fetchData} style={{ background: `${C.red}22`, border: `1px solid ${C.red}44`, borderRadius: 6, color: C.red, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>
+                Retry
+              </button>
+            </div>
+          )}
 
           {/* Content */}
           {activeTab === "overview" && <TabOverview />}

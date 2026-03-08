@@ -4,9 +4,13 @@ const PLAN_PRICES = { starter: 79, growth: 199, pro: 399, enterprise: 999 };
 const VALID_PLANS = ["starter", "growth", "pro", "enterprise"];
 
 async function verifyAdmin(req) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return { error: "Server misconfigured", status: 500 };
+    const missing = [];
+    if (!SUPABASE_URL) missing.push("SUPABASE_URL");
+    if (!SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+    return { error: `Server misconfigured: missing ${missing.join(", ")} in Vercel env vars`, status: 500 };
   }
 
   const auth = req.headers.authorization;
