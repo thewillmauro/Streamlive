@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase.js'
 import changelogEntries from './changelog-entries.json'
 import { navigate, useIntercom, FONT, GLOBAL_CSS, PLANS, PERSONA_PLATFORMS } from './lib/shared.jsx'
 import { trackPageView, identifyUser, resetUser, track } from './lib/analytics.js'
+import { useContent } from './hooks/useContent.js'
 
 const StreamlivePrototype = lazy(() => import('./StreamlivePrototype.jsx'))
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'))
@@ -61,6 +62,7 @@ function Landing() {
   const [submitted, setSubmitted] = useState(false)
   const [faqOpen, setFaqOpen] = useState(null)
   useIntercom()
+  const { get: cms } = useContent()
   const [menuOpen, setMenuOpen] = useState(false)
   const [liveGmv, setLiveGmv] = useState(0)
   const [liveViewers, setLiveViewers] = useState({ WN: 234, TT: 891, IG: 312, AM: 156, YT: 420 })
@@ -400,16 +402,16 @@ function Landing() {
 
           <div className="fade-a0" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#2d1f5e44', border:'1px solid #7c3aed44', borderRadius:99, padding:'5px 16px 5px 10px', marginBottom:28 }}>
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#10b981', animation:'pulse 2s infinite' }} />
-            <span style={{ fontSize:11, fontWeight:700, color:'#a78bfa', letterSpacing:'0.08em', textTransform:'uppercase' }}>Now open for beta. Limited spots.</span>
+            <span style={{ fontSize:11, fontWeight:700, color:'#a78bfa', letterSpacing:'0.08em', textTransform:'uppercase' }}>{cms('hero', 'badge_text', 'Now open for beta. Limited spots.')}</span>
           </div>
 
           <h1 className="fade-a1" style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(32px,6vw,68px)', fontWeight:800, color:'#fff', lineHeight:1.06, letterSpacing:'-2px', marginBottom:16 }}>
-            The Live Selling<br />
-            <span className="gradient-text">Command Center.</span>
+            {cms('hero', 'headline', 'The Live Selling')}<br />
+            <span className="gradient-text">{cms('hero', 'headline_accent', 'Command Center.')}</span>
           </h1>
 
           <p className="fade-a2" style={{ fontSize:'clamp(14px,1.8vw,17px)', color:'#4b5563', lineHeight:1.6, maxWidth:480, margin:'0 auto 32px', fontWeight:400 }}>
-            One command center for Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live: simultaneously.
+            {cms('hero', 'subheadline', 'One command center for Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live: simultaneously.')}
           </p>
 
           <div className="fade-a3 hero-input-row" style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:12, flexWrap:'wrap' }}>
@@ -420,7 +422,7 @@ function Landing() {
                   style={{ background:'#0d0d1e', border:'1px solid #1e1e3a', borderRadius:11, padding:'12px 18px', color:'#fff', fontSize:14, outline:'none', fontFamily:"'DM Sans',sans-serif" }} />
                 <button onClick={handleSubmit} className="cta-btn"
                   style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px 28px', borderRadius:11, cursor:'pointer', whiteSpace:'nowrap' }}>
-                  Get Early Access →
+                  {cms('hero', 'cta_text', 'Get Early Access')} →
                 </button>
                 <button onClick={()=>navigate('/login')}
                   style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:11, cursor:'pointer', whiteSpace:'nowrap' }}>
@@ -438,7 +440,7 @@ function Landing() {
               </div>
             )}
           </div>
-          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:24 }}>Free during beta · No credit card required</p>
+          <p className="fade-a3" style={{ fontSize:11, color:'#3d3d6e', marginBottom:24 }}>{cms('hero', 'footer_text', 'Free during beta · No credit card required')}</p>
 
           {/* Live viewer count: mirrors Live Companion platform strip behavior */}
           <div style={{ display:'flex', justifyContent:'center', marginBottom:0 }}>
@@ -530,7 +532,7 @@ function Landing() {
         {/* ── FEATURES GRID ────────────────────────────────────────────────── */}
         <div id="features" className="features-section" style={{ maxWidth:900, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:32 }}>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px' }}>Everything in one platform.</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px' }}>{cms('features', 'title', 'Everything in one platform.')}</div>
           </div>
           <div className="features-grid" style={{ display:'grid', gap:8 }}>
             {FEATURES.map(f=>(
@@ -821,8 +823,8 @@ function Landing() {
         <div className="features-section" style={{ maxWidth:900, margin:'0 auto' }}>
           <div style={{ background:'linear-gradient(135deg,#0d0d1e,#12103a)', border:'1px solid #7c3aed33', borderRadius:18, padding:'32px', textAlign:'center', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', top:-40, right:-40, width:200, height:200, borderRadius:'50%', background:'#7c3aed', opacity:0.06, filter:'blur(60px)' }} />
-            <div style={{ fontSize:11, fontWeight:800, color:'#a78bfa', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>Ready to go live?</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:20 }}>Create your account and start selling live today.</div>
+            <div style={{ fontSize:11, fontWeight:800, color:'#a78bfa', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10 }}>{cms('demo_cta', 'subheading', 'Ready to go live?')}</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:800, color:'#fff', letterSpacing:'-0.5px', marginBottom:20 }}>{cms('demo_cta', 'headline', 'Create your account and start selling live today.')}</div>
             <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
               <button onClick={()=>navigate('/login')} style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', color:'#fff', fontSize:14, fontWeight:700, padding:'12px 28px', borderRadius:10, cursor:'pointer' }}>Create Account →</button>
               <button onClick={()=>navigate('/login')} style={{ background:'transparent', border:'1px solid #2a2a4a', color:'#9ca3af', fontSize:14, fontWeight:600, padding:'12px 22px', borderRadius:10, cursor:'pointer' }}>Sign In</button>
@@ -835,7 +837,7 @@ function Landing() {
         <div id="pricing" className="pricing-section" style={{ maxWidth:860, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:48 }}>
             <span className="section-label">Pricing</span>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>Stream five platforms. Pay one bill.</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#fff', letterSpacing:'-0.8px', marginBottom:8 }}>{cms('pricing', 'headline', 'Stream five platforms. Pay one bill.')}</div>
           </div>
 
           <div className="pricing-grid" style={{ display:'grid', alignItems:'stretch' }}>
@@ -906,7 +908,7 @@ function Landing() {
         <div className="cta-section" style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
           <div className="divider-glow" style={{ marginBottom:56 }} />
           <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(26px,4.5vw,48px)', fontWeight:800, color:'#fff', letterSpacing:'-1.5px', lineHeight:1.1, marginBottom:24 }}>
-            <span className="gradient-text">Ready to go live?</span>
+            <span className="gradient-text">{cms('final_cta', 'headline', 'Ready to go live?')}</span>
           </div>
           <div className="cta-btns" style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:12 }}>
             {!submitted ? (

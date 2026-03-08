@@ -1006,12 +1006,332 @@ function AdminDashboardInner({ session, onSignOut }) {
   // TAB: CONTENT
   // ════════════════════════════════════════════════════════════════════════════
   function TabContent() {
+    const [cmsContent, setCmsContent] = useState({});
+    const [cmsLoading, setCmsLoading] = useState(true);
+    const [cmsSection, setCmsSection] = useState("hero");
+    const [cmsSaving, setCmsSaving] = useState(false);
+    const [cmsSaved, setCmsSaved] = useState(null);
+    const [cmsError, setCmsError] = useState(null);
+
+    // Default content (what the site shows when no CMS override exists)
+    const DEFAULTS = {
+      hero: {
+        badge_text: "Now open for beta. Limited spots.",
+        headline: "The Live Selling",
+        headline_accent: "Command Center.",
+        subheadline: "One command center for Whatnot, TikTok, Instagram, Amazon Live, and YouTube Live: simultaneously.",
+        cta_text: "Get Early Access",
+        footer_text: "Free during beta · No credit card required",
+      },
+      features: {
+        title: "Everything in one platform.",
+        items: [
+          { icon: "◉", label: "Buyer CRM", desc: "All 5 platforms. One buyer view." },
+          { icon: "◈", label: "Live Companion", desc: "Real-time GMV, orders, and VIP alerts." },
+          { icon: "◑", label: "Analytics", desc: "AI insights after every show." },
+          { icon: "⬛", label: "Production Suite", desc: "Cameras, lights, and OBS. One panel." },
+          { icon: "◆", label: "Campaigns", desc: "Email, SMS, and DM automations." },
+          { icon: "♦", label: "Loyalty Hub", desc: "4-tier program. Auto across all platforms." },
+          { icon: "●", label: "Opt-in Pages", desc: "Collect email and phone. TCPA-compliant." },
+          { icon: "◧", label: "Show Planner", desc: "AI run order. Perks. Go live in minutes." },
+          { icon: "📋", label: "Host Briefing", desc: "Live script. Countdown. Talking points." },
+          { icon: "🔗", label: "Multi-Platform Sync", desc: "All 5 simultaneously. Always in sync." },
+        ],
+      },
+      stats: {
+        items: [
+          { value: "5", label: "Platforms", sub: "Simultaneous live streaming" },
+          { value: "99%", label: "Attribution", sub: "vs 55–82% with guesswork" },
+          { value: "LIVE_GMV", label: "Live GMV", sub: "Real orders · resets every show" },
+          { value: "6+", label: "AI Insights", sub: "Confidence-scored, per show" },
+        ],
+      },
+      demo_cta: {
+        subheading: "Ready to go live?",
+        headline: "Create your account and start selling live today.",
+      },
+      final_cta: {
+        headline: "Ready to go live?",
+      },
+      pricing: {
+        headline: "Stream five platforms. Pay one bill.",
+      },
+      faq: {
+        items: [
+          { q: "Do I actually stream to all 5 platforms at the same time?", a: "Yes. One stream out, five platforms live simultaneously." },
+          { q: "How does the Host Briefing work?", a: "The Briefing is a companion window with your current product, countdown, and AI talking points." },
+          { q: "What does the Live Command Center solve?", a: "One live feed: real-time GMV, buyer names across all platforms, and VIP alerts." },
+          { q: "How does attribution work?", a: "Each order is matched using platform ID, email, and order timing. 99% accuracy." },
+          { q: "What does the Production Suite control?", a: "Camera switching, lighting levels, and OBS scene changes. All from one panel." },
+          { q: "What insights are generated after each show?", a: "Six AI recommendations scored by confidence and revenue impact." },
+          { q: "Is buyer data combined across platforms?", a: "Yes. Streamlive matches profiles using email, phone, and behavioral signals." },
+          { q: "What does it cost?", a: "Free during beta. Paid plans start at $79/mo. Beta users lock in founding-member pricing." },
+        ],
+      },
+      about: {
+        title: "Built for sellers who take live commerce seriously.",
+        intro: "Streamlive started with a simple observation: the best live sellers were running their operations out of spreadsheets, group chats, and memory.",
+      },
+    };
+
+    const SECTIONS = [
+      { id: "hero", label: "Hero Section", icon: "◆" },
+      { id: "features", label: "Features", icon: "◉" },
+      { id: "stats", label: "Stats Strip", icon: "◈" },
+      { id: "pricing", label: "Pricing", icon: "★" },
+      { id: "faq", label: "FAQ", icon: "?" },
+      { id: "demo_cta", label: "Demo CTA", icon: "◧" },
+      { id: "final_cta", label: "Final CTA", icon: "✦" },
+      { id: "about", label: "About Page", icon: "◑" },
+    ];
+
+    useEffect(() => {
+      (async () => {
+        try {
+          const token = await getToken();
+          const res = await fetch("/api/admin/content?action=list", { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) { const d = await res.json(); setCmsContent(d.content || {}); }
+        } catch (e) {}
+        setCmsLoading(false);
+      })();
+    }, [getToken]);
+
+    const getVal = (section, key) => {
+      if (cmsContent[section]?.[key] !== undefined) return cmsContent[section][key];
+      return DEFAULTS[section]?.[key] ?? "";
+    };
+
+    const setVal = (section, key, value) => {
+      setCmsContent(prev => ({ ...prev, [section]: { ...prev[section], [key]: value } }));
+      setCmsSaved(null);
+    };
+
+    const saveSection = async (section) => {
+      setCmsSaving(true); setCmsError(null); setCmsSaved(null);
+      try {
+        const token = await getToken();
+        const sectionData = { ...(DEFAULTS[section] || {}), ...(cmsContent[section] || {}) };
+        const items = Object.entries(sectionData).map(([key, value]) => ({ section, key, value }));
+        const res = await fetch("/api/admin/content?action=upsert-batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ items }),
+        });
+        if (!res.ok) throw new Error((await res.json()).error || "Failed");
+        setCmsSaved(section);
+      } catch (e) { setCmsError(e.message); }
+      setCmsSaving(false);
+    };
+
+    const resetSection = async (section) => {
+      setCmsSaving(true); setCmsError(null);
+      try {
+        const token = await getToken();
+        await fetch(`/api/admin/content?action=delete-section&section=${section}`, {
+          method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+        });
+        setCmsContent(prev => { const n = { ...prev }; delete n[section]; return n; });
+        setCmsSaved(section);
+      } catch (e) { setCmsError(e.message); }
+      setCmsSaving(false);
+    };
+
+    const inputStyle = { width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none", fontFamily: "inherit" };
+    const labelStyle = { fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 };
+
+    const TextField = ({ section, field, label, multiline }) => (
+      <label style={{ display: "block", marginBottom: 14 }}>
+        <span style={labelStyle}>{label}</span>
+        {multiline ? (
+          <textarea value={getVal(section, field)} onChange={e => setVal(section, field, e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+        ) : (
+          <input value={getVal(section, field)} onChange={e => setVal(section, field, e.target.value)} style={inputStyle} />
+        )}
+      </label>
+    );
+
+    const SaveBar = ({ section }) => (
+      <div style={{ display: "flex", gap: 10, marginTop: 18, alignItems: "center" }}>
+        <button onClick={() => saveSection(section)} disabled={cmsSaving}
+          style={{ background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, padding: "10px 24px", cursor: "pointer", opacity: cmsSaving ? 0.6 : 1 }}>
+          {cmsSaving ? "Saving..." : "Save Changes"}
+        </button>
+        <button onClick={() => resetSection(section)} disabled={cmsSaving}
+          style={{ background: "none", border: `1px solid ${C.border2}`, borderRadius: 8, color: C.muted, fontSize: 12, fontWeight: 600, padding: "10px 16px", cursor: "pointer" }}>
+          Reset to Default
+        </button>
+        {cmsSaved === section && <span style={{ fontSize: 11, color: C.green, fontWeight: 600 }}>Saved!</span>}
+      </div>
+    );
+
+    const renderArrayEditor = (section, key, fields, defaults) => {
+      const items = getVal(section, key) || defaults || [];
+      const updateItem = (idx, field, val) => {
+        const updated = items.map((it, i) => i === idx ? { ...it, [field]: val } : it);
+        setVal(section, key, updated);
+      };
+      const removeItem = (idx) => setVal(section, key, items.filter((_, i) => i !== idx));
+      const addItem = () => setVal(section, key, [...items, fields.reduce((o, f) => ({ ...o, [f.key]: "" }), {})]);
+      const moveItem = (idx, dir) => {
+        const arr = [...items]; const target = idx + dir;
+        if (target < 0 || target >= arr.length) return;
+        [arr[idx], arr[target]] = [arr[target], arr[idx]];
+        setVal(section, key, arr);
+      };
+
+      return (
+        <div>
+          {items.map((item, idx) => (
+            <div key={idx} style={{ padding: 14, marginBottom: 10, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: C.accent }}>#{idx + 1}</span>
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button onClick={() => moveItem(idx, -1)} style={{ background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: 12, padding: "2px 6px" }}>▲</button>
+                  <button onClick={() => moveItem(idx, 1)} style={{ background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: 12, padding: "2px 6px" }}>▼</button>
+                  <button onClick={() => removeItem(idx)} style={{ background: "none", border: "none", color: C.red, cursor: "pointer", fontSize: 12, padding: "2px 6px" }}>✕</button>
+                </div>
+              </div>
+              {fields.map(f => (
+                <label key={f.key} style={{ display: "block", marginBottom: 8 }}>
+                  <span style={{ ...labelStyle, fontSize: 9 }}>{f.label}</span>
+                  {f.multiline ? (
+                    <textarea value={item[f.key] || ""} onChange={e => updateItem(idx, f.key, e.target.value)} rows={2} style={{ ...inputStyle, fontSize: 12 }} />
+                  ) : (
+                    <input value={item[f.key] || ""} onChange={e => updateItem(idx, f.key, e.target.value)} style={{ ...inputStyle, fontSize: 12 }} />
+                  )}
+                </label>
+              ))}
+            </div>
+          ))}
+          <button onClick={addItem} style={{ background: `${C.accent}12`, border: `1px dashed ${C.accent}44`, borderRadius: 8, color: C.accent, fontSize: 12, fontWeight: 600, padding: "10px", width: "100%", cursor: "pointer" }}>
+            + Add Item
+          </button>
+        </div>
+      );
+    };
+
+    const renderSectionEditor = () => {
+      switch (cmsSection) {
+        case "hero": return (
+          <Card><CardHeader title="Hero Section" />
+            <div style={{ padding: "16px 18px" }}>
+              <TextField section="hero" field="badge_text" label="Beta Badge Text" />
+              <TextField section="hero" field="headline" label="Headline (Line 1)" />
+              <TextField section="hero" field="headline_accent" label="Headline Accent (Gradient Text)" />
+              <TextField section="hero" field="subheadline" label="Subheadline" multiline />
+              <TextField section="hero" field="cta_text" label="CTA Button Text" />
+              <TextField section="hero" field="footer_text" label="Footer Text" />
+              <SaveBar section="hero" />
+            </div>
+          </Card>
+        );
+        case "features": return (
+          <Card><CardHeader title="Features Grid" />
+            <div style={{ padding: "16px 18px" }}>
+              <TextField section="features" field="title" label="Section Title" />
+              <div style={{ marginTop: 14 }}>
+                <span style={labelStyle}>Feature Items</span>
+                {renderArrayEditor("features", "items",
+                  [{ key: "icon", label: "Icon" }, { key: "label", label: "Label" }, { key: "desc", label: "Description" }],
+                  DEFAULTS.features.items
+                )}
+              </div>
+              <SaveBar section="features" />
+            </div>
+          </Card>
+        );
+        case "stats": return (
+          <Card><CardHeader title="Stats Strip" />
+            <div style={{ padding: "16px 18px" }}>
+              <span style={labelStyle}>Stat Items</span>
+              {renderArrayEditor("stats", "items",
+                [{ key: "value", label: "Value" }, { key: "label", label: "Label" }, { key: "sub", label: "Subtitle" }],
+                DEFAULTS.stats.items
+              )}
+              <SaveBar section="stats" />
+            </div>
+          </Card>
+        );
+        case "pricing": return (
+          <Card><CardHeader title="Pricing Section" />
+            <div style={{ padding: "16px 18px" }}>
+              <TextField section="pricing" field="headline" label="Section Headline" />
+              <SaveBar section="pricing" />
+            </div>
+          </Card>
+        );
+        case "faq": return (
+          <Card><CardHeader title="FAQ" />
+            <div style={{ padding: "16px 18px" }}>
+              <span style={labelStyle}>Questions & Answers</span>
+              {renderArrayEditor("faq", "items",
+                [{ key: "q", label: "Question" }, { key: "a", label: "Answer", multiline: true }],
+                DEFAULTS.faq.items
+              )}
+              <SaveBar section="faq" />
+            </div>
+          </Card>
+        );
+        case "demo_cta": return (
+          <Card><CardHeader title="Demo CTA Section" />
+            <div style={{ padding: "16px 18px" }}>
+              <TextField section="demo_cta" field="subheading" label="Subheading" />
+              <TextField section="demo_cta" field="headline" label="Headline" multiline />
+              <SaveBar section="demo_cta" />
+            </div>
+          </Card>
+        );
+        case "final_cta": return (
+          <Card><CardHeader title="Final CTA Section" />
+            <div style={{ padding: "16px 18px" }}>
+              <TextField section="final_cta" field="headline" label="Headline" />
+              <SaveBar section="final_cta" />
+            </div>
+          </Card>
+        );
+        case "about": return (
+          <Card><CardHeader title="About Page" />
+            <div style={{ padding: "16px 18px" }}>
+              <TextField section="about" field="title" label="Page Title" />
+              <TextField section="about" field="intro" label="Introduction" multiline />
+              <SaveBar section="about" />
+            </div>
+          </Card>
+        );
+        default: return null;
+      }
+    };
+
+    if (cmsLoading) return (
+      <div style={{ padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "center", flex: 1 }}>
+        <div style={{ fontSize: 13, color: C.muted }}>Loading content...</div>
+      </div>
+    );
+
     return (
-      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", maxWidth: 400 }}>
-          <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.2 }}>◧</div>
-          <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 20, fontWeight: 800, color: C.text, marginBottom: 8 }}>Content Management</div>
-          <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>Manage changelog entries, blog posts, feature flags, and landing page content. Coming in the next Mission Control update.</div>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Section sidebar */}
+        <div style={{ width: 200, borderRight: `1px solid ${C.border}`, padding: "20px 0", overflowY: "auto" }}>
+          <div style={{ padding: "0 16px 12px", fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Sections</div>
+          {SECTIONS.map(s => (
+            <button key={s.id} onClick={() => setCmsSection(s.id)} style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px",
+              background: cmsSection === s.id ? `${C.accent}12` : "transparent", border: "none",
+              borderLeft: cmsSection === s.id ? `2px solid ${C.accent}` : "2px solid transparent",
+              color: cmsSection === s.id ? C.accent : C.muted, fontSize: 12, fontWeight: 600,
+              cursor: "pointer", textAlign: "left", transition: "all .15s",
+            }}>
+              <span style={{ fontSize: 14, opacity: 0.7 }}>{s.icon}</span>
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Editor panel */}
+        <div style={{ flex: 1, padding: "28px 32px", overflowY: "auto" }}>
+          <SectionHeader title="Content Management" sub="Edit marketing copy across the website" />
+          {cmsError && <div style={{ marginBottom: 14, padding: "10px 14px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 8, fontSize: 12, color: C.red }}>{cmsError}</div>}
+          {renderSectionEditor()}
         </div>
       </div>
     );
