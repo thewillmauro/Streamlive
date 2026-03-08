@@ -7145,7 +7145,13 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                   {isConn && <div style={{ fontSize:10, color:C.green, marginTop:4 }}>● Connected · Last sync 12 min ago · 847 buyers</div>}
                 </div>
                 {isConn
-                  ? <button onClick={()=>{ const next=platforms.map(pl=>pl.id===pid?{...pl,connected:false}:pl); setPlatforms(next); syncPlatformsToConnections(next); }} style={{ fontSize:11, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Disconnect</button>
+                  ? <button onClick={()=>{
+                      const next=platforms.map(pl=>pl.id===pid?{...pl,connected:false}:pl); setPlatforms(next); syncPlatformsToConnections(next);
+                      // Also clear related messaging connection
+                      const PLAT_TO_MSG = { IG:"ig", TT:"tt", WN:"wn", AM:"am" };
+                      const msgKey = PLAT_TO_MSG[pid];
+                      if (msgKey && connections[msgKey]) { const c = { ...connections }; delete c[msgKey]; saveConnections(c); }
+                    }} style={{ fontSize:11, color:"#f87171", background:"#1c0f0f", border:"1px solid #ef444433", padding:"7px 14px", borderRadius:8, cursor:"pointer" }}>Disconnect</button>
                   : <button onClick={()=>{
                       if (pid === "IG") {
                         // Real Instagram OAuth flow
@@ -7227,7 +7233,10 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
             {Object.keys(INTEGRATIONS).map(type=>{
               const intg = INTEGRATIONS[type];
-              const connected = isConnected(type);
+              const PILL_REQUIRES = { ig:"IG", tt:"TT", wn:"WN", am:"AM" };
+              const reqPlat = PILL_REQUIRES[type];
+              const platOk = reqPlat ? platforms.find(pl=>pl.id===reqPlat)?.connected : true;
+              const connected = isConnected(type) && platOk;
               return (
                 <div key={type} style={{ display:"flex", alignItems:"center", gap:6, background:connected?intg.bg:C.surface2, border:`1px solid ${connected?intg.color+"44":C.border}`, borderRadius:8, padding:"5px 10px" }}>
                   <span style={{ fontSize:12 }}>{intg.icon}</span>
@@ -7258,9 +7267,12 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
               {group.items.map(({ type }, i) => {
                 const intg = INTEGRATIONS[type];
                 const connected = isConnected(type);
+                const MESSAGING_REQUIRES_PLATFORM = { ig:"IG", tt:"TT", wn:"WN", am:"AM" };
+                const requiredPlatform = MESSAGING_REQUIRES_PLATFORM[type];
+                const platformConnected = requiredPlatform ? platforms.find(pl=>pl.id===requiredPlatform)?.connected : true;
                 return (
-                  <div key={type} style={{ paddingBottom:i<group.items.length-1?14:0, marginBottom:i<group.items.length-1?14:0, borderBottom:i<group.items.length-1?`1px solid ${C.border}`:"none" }}>
-                    {connected ? (
+                  <div key={type} style={{ paddingBottom:i<group.items.length-1?14:0, marginBottom:i<group.items.length-1?14:0, borderBottom:i<group.items.length-1?`1px solid ${C.border}`:"none", opacity:requiredPlatform && !platformConnected ? 0.45 : 1 }}>
+                    {connected && platformConnected ? (
                       <ConnectedCard type={type} />
                     ) : (
                       <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
@@ -7268,10 +7280,19 @@ function ScreenSettings({ persona, initialTab, openCheckout }) {
                         <div style={{ flex:1 }}>
                           <div style={{ fontSize:12, fontWeight:700, color:C.text, marginBottom:3 }}>{intg.label}</div>
                           <div style={{ fontSize:10, color:C.muted, lineHeight:1.6 }}>{intg.description}</div>
+                          {requiredPlatform && !platformConnected && (
+                            <div style={{ fontSize:10, color:C.amber || "#f59e0b", marginTop:4 }}>Connect {PLATFORMS[requiredPlatform]?.label || requiredPlatform} in Platforms tab first</div>
+                          )}
                         </div>
-                        <button onClick={()=>openModal(type)} style={{ fontSize:11, fontWeight:700, color:intg.color, background:intg.bg, border:`1px solid ${intg.color}44`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
-                          Connect →
-                        </button>
+                        {!requiredPlatform || platformConnected ? (
+                          <button onClick={()=>openModal(type)} style={{ fontSize:11, fontWeight:700, color:intg.color, background:intg.bg, border:`1px solid ${intg.color}44`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                            Connect →
+                          </button>
+                        ) : (
+                          <button onClick={()=>{ setTab("platforms"); }} style={{ fontSize:11, fontWeight:700, color:C.muted, background:C.surface2, border:`1px solid ${C.border}`, padding:"7px 16px", borderRadius:8, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+                            Setup →
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
