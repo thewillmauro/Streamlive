@@ -996,17 +996,24 @@ function ScreenBuyers({ buyers, navigate }) {
     <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, overflow:"hidden" }}>
       {/* TOOLBAR */}
       <div style={{ padding:"16px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, background:C.surface }}>
-        <div style={{ display:"flex", gap:0, marginBottom:12, flexWrap:"wrap" }}>
-          {segs.map(s=>(
-            <button key={s.id} onClick={()=>{setSeg(s.id);setRules([]);setActiveFilterId(null);}} style={{ background:"none", border:"none", borderBottom:`2px solid ${seg===s.id&&!activeFilterId?C.accent:"transparent"}`, color:seg===s.id&&!activeFilterId?"#a78bfa":C.muted, fontSize:12, fontWeight:seg===s.id&&!activeFilterId?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s" }}>
-              {s.label}
-            </button>
-          ))}
-          {savedFilters.map(f=>(
-            <button key={f.id} onClick={()=>{loadFilter(f);setActiveFilterId(f.id);}} style={{ background:"none", border:"none", borderBottom:`2px solid ${activeFilterId===f.id?"#10b981":"transparent"}`, color:activeFilterId===f.id?"#10b981":C.muted, fontSize:12, fontWeight:activeFilterId===f.id?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s", display:"flex", alignItems:"center", gap:5 }}>
-              <span style={{ fontSize:9, opacity:0.6 }}>⚙</span> {f.name}
-            </button>
-          ))}
+        <div style={{ position:"relative", marginBottom:12 }}>
+          <div style={{ display:"flex", gap:0, overflowX:"auto", scrollBehavior:"smooth", msOverflowStyle:"none", scrollbarWidth:"none" }} className="buyer-seg-scroll">
+            {segs.map(s=>(
+              <button key={s.id} onClick={()=>{setSeg(s.id);setRules([]);setActiveFilterId(null);}} style={{ background:"none", border:"none", borderBottom:`2px solid ${seg===s.id&&!activeFilterId?C.accent:"transparent"}`, color:seg===s.id&&!activeFilterId?"#a78bfa":C.muted, fontSize:12, fontWeight:seg===s.id&&!activeFilterId?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s", whiteSpace:"nowrap", flexShrink:0 }}>
+                {s.label}
+              </button>
+            ))}
+            {savedFilters.length > 0 && <div style={{ width:1, height:20, background:C.border, margin:"0 6px", flexShrink:0, alignSelf:"center" }} />}
+            {savedFilters.map(f=>(
+              <button key={f.id} onClick={()=>{loadFilter(f);setActiveFilterId(f.id);}} style={{ background:"none", border:"none", borderBottom:`2px solid ${activeFilterId===f.id?"#10b981":"transparent"}`, color:activeFilterId===f.id?"#10b981":C.muted, fontSize:12, fontWeight:activeFilterId===f.id?700:400, padding:"0 14px 10px", cursor:"pointer", transition:"all .15s", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap", flexShrink:0 }}>
+                <span style={{ fontSize:9, opacity:0.6 }}>⚙</span> {f.name}
+              </button>
+            ))}
+          </div>
+          {savedFilters.length > 2 && (
+            <div style={{ position:"absolute", right:0, top:0, bottom:0, width:40, background:"linear-gradient(90deg, transparent, "+C.surface+")", pointerEvents:"none" }} />
+          )}
+          <style>{`.buyer-seg-scroll::-webkit-scrollbar { display: none; }`}</style>
         </div>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
           <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:C.surface2, border:`1px solid ${C.border2}`, borderRadius:9, padding:"8px 12px" }}>
