@@ -896,12 +896,61 @@ function ScreenDashboard({ persona, buyers, navigate, shows }) {
 function ScreenBuyers({ buyers, navigate }) {
   const [search, setSearch] = useState("");
   const [seg, setSeg]       = useState("all");
+  const [rules, setRules]   = useState([]);
+  const [showRuleBuilder, setShowRuleBuilder] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
-  const filtered = buyers.filter(b => {
+  // Apply segment filter
+  const segFiltered = buyers.filter(b => {
     const matchSearch = b.name.toLowerCase().includes(search.toLowerCase()) || b.handle.toLowerCase().includes(search.toLowerCase());
     const matchSeg    = seg === "all" || b.status === seg;
     return matchSearch && matchSeg;
   });
+
+  // Apply custom rules
+  const filtered = segFiltered.filter(b => {
+    return rules.every(rule => {
+      const val = rule.value;
+      if (rule.field === "spend") {
+        const n = parseFloat(val) || 0;
+        if (rule.op === "gt") return b.spend > n;
+        if (rule.op === "lt") return b.spend < n;
+        if (rule.op === "eq") return b.spend === n;
+      }
+      if (rule.field === "orders") {
+        const n = parseInt(val) || 0;
+        if (rule.op === "gt") return b.orders > n;
+        if (rule.op === "lt") return b.orders < n;
+        if (rule.op === "eq") return b.orders === n;
+      }
+      if (rule.field === "platform") {
+        return b.platform === val;
+      }
+      if (rule.field === "status") {
+        return b.status === val;
+      }
+      return true;
+    });
+  });
+
+  const addRule = () => setRules(r => [...r, { id: Date.now(), field:"spend", op:"gt", value:"100" }]);
+  const updateRule = (id, patch) => setRules(r => r.map(rule => rule.id===id ? {...rule,...patch} : rule));
+  const removeRule = (id) => setRules(r => r.filter(rule => rule.id!==id));
+
+  const exportCSV = () => {
+    setExporting(true);
+    const headers = ["Name","Handle","Platform","Spend","Orders","Last Order","Status"];
+    const rows = filtered.map(b => [b.name, b.handle, b.platform, b.spend, b.orders, b.lastOrder, b.status]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type:"text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `buyers-${seg}${rules.length?"-filtered":""}--${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setTimeout(() => setExporting(false), 1500);
+  };
 
   const segs = [
     { id:"all",     label:`All (${buyers.length})` },
@@ -910,6 +959,14 @@ function ScreenBuyers({ buyers, navigate }) {
     { id:"new",     label:`New (${buyers.filter(b=>b.status==="new").length})` },
     { id:"dormant", label:`Dormant (${buyers.filter(b=>b.status==="dormant").length})` },
   ];
+
+  const FIELD_OPTIONS = [
+    { value:"spend",    label:"Total Spend" },
+    { value:"orders",   label:"Order Count" },
+    { value:"platform", label:"Platform" },
+    { value:"status",   label:"Status" },
+  ];
+  const OP_OPTIONS = { spend:[{v:"gt",l:">"},{v:"lt",l:"<"},{v:"eq",l:"="}], orders:[{v:"gt",l:">"},{v:"lt",l:"<"},{v:"eq",l:"="}] };
 
   return (
     <div style={{ display:"flex", flexDirection:"column", flex:1, minHeight:0, overflow:"hidden" }}>
@@ -927,8 +984,62 @@ function ScreenBuyers({ buyers, navigate }) {
             <span style={{ color:C.subtle, fontSize:12 }}>🔍</span>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search buyers by name or handle…" style={{ flex:1, background:"none", border:"none", color:C.text, fontSize:12, outline:"none" }} />
           </div>
-          <div style={{ fontSize:11, color:C.muted }}>{filtered.length} buyers</div>
+          <button onClick={()=>setShowRuleBuilder(r=>!r)} style={{ fontSize:11, fontWeight:700, color:rules.length>0?C.accent:C.muted, background:rules.length>0?`${C.accent}12`:C.surface2, border:`1px solid ${rules.length>0?C.accent+"44":C.border}`, padding:"7px 14px", borderRadius:8, cursor:"pointer", whiteSpace:"nowrap" }}>
+            {rules.length > 0 ? `${rules.length} Rule${rules.length>1?"s":""}` : "Filter Rules"}
+          </button>
+          <button onClick={exportCSV} disabled={filtered.length===0} style={{ fontSize:11, fontWeight:700, color:filtered.length>0?"#10b981":C.subtle, background:filtered.length>0?"#10b98112":C.surface2, border:`1px solid ${filtered.length>0?"#10b98133":C.border}`, padding:"7px 14px", borderRadius:8, cursor:filtered.length>0?"pointer":"not-allowed", whiteSpace:"nowrap" }}>
+            {exporting ? "Exported ✓" : "Export CSV"}
+          </button>
+          <div style={{ fontSize:11, color:C.muted }}>{filtered.length} buyer{filtered.length!==1?"s":""}</div>
         </div>
+
+        {/* RULE BUILDER */}
+        {showRuleBuilder && (
+          <div style={{ marginTop:12, background:"#0a0a14", border:`1px solid ${C.accent}33`, borderRadius:12, padding:"14px 16px" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:rules.length>0?10:0 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.text }}>Custom Filter Rules</div>
+              <button onClick={addRule} style={{ fontSize:10, fontWeight:700, color:C.accent, background:`${C.accent}12`, border:`1px solid ${C.accent}33`, padding:"4px 10px", borderRadius:6, cursor:"pointer" }}>+ Add Rule</button>
+            </div>
+            {rules.map(rule => (
+              <div key={rule.id} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                <span style={{ fontSize:10, fontWeight:800, color:"#10b981", background:"#10b98118", border:"1px solid #10b98133", padding:"2px 6px", borderRadius:4, flexShrink:0 }}>IF</span>
+                <select value={rule.field} onChange={e=>{
+                  const f=e.target.value;
+                  const defaults = { spend:{op:"gt",value:"100"}, orders:{op:"gt",value:"3"}, platform:{op:"eq",value:"WN"}, status:{op:"eq",value:"vip"} };
+                  updateRule(rule.id, { field:f, ...(defaults[f]||{}) });
+                }} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
+                  {FIELD_OPTIONS.map(f=><option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
+                {(rule.field==="spend"||rule.field==="orders") && (
+                  <select value={rule.op} onChange={e=>updateRule(rule.id,{op:e.target.value})} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none", width:50 }}>
+                    {(OP_OPTIONS[rule.field]||[]).map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
+                  </select>
+                )}
+                {(rule.field==="spend"||rule.field==="orders") && (
+                  <input type="number" value={rule.value} onChange={e=>updateRule(rule.id,{value:e.target.value})}
+                    style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, outline:"none", width:80 }} />
+                )}
+                {rule.field==="platform" && (
+                  <select value={rule.value} onChange={e=>updateRule(rule.id,{value:e.target.value})} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
+                    {Object.keys(PLATFORMS).map(p=><option key={p} value={p}>{PLATFORMS[p].label}</option>)}
+                  </select>
+                )}
+                {rule.field==="status" && (
+                  <select value={rule.value} onChange={e=>updateRule(rule.id,{value:e.target.value})} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:7, padding:"5px 8px", color:C.text, fontSize:11, cursor:"pointer", outline:"none" }}>
+                    {["vip","risk","new","dormant"].map(s=><option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
+                  </select>
+                )}
+                <button onClick={()=>removeRule(rule.id)} style={{ background:"none", border:"none", color:C.muted, fontSize:14, cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>✕</button>
+              </div>
+            ))}
+            {rules.length === 0 && <div style={{ fontSize:11, color:C.subtle, marginTop:6 }}>Add rules to filter buyers by spend, orders, platform, or status.</div>}
+            {rules.length > 0 && (
+              <div style={{ display:"flex", gap:8, marginTop:8 }}>
+                <button onClick={()=>{setRules([]);setShowRuleBuilder(false);}} style={{ fontSize:10, color:"#f87171", background:"none", border:"none", cursor:"pointer", padding:0 }}>Clear all rules</button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* TABLE HEADER */}
