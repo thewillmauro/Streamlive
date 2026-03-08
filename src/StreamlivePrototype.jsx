@@ -4770,25 +4770,26 @@ function BroadcastsTab({ navigate, persona }) {
       <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 20px", marginBottom:20 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div style={{ fontSize:12, fontWeight:700, color:C.text }}>Connected Channels</div>
-          <button onClick={()=>navigate("settings")} style={{ fontSize:11, color:C.accent, background:"none", border:"none", cursor:"pointer" }}>Manage</button>
+          <button onClick={()=>navigate("settings")} style={{ fontSize:11, color:C.accent, background:"none", border:"none", cursor:"pointer" }}>Manage →</button>
         </div>
-        <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-          {Object.entries(CHANNEL_META).map(([key,ch])=>{
-            const connected = !!connectedChannels[key];
-            return (
-              <div key={key} style={{ display:"flex", alignItems:"center", gap:7, background:connected?ch.bg:C.surface2, border:`1px solid ${connected?ch.color+"44":C.border}`, borderRadius:9, padding:"7px 12px" }}>
+        {anyChannelConnected ? (
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+            {Object.entries(CHANNEL_META).filter(([key])=>!!connectedChannels[key]).map(([key,ch])=>(
+              <div key={key} style={{ display:"flex", alignItems:"center", gap:7, background:ch.bg, border:`1px solid ${ch.color}44`, borderRadius:9, padding:"7px 12px" }}>
                 <span style={{ fontSize:13 }}>{ch.icon}</span>
                 <div>
-                  <div style={{ fontSize:11, fontWeight:700, color:connected?ch.color:C.muted }}>{ch.label}</div>
-                  <div style={{ fontSize:9, color:C.subtle }}>{connected?"Connected":ch.via==="ManyChat"?"Needs ManyChat":"Not connected"}</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:ch.color }}>{ch.label}</div>
+                  <div style={{ fontSize:9, color:C.subtle }}>Connected</div>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontSize:11, color:C.muted, textAlign:"center", padding:"12px 0" }}>No channels connected yet. Connect platforms in Settings to start sending.</div>
+        )}
       </div>
       <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16 }}>
-        {[["all","All"],["email","Email"],["sms","SMS"],["ig_dm","Instagram DM"],["tt_dm","TikTok DM"],["wn_dm","Whatnot"],["am_msg","Amazon"]].map(([v,l])=>(
+        {[["all","All"],["email","Email"],["sms","SMS"],["ig_dm","Instagram DM"],["tt_dm","TikTok DM"],["wn_dm","Whatnot"],["am_msg","Amazon"]].filter(([v])=>v==="all"||!!connectedChannels[v]).map(([v,l])=>(
           <button key={v} onClick={()=>setFilterType(v)} style={{ background:"none", border:"none", borderBottom:`2px solid ${filterType===v?(CHANNEL_META[v]?.color||C.accent):"transparent"}`, color:filterType===v?(CHANNEL_META[v]?.color||"#a78bfa"):C.muted, fontSize:11, fontWeight:filterType===v?700:400, padding:"0 14px 10px", cursor:"pointer", whiteSpace:"nowrap" }}>{l}</button>
         ))}
       </div>
