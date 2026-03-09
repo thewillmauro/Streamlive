@@ -42,6 +42,8 @@ function Avatar({ initials, color, size = 32, url }) {
 }
 
 function StatCard({ label, value, sub, color = C.accent, icon, trend }) {
+  const valStr = String(value);
+  const fontSize = valStr.length > 9 ? 18 : valStr.length > 7 ? 20 : valStr.length > 5 ? 22 : 26;
   return (
     <div style={{ flex: 1, minWidth: 170, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px 18px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -30, right: -30, width: 100, height: 100, borderRadius: "50%", background: color, opacity: 0.04, filter: "blur(30px)" }} />
@@ -49,11 +51,11 @@ function StatCard({ label, value, sub, color = C.accent, icon, trend }) {
         <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</span>
         {icon && <span style={{ fontSize: 14, color: `${color}88` }}>{icon}</span>}
       </div>
-      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 26, fontWeight: 800, color: C.text, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      <div style={{ fontFamily: "'Syne',sans-serif", fontSize, fontWeight: 800, color: C.text, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{value}</div>
       {(sub || trend) && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
           {trend && <span style={{ fontSize: 10, fontWeight: 700, color: trend > 0 ? C.green : C.red }}>{trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%</span>}
-          {sub && <span style={{ fontSize: 10, color: C.muted }}>{sub}</span>}
+          {sub && <span style={{ fontSize: 10, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sub}</span>}
         </div>
       )}
     </div>
@@ -252,8 +254,8 @@ function AdminDashboardInner({ session, onSignOut }) {
     return s?.access_token;
   }, []);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (isInitial) => {
+    if (isInitial) setLoading(true);
     setError(null);
     try {
       const token = await getToken();
@@ -269,10 +271,14 @@ function AdminDashboardInner({ session, onSignOut }) {
       setUsers((await usersRes.json()).users || []);
       if (statsRes.ok) setStats(await statsRes.json());
     } catch (e) { setError(e.message); }
-    setLoading(false);
+    if (isInitial) setLoading(false);
   }, [getToken]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData(true);
+    const interval = setInterval(() => fetchData(false), 30000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
 
   const fetchUserDetail = useCallback(async (userId) => {
     setUserDetailLoading(true);
@@ -799,12 +805,16 @@ function AdminDashboardInner({ session, onSignOut }) {
               { label: "Clicks", value: fmt(campaignStats.totalClicks || 0), color: C.amber },
               { label: "Conversions", value: fmt(campaignStats.totalConversions || 0), color: C.green },
               { label: "Campaign GMV", value: fmtUSD(campaignStats.gmv || 0), color: C.green },
-            ].map(m => (
-              <div key={m.label} style={{ textAlign: "center", minWidth: 80 }}>
-                <div style={{ fontSize: 22, fontWeight: 800, color: m.color, fontFamily: "'Syne',sans-serif" }}>{m.value}</div>
-                <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{m.label}</div>
-              </div>
-            ))}
+            ].map(m => {
+              const vLen = String(m.value).length;
+              const fs = vLen > 10 ? 22 : vLen > 7 ? 26 : 32;
+              return (
+                <div key={m.label} style={{ textAlign: "center", minWidth: 80, flex: 1 }}>
+                  <div style={{ fontSize: fs, fontWeight: 700, color: m.color, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{m.value}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{m.label}</div>
+                </div>
+              );
+            })}
           </div>
         </Card>
 
@@ -903,9 +913,9 @@ function AdminDashboardInner({ session, onSignOut }) {
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
           <StatCard label="Total Devices" value={fmt(prodStats.totalDevices || 0)} icon="◧" color={C.pink} sub={`${fmt(prodStats.connected || 0)} connected`} />
           <StatCard label="Automations" value={fmt(autoStats.total || 0)} icon="⚡" color={C.accent} sub={`${fmt(autoStats.active || 0)} active`} />
-          <StatCard label="Auto Triggers" value={fmt(autoStats.totalTriggers || 0)} icon="◈" color={C.amber} sub={`${fmt(autoStats.totalConversions || 0)} conversions`} />
+          <StatCard label="Auto Triggers" value={fmt(autoStats.totalTriggers || 0)} icon="◈" color={C.amber} sub={`${fmt(autoStats.totalConversions || 0)} conv.`} />
           <StatCard label="Team Members" value={fmt(teamStats.totalMembers || 0)} icon="◉" color={C.blue} sub={`${fmt(teamStats.teamsWithMembers || 0)} teams`} />
-          <StatCard label="Show Products" value={fmt(showProdStats.total || 0)} icon="◆" color={C.green} sub={`~${showProdStats.avgPerShow || 0} per show`} />
+          <StatCard label="Show Products" value={fmt(showProdStats.total || 0)} icon="◆" color={C.green} sub={`~${showProdStats.avgPerShow || 0}/show`} />
         </div>
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
@@ -1807,8 +1817,7 @@ function AdminDashboardInner({ session, onSignOut }) {
               <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>Operational</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button onClick={fetchData} style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 7, color: C.muted, fontSize: 11, fontWeight: 600, padding: "5px 12px", cursor: "pointer" }}
-                onMouseEnter={e => e.currentTarget.style.color = C.text} onMouseLeave={e => e.currentTarget.style.color = C.muted}>Refresh</button>
+              <div style={{ fontSize: 10, color: C.muted, opacity: 0.6 }}>Auto-refresh 30s</div>
               {session?.user?.email && <div style={{ fontSize: 10, color: C.muted }}>{session.user.email}</div>}
             </div>
           </div>
@@ -1816,7 +1825,7 @@ function AdminDashboardInner({ session, onSignOut }) {
           {error && (
             <div style={{ margin: "12px 28px 0", padding: "12px 16px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ fontSize: 11, color: C.red, flex: 1 }}>{error}</span>
-              <button onClick={fetchData} style={{ background: `${C.red}22`, border: `1px solid ${C.red}44`, borderRadius: 6, color: C.red, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>Retry</button>
+              <button onClick={() => fetchData(true)} style={{ background: `${C.red}22`, border: `1px solid ${C.red}44`, borderRadius: 6, color: C.red, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>Retry</button>
             </div>
           )}
 
