@@ -807,11 +807,11 @@ function AdminDashboardInner({ session, onSignOut }) {
               { label: "Campaign GMV", value: fmtUSD(campaignStats.gmv || 0), color: C.green },
             ].map(m => {
               const vLen = String(m.value).length;
-              const fs = vLen > 10 ? 22 : vLen > 7 ? 26 : 32;
+              const fs = vLen > 9 ? 18 : vLen > 7 ? 20 : vLen > 5 ? 22 : 26;
               return (
                 <div key={m.label} style={{ textAlign: "center", minWidth: 80, flex: 1 }}>
-                  <div style={{ fontSize: fs, fontWeight: 700, color: m.color, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{m.value}</div>
-                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{m.label}</div>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: fs, fontWeight: 800, color: m.color, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{m.value}</div>
+                  <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{m.label}</div>
                 </div>
               );
             })}
