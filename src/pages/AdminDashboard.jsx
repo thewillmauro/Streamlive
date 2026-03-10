@@ -371,7 +371,7 @@ function AdminDashboardInner({ session, onSignOut }) {
           <StatCard label="Total Buyers" value={fmt(s.buyers?.total || 0)} icon="◉" color={C.pink} sub={`${fmtUSD(s.buyers?.totalSpend || 0)} total spend`} />
           <StatCard label="Shows Completed" value={fmt(s.shows?.completed || 0)} icon="◈" color={C.amber} sub={`${fmtUSD(s.shows?.totalGMV || 0)} GMV`} />
           <StatCard label="Campaigns Sent" value={fmt(s.campaigns?.sent || 0)} icon="◆" color={C.accent} sub={`${fmt(s.campaigns?.totalRecipients || 0)} recipients`} />
-          <StatCard label="Connections" value={fmt(s.connections?.total || 0)} icon="◎" color={C.green} />
+          <StatCard label="Channel Connects" value={fmt(s.connections?.total || 0)} icon="◎" color={C.green} />
         </div>
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
