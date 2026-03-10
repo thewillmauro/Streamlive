@@ -264,6 +264,9 @@ function AdminDashboardInner({ session, onSignOut }) {
   const [showAddUser, setShowAddUser] = useState(false);
   const [addingUser, setAddingUser] = useState(false);
   const [analyticsUser, setAnalyticsUser] = useState("all");
+  const [selectedShop, setSelectedShop] = useState(null);
+  const [shopStats, setShopStats] = useState(null);
+  const [shopStatsLoading, setShopStatsLoading] = useState(false);
 
   const getToken = useCallback(async () => {
     const { data: { session: s } } = await supabase.auth.getSession();
@@ -305,6 +308,38 @@ function AdminDashboardInner({ session, onSignOut }) {
     } catch (e) {}
     setUserDetailLoading(false);
   }, [getToken]);
+
+  const fetchShopStats = useCallback(async (shopName) => {
+    setShopStatsLoading(true);
+    try {
+      const token = await getToken();
+      const shopUsers = users.filter(u => u.shop_name === shopName);
+      const details = await Promise.all(shopUsers.map(async u => {
+        const res = await fetch(`/api/admin/users?action=user-stats&userId=${u.id}`, { headers: { Authorization: `Bearer ${token}` } });
+        return res.ok ? await res.json() : null;
+      }));
+      // Aggregate stats across all users in the shop
+      const agg = { shows: { total: 0, completed: 0, totalGMV: 0, totalMinutes: 0, recent: 0, platformUsage: {} }, buyers: { total: 0, totalSpend: 0, byStatus: {} }, orders: { total: 0, totalRevenue: 0, byPlatform: {} }, campaigns: { sent: 0, totalRecipients: 0, totalOpens: 0, totalClicks: 0, totalConversions: 0, gmv: 0 }, connections: { total: 0, byPlatform: {} }, loyalty: { totalTransactions: 0, totalPoints: 0, uniqueBuyers: 0 }, optIns: { total: 0 } };
+      for (const d of details) {
+        if (!d) continue;
+        const s = d.shows || {}; const b = d.buyers || {}; const o = d.orders || {}; const c = d.campaigns || {}; const cn = d.connections || {}; const l = d.loyalty || {}; const oi = d.optIns || {};
+        agg.shows.total += s.total || 0; agg.shows.completed += s.completed || 0; agg.shows.totalGMV += s.totalGMV || 0; agg.shows.totalMinutes += s.totalMinutes || 0; agg.shows.recent += s.recent || 0;
+        for (const [k, v] of Object.entries(s.platformUsage || {})) agg.shows.platformUsage[k] = (agg.shows.platformUsage[k] || 0) + v;
+        agg.buyers.total += b.total || 0; agg.buyers.totalSpend += b.totalSpend || 0;
+        for (const [k, v] of Object.entries(b.byStatus || {})) agg.buyers.byStatus[k] = (agg.buyers.byStatus[k] || 0) + v;
+        agg.orders.total += o.total || 0; agg.orders.totalRevenue += o.totalRevenue || 0;
+        for (const [k, v] of Object.entries(o.byPlatform || {})) agg.orders.byPlatform[k] = (agg.orders.byPlatform[k] || 0) + v;
+        agg.campaigns.sent += c.sent || 0; agg.campaigns.totalRecipients += c.totalRecipients || 0; agg.campaigns.totalOpens += c.totalOpens || 0; agg.campaigns.totalClicks += c.totalClicks || 0; agg.campaigns.totalConversions += c.totalConversions || 0; agg.campaigns.gmv += c.gmv || 0;
+        agg.connections.total += cn.total || 0;
+        for (const [k, v] of Object.entries(cn.byPlatform || {})) agg.connections.byPlatform[k] = (agg.connections.byPlatform[k] || 0) + v;
+        agg.loyalty.totalTransactions += l.totalTransactions || 0; agg.loyalty.totalPoints += l.totalPoints || 0; agg.loyalty.uniqueBuyers += l.uniqueBuyers || 0;
+        agg.optIns.total += oi.total || 0;
+      }
+      if (agg.shows.completed > 0) agg.shows.avgShowGMV = Math.round(agg.shows.totalGMV / agg.shows.completed);
+      setShopStats(agg);
+    } catch (e) { console.error("Shop stats error:", e); }
+    setShopStatsLoading(false);
+  }, [getToken, users]);
 
   const updatePlan = async (userId, newPlan) => {
     setSaving(true);
@@ -468,7 +503,9 @@ function AdminDashboardInner({ session, onSignOut }) {
   function TabUsers() {
     return (
       <div style={{ padding: isMobile ? "16px" : "28px 32px", overflowY: "auto", flex: 1 }}>
-        {selectedUser ? (
+        {selectedShop ? (
+          <ShopDetailView shopName={selectedShop} onBack={() => { setSelectedShop(null); setShopStats(null); }} />
+        ) : selectedUser ? (
           <UserDetailView user={selectedUser} onBack={() => { setSelectedUser(null); setUserDetail(null); }} />
         ) : (
           <>
@@ -519,7 +556,9 @@ function AdminDashboardInner({ session, onSignOut }) {
                     <PlanBadge plan={u.plan} />
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
-                    <span style={{ fontSize: 10, color: C.muted }}>{u.shop_name || "—"} · {fmtDateShort(u.created_at)}</span>
+                    <span style={{ fontSize: 10, color: C.muted }}>
+                      {u.shop_name ? <span onClick={e => { e.stopPropagation(); setSelectedShop(u.shop_name); fetchShopStats(u.shop_name); }} style={{ color: C.cyan, cursor: "pointer", borderBottom: `1px dashed ${C.cyan}44` }}>{u.shop_name}</span> : "—"} · {fmtDateShort(u.created_at)}
+                    </span>
                     <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
                       <button onClick={() => { setAnalyticsUser(u.id); setActiveTab("analytics"); }} style={{ background: `${C.blue}18`, border: `1px solid ${C.blue}33`, borderRadius: 6, color: C.blue, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>Analytics</button>
                       <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }} style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}33`, borderRadius: 6, color: C.accent, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>Edit Plan</button>
@@ -537,7 +576,9 @@ function AdminDashboardInner({ session, onSignOut }) {
                   </div>
                   <div style={{ flex: 2, fontSize: 11, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email || "—"}</div>
                   <div style={{ width: 90 }}><PlanBadge plan={u.plan} /></div>
-                  <div style={{ width: 110, fontSize: 11, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.shop_name || "—"}</div>
+                  <div style={{ width: 110, fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} onClick={e => { if (u.shop_name) { e.stopPropagation(); setSelectedShop(u.shop_name); fetchShopStats(u.shop_name); } }}>
+                    {u.shop_name ? <span style={{ color: C.cyan, cursor: "pointer", borderBottom: `1px dashed ${C.cyan}44` }}>{u.shop_name}</span> : <span style={{ color: C.muted }}>—</span>}
+                  </div>
                   <div style={{ width: 90, fontSize: 11, color: C.muted }}>{fmtDateShort(u.created_at)}</div>
                   <div style={{ width: 130, display: "flex", gap: 6, justifyContent: "flex-end" }} onClick={e => e.stopPropagation()}>
                     <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }} style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}33`, borderRadius: 6, color: C.accent, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>Edit Plan</button>
@@ -670,6 +711,151 @@ function AdminDashboardInner({ session, onSignOut }) {
             </Card>
           </div>
         ) : null}
+      </div>
+    );
+  }
+
+  // ── Shop Detail View ──────────────────────────────────────────────────────
+  function ShopDetailView({ shopName, onBack }) {
+    const shopUsers = users.filter(u => u.shop_name === shopName);
+    const s = shopStats || {};
+    const showStats = s.shows || {};
+    const buyerStats = s.buyers || {};
+    const campaignStats = s.campaigns || {};
+    const orderStats = s.orders || {};
+
+    return (
+      <div>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", padding: "0 0 16px", display: "flex", alignItems: "center", gap: 6 }}
+          onMouseEnter={e => e.currentTarget.style.color = C.text} onMouseLeave={e => e.currentTarget.style.color = C.muted}>
+          ← Back to Users
+        </button>
+
+        {/* Shop header */}
+        <Card style={{ marginBottom: 20 }}>
+          <div style={{ padding: isMobile ? "16px" : "24px 22px" }}>
+            <div style={{ display: "flex", alignItems: isMobile ? "flex-start" : "center", gap: 16, flexDirection: isMobile ? "column" : "row" }}>
+              <div style={{ width: isMobile ? 48 : 56, height: isMobile ? 48 : 56, borderRadius: 14, background: `linear-gradient(135deg,${C.accent}44,${C.accent2}44)`, border: `1px solid ${C.accent}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: isMobile ? 20 : 24, fontWeight: 900, color: C.accent, flexShrink: 0 }}>
+                {shopName.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 18 : 22, fontWeight: 800, color: C.text }}>{shopName}</div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{shopUsers.length} team member{shopUsers.length !== 1 ? "s" : ""} · {shopUsers[0]?.category || "No category"}</div>
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {[...new Set(shopUsers.map(u => u.plan || "starter"))].map(p => <PlanBadge key={p} plan={p} />)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {shopStatsLoading ? (
+          <div style={{ textAlign: "center", padding: 40, color: C.muted, fontSize: 12 }}>Loading shop analytics...</div>
+        ) : (
+          <>
+            {/* KPI row */}
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
+              <StatCard label="Total GMV" value={fmtUSD(showStats.totalGMV || 0)} icon="◆" color={C.green} sub={`${fmt(showStats.completed || 0)} shows`} />
+              <StatCard label="Total Orders" value={fmt(orderStats.total || 0)} icon="◉" color={C.blue} sub={fmtUSD(orderStats.totalRevenue || 0)} />
+              <StatCard label="Total Buyers" value={fmt(buyerStats.total || 0)} icon="◉" color={C.pink} sub={fmtUSD(buyerStats.totalSpend || 0)} />
+              <StatCard label="Campaigns Sent" value={fmt(campaignStats.sent || 0)} icon="◆" color={C.accent} sub={`${fmt(campaignStats.totalRecipients || 0)} recipients`} />
+            </div>
+
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
+              <StatCard label="Total Airtime" value={`${fmt(showStats.totalMinutes || 0)}m`} icon="⬡" color={C.amber} />
+              <StatCard label="Avg Show GMV" value={fmtUSD(showStats.avgShowGMV || 0)} icon="◈" color={C.green} />
+              <StatCard label="Campaign GMV" value={fmtUSD(campaignStats.gmv || 0)} icon="◆" color={C.green} />
+              <StatCard label="Loyalty Points" value={fmt(s.loyalty?.totalPoints || 0)} icon="★" color={C.amber} />
+            </div>
+
+            {/* Campaign performance */}
+            {campaignStats.sent > 0 && (
+              <Card style={{ marginBottom: 20 }}>
+                <CardHeader title="Campaign Performance" />
+                <div style={{ padding: isMobile ? "16px 12px" : "20px 18px", display: "grid", gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : "repeat(6, 1fr)", gap: isMobile ? 12 : 16 }}>
+                  {[
+                    { label: "Sent", value: fmt(campaignStats.sent || 0), color: C.accent },
+                    { label: "Recipients", value: fmt(campaignStats.totalRecipients || 0), color: C.blue },
+                    { label: "Opens", value: fmt(campaignStats.totalOpens || 0), color: C.cyan },
+                    { label: "Clicks", value: fmt(campaignStats.totalClicks || 0), color: C.amber },
+                    { label: "Conversions", value: fmt(campaignStats.totalConversions || 0), color: C.green },
+                    { label: "Campaign GMV", value: fmtUSD(campaignStats.gmv || 0), color: C.green },
+                  ].map(m => {
+                    const vLen = String(m.value).length;
+                    const fs = vLen > 9 ? 16 : vLen > 7 ? 18 : vLen > 5 ? 20 : 26;
+                    return (
+                      <div key={m.label} style={{ textAlign: "center", overflow: "hidden" }}>
+                        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: fs, fontWeight: 800, color: m.color, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.value}</div>
+                        <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{m.label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
+            {/* Platform breakdown */}
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+              {Object.keys(showStats.platformUsage || {}).length > 0 && (
+                <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
+                  <CardHeader title="Platform Usage" />
+                  <div style={{ padding: "12px 18px" }}>
+                    {Object.entries(showStats.platformUsage).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
+                      const col = PLATFORM_COLORS[plat] || C.muted;
+                      return (
+                        <div key={plat} style={{ marginBottom: 12 }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{PLATFORM_LABELS[plat] || plat}</span>
+                            <span style={{ fontSize: 11, color: C.muted }}>{count} shows</span>
+                          </div>
+                          <MiniBar value={count} max={Math.max(...Object.values(showStats.platformUsage), 1)} color={col} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
+
+              {Object.keys(buyerStats.byStatus || {}).length > 0 && (
+                <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
+                  <CardHeader title="Buyer Health" />
+                  <div style={{ padding: "12px 18px" }}>
+                    {Object.entries(buyerStats.byStatus).sort((a, b) => b[1] - a[1]).map(([status, count]) => {
+                      const cols = { vip: C.amber, active: C.green, risk: C.red, new: C.blue, dormant: C.muted };
+                      const col = cols[status] || C.muted;
+                      return (
+                        <div key={status} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: col }} />
+                            <span style={{ fontSize: 12, color: C.text, textTransform: "capitalize" }}>{status}</span>
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{fmt(count)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
+            </div>
+
+            {/* Team members */}
+            <Card>
+              <CardHeader title="Team Members" right={<span style={{ fontSize: 10, color: C.muted }}>{shopUsers.length} member{shopUsers.length !== 1 ? "s" : ""}</span>} />
+              {shopUsers.map(u => (
+                <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: isMobile ? "10px 12px" : "10px 18px", borderBottom: `1px solid ${C.border}`, cursor: "pointer" }}
+                  onClick={() => { setSelectedShop(null); setShopStats(null); setSelectedUser(u); fetchUserDetail(u.id); }}>
+                  <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={30} url={u.avatar_url} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name || u.first_name || "—"}</div>
+                    <div style={{ fontSize: 10, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
+                  </div>
+                  <PlanBadge plan={u.plan} />
+                  <span style={{ fontSize: 10, color: C.muted }}>{fmtDateShort(u.created_at)}</span>
+                </div>
+              ))}
+            </Card>
+          </>
+        )}
       </div>
     );
   }
