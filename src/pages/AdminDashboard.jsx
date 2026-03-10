@@ -797,7 +797,7 @@ function AdminDashboardInner({ session, onSignOut }) {
         {/* Campaign performance */}
         <Card>
           <CardHeader title="Campaign Performance" />
-          <div style={{ padding: "20px 18px", display: "flex", gap: 30, flexWrap: "wrap" }}>
+          <div style={{ padding: "20px 18px", display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
             {[
               { label: "Sent", value: fmt(campaignStats.sent || 0), color: C.accent },
               { label: "Recipients", value: fmt(campaignStats.totalRecipients || 0), color: C.blue },
@@ -806,10 +806,11 @@ function AdminDashboardInner({ session, onSignOut }) {
               { label: "Conversions", value: fmt(campaignStats.totalConversions || 0), color: C.green },
               { label: "Campaign GMV", value: fmtUSD(campaignStats.gmv || 0), color: C.green },
             ].map(m => {
-              const fs = 26;
+              const vLen = String(m.value).length;
+              const fs = vLen > 9 ? 16 : vLen > 7 ? 18 : vLen > 5 ? 20 : 26;
               return (
-                <div key={m.label} style={{ textAlign: "center", minWidth: 80, flex: 1 }}>
-                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: fs, fontWeight: 800, color: m.color, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{m.value}</div>
+                <div key={m.label} style={{ textAlign: "center", overflow: "hidden" }}>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: fs, fontWeight: 800, color: m.color, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.value}</div>
                   <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{m.label}</div>
                 </div>
               );
