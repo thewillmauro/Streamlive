@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "../lib/supabase.js";
 import { navigate, FONT, GLOBAL_CSS } from "../lib/shared.jsx";
 
@@ -45,7 +45,7 @@ function StatCard({ label, value, sub, color = C.accent, icon, trend }) {
   const valStr = String(value);
   const fontSize = valStr.length > 9 ? 18 : valStr.length > 7 ? 20 : valStr.length > 5 ? 22 : 26;
   return (
-    <div style={{ flex: 1, minWidth: 170, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px 18px", position: "relative", overflow: "hidden" }}>
+    <div style={{ flex: "1 1 calc(50% - 10px)", minWidth: 130, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 14px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -30, right: -30, width: 100, height: 100, borderRadius: "50%", background: color, opacity: 0.04, filter: "blur(30px)" }} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</span>
@@ -107,6 +107,18 @@ const fmtUSD = (n) => `$${(Number(n) || 0).toLocaleString(undefined, { minimumFr
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 const fmtDateShort = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < breakpoint);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    setIsMobile(mq.matches);
+    return () => mq.removeEventListener("change", handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HACKER LOGIN SCREEN
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -115,6 +127,7 @@ function AdminLoginScreen({ onLogin }) {
   const [inputVal, setInputVal] = useState("");
   const [phase, setPhase] = useState("boot");
   const [cursorVisible, setCursorVisible] = useState(true);
+  const isMobile = useIsMobile();
 
   const bootSequence = [
     { text: "STRMLIVE MISSION CONTROL v2.1.0", delay: 0 },
@@ -182,8 +195,8 @@ function AdminLoginScreen({ onLogin }) {
         ))}
       </div>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 12, background: "radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.6) 100%)" }} />
-      <div style={{ position: "relative", zIndex: 5, height: "100%", padding: "40px 60px", overflow: "auto", animation: "flicker 10s infinite" }}>
-        <pre style={{ color: "#00ff41", fontSize: 10, lineHeight: 1.2, animation: "glowPulse 3s ease-in-out infinite", margin: "0 0 8px" }}>{`
+      <div style={{ position: "relative", zIndex: 5, height: "100%", padding: isMobile ? "20px 16px" : "40px 60px", overflow: "auto", animation: "flicker 10s infinite" }}>
+        <pre style={{ color: "#00ff41", fontSize: isMobile ? 5 : 10, lineHeight: 1.2, animation: "glowPulse 3s ease-in-out infinite", margin: "0 0 8px", overflowX: "hidden" }}>{`
  ███╗   ███╗ ██╗ ███████╗ ███████╗ ██╗  ██████╗  ███╗   ██╗
  ████╗ ████║ ██║ ██╔════╝ ██╔════╝ ██║ ██╔═══██╗ ████╗  ██║
  ██╔████╔██║ ██║ ███████╗ ███████╗ ██║ ██║   ██║ ██╔██╗ ██║
@@ -209,8 +222,8 @@ function AdminLoginScreen({ onLogin }) {
         {phase === "prompt" && <div style={{ marginTop: 20, color: "#444", fontSize: 11 }}>Type <span style={{ color: "#00ff41" }}>access</span> to authenticate · <span style={{ color: "#555" }}>or type <span style={{ color: "#666" }}>help</span> for commands</span></div>}
         {phase === "auth" && <div style={{ marginTop: 12, color: "#ff6b35", fontSize: 13, animation: "glowPulse 1s ease-in-out infinite" }}>████████████████ CONNECTING TO AUTH GATEWAY...</div>}
         {phase === "prompt" && (
-          <div style={{ position: "fixed", bottom: 32, right: 40, zIndex: 20 }}>
-            <button onClick={onLogin} style={{ background: "rgba(0,255,65,0.08)", border: "1px solid #00ff4133", borderRadius: 8, color: "#00ff41", fontSize: 11, fontWeight: 600, padding: "10px 20px", cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}
+          <div style={{ position: "fixed", bottom: isMobile ? 20 : 32, right: isMobile ? 16 : 40, left: isMobile ? 16 : "auto", zIndex: 20 }}>
+            <button onClick={onLogin} style={{ background: "rgba(0,255,65,0.08)", border: "1px solid #00ff4133", borderRadius: 8, color: "#00ff41", fontSize: isMobile ? 13 : 11, fontWeight: 600, padding: isMobile ? "14px 20px" : "10px 20px", cursor: "pointer", fontFamily: "'JetBrains Mono',monospace", width: isMobile ? "100%" : "auto" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,255,65,0.15)"; e.currentTarget.style.borderColor = "#00ff4166"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,255,65,0.08)"; e.currentTarget.style.borderColor = "#00ff4133"; }}>
               [ QUICK ACCESS → ]
@@ -226,6 +239,8 @@ function AdminLoginScreen({ onLogin }) {
 // MAIN DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
 function AdminDashboardInner({ session, onSignOut }) {
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash.replace("#", "");
     const validTabs = ["overview", "users", "subscriptions", "analytics", "shows", "content", "system"];
@@ -355,7 +370,7 @@ function AdminDashboardInner({ session, onSignOut }) {
     const s = stats || {};
     const planBreakdown = s.planCounts ? Object.entries(s.planCounts).map(([p, c]) => `${c} ${p}`).join(" · ") : "";
     return (
-      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+      <div style={{ padding: isMobile ? "16px" : "28px 32px", overflowY: "auto", flex: 1 }}>
         <SectionHeader title="Command Center" sub="Real-time platform health and performance" />
 
         {/* Row 1: Core KPIs */}
@@ -376,7 +391,7 @@ function AdminDashboardInner({ session, onSignOut }) {
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
           {/* Plan distribution */}
-          <Card style={{ flex: 2, minWidth: 300 }}>
+          <Card style={{ flex: 2, minWidth: isMobile ? 0 : 300 }}>
             <CardHeader title="Plan Distribution" />
             <div style={{ padding: "16px 18px" }}>
               {["starter", "growth", "pro", "enterprise"].map(p => {
@@ -405,7 +420,7 @@ function AdminDashboardInner({ session, onSignOut }) {
           </Card>
 
           {/* Platform connections */}
-          <Card style={{ flex: 1, minWidth: 240 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 240 }}>
             <CardHeader title="Platform Connections" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(s.connections?.byPlatform || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
@@ -451,7 +466,7 @@ function AdminDashboardInner({ session, onSignOut }) {
   // ════════════════════════════════════════════════════════════════════════════
   function TabUsers() {
     return (
-      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+      <div style={{ padding: isMobile ? "16px" : "28px 32px", overflowY: "auto", flex: 1 }}>
         {selectedUser ? (
           <UserDetailView user={selectedUser} onBack={() => { setSelectedUser(null); setUserDetail(null); }} />
         ) : (
@@ -461,8 +476,8 @@ function AdminDashboardInner({ session, onSignOut }) {
             {/* Toolbar */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, or shop..."
-                style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", fontSize: 12, color: C.text, width: 280, outline: "none" }} />
-              <div style={{ display: "flex", gap: 4 }}>
+                style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", fontSize: 12, color: C.text, width: isMobile ? "100%" : 280, outline: "none" }} />
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 {["all", "starter", "growth", "pro"].map(p => (
                   <button key={p} onClick={() => setPlanFilter(p)} style={{
                     background: planFilter === p ? `${(PLAN_COLORS[p] || C.accent)}22` : C.surface, border: `1px solid ${planFilter === p ? (PLAN_COLORS[p] || C.accent) + "55" : C.border}`,
@@ -476,20 +491,40 @@ function AdminDashboardInner({ session, onSignOut }) {
                 <option value="oldest">Oldest first</option>
                 <option value="name">Name A–Z</option>
               </select>
-              <span style={{ fontSize: 10, color: C.muted, marginLeft: "auto" }}>{filteredUsers.length} results</span>
-              <button onClick={() => setShowAddUser(true)} style={{ background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "7px 16px", cursor: "pointer" }}>+ Add User</button>
+              <span style={{ fontSize: 10, color: C.muted, marginLeft: isMobile ? 0 : "auto" }}>{filteredUsers.length} results</span>
+              <button onClick={() => setShowAddUser(true)} style={{ background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "7px 16px", cursor: "pointer", width: isMobile ? "100%" : "auto" }}>+ Add User</button>
             </div>
 
             <Card>
-              <div style={{ display: "flex", alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.border2}`, background: C.surface2 }}>
-                <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>User</div>
-                <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</div>
-                <div style={{ width: 90, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Plan</div>
-                <div style={{ width: 110, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Shop</div>
-                <div style={{ width: 90, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Joined</div>
-                <div style={{ width: 130, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", textAlign: "right" }}>Actions</div>
-              </div>
-              {filteredUsers.map(u => (
+              {!isMobile && (
+                <div style={{ display: "flex", alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.border2}`, background: C.surface2 }}>
+                  <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>User</div>
+                  <div style={{ flex: 2, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</div>
+                  <div style={{ width: 90, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Plan</div>
+                  <div style={{ width: 110, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Shop</div>
+                  <div style={{ width: 90, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase" }}>Joined</div>
+                  <div style={{ width: 130, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", textAlign: "right" }}>Actions</div>
+                </div>
+              )}
+              {filteredUsers.map(u => isMobile ? (
+                <div key={u.id} style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}`, cursor: "pointer" }}
+                  onClick={() => { setSelectedUser(u); fetchUserDetail(u.id); }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                    <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={32} url={u.avatar_url} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name || u.first_name || "—"}</div>
+                      <div style={{ fontSize: 11, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email || "—"}</div>
+                    </div>
+                    <PlanBadge plan={u.plan} />
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
+                    <span style={{ fontSize: 10, color: C.muted }}>{u.shop_name || "—"} · {fmtDateShort(u.created_at)}</span>
+                    <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+                      <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }} style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}33`, borderRadius: 6, color: C.accent, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>Edit Plan</button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <div key={u.id} style={{ display: "flex", alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.border}`, cursor: "pointer", transition: "background .1s" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.surface2}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
@@ -529,22 +564,26 @@ function AdminDashboardInner({ session, onSignOut }) {
 
         {/* Profile header */}
         <Card style={{ marginBottom: 20 }}>
-          <div style={{ padding: "24px 22px", display: "flex", gap: 20, alignItems: "center" }}>
-            <Avatar initials={deriveAvatar(user.name || user.first_name)} color={col} size={56} url={user.avatar_url} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 20, fontWeight: 800, color: C.text }}>{user.name || user.first_name || "—"}</div>
-              <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{user.email}</div>
-              <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-                <PlanBadge plan={user.plan} />
-                {user.shop_name && <span style={{ fontSize: 9, fontWeight: 600, color: C.cyan, background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, padding: "2px 8px", borderRadius: 4 }}>{user.shop_name}</span>}
-                {user.category && <span style={{ fontSize: 9, fontWeight: 600, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: "2px 8px", borderRadius: 4 }}>{user.category}</span>}
-                {(user.platforms || []).map(p => <span key={p} style={{ fontSize: 9, fontWeight: 600, color: PLATFORM_COLORS[p] || C.muted, background: `${PLATFORM_COLORS[p] || C.muted}18`, border: `1px solid ${PLATFORM_COLORS[p] || C.muted}33`, padding: "2px 8px", borderRadius: 4 }}>{p}</span>)}
+          <div style={{ padding: isMobile ? "16px" : "24px 22px", display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 12 : 20, alignItems: isMobile ? "flex-start" : "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, width: isMobile ? "100%" : "auto" }}>
+              <Avatar initials={deriveAvatar(user.name || user.first_name)} color={col} size={isMobile ? 44 : 56} url={user.avatar_url} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 16 : 20, fontWeight: 800, color: C.text }}>{user.name || user.first_name || "—"}</div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{user.email}</div>
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 10, color: C.muted }}>Joined {fmtDate(user.created_at)}</div>
-              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>ID: {user.id?.slice(0, 8)}...</div>
-              <button onClick={() => { setEditingUser(user); setEditPlan(user.plan || "starter"); }} style={{ marginTop: 8, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>Change Plan</button>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <PlanBadge plan={user.plan} />
+              {user.shop_name && <span style={{ fontSize: 9, fontWeight: 600, color: C.cyan, background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, padding: "2px 8px", borderRadius: 4 }}>{user.shop_name}</span>}
+              {user.category && <span style={{ fontSize: 9, fontWeight: 600, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: "2px 8px", borderRadius: 4 }}>{user.category}</span>}
+              {(user.platforms || []).map(p => <span key={p} style={{ fontSize: 9, fontWeight: 600, color: PLATFORM_COLORS[p] || C.muted, background: `${PLATFORM_COLORS[p] || C.muted}18`, border: `1px solid ${PLATFORM_COLORS[p] || C.muted}33`, padding: "2px 8px", borderRadius: 4 }}>{p}</span>)}
+            </div>
+            <div style={{ textAlign: isMobile ? "left" : "right", width: isMobile ? "100%" : "auto", display: "flex", flexDirection: isMobile ? "row" : "column", alignItems: isMobile ? "center" : "flex-end", gap: isMobile ? 12 : 2 }}>
+              <div>
+                <div style={{ fontSize: 10, color: C.muted }}>Joined {fmtDate(user.created_at)}</div>
+                <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>ID: {user.id?.slice(0, 8)}...</div>
+              </div>
+              <button onClick={() => { setEditingUser(user); setEditPlan(user.plan || "starter"); }} style={{ marginTop: isMobile ? 0 : 8, marginLeft: isMobile ? "auto" : 0, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>Change Plan</button>
             </div>
           </div>
         </Card>
@@ -563,7 +602,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
 
             {/* Connections */}
-            <Card style={{ flex: 1, minWidth: 260 }}>
+            <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
               <CardHeader title="Connected Platforms" />
               <div style={{ padding: "8px 18px" }}>
                 {(d.connections || []).map((c, i) => {
@@ -586,7 +625,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </Card>
 
             {/* Recent shows */}
-            <Card style={{ flex: 1, minWidth: 300 }}>
+            <Card style={{ flex: 1, minWidth: isMobile ? 0 : 300 }}>
               <CardHeader title="Recent Shows" />
               <div style={{ padding: "4px 0" }}>
                 {(d.shows || []).slice(0, 8).map(s => (
@@ -635,7 +674,7 @@ function AdminDashboardInner({ session, onSignOut }) {
   // ════════════════════════════════════════════════════════════════════════════
   function TabSubscriptions() {
     return (
-      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+      <div style={{ padding: isMobile ? "16px" : "28px 32px", overflowY: "auto", flex: 1 }}>
         <SectionHeader title="Subscriptions" sub="Manage plans, revenue, and billing" />
 
         {/* Revenue cards */}
@@ -646,7 +685,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             const revenue = count * PLAN_PRICES[plan];
             const pct = (stats?.total || 1) > 0 ? Math.round((count / (stats?.total || 1)) * 100) : 0;
             return (
-              <div key={plan} style={{ flex: 1, minWidth: 200, background: C.surface, border: `1px solid ${col}33`, borderRadius: 14, padding: "22px 20px", position: "relative", overflow: "hidden" }}>
+              <div key={plan} style={{ flex: isMobile ? "1 1 calc(50% - 10px)" : 1, minWidth: isMobile ? 0 : 200, background: C.surface, border: `1px solid ${col}33`, borderRadius: 14, padding: isMobile ? "16px 14px" : "22px 20px", position: "relative", overflow: "hidden" }}>
                 <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: col, opacity: 0.06, filter: "blur(24px)" }} />
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: col }} />
@@ -665,22 +704,22 @@ function AdminDashboardInner({ session, onSignOut }) {
         <Card>
           <CardHeader title="All Subscriptions" right={<span style={{ fontSize: 10, color: C.green, fontWeight: 700 }}>MRR: {fmtUSD(stats?.mrr || 0)}</span>} />
           {users.map(u => (
-            <div key={u.id} style={{ display: "flex", alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.border}`, gap: 12 }}
+            <div key={u.id} style={{ display: "flex", alignItems: "center", padding: isMobile ? "10px 12px" : "10px 18px", borderBottom: `1px solid ${C.border}`, gap: isMobile ? 8 : 12, flexWrap: isMobile ? "wrap" : "nowrap" }}
               onMouseEnter={e => e.currentTarget.style.background = C.surface2}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
               <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={28} url={u.avatar_url} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{u.name || u.first_name || "—"}</div>
-                <div style={{ fontSize: 10, color: C.muted }}>{u.email}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name || u.first_name || "—"}</div>
+                <div style={{ fontSize: 10, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
               </div>
               <PlanBadge plan={u.plan} />
-              <span style={{ fontSize: 11, color: C.muted, minWidth: 70, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>${PLAN_PRICES[u.plan || "starter"]}/mo</span>
-              <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }}
+              <span style={{ fontSize: 11, color: C.muted, minWidth: isMobile ? 0 : 70, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>${PLAN_PRICES[u.plan || "starter"]}/mo</span>
+              {!isMobile && <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }}
                 style={{ background: "none", border: `1px solid ${C.border2}`, borderRadius: 6, color: C.muted, fontSize: 10, fontWeight: 600, padding: "4px 12px", cursor: "pointer" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border2; e.currentTarget.style.color = C.muted; }}>
                 Change
-              </button>
+              </button>}
             </div>
           ))}
         </Card>
@@ -724,13 +763,13 @@ function AdminDashboardInner({ session, onSignOut }) {
     const selectedUserName = analyticsUser === "all" ? null : (users.find(u => u.id === analyticsUser) || {});
 
     return (
-      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+      <div style={{ padding: isMobile ? "16px" : "28px 32px", overflowY: "auto", flex: 1 }}>
+        <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", justifyContent: "space-between", marginBottom: 24, gap: isMobile ? 12 : 0 }}>
           <SectionHeader title={analyticsUser === "all" ? "Platform Analytics" : `${selectedUserName?.first_name || selectedUserName?.email || "User"} Analytics`} sub={analyticsUser === "all" ? "Aggregate performance across all users" : (selectedUserName?.shop_name || selectedUserName?.email || "")} />
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {userStatsLoading && <span style={{ fontSize: 11, color: C.muted }}>Loading...</span>}
             <select value={analyticsUser} onChange={e => setAnalyticsUser(e.target.value)}
-              style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", fontSize: 12, color: C.text, outline: "none", minWidth: 180, cursor: "pointer" }}>
+              style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", fontSize: 12, color: C.text, outline: "none", minWidth: isMobile ? 0 : 180, width: isMobile ? "100%" : "auto", cursor: "pointer" }}>
               <option value="all">All Accounts</option>
               {users.map(u => (
                 <option key={u.id} value={u.id}>{u.first_name || u.email} — {(u.plan || "starter").charAt(0).toUpperCase() + (u.plan || "starter").slice(1)}</option>
@@ -749,7 +788,7 @@ function AdminDashboardInner({ session, onSignOut }) {
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
           {/* Platform usage in shows */}
-          <Card style={{ flex: 1, minWidth: 280 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 280 }}>
             <CardHeader title="Platform Usage in Shows" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(showStats.platformUsage || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
@@ -770,7 +809,7 @@ function AdminDashboardInner({ session, onSignOut }) {
           </Card>
 
           {/* Buyer health */}
-          <Card style={{ flex: 1, minWidth: 280 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 280 }}>
             <CardHeader title="Buyer Health" right={<span style={{ fontSize: 10, color: C.muted }}>{fmt(buyerStats.total || 0)} total</span>} />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(buyerStats.byStatus || {}).sort((a, b) => b[1] - a[1]).map(([status, count]) => {
@@ -797,7 +836,7 @@ function AdminDashboardInner({ session, onSignOut }) {
         {/* Campaign performance */}
         <Card>
           <CardHeader title="Campaign Performance" />
-          <div style={{ padding: "20px 18px", display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
+          <div style={{ padding: isMobile ? "16px 12px" : "20px 18px", display: "grid", gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : "repeat(6, 1fr)", gap: isMobile ? 12 : 16 }}>
             {[
               { label: "Sent", value: fmt(campaignStats.sent || 0), color: C.accent },
               { label: "Recipients", value: fmt(campaignStats.totalRecipients || 0), color: C.blue },
@@ -820,7 +859,7 @@ function AdminDashboardInner({ session, onSignOut }) {
 
         {/* Categories & Orders by platform */}
         <div style={{ display: "flex", gap: 16, marginTop: 20, flexWrap: "wrap" }}>
-          <Card style={{ flex: 1, minWidth: 260 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
             <CardHeader title="Seller Categories" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(stats?.categories || {}).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
@@ -833,7 +872,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </Card>
 
-          <Card style={{ flex: 1, minWidth: 260 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
             <CardHeader title="Orders by Platform" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(orderStats.byPlatform || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
@@ -865,7 +904,7 @@ function AdminDashboardInner({ session, onSignOut }) {
         </div>
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
-          <Card style={{ flex: 1, minWidth: 260 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
             <CardHeader title="Points by Reason" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(loyaltyStats.byReason || {}).sort((a, b) => b[1] - a[1]).map(([reason, count]) => {
@@ -885,7 +924,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </Card>
 
-          <Card style={{ flex: 1, minWidth: 260 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
             <CardHeader title="Opt-In Sources" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(optInStats.bySource || {}).sort((a, b) => b[1] - a[1]).map(([src, count]) => {
@@ -919,7 +958,7 @@ function AdminDashboardInner({ session, onSignOut }) {
         </div>
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
-          <Card style={{ flex: 1, minWidth: 260 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
             <CardHeader title="Device Categories" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(prodStats.byCategory || {}).sort((a, b) => b[1] - a[1]).map(([cat, count]) => {
@@ -935,7 +974,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </Card>
 
-          <Card style={{ flex: 1, minWidth: 260 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
             <CardHeader title="Automation Goals" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(autoStats.byGoal || {}).sort((a, b) => b[1] - a[1]).map(([goal, count]) => {
@@ -954,7 +993,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </Card>
 
-          <Card style={{ flex: 1, minWidth: 260 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
             <CardHeader title="Team Roles" />
             <div style={{ padding: "12px 18px" }}>
               {Object.entries(teamStats.byRole || {}).sort((a, b) => b[1] - a[1]).map(([role, count]) => {
@@ -991,7 +1030,7 @@ function AdminDashboardInner({ session, onSignOut }) {
   function TabShows() {
     const s = stats?.shows || {};
     return (
-      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+      <div style={{ padding: isMobile ? "16px" : "28px 32px", overflowY: "auto", flex: 1 }}>
         <SectionHeader title="Live Shows" sub="Platform-wide show performance" />
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
           <StatCard label="Total Shows" value={fmt(s.total || 0)} icon="◈" color={C.amber} />
@@ -1002,7 +1041,7 @@ function AdminDashboardInner({ session, onSignOut }) {
         </div>
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-          <Card style={{ flex: 1, minWidth: 300 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 300 }}>
             <CardHeader title="Platform Usage" />
             <div style={{ padding: "16px 18px" }}>
               {Object.entries(s.platformUsage || {}).sort((a, b) => b[1] - a[1]).map(([plat, count]) => {
@@ -1022,7 +1061,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
           </Card>
 
-          <Card style={{ flex: 1, minWidth: 300 }}>
+          <Card style={{ flex: 1, minWidth: isMobile ? 0 : 300 }}>
             <CardHeader title="Show Performance" />
             <div style={{ padding: "20px 18px", display: "flex", flexDirection: "column", gap: 16 }}>
               {[
@@ -1350,26 +1389,35 @@ function AdminDashboardInner({ session, onSignOut }) {
     );
 
     return (
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* Section sidebar */}
-        <div style={{ width: 200, borderRight: `1px solid ${C.border}`, padding: "20px 0", overflowY: "auto" }}>
-          <div style={{ padding: "0 16px 12px", fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Sections</div>
-          {SECTIONS.map(s => (
-            <button key={s.id} onClick={() => setCmsSection(s.id)} style={{
-              display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px",
-              background: cmsSection === s.id ? `${C.accent}12` : "transparent", border: "none",
-              borderLeft: cmsSection === s.id ? `2px solid ${C.accent}` : "2px solid transparent",
-              color: cmsSection === s.id ? C.accent : C.muted, fontSize: 12, fontWeight: 600,
-              cursor: "pointer", textAlign: "left", transition: "all .15s",
-            }}>
-              <span style={{ fontSize: 14, opacity: 0.7 }}>{s.icon}</span>
-              {s.label}
-            </button>
-          ))}
-        </div>
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", flex: 1, overflow: "hidden" }}>
+        {/* Section sidebar / mobile selector */}
+        {isMobile ? (
+          <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}`, background: C.surface2 }}>
+            <select value={cmsSection} onChange={e => setCmsSection(e.target.value)}
+              style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.text, outline: "none" }}>
+              {SECTIONS.map(s => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
+            </select>
+          </div>
+        ) : (
+          <div style={{ width: 200, borderRight: `1px solid ${C.border}`, padding: "20px 0", overflowY: "auto" }}>
+            <div style={{ padding: "0 16px 12px", fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Sections</div>
+            {SECTIONS.map(s => (
+              <button key={s.id} onClick={() => setCmsSection(s.id)} style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px",
+                background: cmsSection === s.id ? `${C.accent}12` : "transparent", border: "none",
+                borderLeft: cmsSection === s.id ? `2px solid ${C.accent}` : "2px solid transparent",
+                color: cmsSection === s.id ? C.accent : C.muted, fontSize: 12, fontWeight: 600,
+                cursor: "pointer", textAlign: "left", transition: "all .15s",
+              }}>
+                <span style={{ fontSize: 14, opacity: 0.7 }}>{s.icon}</span>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Editor panel */}
-        <div style={{ flex: 1, padding: "28px 32px", overflowY: "auto" }}>
+        <div style={{ flex: 1, padding: isMobile ? "16px" : "28px 32px", overflowY: "auto" }}>
           <SectionHeader title="Content Management" sub="Edit marketing copy across the website" />
           {cmsError && <div style={{ marginBottom: 14, padding: "10px 14px", background: `${C.red}12`, border: `1px solid ${C.red}33`, borderRadius: 8, fontSize: 12, color: C.red }}>{cmsError}</div>}
           {renderSectionEditor()}
@@ -1394,7 +1442,7 @@ function AdminDashboardInner({ session, onSignOut }) {
     ];
 
     return (
-      <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
+      <div style={{ padding: isMobile ? "16px" : "28px 32px", overflowY: "auto", flex: 1 }}>
         <SectionHeader title="System Status" sub="Infrastructure and service health" />
 
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
@@ -1749,76 +1797,117 @@ function AdminDashboardInner({ session, onSignOut }) {
       <EditPlanModal />
       <ConfirmModal />
 
-      <div style={{ display: "flex", height: "100vh", maxHeight: "100vh", overflow: "hidden", background: C.bg, color: C.text, fontFamily: "'DM Sans',sans-serif" }}>
-
-        {/* SIDEBAR */}
-        <div style={{ width: 220, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", background: "#050508", flexShrink: 0 }}>
-          <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 900, color: "#fff", boxShadow: `0 2px 16px ${C.accent}44`, animation: "mcGlow 3s ease-in-out infinite" }}>S</div>
-              <div>
-                <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: "-0.3px" }}>Mission Control</div>
-                <div style={{ fontSize: 9, color: C.accent, fontWeight: 600 }}>ADMIN</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ flex: 1, padding: "12px 10px", overflow: "hidden" }}>
-            <div style={{ fontSize: 8, fontWeight: 800, color: `${C.accent}44`, textTransform: "uppercase", letterSpacing: "0.12em", padding: "2px 12px 8px" }}>Navigation</div>
-            {ADMIN_NAV.map(n => {
-              const isActive = activeTab === n.id;
-              return (
-                <button key={n.id} onClick={() => { setActiveTab(n.id); setSelectedUser(null); setUserDetail(null); }} style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 9, border: "none", cursor: "pointer", marginBottom: 2, width: "100%",
-                  background: isActive ? `${C.accent}18` : "transparent", transition: "all .12s",
-                }}>
-                  <span style={{ fontSize: 13, color: isActive ? C.accent : C.subtle, width: 16, textAlign: "center" }}>{n.icon}</span>
-                  <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 400, color: isActive ? C.text : C.muted }}>{n.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Quick stats in sidebar */}
-          {stats && (
-            <div style={{ padding: "0 10px 8px" }}>
-              <div style={{ background: `${C.accent}08`, border: `1px solid ${C.accent}22`, borderRadius: 10, padding: "10px 12px" }}>
-                <div style={{ fontSize: 8, fontWeight: 800, color: C.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Quick Stats</div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                  <span style={{ fontSize: 10, color: C.muted }}>Users</span>
-                  <span style={{ fontSize: 10, color: C.text, fontWeight: 600 }}>{fmt(stats.total || 0)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                  <span style={{ fontSize: 10, color: C.muted }}>MRR</span>
-                  <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>{fmtUSD(stats.mrr || 0)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 10, color: C.muted }}>Active</span>
-                  <span style={{ fontSize: 10, color: C.blue, fontWeight: 600 }}>{fmt(stats.activeUsers || 0)}</span>
+      {/* Mobile sidebar overlay */}
+      {isMobile && sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", zIndex: 200 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 260, height: "100%", background: "#050508", borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+            <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 900, color: "#fff" }}>S</div>
+                <div>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 14, fontWeight: 800, color: C.text }}>Mission Control</div>
+                  <div style={{ fontSize: 9, color: C.accent, fontWeight: 600 }}>ADMIN</div>
                 </div>
               </div>
+              <button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none", color: C.muted, fontSize: 18, cursor: "pointer", padding: 4 }}>✕</button>
             </div>
-          )}
-
-          <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px" }}>
-            <button onClick={() => navigate("/app")} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 12, fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}
-              onMouseEnter={e => e.currentTarget.style.color = C.text} onMouseLeave={e => e.currentTarget.style.color = C.muted}>← Back to App</button>
-            <button onClick={() => { if (onSignOut) onSignOut(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 12, fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}
-              onMouseEnter={e => e.currentTarget.style.color = C.red} onMouseLeave={e => e.currentTarget.style.color = C.muted}>↩ Sign Out</button>
+            <div style={{ flex: 1, padding: "12px 10px" }}>
+              {ADMIN_NAV.map(n => {
+                const isActive = activeTab === n.id;
+                return (
+                  <button key={n.id} onClick={() => { setActiveTab(n.id); setSelectedUser(null); setUserDetail(null); setSidebarOpen(false); }} style={{
+                    display: "flex", alignItems: "center", gap: 10, padding: "12px 12px", borderRadius: 9, border: "none", cursor: "pointer", marginBottom: 2, width: "100%",
+                    background: isActive ? `${C.accent}18` : "transparent",
+                  }}>
+                    <span style={{ fontSize: 14, color: isActive ? C.accent : C.subtle, width: 18, textAlign: "center" }}>{n.icon}</span>
+                    <span style={{ fontSize: 14, fontWeight: isActive ? 700 : 400, color: isActive ? C.text : C.muted }}>{n.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px" }}>
+              <button onClick={() => { navigate("/app"); setSidebarOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 13, fontWeight: 500, padding: "10px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}>← Back to App</button>
+              <button onClick={() => { if (onSignOut) onSignOut(); setSidebarOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 13, fontWeight: 500, padding: "10px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}>↩ Sign Out</button>
+            </div>
           </div>
         </div>
+      )}
+
+      <div style={{ display: "flex", height: "100vh", maxHeight: "100vh", overflow: "hidden", background: C.bg, color: C.text, fontFamily: "'DM Sans',sans-serif" }}>
+
+        {/* SIDEBAR — desktop only */}
+        {!isMobile && (
+          <div style={{ width: 220, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", background: "#050508", flexShrink: 0 }}>
+            <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 900, color: "#fff", boxShadow: `0 2px 16px ${C.accent}44`, animation: "mcGlow 3s ease-in-out infinite" }}>S</div>
+                <div>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: "-0.3px" }}>Mission Control</div>
+                  <div style={{ fontSize: 9, color: C.accent, fontWeight: 600 }}>ADMIN</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, padding: "12px 10px", overflow: "hidden" }}>
+              <div style={{ fontSize: 8, fontWeight: 800, color: `${C.accent}44`, textTransform: "uppercase", letterSpacing: "0.12em", padding: "2px 12px 8px" }}>Navigation</div>
+              {ADMIN_NAV.map(n => {
+                const isActive = activeTab === n.id;
+                return (
+                  <button key={n.id} onClick={() => { setActiveTab(n.id); setSelectedUser(null); setUserDetail(null); }} style={{
+                    display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 9, border: "none", cursor: "pointer", marginBottom: 2, width: "100%",
+                    background: isActive ? `${C.accent}18` : "transparent", transition: "all .12s",
+                  }}>
+                    <span style={{ fontSize: 13, color: isActive ? C.accent : C.subtle, width: 16, textAlign: "center" }}>{n.icon}</span>
+                    <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 400, color: isActive ? C.text : C.muted }}>{n.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick stats in sidebar */}
+            {stats && (
+              <div style={{ padding: "0 10px 8px" }}>
+                <div style={{ background: `${C.accent}08`, border: `1px solid ${C.accent}22`, borderRadius: 10, padding: "10px 12px" }}>
+                  <div style={{ fontSize: 8, fontWeight: 800, color: C.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Quick Stats</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                    <span style={{ fontSize: 10, color: C.muted }}>Users</span>
+                    <span style={{ fontSize: 10, color: C.text, fontWeight: 600 }}>{fmt(stats.total || 0)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                    <span style={{ fontSize: 10, color: C.muted }}>MRR</span>
+                    <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>{fmtUSD(stats.mrr || 0)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 10, color: C.muted }}>Active</span>
+                    <span style={{ fontSize: 10, color: C.blue, fontWeight: 600 }}>{fmt(stats.activeUsers || 0)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px" }}>
+              <button onClick={() => navigate("/app")} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 12, fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}
+                onMouseEnter={e => e.currentTarget.style.color = C.text} onMouseLeave={e => e.currentTarget.style.color = C.muted}>← Back to App</button>
+              <button onClick={() => { if (onSignOut) onSignOut(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", color: C.muted, fontSize: 12, fontWeight: 500, padding: "9px 12px", cursor: "pointer", borderRadius: 6, textAlign: "left" }}
+                onMouseEnter={e => e.currentTarget.style.color = C.red} onMouseLeave={e => e.currentTarget.style.color = C.muted}>↩ Sign Out</button>
+            </div>
+          </div>
+        )}
 
         {/* MAIN CONTENT */}
         <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <div style={{ height: 52, borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", flexShrink: 0 }}>
+          <div style={{ height: 52, borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "0 16px" : "0 28px", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 15, fontWeight: 800, color: C.text }}>{ADMIN_NAV.find(n => n.id === activeTab)?.label || "Overview"}</div>
+              {isMobile && (
+                <button onClick={() => setSidebarOpen(true)} style={{ background: "none", border: "none", color: C.text, fontSize: 18, cursor: "pointer", padding: "4px 8px 4px 0" }}>☰</button>
+              )}
+              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 13 : 15, fontWeight: 800, color: C.text }}>{ADMIN_NAV.find(n => n.id === activeTab)?.label || "Overview"}</div>
               <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green, animation: "pulse 2s infinite" }} />
-              <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>Operational</span>
+              {!isMobile && <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>Operational</span>}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ fontSize: 10, color: C.muted, opacity: 0.6 }}>Auto-refresh 30s</div>
-              {session?.user?.email && <div style={{ fontSize: 10, color: C.muted }}>{session.user.email}</div>}
+              {!isMobile && <div style={{ fontSize: 10, color: C.muted, opacity: 0.6 }}>Auto-refresh 30s</div>}
+              {!isMobile && session?.user?.email && <div style={{ fontSize: 10, color: C.muted }}>{session.user.email}</div>}
             </div>
           </div>
 
