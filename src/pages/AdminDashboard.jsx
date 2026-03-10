@@ -615,7 +615,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <PlanBadge plan={user.plan} />
-              {user.shop_name && <span onClick={() => { setSelectedUser(null); setUserDetail(null); setSelectedShop(user.shop_name); fetchShopStats(user.shop_name); }} style={{ fontSize: 9, fontWeight: 600, color: C.cyan, background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, padding: "2px 8px", borderRadius: 4, cursor: "pointer" }}>{user.shop_name} →</span>}
+              {user.shop_name && <span style={{ fontSize: 9, fontWeight: 600, color: C.cyan, background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, padding: "2px 8px", borderRadius: 4 }}>{user.shop_name}</span>}
               {user.category && <span style={{ fontSize: 9, fontWeight: 600, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: "2px 8px", borderRadius: 4 }}>{user.category}</span>}
               {(user.platforms || []).map(p => <span key={p} style={{ fontSize: 9, fontWeight: 600, color: PLATFORM_COLORS[p] || C.muted, background: `${PLATFORM_COLORS[p] || C.muted}18`, border: `1px solid ${PLATFORM_COLORS[p] || C.muted}33`, padding: "2px 8px", borderRadius: 4 }}>{p}</span>)}
             </div>
@@ -624,7 +624,10 @@ function AdminDashboardInner({ session, onSignOut }) {
                 <div style={{ fontSize: 10, color: C.muted }}>Joined {fmtDate(user.created_at)}</div>
                 <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>ID: {user.id?.slice(0, 8)}...</div>
               </div>
-              <button onClick={() => { setEditingUser(user); setEditPlan(user.plan || "starter"); }} style={{ marginTop: isMobile ? 0 : 8, marginLeft: isMobile ? "auto" : 0, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>Change Plan</button>
+              <div style={{ display: "flex", gap: 8, marginTop: isMobile ? 0 : 8, marginLeft: isMobile ? "auto" : 0 }}>
+                {user.shop_name && <button onClick={() => { setSelectedUser(null); setUserDetail(null); setSelectedShop(user.shop_name); fetchShopStats(user.shop_name); }} style={{ background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, borderRadius: 7, color: C.cyan, fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>View Shop</button>}
+                <button onClick={() => { setEditingUser(user); setEditPlan(user.plan || "starter"); }} style={{ background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>Change Plan</button>
+              </div>
             </div>
           </div>
         </Card>
