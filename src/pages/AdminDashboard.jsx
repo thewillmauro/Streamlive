@@ -615,7 +615,7 @@ function AdminDashboardInner({ session, onSignOut }) {
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <PlanBadge plan={user.plan} />
-              {user.shop_name && <span style={{ fontSize: 9, fontWeight: 600, color: C.cyan, background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, padding: "2px 8px", borderRadius: 4 }}>{user.shop_name}</span>}
+              {user.shop_name && <span onClick={() => { setSelectedUser(null); setUserDetail(null); setSelectedShop(user.shop_name); fetchShopStats(user.shop_name); }} style={{ fontSize: 9, fontWeight: 600, color: C.cyan, background: `${C.cyan}18`, border: `1px solid ${C.cyan}33`, padding: "2px 8px", borderRadius: 4, cursor: "pointer" }}>{user.shop_name} →</span>}
               {user.category && <span style={{ fontSize: 9, fontWeight: 600, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: "2px 8px", borderRadius: 4 }}>{user.category}</span>}
               {(user.platforms || []).map(p => <span key={p} style={{ fontSize: 9, fontWeight: 600, color: PLATFORM_COLORS[p] || C.muted, background: `${PLATFORM_COLORS[p] || C.muted}18`, border: `1px solid ${PLATFORM_COLORS[p] || C.muted}33`, padding: "2px 8px", borderRadius: 4 }}>{p}</span>)}
             </div>
