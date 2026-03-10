@@ -444,7 +444,7 @@ function AdminDashboardInner({ session, onSignOut }) {
         {/* Recent signups */}
         <Card style={{ marginTop: 20 }}>
           <CardHeader title="Recent Signups" right={<span style={{ fontSize: 10, color: C.muted }}>{users.length} total</span>} />
-          {users.slice(0, 8).map(u => (
+          {users.map(u => (
             <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 18px", borderBottom: `1px solid ${C.border}` }}>
               <Avatar initials={deriveAvatar(u.name || u.first_name || u.email)} color={PLAN_COLORS[u.plan] || C.accent} size={30} url={u.avatar_url} />
               <div style={{ flex: 1, minWidth: 0 }}>
