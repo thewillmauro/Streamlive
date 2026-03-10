@@ -806,8 +806,7 @@ function AdminDashboardInner({ session, onSignOut }) {
               { label: "Conversions", value: fmt(campaignStats.totalConversions || 0), color: C.green },
               { label: "Campaign GMV", value: fmtUSD(campaignStats.gmv || 0), color: C.green },
             ].map(m => {
-              const vLen = String(m.value).length;
-              const fs = vLen > 9 ? 18 : vLen > 7 ? 20 : vLen > 5 ? 22 : 26;
+              const fs = 26;
               return (
                 <div key={m.label} style={{ textAlign: "center", minWidth: 80, flex: 1 }}>
                   <div style={{ fontFamily: "'Syne',sans-serif", fontSize: fs, fontWeight: 800, color: m.color, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{m.value}</div>
