@@ -263,7 +263,6 @@ function AdminDashboardInner({ session, onSignOut }) {
   const [userSort, setUserSort] = useState("newest");
   const [showAddUser, setShowAddUser] = useState(false);
   const [addingUser, setAddingUser] = useState(false);
-  const [analyticsUser, setAnalyticsUser] = useState("all");
   const [selectedShop, setSelectedShop] = useState(null);
   const [shopStats, setShopStats] = useState(null);
   const [shopStatsLoading, setShopStatsLoading] = useState(false);
@@ -560,7 +559,6 @@ function AdminDashboardInner({ session, onSignOut }) {
                       {u.shop_name ? <span onClick={e => { e.stopPropagation(); setSelectedShop(u.shop_name); fetchShopStats(u.shop_name); }} style={{ color: C.cyan, cursor: "pointer", borderBottom: `1px dashed ${C.cyan}44` }}>{u.shop_name}</span> : "—"} · {fmtDateShort(u.created_at)}
                     </span>
                     <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-                      <button onClick={() => { setAnalyticsUser(u.id); setActiveTab("analytics"); }} style={{ background: `${C.blue}18`, border: `1px solid ${C.blue}33`, borderRadius: 6, color: C.blue, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>Analytics</button>
                       <button onClick={() => { setEditingUser(u); setEditPlan(u.plan || "starter"); }} style={{ background: `${C.accent}18`, border: `1px solid ${C.accent}33`, borderRadius: 6, color: C.accent, fontSize: 10, fontWeight: 600, padding: "4px 10px", cursor: "pointer" }}>Edit Plan</button>
                     </div>
                   </div>
@@ -626,10 +624,7 @@ function AdminDashboardInner({ session, onSignOut }) {
                 <div style={{ fontSize: 10, color: C.muted }}>Joined {fmtDate(user.created_at)}</div>
                 <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>ID: {user.id?.slice(0, 8)}...</div>
               </div>
-              <div style={{ display: "flex", gap: 8, marginTop: isMobile ? 0 : 8, marginLeft: isMobile ? "auto" : 0 }}>
-                <button onClick={() => { setAnalyticsUser(user.id); setActiveTab("analytics"); setSelectedUser(null); setUserDetail(null); }} style={{ background: `${C.blue}18`, border: `1px solid ${C.blue}33`, borderRadius: 7, color: C.blue, fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>View Analytics</button>
-                <button onClick={() => { setEditingUser(user); setEditPlan(user.plan || "starter"); }} style={{ background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>Change Plan</button>
-              </div>
+              <button onClick={() => { setEditingUser(user); setEditPlan(user.plan || "starter"); }} style={{ marginTop: isMobile ? 0 : 8, marginLeft: isMobile ? "auto" : 0, background: `linear-gradient(135deg,${C.accent},${C.accent2})`, border: "none", borderRadius: 7, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", cursor: "pointer" }}>Change Plan</button>
             </div>
           </div>
         </Card>
@@ -922,6 +917,7 @@ function AdminDashboardInner({ session, onSignOut }) {
   // TAB: ANALYTICS
   // ════════════════════════════════════════════════════════════════════════════
   function TabAnalytics() {
+    const [analyticsUser, setAnalyticsUser] = useState("all");
     const [userStats, setUserStats] = useState(null);
     const [userStatsLoading, setUserStatsLoading] = useState(false);
 
