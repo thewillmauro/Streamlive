@@ -713,7 +713,7 @@ function AdminDashboardInner({ session, onSignOut }) {
     );
   }
 
-  // ── Shop Detail View ──────────────────────────────────────────────────────
+  // ── Shop Detail View (Customer Success Dashboard) ───────────────────────
   function ShopDetailView({ shopName, onBack }) {
     const shopUsers = users.filter(u => u.shop_name === shopName);
     const s = shopStats || {};
@@ -721,6 +721,98 @@ function AdminDashboardInner({ session, onSignOut }) {
     const buyerStats = s.buyers || {};
     const campaignStats = s.campaigns || {};
     const orderStats = s.orders || {};
+    const connStats = s.connections || {};
+
+    // ── Health Score (0–100) ──
+    const computeHealth = () => {
+      if (!shopStats) return null;
+      let score = 0; let factors = 0;
+      // Show activity (0–25): recent shows in last 30 days
+      const recentShows = showStats.recent || 0;
+      score += Math.min(recentShows / 4, 1) * 25; factors++;
+      // Revenue health (0–25): GMV > 0
+      const gmv = showStats.totalGMV || 0;
+      score += Math.min(gmv / 5000, 1) * 25; factors++;
+      // Engagement (0–25): campaigns sent, buyers
+      const engagement = ((campaignStats.sent || 0) > 0 ? 12.5 : 0) + ((buyerStats.total || 0) > 10 ? 12.5 : (buyerStats.total || 0) > 0 ? 6 : 0);
+      score += engagement; factors++;
+      // Platform adoption (0–25): connections + multi-platform
+      const platforms = Object.keys(connStats.byPlatform || {}).length;
+      score += Math.min(platforms / 3, 1) * 25; factors++;
+      return Math.round(score);
+    };
+    const healthScore = computeHealth();
+    const healthColor = healthScore >= 75 ? C.green : healthScore >= 50 ? C.amber : healthScore >= 25 ? "#f97316" : C.red;
+    const healthLabel = healthScore >= 75 ? "Healthy" : healthScore >= 50 ? "Needs Attention" : healthScore >= 25 ? "At Risk" : "Critical";
+
+    // ── Lifecycle Stage ──
+    const getLifecycle = () => {
+      const shows = showStats.completed || 0;
+      const recent = showStats.recent || 0;
+      const campaigns = campaignStats.sent || 0;
+      const buyers = buyerStats.total || 0;
+      if (shows === 0 && campaigns === 0) return { stage: "Onboarding", color: C.blue, icon: "◎" };
+      if (shows <= 3 && buyers <= 20) return { stage: "Activation", color: C.cyan, icon: "◈" };
+      if (recent > 0 && buyers > 20) return { stage: "Growth", color: C.green, icon: "◆" };
+      if (recent === 0 && shows > 3) return { stage: "At Risk", color: C.red, icon: "⚠" };
+      return { stage: "Established", color: C.accent, icon: "★" };
+    };
+    const lifecycle = getLifecycle();
+
+    // ── Feature Adoption ──
+    const features = [
+      { name: "Live Shows", adopted: (showStats.completed || 0) > 0, metric: `${fmt(showStats.completed || 0)} completed` },
+      { name: "Campaigns", adopted: (campaignStats.sent || 0) > 0, metric: `${fmt(campaignStats.sent || 0)} sent` },
+      { name: "Buyer CRM", adopted: (buyerStats.total || 0) > 0, metric: `${fmt(buyerStats.total || 0)} buyers` },
+      { name: "Multi-Platform", adopted: Object.keys(connStats.byPlatform || {}).length > 1, metric: `${Object.keys(connStats.byPlatform || {}).length} platforms` },
+      { name: "Loyalty Program", adopted: (s.loyalty?.totalPoints || 0) > 0, metric: `${fmt(s.loyalty?.totalPoints || 0)} pts` },
+      { name: "Opt-In Pages", adopted: (s.optIns?.total || 0) > 0, metric: `${fmt(s.optIns?.total || 0)} opt-ins` },
+    ];
+    const adoptionRate = features.length > 0 ? Math.round((features.filter(f => f.adopted).length / features.length) * 100) : 0;
+
+    // ── Risk Signals ──
+    const risks = [];
+    if ((showStats.recent || 0) === 0 && (showStats.completed || 0) > 0) risks.push({ text: "No shows in last 30 days", severity: "high" });
+    if ((showStats.completed || 0) === 0) risks.push({ text: "Has never completed a live show", severity: "high" });
+    if ((campaignStats.sent || 0) === 0) risks.push({ text: "No campaigns sent yet", severity: "medium" });
+    if (Object.keys(connStats.byPlatform || {}).length <= 1) risks.push({ text: "Only using 1 platform connection", severity: "low" });
+    if ((buyerStats.total || 0) === 0) risks.push({ text: "No buyers acquired", severity: "high" });
+    if ((s.loyalty?.totalPoints || 0) === 0 && (buyerStats.total || 0) > 10) risks.push({ text: "Loyalty program not activated", severity: "medium" });
+    const dormantBuyers = buyerStats.byStatus?.dormant || 0;
+    const totalBuyers = buyerStats.total || 0;
+    if (totalBuyers > 0 && dormantBuyers / totalBuyers > 0.4) risks.push({ text: `${Math.round(dormantBuyers / totalBuyers * 100)}% of buyers are dormant`, severity: "medium" });
+
+    // ── Success Milestones ──
+    const milestones = [
+      { label: "Account Created", done: true, icon: "✓" },
+      { label: "Platform Connected", done: (connStats.total || 0) > 0, icon: (connStats.total || 0) > 0 ? "✓" : "○" },
+      { label: "First Show Completed", done: (showStats.completed || 0) > 0, icon: (showStats.completed || 0) > 0 ? "✓" : "○" },
+      { label: "10+ Buyers", done: (buyerStats.total || 0) >= 10, icon: (buyerStats.total || 0) >= 10 ? "✓" : "○" },
+      { label: "First Campaign Sent", done: (campaignStats.sent || 0) > 0, icon: (campaignStats.sent || 0) > 0 ? "✓" : "○" },
+      { label: "$1K GMV", done: (showStats.totalGMV || 0) >= 1000, icon: (showStats.totalGMV || 0) >= 1000 ? "✓" : "○" },
+      { label: "$10K GMV", done: (showStats.totalGMV || 0) >= 10000, icon: (showStats.totalGMV || 0) >= 10000 ? "✓" : "○" },
+      { label: "Multi-Platform Live", done: Object.keys(connStats.byPlatform || {}).length > 1, icon: Object.keys(connStats.byPlatform || {}).length > 1 ? "✓" : "○" },
+    ];
+    const milestonePct = Math.round((milestones.filter(m => m.done).length / milestones.length) * 100);
+
+    // ── Suggested Playbooks (CTAs) ──
+    const playbooks = [];
+    if ((showStats.completed || 0) === 0) playbooks.push({ action: "Schedule onboarding call", priority: "high", reason: "No shows completed — guide through first live" });
+    if ((campaignStats.sent || 0) === 0 && (buyerStats.total || 0) > 0) playbooks.push({ action: "Campaign setup walkthrough", priority: "high", reason: `${fmt(buyerStats.total)} buyers but 0 campaigns — huge re-engagement opportunity` });
+    if ((showStats.recent || 0) === 0 && (showStats.completed || 0) > 0) playbooks.push({ action: "Re-engagement outreach", priority: "high", reason: "Active account gone quiet — no shows in 30 days" });
+    if (Object.keys(connStats.byPlatform || {}).length === 1) playbooks.push({ action: "Multi-platform expansion", priority: "medium", reason: "Only 1 platform connected — show multi-stream value" });
+    if ((s.loyalty?.totalPoints || 0) === 0 && (buyerStats.total || 0) > 5) playbooks.push({ action: "Loyalty program activation", priority: "medium", reason: "Buyers exist but loyalty not used — drive retention" });
+    if (adoptionRate < 50) playbooks.push({ action: "Feature adoption review", priority: "low", reason: `Only ${adoptionRate}% feature adoption — schedule training` });
+
+    // ── Monthly revenue ──
+    const monthlyRevenue = shopUsers.reduce((sum, u) => {
+      const base = u.plan === "enterprise" ? (Number(u.custom_price) || 999) : PLAN_PRICES[u.plan || "starter"];
+      const disc = Number(u.discount) || 0;
+      return sum + Math.round(base * (1 - disc / 100));
+    }, 0);
+
+    const sevColor = { high: C.red, medium: C.amber, low: C.muted };
+    const priColor = { high: C.red, medium: C.amber, low: C.blue };
 
     return (
       <div>
@@ -729,36 +821,125 @@ function AdminDashboardInner({ session, onSignOut }) {
           ← Back to Users
         </button>
 
-        {/* Shop header */}
+        {/* ── Header with Health Score ── */}
         <Card style={{ marginBottom: 20 }}>
           <div style={{ padding: isMobile ? "16px" : "24px 22px" }}>
-            <div style={{ display: "flex", alignItems: isMobile ? "flex-start" : "center", gap: 16, flexDirection: isMobile ? "column" : "row" }}>
-              <div style={{ width: isMobile ? 48 : 56, height: isMobile ? 48 : 56, borderRadius: 14, background: `linear-gradient(135deg,${C.accent}44,${C.accent2}44)`, border: `1px solid ${C.accent}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: isMobile ? 20 : 24, fontWeight: 900, color: C.accent, flexShrink: 0 }}>
-                {shopName.charAt(0).toUpperCase()}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 18 : 22, fontWeight: 800, color: C.text }}>{shopName}</div>
-                <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{shopUsers.length} team member{shopUsers.length !== 1 ? "s" : ""} · {shopUsers[0]?.category || "No category"}</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                  {[...new Set(shopUsers.map(u => u.plan || "starter"))].map(p => <PlanBadge key={p} plan={p} />)}
+            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 20, alignItems: isMobile ? "stretch" : "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1 }}>
+                <div style={{ width: isMobile ? 48 : 56, height: isMobile ? 48 : 56, borderRadius: 14, background: `linear-gradient(135deg,${C.accent}44,${C.accent2}44)`, border: `1px solid ${C.accent}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: isMobile ? 20 : 24, fontWeight: 900, color: C.accent, flexShrink: 0 }}>
+                  {shopName.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 18 : 22, fontWeight: 800, color: C.text }}>{shopName}</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{shopUsers.length} member{shopUsers.length !== 1 ? "s" : ""} · {shopUsers[0]?.category || "Uncategorized"} · {fmtUSD(monthlyRevenue)}/mo</div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
+                    {[...new Set(shopUsers.map(u => u.plan || "starter"))].map(p => <PlanBadge key={p} plan={p} />)}
+                    <span style={{ fontSize: 9, fontWeight: 700, color: lifecycle.color, background: `${lifecycle.color}18`, border: `1px solid ${lifecycle.color}33`, padding: "2px 8px", borderRadius: 4 }}>{lifecycle.icon} {lifecycle.stage}</span>
+                  </div>
                 </div>
               </div>
+
+              {/* Health Score Ring */}
+              {healthScore !== null && (
+                <div style={{ textAlign: "center", flexShrink: 0 }}>
+                  <div style={{ position: "relative", width: 72, height: 72, margin: isMobile ? "0" : "0 auto" }}>
+                    <svg width="72" height="72" viewBox="0 0 72 72">
+                      <circle cx="36" cy="36" r="30" fill="none" stroke={C.border} strokeWidth="6" />
+                      <circle cx="36" cy="36" r="30" fill="none" stroke={healthColor} strokeWidth="6" strokeLinecap="round"
+                        strokeDasharray={`${(healthScore / 100) * 188.5} 188.5`} transform="rotate(-90 36 36)" style={{ transition: "stroke-dasharray .6s ease" }} />
+                    </svg>
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 800, color: healthColor, lineHeight: 1 }}>{healthScore}</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: healthColor, marginTop: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>{healthLabel}</div>
+                </div>
+              )}
             </div>
           </div>
         </Card>
 
         {shopStatsLoading ? (
-          <div style={{ textAlign: "center", padding: 40, color: C.muted, fontSize: 12 }}>Loading shop analytics...</div>
+          <div style={{ textAlign: "center", padding: 40, color: C.muted, fontSize: 12 }}>Loading customer data...</div>
         ) : (
           <>
-            {/* KPI row */}
+            {/* ── Risk Signals & Playbooks ── */}
+            {(risks.length > 0 || playbooks.length > 0) && (
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
+                {risks.length > 0 && (
+                  <Card style={{ flex: 1, minWidth: isMobile ? 0 : 280 }}>
+                    <CardHeader title="Risk Signals" right={<span style={{ fontSize: 9, fontWeight: 700, color: risks.some(r => r.severity === "high") ? C.red : C.amber, background: risks.some(r => r.severity === "high") ? `${C.red}18` : `${C.amber}18`, padding: "2px 8px", borderRadius: 4 }}>{risks.length} SIGNAL{risks.length !== 1 ? "S" : ""}</span>} />
+                    <div style={{ padding: "4px 0" }}>
+                      {risks.map((r, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", borderBottom: `1px solid ${C.border}` }}>
+                          <div style={{ width: 6, height: 6, borderRadius: "50%", background: sevColor[r.severity], flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, color: C.text, flex: 1 }}>{r.text}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: sevColor[r.severity], textTransform: "uppercase" }}>{r.severity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+
+                {playbooks.length > 0 && (
+                  <Card style={{ flex: 1, minWidth: isMobile ? 0 : 280 }}>
+                    <CardHeader title="Suggested Playbooks" right={<span style={{ fontSize: 9, fontWeight: 700, color: C.accent, background: `${C.accent}18`, padding: "2px 8px", borderRadius: 4 }}>{playbooks.length} CTA{playbooks.length !== 1 ? "s" : ""}</span>} />
+                    <div style={{ padding: "4px 0" }}>
+                      {playbooks.map((p, i) => (
+                        <div key={i} style={{ padding: "10px 18px", borderBottom: `1px solid ${C.border}` }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: priColor[p.priority], background: `${priColor[p.priority]}18`, border: `1px solid ${priColor[p.priority]}33`, padding: "1px 6px", borderRadius: 3, textTransform: "uppercase" }}>{p.priority}</span>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{p.action}</span>
+                          </div>
+                          <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.4 }}>{p.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* ── Success Milestones & Feature Adoption ── */}
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
+              <Card style={{ flex: 1, minWidth: isMobile ? 0 : 280 }}>
+                <CardHeader title="Success Milestones" right={<span style={{ fontSize: 10, color: C.green, fontWeight: 700 }}>{milestonePct}%</span>} />
+                <div style={{ padding: "6px 0" }}>
+                  {milestones.map((m, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 18px", borderBottom: `1px solid ${C.border}` }}>
+                      <span style={{ fontSize: 12, width: 18, textAlign: "center", color: m.done ? C.green : C.muted, fontWeight: 700 }}>{m.icon}</span>
+                      <span style={{ fontSize: 12, color: m.done ? C.text : C.muted, textDecoration: m.done ? "none" : "none", flex: 1 }}>{m.label}</span>
+                      {m.done && <span style={{ fontSize: 9, color: C.green, fontWeight: 600 }}>DONE</span>}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card style={{ flex: 1, minWidth: isMobile ? 0 : 280 }}>
+                <CardHeader title="Feature Adoption" right={<span style={{ fontSize: 10, color: adoptionRate >= 70 ? C.green : adoptionRate >= 40 ? C.amber : C.red, fontWeight: 700 }}>{adoptionRate}%</span>} />
+                <div style={{ padding: "6px 18px 12px" }}>
+                  <div style={{ marginBottom: 12, marginTop: 8 }}><MiniBar value={adoptionRate} max={100} color={adoptionRate >= 70 ? C.green : adoptionRate >= 40 ? C.amber : C.red} /></div>
+                  {features.map((f, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: f.adopted ? C.green : `${C.muted}44` }} />
+                        <span style={{ fontSize: 12, color: f.adopted ? C.text : C.muted }}>{f.name}</span>
+                      </div>
+                      <span style={{ fontSize: 10, color: f.adopted ? C.green : C.muted, fontWeight: 600 }}>{f.metric}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* ── Revenue & Performance KPIs ── */}
+            <div style={{ marginBottom: 4 }}><SectionHeader title="Performance" sub="Key revenue and engagement metrics" /></div>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
               <StatCard label="Total GMV" value={fmtUSD(showStats.totalGMV || 0)} icon="◆" color={C.green} sub={`${fmt(showStats.completed || 0)} shows`} />
               <StatCard label="Total Orders" value={fmt(orderStats.total || 0)} icon="◉" color={C.blue} sub={fmtUSD(orderStats.totalRevenue || 0)} />
               <StatCard label="Total Buyers" value={fmt(buyerStats.total || 0)} icon="◉" color={C.pink} sub={fmtUSD(buyerStats.totalSpend || 0)} />
               <StatCard label="Campaigns Sent" value={fmt(campaignStats.sent || 0)} icon="◆" color={C.accent} sub={`${fmt(campaignStats.totalRecipients || 0)} recipients`} />
             </div>
-
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
               <StatCard label="Total Airtime" value={`${fmt(showStats.totalMinutes || 0)}m`} icon="⬡" color={C.amber} />
               <StatCard label="Avg Show GMV" value={fmtUSD(showStats.avgShowGMV || 0)} icon="◈" color={C.green} />
@@ -766,7 +947,7 @@ function AdminDashboardInner({ session, onSignOut }) {
               <StatCard label="Loyalty Points" value={fmt(s.loyalty?.totalPoints || 0)} icon="★" color={C.amber} />
             </div>
 
-            {/* Campaign performance */}
+            {/* ── Campaign Performance ── */}
             {campaignStats.sent > 0 && (
               <Card style={{ marginBottom: 20 }}>
                 <CardHeader title="Campaign Performance" />
@@ -792,7 +973,7 @@ function AdminDashboardInner({ session, onSignOut }) {
               </Card>
             )}
 
-            {/* Platform breakdown */}
+            {/* ── Platform & Buyer Breakdown ── */}
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
               {Object.keys(showStats.platformUsage || {}).length > 0 && (
                 <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
@@ -816,7 +997,7 @@ function AdminDashboardInner({ session, onSignOut }) {
 
               {Object.keys(buyerStats.byStatus || {}).length > 0 && (
                 <Card style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
-                  <CardHeader title="Buyer Health" />
+                  <CardHeader title="Buyer Health" right={<span style={{ fontSize: 10, color: C.muted }}>{fmt(buyerStats.total || 0)} total</span>} />
                   <div style={{ padding: "12px 18px" }}>
                     {Object.entries(buyerStats.byStatus).sort((a, b) => b[1] - a[1]).map(([status, count]) => {
                       const cols = { vip: C.amber, active: C.green, risk: C.red, new: C.blue, dormant: C.muted };
@@ -827,7 +1008,10 @@ function AdminDashboardInner({ session, onSignOut }) {
                             <div style={{ width: 6, height: 6, borderRadius: "50%", background: col }} />
                             <span style={{ fontSize: 12, color: C.text, textTransform: "capitalize" }}>{status}</span>
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{fmt(count)}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{fmt(count)}</span>
+                            <span style={{ fontSize: 10, color: C.muted }}>{totalBuyers ? Math.round((count / totalBuyers) * 100) : 0}%</span>
+                          </div>
                         </div>
                       );
                     })}
@@ -836,7 +1020,7 @@ function AdminDashboardInner({ session, onSignOut }) {
               )}
             </div>
 
-            {/* Team members */}
+            {/* ── Team Members ── */}
             <Card>
               <CardHeader title="Team Members" right={<span style={{ fontSize: 10, color: C.muted }}>{shopUsers.length} member{shopUsers.length !== 1 ? "s" : ""}</span>} />
               {shopUsers.map(u => (
@@ -848,6 +1032,7 @@ function AdminDashboardInner({ session, onSignOut }) {
                     <div style={{ fontSize: 10, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
                   </div>
                   <PlanBadge plan={u.plan} />
+                  <span style={{ fontSize: 10, color: C.muted }}>{fmtUSD((() => { const base = u.plan === "enterprise" ? (Number(u.custom_price) || 999) : PLAN_PRICES[u.plan || "starter"]; const disc = Number(u.discount) || 0; return Math.round(base * (1 - disc / 100)); })())}/mo</span>
                   <span style={{ fontSize: 10, color: C.muted }}>{fmtDateShort(u.created_at)}</span>
                 </div>
               ))}
